@@ -9,37 +9,38 @@ module.exports = {
         allowNull: false,
         primaryKey: true,
       },
-      firstName: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      lastName: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      email: {
-        type: Sequelize.STRING,
-        allowNull: false,
-        unique: true,
-      },
-      role: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
       cognito_id: {
         type: Sequelize.STRING,
         allowNull: false,
         unique: true,
       },
-      createdAt: {
-        type: Sequelize.DATE,
+      email: {
+        type: Sequelize.STRING,
         allowNull: false,
-        defaultValue: Sequelize.NOW,
+        unique: true,
+        validate: { isEmail: true },
       },
-      updatedAt: {
-        type: Sequelize.DATE,
+      first_name: {
+        type: Sequelize.STRING,
         allowNull: false,
+      },
+      last_name: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      role: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      created_at: {
+        type: Sequelize.DATE,
         defaultValue: Sequelize.NOW,
+        allowNull: false,
+      },
+      updated_at: {
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.NOW,
+        allowNull: false,
       },
     });
   },

@@ -29,20 +29,41 @@ export const registerUser = (req: any, res: any) => {
       new CognitoUserAttribute({ Name: "email", Value: email }),
     ];
   
-    userPool.signUp(email, password, attributeList, [], (err, result) => {
+    userPool.signUp(email, password, attributeList, [], async (err, result) => {
       if (err) {
         console.error("❌ Registration Failed:", err);
         return res.status(400).json({ message: "❌ Registration failed", error: err.message });
       }
       console.log("✅ Registration Successful:", result);
-
-      res.json({
-        message: "✅ User registered successfully",
-        userId: result?.userSub,
-        email: email // ✅ 现在返回 email
-      });
+  
+      const userId = result?.userSub;
+  
+      try {
+        // ✅ 存储到数据库，并默认 `role` 为 "picker"
+        await User.create({
+          cognito_id: userId,
+          email: email,
+          role: "TBD", // 🔥 这里默认 role
+          firstName: "TBD",
+          lastName: "TBD",
+          created_at: new Date(),
+        });
+  
+        console.log("✅ 用户信息已存入数据库:", { userId, email });
+  
+        res.json({
+          message: "✅ User registered successfully",
+          userId: userId,
+          email: email,
+        });
+      } catch (dbError: unknown) {
+        // ✅ 显式转换 `dbError` 为 `Error`
+        const errorMessage = (dbError as Error).message || "Unknown error";
+        console.error("❌ 存入数据库失败:", errorMessage);
+        res.status(500).json({ message: "❌ Failed to save user to database", error: errorMessage });
+      }
     });
-};
+  };
 
 
 /**
