@@ -4,6 +4,8 @@ import cors from "cors";
 import authRoutes from "./routes/authRoutes";
 import { connectDB } from "./config/db";
 
+
+//连接数据库
 connectDB();
 
 dotenv.config();

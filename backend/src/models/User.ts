@@ -1,11 +1,13 @@
 import { DataTypes, Model } from "sequelize";
-import { sequelize } from "../config/db"; // 确保你有 Sequelize 连接配置
+import { sequelize } from "../config/db";
 
 export interface UserAttributes {
   id?: string;
   cognito_id: string;
   email: string;
   role: "admin" | "transport-worker" | "picker";
+  firstName?: string; // 新增
+  lastName?: string;  // 新增
   created_at?: Date;
   updated_at?: Date;
 }
@@ -15,6 +17,8 @@ export class User extends Model<UserAttributes> implements UserAttributes {
   public cognito_id!: string;
   public email!: string;
   public role!: "admin" | "transport-worker" | "picker";
+  public firstName!: string; // 新增
+  public lastName!: string;  // 新增
   public readonly created_at!: Date;
   public readonly updated_at!: Date;
 }
@@ -38,6 +42,14 @@ User.init(
       validate: { isEmail: true },
     },
     role: {
+      type: DataTypes.ENUM("admin", "transport-worker", "picker"),
+      allowNull: false,
+    },
+    firstName: { // 新增
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    lastName: { // 新增
       type: DataTypes.STRING,
       allowNull: false,
     },
@@ -53,7 +65,8 @@ User.init(
   {
     sequelize,
     tableName: "users",
-    timestamps: true, // 自动管理 created_at 和 updated_at
+    timestamps: true,
+    underscored: true, // 使用下划线命名约定
   }
 );
 

@@ -6,6 +6,8 @@ import {
   CognitoUserAttribute,
 } from "amazon-cognito-identity-js";
 import dotenv from "dotenv";
+const { User } = require("../models/User"); // ✅ 引入 Sequelize User Model
+
 
 dotenv.config();
 
@@ -19,24 +21,29 @@ const userPool = new CognitoUserPool(poolData);
  * ✅ 注册用户
  */
 export const registerUser = (req: any, res: any) => {
-  const { email, password, role } = req.body; // 角色可以是 admin, transport-worker, picker
+    const { email, password } = req.body;
+  
+    console.log("🟢 Received Registration Request:", req.body);
+  
+    const attributeList = [
+      new CognitoUserAttribute({ Name: "email", Value: email }),
+    ];
+  
+    userPool.signUp(email, password, attributeList, [], (err, result) => {
+      if (err) {
+        console.error("❌ Registration Failed:", err);
+        return res.status(400).json({ message: "❌ Registration failed", error: err.message });
+      }
+      console.log("✅ Registration Successful:", result);
 
-  console.log("🟢 Received Registration Request:", req.body);
-
-  const attributeList = [
-    new CognitoUserAttribute({ Name: "email", Value: email }),
-    new CognitoUserAttribute({ Name: "custom:role", Value: role }), // 存储用户角色
-  ];
-
-  userPool.signUp(email, password, attributeList, [], (err, result) => {
-    if (err) {
-      console.error("❌ Registration Failed:", err);
-      return res.status(400).json({ message: "❌ Registration failed", error: err.message });
-    }
-    console.log("✅ Registration Successful:", result);
-    res.json({ message: "✅ User registered successfully", userId: result?.userSub });
-  });
+      res.json({
+        message: "✅ User registered successfully",
+        userId: result?.userSub,
+        email: email // ✅ 现在返回 email
+      });
+    });
 };
+
 
 /**
  * ✅ 确认用户邮箱（用 Cognito 发送的验证码）
