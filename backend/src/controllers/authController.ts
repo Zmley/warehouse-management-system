@@ -18,7 +18,7 @@ const poolData = {
 const userPool = new CognitoUserPool(poolData);
 
 /**
- * ✅ 注册用户
+ * ✅ 注册用户, 第一次注册成功会储存sub email 以及role：TBD 到数据库
  */
 export const registerUser = (req: any, res: any) => {
     const { email, password } = req.body;

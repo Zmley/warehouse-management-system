@@ -1,21 +1,22 @@
-// 文件路径: src/components/LoginForm.tsx
-
 import React, { useState } from "react";
-import { Button, TextField, Box, Typography } from "@mui/material";
+import { Button, TextField, Box, Typography, Alert } from "@mui/material";
 
 interface LoginFormProps {
-  role: "admin" | "transport-worker" | "picker";
   onLogin: (email: string, password: string) => void;
-  onBack: () => void;
 }
 
-const LoginForm: React.FC<LoginFormProps> = ({ role, onLogin, onBack }) => {
+const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onLogin(email, password);
+  const handleLogin = async () => {
+    setError(null);
+    try {
+      await onLogin(email, password);
+    } catch (err: any) {
+      setError(err.message);
+    }
   };
 
   return (
@@ -29,33 +30,31 @@ const LoginForm: React.FC<LoginFormProps> = ({ role, onLogin, onBack }) => {
       }}
     >
       <Typography variant="h5" gutterBottom>
-        {role.charAt(0).toUpperCase() + role.slice(1)} Login
+        Login
       </Typography>
-      <form onSubmit={handleSubmit} style={{ width: "100%" }}>
-        <TextField
-          label="Email"
-          variant="outlined"
-          fullWidth
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          margin="normal"
-        />
-        <TextField
-          label="Password"
-          variant="outlined"
-          fullWidth
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          margin="normal"
-        />
-        <Button type="submit" variant="contained" fullWidth color="primary">
-          Login
-        </Button>
-        <Button variant="text" fullWidth onClick={onBack} sx={{ mt: 1 }}>
-          Back
-        </Button>
-      </form>
+
+      {error && <Alert severity="error">{error}</Alert>}
+
+      <TextField
+        label="Email"
+        variant="outlined"
+        fullWidth
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        margin="normal"
+      />
+      <TextField
+        label="Password"
+        variant="outlined"
+        fullWidth
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        margin="normal"
+      />
+      <Button variant="contained" fullWidth color="primary" onClick={handleLogin}>
+        Login
+      </Button>
     </Box>
   );
 };
