@@ -1,13 +1,15 @@
 import React from "react";
 import { BrowserRouter as Router } from "react-router-dom";
-import PublicRoutes from "./routes/publicRoutes";
-import PrivateRoutes from "./routes/privateRoutes";
+import PrivateRoutes from "./routes/PrivateRoutes";
+import PublicRoutes from "./routes/PublicRoutes";
+
 
 const App: React.FC = () => {
   return (
     <Router>
-      <PublicRoutes />  {/* 公共路由 */}
       <PrivateRoutes />  {/* 受保护的路由 */}
+      <PublicRoutes />  {/* 公共的路由 */}
+
     </Router>
   );
 };

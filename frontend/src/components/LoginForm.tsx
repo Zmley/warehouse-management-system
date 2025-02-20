@@ -3,9 +3,10 @@ import { Button, TextField, Box, Typography, Alert } from "@mui/material";
 
 interface LoginFormProps {
   onLogin: (email: string, password: string) => void;
+  role?: string; // ✅ 添加 role 作为可选参数
 }
 
-const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
+const LoginForm: React.FC<LoginFormProps> = ({ onLogin, role }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -30,7 +31,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
       }}
     >
       <Typography variant="h5" gutterBottom>
-        Login
+        {role ? `登录 - ${role.toUpperCase()}` : "登录"}
       </Typography>
 
       {error && <Alert severity="error">{error}</Alert>}
@@ -53,7 +54,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
         margin="normal"
       />
       <Button variant="contained" fullWidth color="primary" onClick={handleLogin}>
-        Login
+        登录
       </Button>
     </Box>
   );

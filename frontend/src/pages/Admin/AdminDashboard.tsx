@@ -1,15 +1,16 @@
 import React from "react";
 import { Button, Container, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { clearTokens } from "../../utils/storage"; // 
+
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
+    clearTokens();
     // ✅ 清除 LocalStorage 中的 Token
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("idToken");
-    localStorage.removeItem("refreshToken");
+ 
     console.log("❌ Tokens removed, user logged out");
 
     // ✅ 退出后跳转回登录页
@@ -28,7 +29,7 @@ const AdminDashboard: React.FC = () => {
       }}
     >
       <Typography variant="h4" gutterBottom>
-        Welcome to Dashboard 🎉
+        Welcome to admin Dashboard 🎉
       </Typography>
       <Typography variant="body1" sx={{ marginBottom: 2 }}>
         You are logged in!

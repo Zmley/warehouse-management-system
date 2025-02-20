@@ -1,21 +1,23 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Container } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import LoginForm from "../components/LoginForm";
-import { loginUser } from "../api/auth";  // ✅ 引入 API 请求
-import { saveTokens } from "../utils/storage";  // ✅ 引入 Token 存储
+import { loginUser } from "../api/auth";
+import { saveTokens } from "../utils/storage";
+import { AuthContext } from "../context/AuthContext";
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
+  const { setRole } = useContext(AuthContext)!; // ✅ 使用 `AuthContext`
 
   const handleLogin = async (email: string, password: string) => {
     try {
-      const data = await loginUser(email, password); // ✅ 使用 API 层封装的请求
+      const data = await loginUser(email, password);
       saveTokens(data); // ✅ 存储 Token
-      console.log("✅ Tokens stored:", data);
 
-      // ✅ 登录成功后跳转
-      navigate("/admin");
+      // ✅ 登录成功后，重新获取 `role`
+      setRole(null);
+      navigate("/dashboard"); // ✅ 统一跳转
     } catch (error: any) {
       console.error("❌ Login Error:", error.message);
     }

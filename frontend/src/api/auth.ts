@@ -1,17 +1,26 @@
-// 文件路径: src/api/auth.ts
 import axios from "axios";
+import { getAccessToken } from "../utils/storage";
 
-// 读取环境变量
 const API_BASE_URL = process.env.SERVER_API_BASE_URL || "http://localhost:5001";
 
 /**
  * ✅ 用户登录 API
  */
 export const loginUser = async (email: string, password: string) => {
-  const response = await axios.post(`${API_BASE_URL}/api/auth/login`, {
-    email,
-    password,
+  const response = await axios.post(`${API_BASE_URL}/api/auth/login`, { email, password });
+  return response.data;
+};
+
+/**
+ * ✅ 获取用户 `role`
+ */
+export const fetchUserRole = async () => {
+  const token = getAccessToken();
+  if (!token) throw new Error("用户未登录");
+
+  const response = await axios.get(`${API_BASE_URL}/api/auth/me`, {
+    headers: { Authorization: `Bearer ${token}` },
   });
 
-  return response.data; // 返回登录成功的 Token
+  return response.data.role; // ✅ 服务器返回用户角色
 };
