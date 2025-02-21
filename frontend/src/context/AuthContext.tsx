@@ -37,7 +37,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = useCallback(() => {
     clearTokens();
     setRole(null);
-    navigate("/login");
+    navigate("/");
   }, [navigate]);
 
   useEffect(() => {
