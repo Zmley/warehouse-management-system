@@ -1,15 +1,14 @@
+import dotenv from 'dotenv'
+dotenv.config()
 import AWS from "aws-sdk";
 import { Request, Response } from "express";
-import jwt from "jsonwebtoken";
-import crypto from "crypto";
 import { AuthRequest } from "../middleware/authMiddleware"; // ✅ 确保路径正
+import { generateSecretHash } from "../utils/cognito"; // ✅ 确保路径正
 import {
-  AuthenticationDetails,
   CognitoUser,
   CognitoUserPool,
   CognitoUserAttribute,
 } from "amazon-cognito-identity-js";
-import dotenv from "dotenv";
 const { User } = require("../models/User"); // ✅ 引入 Sequelize User Model
 
 
@@ -27,24 +26,6 @@ const poolData = {
 };
 const userPool = new CognitoUserPool(poolData);
 
-
-  // ✅ 计算 Cognito Secret Hash
-  const generateSecretHash = (username: string): string => {
-    const clientSecret = process.env.COGNITO_CLIENT_SECRET!;
-    const clientId = process.env.COGNITO_CLIENT_ID!;
-    
-    return crypto
-      .createHmac("sha256", clientSecret)
-      .update(username + clientId)
-      .digest("base64");
-  };
-  
-  /**
-   * ✅ 用户登录
-   */
-  /**
- * ✅ 用户登录
- */
 export const loginUser = async (req: Request, res: Response) => {
     const { email, password } = req.body;
   

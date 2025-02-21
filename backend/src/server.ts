@@ -1,5 +1,6 @@
+import dotenv from 'dotenv'
+dotenv.config()
 import express from "express";
-import dotenv from "dotenv";
 import cors from "cors";
 import authRoutes from "./routes/authRoutes";
 import { connectDB } from "./config/db";
@@ -8,7 +9,6 @@ import { connectDB } from "./config/db";
 //连接数据库
 connectDB();
 
-dotenv.config();
 const app = express();
 
 // 中间件
