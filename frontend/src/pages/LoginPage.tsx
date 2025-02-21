@@ -1,27 +1,12 @@
-import React, { useContext } from "react";
-import { Container } from "@mui/material";
-import { useNavigate } from "react-router-dom";
-import LoginForm from "../components/LoginForm";
-import { loginUser } from "../api/auth";
-import { saveTokens } from "../utils/storage";
-import { AuthContext } from "../context/AuthContext";
+import React, { useState } from "react";
+import { Container, Typography, Alert, Button, TextField, Box } from "@mui/material";
+import { useAuth } from "../hooks/useAuth"; // ✅ 直接引入 useAuth
 
 const LoginPage: React.FC = () => {
-  const navigate = useNavigate();
-  const { setRole } = useContext(AuthContext)!; // ✅ 使用 `AuthContext`
+  const { handleLogin, error } = useAuth(); // ✅ 直接使用 `useAuth`
 
-  const handleLogin = async (email: string, password: string) => {
-    try {
-      const data = await loginUser(email, password);
-      saveTokens(data); // ✅ 存储 Token
-
-      // ✅ 登录成功后，重新获取 `role`
-      setRole(null);
-      navigate("/dashboard"); // ✅ 统一跳转
-    } catch (error: any) {
-      console.error("❌ Login Error:", error.message);
-    }
-  };
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   return (
     <Container
@@ -34,7 +19,27 @@ const LoginPage: React.FC = () => {
         height: "100vh",
       }}
     >
-      <LoginForm onLogin={handleLogin} />
+      <Typography variant="h4" gutterBottom>
+        welcome 🚀
+      </Typography>
+
+      {error && <Alert severity="error">{error}</Alert>}
+
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          width: "100%",
+          gap: 2,
+        }}
+      >
+        <TextField label="Email" variant="outlined" fullWidth value={email} onChange={(e) => setEmail(e.target.value)} margin="normal" />
+        <TextField label="Password" variant="outlined" fullWidth type="password" value={password} onChange={(e) => setPassword(e.target.value)} margin="normal" />
+        <Button variant="contained" fullWidth color="primary" onClick={() => handleLogin(email, password)}>
+          Login
+        </Button>
+      </Box>
     </Container>
   );
 };

@@ -1,45 +1,23 @@
 import React, { useContext } from "react";
 import { Routes, Route, Navigate, Outlet } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext"; // ✅ 从 AuthContext 获取用户信息
-import AdminDashboard from "../pages/Admin/AdminDashboard";
-import PickerDashboard from "../pages/Picker/PickerDashboard";
-import TWDashboard from "../pages/TransportWorker/TWDashboard";
+import { AuthContext } from "../context/AuthContext";
+import Dashboard from "../pages/Dashboard";
 
+// ✅ 受保护的路由
 const PrivateRoute: React.FC = () => {
-  const { isAuthenticated, role } = useContext(AuthContext)!;
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" />;
-  }
-
-  return <Outlet />;
+  const { isAuthenticated } = useContext(AuthContext)!;
+  return isAuthenticated ? <Outlet /> : <Navigate to="/" />;
 };
 
+// ✅ 受保护的路由配置
 const PrivateRoutes: React.FC = () => {
   return (
     <Routes>
       <Route element={<PrivateRoute />}>
-        <Route path="/dashboard" element={
-          <RoleBasedDashboard />
-        } />
+        <Route path="/dashboard" element={<Dashboard />} />
       </Route>
     </Routes>
   );
-};
-
-// ✅ 根据 role 渲染不同的 Dashboard
-const RoleBasedDashboard: React.FC = () => {
-  const { role } = useContext(AuthContext)!;
-
-  if (role === "admin") {
-    return <AdminDashboard />;
-  } else if (role === "picker") {
-    return <PickerDashboard />;
-  } else if (role === "transportWorker") {
-    return <TWDashboard />;
-  }
-
-  return <Navigate to="/login" />;
 };
 
 export default PrivateRoutes;

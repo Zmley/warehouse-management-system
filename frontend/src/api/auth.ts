@@ -1,13 +1,10 @@
-import axios from "axios";
-import { getAccessToken } from "../utils/storage";
-
-const API_BASE_URL = process.env.SERVER_API_BASE_URL || "http://localhost:5001";
+import apiClient from "./axiosClient.ts"; // 引入全局 apiClient
 
 /**
  * ✅ 用户登录 API
  */
 export const loginUser = async (email: string, password: string) => {
-  const response = await axios.post(`${API_BASE_URL}/api/auth/login`, { email, password });
+  const response = await apiClient.post("/api/auth/login", { email, password });
   return response.data;
 };
 
@@ -15,12 +12,8 @@ export const loginUser = async (email: string, password: string) => {
  * ✅ 获取用户 `role`
  */
 export const fetchUserRole = async () => {
-  const token = getAccessToken();
-  if (!token) throw new Error("用户未登录");
-
-  const response = await axios.get(`${API_BASE_URL}/api/auth/me`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-
-  return response.data.role; // ✅ 服务器返回用户角色
-};
+    console.log("🔍 正在请求用户角色...");
+    const response = await apiClient.get("/api/auth/me");
+    console.log("🟢 API 返回:", response.data); // 🔥 查看 API 返回的数据
+    return response.data.user?.role || null;
+  };

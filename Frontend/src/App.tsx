@@ -1,15 +1,16 @@
 import React from "react";
 import { BrowserRouter as Router } from "react-router-dom";
-import PrivateRoutes from "./routes/PrivateRoutes";
-import PublicRoutes from "./routes/PublicRoutes";
-
+import { AuthProvider } from "./context/AuthContext";
+import PublicRoutes from "./routes/publicRoutes";
+import PrivateRoutes from "./routes/privateRoutes";
 
 const App: React.FC = () => {
   return (
-    <Router>
-      <PrivateRoutes />  {/* 受保护的路由 */}
-      <PublicRoutes />  {/* 公共的路由 */}
-
+    <Router> {/* ✅ 确保 `Router` 包裹 `AuthProvider` */}
+      <AuthProvider> 
+        <PublicRoutes />
+        <PrivateRoutes />
+      </AuthProvider>
     </Router>
   );
 };

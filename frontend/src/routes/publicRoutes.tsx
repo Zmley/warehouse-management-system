@@ -1,12 +1,17 @@
-import React from "react";
-import { Routes, Route } from "react-router-dom";
+import React, { useContext } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 import LoginPage from "../pages/LoginPage";
 
 const PublicRoutes: React.FC = () => {
+  const { isAuthenticated } = useContext(AuthContext)!;
+
+  
+
   return (
     <Routes>
-      <Route path="/" element={<LoginPage />} /> {/* 默认首页 */}
-      {/* 可以在这里添加更多公共页面 */}
+      {/* ✅ 如果用户已登录，自动跳转到 `/dashboard` */}
+      <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" /> : <LoginPage />} />
     </Routes>
   );
 };

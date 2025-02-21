@@ -28,3 +28,14 @@ export const saveTokens = (data: { accessToken: string; idToken: string; refresh
     localStorage.removeItem("username");
     console.log("❌ Tokens removed, user logged out");
   };
+
+  /**
+ * ✅ 确保所有 Token 存在，才认为用户已登录
+ */
+export const areTokensValid = (): boolean => {
+    return !!(
+      localStorage.getItem("accessToken") &&
+      localStorage.getItem("idToken") &&
+      localStorage.getItem("refreshToken")
+    );
+  };
