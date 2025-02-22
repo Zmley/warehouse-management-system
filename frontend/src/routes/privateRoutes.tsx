@@ -2,6 +2,10 @@ import React, { useContext } from "react";
 import { Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import Dashboard from "../pages/Dashboard";
+import InventoryManagement from "../pages/Admin/InventoryManagementPage";
+import EditInventoryPage from "../components/admin/EditInventoryPage"; // ✅ 引入编辑页面
+
+
 
 // ✅ 受保护的路由
 const PrivateRoute: React.FC = () => {
@@ -15,6 +19,8 @@ const PrivateRoutes: React.FC = () => {
     <Routes>
       <Route element={<PrivateRoute />}>
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/inventory" element={<InventoryManagement />} />
+        <Route path="/inventory/edit/:id" element={<EditInventoryPage />} /> {/* ✅ 新增路由 */}
       </Route>
     </Routes>
   );
