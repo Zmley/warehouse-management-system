@@ -4,5 +4,5 @@ export interface InventoryItem {
     bin_code: string;
     product_code: string;
     quantity: number;
-    bin_qr_code_url: string;
+    bin_qr_code: string;
   }

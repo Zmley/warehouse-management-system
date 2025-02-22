@@ -94,7 +94,7 @@ const EditInventoryPage: React.FC = () => {
       <TextField
         label="QR Code URL"
         name="bin_qr_code_url"
-        value={inventoryItem.bin_qr_code_url}
+        value={inventoryItem.bin_qr_code}
         onChange={handleChange}
         fullWidth
         margin="normal"

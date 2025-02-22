@@ -21,23 +21,41 @@ export const addInventoryItem = async (req: Request, res: Response): Promise<voi
     try {
       const { warehouse_code, bin_code, product_code, quantity, bin_qr_code } = req.body;
   
+      // ✅ 校验请求体
       if (!warehouse_code || !bin_code || !product_code || quantity === undefined || !bin_qr_code) {
         res.status(400).json({ message: "❌ Missing required fields" });
         return;
       }
   
-      const newItem = await Inventory.create({
-        warehouse_code,
-        bin_code,
-        product_code,
-        quantity,
-        bin_qr_code,
+      // ✅ 检查数据库中是否已经有该物品
+      const existingItem = await Inventory.findOne({
+        where: { warehouse_code, bin_code, product_code },
       });
   
-      res.status(201).json({
-        message: "✅ Inventory item added successfully",
-        item: newItem,
-      });
+      if (existingItem) {
+        // ✅ 如果物品已存在，更新数量
+        existingItem.quantity += quantity;
+        await existingItem.save();
+  
+        res.status(200).json({
+          message: "✅ Inventory quantity updated successfully",
+          item: existingItem,
+        });
+      } else {
+        // ✅ 否则，创建新物品
+        const newItem = await Inventory.create({
+          warehouse_code,
+          bin_code,
+          product_code,
+          quantity,
+          bin_qr_code,
+        });
+  
+        res.status(201).json({
+          message: "✅ New inventory item added successfully",
+          item: newItem,
+        });
+      }
     } catch (error) {
       console.error("❌ Error adding inventory item:", error);
       res.status(500).json({ message: "❌ Internal Server Error" });
