@@ -30,7 +30,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
 }) => {
   const navigate = useNavigate()
   const [deleteId, setDeleteId] = useState<string | null>(null)
-  const [openAddDialog, setOpenAddDialog] = useState<boolean>(false)
+  const [openAddDialog, setOpenAddDialog] = useState<boolean>(false) // ✅ 正确使用
   const [newItem, setNewItem] = useState<Omit<InventoryItem, 'id'>>({
     warehouse_code: '',
     bin_code: '',
@@ -53,9 +53,9 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
   }
 
   // ✅ 处理 Add Item 提交
-  const handleAddItem = () => {
-    onAddSuccess(newItem)
-    setOpenAddDialog(false)
+  const handleAddItem = async () => {
+    await onAddSuccess(newItem)
+    setOpenAddDialog(false) // ✅ 关闭弹窗
     setNewItem({
       warehouse_code: '',
       bin_code: '',
@@ -71,7 +71,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
       <Button
         variant='contained'
         color='success'
-        onClick={() => setOpenAddDialog(true)}
+        onClick={() => setOpenAddDialog(true)} // ✅ 这里使用 `setOpenAddDialog`
         sx={{ mb: 2 }}
       >
         ➕ Add Item
@@ -108,9 +108,8 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
                 <TableCell>{item.bin_code}</TableCell>
                 <TableCell>{item.product_code}</TableCell>
                 <TableCell>{item.quantity}</TableCell>
-                <TableCell>
-                  <img src={item.bin_qr_code} alt='Bin QR Code' width='50' />
-                </TableCell>
+                <TableCell>{item.bin_qr_code}</TableCell>{' '}
+                {/* ✅ 直接显示 QR Code 的内容 */}
                 <TableCell>
                   <Button
                     variant='contained'
@@ -151,6 +150,8 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
 
       {/* ✅ Add New Item Dialog */}
       <Dialog open={openAddDialog} onClose={() => setOpenAddDialog(false)}>
+        {' '}
+        {/* ✅ 这里确保 Dialog 绑定状态 */}
         <DialogTitle>➕ Add New Inventory Item</DialogTitle>
         <DialogContent>
           <TextField

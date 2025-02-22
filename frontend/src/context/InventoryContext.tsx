@@ -8,7 +8,6 @@ interface InventoryContextType {
 
 const InventoryContext = createContext<InventoryContextType | undefined>(undefined);
 
-// ✅ Provider 组件
 export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
 
@@ -19,7 +18,7 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
   );
 };
 
-// ✅ Hook 方便使用 Context
+// ✅ 方便组件里使用 `useInventoryContext()`
 export const useInventoryContext = () => {
   const context = useContext(InventoryContext);
   if (!context) {
