@@ -1,70 +1,78 @@
-import { useState, useRef, useEffect } from "react";
-import QrScanner from "qr-scanner";
-import { Container, Typography, Button } from "@mui/material";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom"; // ✅ 引入 useNavigate
+import { Container, Typography, Button, CircularProgress } from "@mui/material";
+import useQRScanner from "../../hooks/useQRScanner";
+import { scanQRCode } from "../../api/scanApi"; // ✅ 确保 API 正确引入
 
-const QRScanner = () => {
-  const [data, setData] = useState("No result");
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const scannerRef = useRef<QrScanner | null>(null);
+const TransportTask = () => {
+  const navigate = useNavigate(); // ✅ 用于返回上一页
+  const { videoRef, data, startScanning, stopScanning } = useQRScanner();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (videoRef.current) {
-      scannerRef.current = new QrScanner(
-        videoRef.current,
-        (result) => {
-          setData(result.data);
-          console.log("二维码扫描结果：", result.data);
-          stopScanning();
-        },
-        {
-          highlightScanRegion: true, // ✅ 高亮扫描区域
-          highlightCodeOutline: true, // ✅ 高亮二维码轮廓
-        }
-      );
-    }
-  }, []);
+  // ✅ 处理扫描结果并发送到后端
+  const handleScanSuccess = async () => {
+    if (data && data !== "No result") {
+      setIsLoading(true);
+      setError(null);
+      setSuccessMessage(null);
 
-  const startScanning = async () => {
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      alert("您的设备或浏览器不支持摄像头访问，请使用 Chrome 或 Safari 并确保 HTTPS 访问！");
-      return;
-    }
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        scannerRef.current?.start();
+      try {
+        const response = await scanQRCode(data); // ✅ 发送扫描数据到后端
+        setSuccessMessage(`Scan successful: ${response.message}`);
+      } catch (err: any) {
+        setError(`Scan failed: ${err.response?.data?.message || err.message}`);
+      } finally {
+        setIsLoading(false);
+        stopScanning(); // ✅ 结束扫描
       }
-    } catch (error) {
-      console.error("无法访问摄像头: ", error);
-      alert("无法访问摄像头，请检查权限或更换浏览器！");
-    }
-  };
-
-  const stopScanning = () => {
-    scannerRef.current?.stop();
-    if (videoRef.current?.srcObject) {
-      const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
-      tracks.forEach((track) => track.stop());
     }
   };
 
   return (
     <Container maxWidth="sm" style={{ textAlign: "center", padding: "20px" }}>
-      <Typography variant="h5">📸 Scan QR Code</Typography>
+      <Typography variant="h5">🚚 Transport Task QR Scanner</Typography>
 
+      {/* ✅ Video element for scanning */}
       <video ref={videoRef} style={{ width: "100%", borderRadius: "10px", marginTop: "10px" }} autoPlay playsInline></video>
 
-      <Button variant="contained" color="primary" onClick={startScanning} style={{ marginTop: "20px" }}>
-        Start Scanning
-      </Button>
+      {/* ✅ 按钮区域 */}
+      <div style={{ marginTop: "20px", display: "flex", justifyContent: "center", gap: "10px" }}>
+        <Button variant="contained" color="primary" onClick={startScanning} disabled={isLoading}>
+          Start Scanning
+        </Button>
 
-      <Typography variant="body1" style={{ marginTop: "20px" }}>
-        {data}
-      </Typography>
+        <Button variant="outlined" color="secondary" onClick={stopScanning} disabled={isLoading}>
+          Cancel
+        </Button>
+      </div>
+
+      {/* ✅ 显示扫描状态 */}
+      {isLoading && <CircularProgress style={{ marginTop: "20px" }} />}
+      {error && <Typography variant="body1" color="error" style={{ marginTop: "10px" }}>{error}</Typography>}
+      {successMessage && <Typography variant="body1" color="primary" style={{ marginTop: "10px" }}>{successMessage}</Typography>}
+
+      {/* ✅ 显示扫描数据并提交 */}
+      <Typography variant="body1" style={{ marginTop: "20px" }}>Scanned Data: {data}</Typography>
+
+      {data !== "No result" && (
+        <Button variant="contained" color="success" onClick={handleScanSuccess} disabled={isLoading} style={{ marginTop: "10px" }}>
+          Submit Scan
+        </Button>
+      )}
+
+      {/* ✅ 返回上一页按钮 */}
+      <Button
+        variant="outlined"
+        color="inherit"
+        onClick={() => navigate(-1)} // ✅ 返回上一页
+        style={{ marginTop: "20px", display: "block", width: "100%" }}
+      >
+        Return to Previous Page
+      </Button>
     </Container>
   );
 };
 
-export default QRScanner;
+export default TransportTask;
