@@ -2,37 +2,31 @@ import { DataTypes, Model } from "sequelize";
 import { sequelize } from "../config/db";
 
 export interface UserAttributes {
-  id?: string;
-  cognito_id: string;
+  accountID: string;
   email: string;
-  role: "admin" | "transport-worker" | "picker";
-  firstName?: string; // 新增
-  lastName?: string;  // 新增
-  created_at?: Date;
-  updated_at?: Date;
+  role: "admin" | "transportWorker" | "picker";
+  firstName?: string;
+  lastName?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export class User extends Model<UserAttributes> implements UserAttributes {
-  public id!: string;
-  public cognito_id!: string;
+  public accountID!: string;
   public email!: string;
-  public role!: "admin" | "transport-worker" | "picker";
-  public firstName!: string; // 新增
-  public lastName!: string;  // 新增
-  public readonly created_at!: Date;
-  public readonly updated_at!: Date;
+  public role!: "admin" | "transportWorker" | "picker";
+  public firstName!: string;
+  public lastName!: string;
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
 }
 
 User.init(
   {
-    id: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
-      primaryKey: true,
-    },
-    cognito_id: {
+    accountID: {
       type: DataTypes.STRING,
       allowNull: false,
+      primaryKey: true,
       unique: true,
     },
     email: {
@@ -42,31 +36,31 @@ User.init(
       validate: { isEmail: true },
     },
     role: {
-      type: DataTypes.ENUM("admin", "transport-worker", "picker"),
+      type: DataTypes.ENUM("admin", "transportWorker", "picker"),
       allowNull: false,
     },
-    firstName: { // 新增
+    firstName: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    lastName: { // 新增
+    lastName: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    created_at: {
+    createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
     },
-    updated_at: {
+    updatedAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
     },
   },
   {
     sequelize,
-    tableName: "users",
+    tableName: "Users",
     timestamps: true,
-    underscored: true, // 使用下划线命名约定
+    underscored: false, // ✅ 驼峰命名
   }
 );
 

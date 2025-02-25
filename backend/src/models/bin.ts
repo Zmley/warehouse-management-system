@@ -1,16 +1,14 @@
 import { DataTypes, Model } from "sequelize";
 import { sequelize } from "../config/db";
 
-export class Inventory extends Model {
+export class Bin extends Model {
   public ID!: string;
   public warehouseID!: string;
   public binID!: string;
-  public productID!: string;
-  public quantity!: number;
-  public ownedBy!: string; // ✅ 新增字段
+  public emptyStatus!: boolean;
 }
 
-Inventory.init(
+Bin.init(
   {
     ID: {
       type: DataTypes.UUID,
@@ -25,26 +23,18 @@ Inventory.init(
     binID: {
       type: DataTypes.STRING,
       allowNull: false,
+      unique: true,
     },
-    productID: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    quantity: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      defaultValue: 0,
-    },
-    ownedBy: {
-      type: DataTypes.STRING,
-      allowNull: false, // ✅ 代表库存的所有者
+    emptyStatus: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
     },
   },
   {
     sequelize,
-    tableName: "Inventory",
+    tableName: "Bins",
     timestamps: true,
   }
 );
 
-export default Inventory;
+export default Bin;

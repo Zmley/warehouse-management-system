@@ -43,7 +43,7 @@ const Dashboard: React.FC = () => {
         Welcome, your role is <strong>{role || "unknown"}</strong>
       </Typography>
 
-      {/* ✅ Only Admins See This Button */}
+      {/* ✅ 只有 Admin 可以看到库存管理按钮 */}
       {role === "admin" && (
         <Button
           variant="contained"
@@ -53,6 +53,19 @@ const Dashboard: React.FC = () => {
           sx={{ marginBottom: 2 }}
         >
           📦 Inventory Management
+        </Button>
+      )}
+
+      {/* ✅ 只有 Transport Worker 可以看到运输任务按钮 */}
+      {role === "transportWorker" && (
+        <Button
+          variant="contained"
+          color="secondary"
+          component={Link}
+          to="/transport-task"
+          sx={{ marginBottom: 2 }}
+        >
+          🚛 Start Transport Task
         </Button>
       )}
 

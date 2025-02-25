@@ -4,6 +4,7 @@ import { AuthContext } from "../context/AuthContext";
 import Dashboard from "../pages/Dashboard";
 import InventoryManagement from "../pages/Admin/InventoryManagementPage";
 import EditInventoryPage from "../components/admin/EditInventoryPage"; // ✅ 引入编辑页面
+import TransportTask from "../pages/TransportWorker/TransportTask";
 
 
 
@@ -20,6 +21,7 @@ const PrivateRoutes: React.FC = () => {
       <Route element={<PrivateRoute />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/inventory" element={<InventoryManagement />} />
+        <Route path="/transport-task" element={<TransportTask />} />
         <Route path="/inventory/edit/:id" element={<EditInventoryPage />} /> {/* ✅ 新增路由 */}
       </Route>
     </Routes>

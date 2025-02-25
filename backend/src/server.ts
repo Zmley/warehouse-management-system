@@ -10,7 +10,17 @@ import { connectDB } from "./config/db";
 //连接数据库
 connectDB();
 
+
+
 const app = express();
+
+
+app.use(
+  cors({
+    origin: ["http://localhost:3000", "http://192.168.4.90:3000"], // ✅ 允许手机访问
+    credentials: true,
+  })
+);
 
 // 中间件
 app.use(express.json());

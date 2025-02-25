@@ -10,6 +10,9 @@ const router = express.Router();
 // 用户注册
 router.post("/register", registerUser);
 
+router.post("/confirmUser", confirmUser);
+
+
 // 用户登录路由
 router.post("/login", loginUser);
 router.get("/me", authenticateToken as any, getUserInfo);

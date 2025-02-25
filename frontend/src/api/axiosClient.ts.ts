@@ -1,7 +1,7 @@
 import axios from "axios";
 import { getAccessToken } from "../utils/storage";
 
-const API_BASE_URL = process.env.SERVER_API_BASE_URL || "http://localhost:5001";
+const API_BASE_URL = process.env.SERVER_API_BASE_URL || "http://192.168.4.90:5001";
 
 // ✅ 创建全局 Axios 实例
 const apiClient = axios.create({

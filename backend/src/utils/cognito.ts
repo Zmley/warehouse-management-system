@@ -58,4 +58,5 @@ export const generateSecretHash = (username: string): string => {
     .digest('base64')
 }
 
+
 export { cognito, clientId, userPoolId }
