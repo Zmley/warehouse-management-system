@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom"; // ✅ 引入 useNavigate
+import { useNavigate } from "react-router-dom"; // ✅ 用于返回上一页
 import { Container, Typography, Button, CircularProgress } from "@mui/material";
 import useQRScanner from "../../hooks/useQRScanner";
-import { scanQRCode } from "../../api/scanApi"; // ✅ 确保 API 正确引入
+import { updateBinOwnership } from "../../api/scanApi"; // ✅ 引入更新 bin 所有权的 API
 
 const TransportTask = () => {
   const navigate = useNavigate(); // ✅ 用于返回上一页
@@ -18,11 +18,15 @@ const TransportTask = () => {
       setError(null);
       setSuccessMessage(null);
 
+      const binID = data; // 扫描的数据作为 binID
+      const accountId = "user-account-id"; // 你可以通过从 JWT 中提取或者从其他地方获取 accountId
+
       try {
-        const response = await scanQRCode(data); // ✅ 发送扫描数据到后端
-        setSuccessMessage(`Scan successful: ${response.message}`);
+        // 调用更新 bin 所有权的 API
+        const response = await updateBinOwnership(binID, accountId);
+        setSuccessMessage(`Bin ownership updated: ${response.message}`);
       } catch (err: any) {
-        setError(`Scan failed: ${err.response?.data?.message || err.message}`);
+        setError(`Update failed: ${err.response?.data?.message || err.message}`);
       } finally {
         setIsLoading(false);
         stopScanning(); // ✅ 结束扫描
@@ -40,7 +44,7 @@ const TransportTask = () => {
       {/* ✅ 按钮区域 */}
       <div style={{ marginTop: "20px", display: "flex", justifyContent: "center", gap: "10px" }}>
         <Button variant="contained" color="primary" onClick={startScanning} disabled={isLoading}>
-          Start Scanning
+          Load Cargo
         </Button>
 
         <Button variant="outlined" color="secondary" onClick={stopScanning} disabled={isLoading}>

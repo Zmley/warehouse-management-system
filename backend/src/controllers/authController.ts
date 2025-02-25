@@ -139,10 +139,13 @@ export const confirmUser = (req: Request, res: Response) => {
 /**
  * ✅ 获取当前用户信息 (role)
  */
+/**
+ * ✅ 获取当前用户信息 (role)
+ */
 export const getUserInfo = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // ✅ 1. 从 `req.user` 获取 Cognito ID
-    const accountID = req.user?.sub;
+    const accountID = req.user?.sub; // `sub` 是通过 JWT 中间件存储在 req.user 中的
     if (!accountID) {
       res.status(401).json({ message: "❌ Unauthorized: No User Info" });
       return;
