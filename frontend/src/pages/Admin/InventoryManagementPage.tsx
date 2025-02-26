@@ -20,7 +20,6 @@ const InventoryManagement: React.FC = () => {
 
   return (
     <Container maxWidth='lg' sx={{ mt: 5, p: 3, bgcolor: '#fafafa', borderRadius: '10px' }}>
-      {/* ✅ 标题 + 按钮 */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant='h4' fontWeight="bold" color="primary">
           📦 Inventory Management (Admin)

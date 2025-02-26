@@ -6,7 +6,7 @@ import {
   updateInventoryItem
 } from "../api/inventoryApi";
 import { InventoryItem } from "../types/inventoryTypes";
-import { useInventoryContext } from "../context/inventoryContext";
+import { useInventoryContext } from "../context/InventoryContext";
 
 const useInventory = () => {
   const { inventory, setInventory } = useInventoryContext();
