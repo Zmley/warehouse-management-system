@@ -1,5 +1,5 @@
 const { DataTypes, Model } = require("sequelize");
-const { sequelize } = require("../config/db"); // 连接数据库
+const { sequelize } = require("../config/db"); 
 
 class User extends Model {}
 

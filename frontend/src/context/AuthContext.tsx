@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchUserRole, loginUser } from "../api/auth"; 
+import { fetchUserRole, loginUser } from "../api/authApi"; 
 import { clearTokens, saveTokens,areTokensValid } from "../utils/storage";
 
 interface AuthContextType {

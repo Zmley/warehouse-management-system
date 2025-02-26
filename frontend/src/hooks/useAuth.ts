@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/authContext";
-import { loginUser, fetchUserRole } from "../api/auth";
+import { loginUser, fetchUserRole } from "../api/authApi";
 import { saveTokens } from "../utils/storage";
 
 export const useAuth = () => {

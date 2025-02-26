@@ -1,4 +1,4 @@
-require('dotenv').config(); // 加载 .env 文件中的环境变量
+require('dotenv').config(); 
 
 module.exports = {
   development: {

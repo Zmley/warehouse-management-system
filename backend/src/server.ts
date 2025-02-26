@@ -25,7 +25,6 @@ app.use(
 app.use(express.json());
 app.use(cors());
 
-// 认证路由
 app.use("/api/auth", authRoutes);
 app.use("/api/inventory", inventoryRoutes); 
 app.use("/api/transport", transportTaskRoutes); 
