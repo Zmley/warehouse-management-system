@@ -1,22 +1,16 @@
-import apiClient from "./axiosClient.ts"; // ✅ 复用全局 API 客户端
+import apiClient from "./axiosClient.ts"; 
 
-/**
- * ✅ 获取所有库存数据
- */
 export const fetchInventory = async () => {
   try {
     const response = await apiClient.get("/api/inventory");
-    console.log("🟢 获取库存数据成功:", response.data);
+    console.log("🟢 fetch database data successfully:", response.data);
     return response.data;
   } catch (error) {
-    console.error("❌ 获取库存数据失败:", error);
+    console.error("❌:fetch database data failed", error);
     throw error;
   }
 };
 
-/**
- * ✅ 添加新的库存数据
- */
 export const addInventoryItem = async (item: {
   warehouse_code: string;
   bin_code: string;
@@ -26,10 +20,10 @@ export const addInventoryItem = async (item: {
 }) => {
   try {
     const response = await apiClient.post("/api/inventory", item);
-    console.log("🟢 添加库存成功:", response.data);
+    console.log("successfully:", response.data);
     return response.data;
   } catch (error) {
-    console.error("❌ 添加库存失败:", error);
+    console.error("add inventory failed:", error);
     throw error;
   }
 };

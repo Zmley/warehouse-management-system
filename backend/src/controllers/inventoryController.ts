@@ -1,9 +1,7 @@
 import { Request, Response } from "express";
 import Inventory from "../models/inventory";
 
-/**
- * ✅ 获取所有库存数据
- */
+
 export const getInventory = async (req: Request, res: Response) => {
   try {
     const inventory = await Inventory.findAll();
@@ -14,14 +12,11 @@ export const getInventory = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * ✅ 添加库存项
- */
+
 export const addInventoryItem = async (req: Request, res: Response): Promise<void> => {
   try {
     const { warehouseId, binId, productId, quantity } = req.body;
 
-    // ✅ 校验请求体
     if (!warehouseId || !binId || !productId || quantity === undefined) {
       res.status(400).json({ message: "❌ Missing required fields" });
       return;
@@ -32,13 +27,11 @@ export const addInventoryItem = async (req: Request, res: Response): Promise<voi
       return;
     }
 
-    // ✅ 检查数据库中是否已有该物品
     const existingItem = await Inventory.findOne({
       where: { warehouseId, binId, productId },
     });
 
     if (existingItem) {
-      // ✅ 如果物品已存在，更新数量
       existingItem.quantity += quantity;
       await existingItem.save();
 
@@ -47,7 +40,6 @@ export const addInventoryItem = async (req: Request, res: Response): Promise<voi
         item: existingItem,
       });
     } else {
-      // ✅ 否则，创建新物品
       const newItem = await Inventory.create({
         warehouseId,
         binId,
@@ -66,9 +58,6 @@ export const addInventoryItem = async (req: Request, res: Response): Promise<voi
   }
 };
 
-/**
- * ✅ 删除库存项
- */
 export const deleteInventoryItem = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
@@ -87,9 +76,7 @@ export const deleteInventoryItem = async (req: Request, res: Response): Promise<
   }
 };
 
-/**
- * ✅ 更新库存项
- */
+
 export const updateInventoryItem = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
@@ -115,9 +102,7 @@ export const updateInventoryItem = async (req: Request, res: Response): Promise<
   }
 };
 
-/**
- * ✅ 获取单个库存项
- */
+
 export const getInventoryItem = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;

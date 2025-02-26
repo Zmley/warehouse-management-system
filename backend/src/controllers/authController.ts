@@ -2,17 +2,16 @@ import dotenv from "dotenv";
 dotenv.config();
 import AWS from "aws-sdk";
 import { Request, Response } from "express";
-import { AuthRequest } from "../middleware/authMiddleware"; // ✅ 确保路径正确
+import { AuthRequest } from "../middleware/authMiddleware"; 
 import {
   CognitoUser,
   CognitoUserPool,
   CognitoUserAttribute,
 } from "amazon-cognito-identity-js";
-import User from "../models/User"; // ✅ 采用 ES Module 方式引入
+import User from "../models/User"; 
 
-// ✅ 初始化 Cognito 服务
 const cognito = new AWS.CognitoIdentityServiceProvider({
-  region: process.env.AWS_REGION, // 确保 `.env` 里有 AWS_REGION
+  region: process.env.AWS_REGION, 
 });
 
 const poolData = {
@@ -21,9 +20,7 @@ const poolData = {
 };
 const userPool = new CognitoUserPool(poolData);
 
-/**
- * ✅ 用户登录
- */
+
 export const loginUser = async (req: Request, res: Response) => {
   const { email, password } = req.body;
   console.log("🟢 Received Login Request:", { email });
@@ -50,7 +47,6 @@ export const loginUser = async (req: Request, res: Response) => {
   } catch (error: any) {
     console.error("❌ Cognito Login Error:", error);
 
-    // ✅ 处理 Cognito 的常见错误
     let errorMessage = "❌ Login failed";
     if (error.code === "NotAuthorizedException") {
       errorMessage = "❌ Incorrect username or password";
@@ -66,9 +62,6 @@ export const loginUser = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * ✅ 注册用户
- */
 export const registerUser = async (req: Request, res: Response) => {
   const { email, password } = req.body;
   console.log("🟢 Received Registration Request:", req.body);
@@ -84,20 +77,19 @@ export const registerUser = async (req: Request, res: Response) => {
     }
 
     console.log("✅ Registration Successful:", result);
-    const accountID = result?.userSub; // Cognito 返回的唯一 ID
+    const accountID = result?.userSub; 
 
     try {
-      // ✅ 存入数据库
       await User.create({
         accountID: accountID as string,
         email,
-        role: "admin", // 默认 role
+        role: "admin", 
         firstName: "TBD",
         lastName: "TBD",
         createdAt: new Date(),
       });
 
-      console.log("✅ 用户信息已存入数据库:", { accountID, email });
+      console.log(" user information save to datavase:", { accountID, email });
 
       res.json({
         message: "✅ User registered successfully",
@@ -105,7 +97,7 @@ export const registerUser = async (req: Request, res: Response) => {
         email,
       });
     } catch (dbError: unknown) {
-      console.error("❌ 存入数据库失败:", dbError);
+      console.error("❌ user information save to datavase failed:", dbError);
       res.status(500).json({
         message: "❌ Failed to save user to database",
         error: (dbError as Error).message || "Unknown error",
@@ -114,9 +106,6 @@ export const registerUser = async (req: Request, res: Response) => {
   });
 };
 
-/**
- * ✅ 确认用户邮箱（用 Cognito 发送的验证码）
- */
 export const confirmUser = (req: Request, res: Response) => {
   const { email, code } = req.body;
   console.log("🟢 Received Confirmation Request:", req.body);
@@ -136,22 +125,14 @@ export const confirmUser = (req: Request, res: Response) => {
   });
 };
 
-/**
- * ✅ 获取当前用户信息 (role)
- */
-/**
- * ✅ 获取当前用户信息 (role)
- */
 export const getUserInfo = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    // ✅ 1. 从 `req.user` 获取 Cognito ID
-    const accountID = req.user?.sub; // `sub` 是通过 JWT 中间件存储在 req.user 中的
+    const accountID = req.user?.sub; 
     if (!accountID) {
       res.status(401).json({ message: "❌ Unauthorized: No User Info" });
       return;
     }
 
-    // ✅ 2. 查询数据库获取用户 `role`
     const user = await User.findOne({
       where: { accountID },
       attributes: ["role"],
@@ -162,7 +143,6 @@ export const getUserInfo = async (req: AuthRequest, res: Response): Promise<void
       return;
     }
 
-    // ✅ 3. 返回用户信息
     res.json({ user });
   } catch (error) {
     console.error("❌ Error fetching user info:", error);

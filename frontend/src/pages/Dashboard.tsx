@@ -1,6 +1,6 @@
 import React, { useContext, useEffect } from "react";
 import { Container, Typography, Button } from "@mui/material";
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext } from "../context/authContext";
 import { Link } from "react-router-dom";
 
 const roleTitles: { [key: string]: string } = {

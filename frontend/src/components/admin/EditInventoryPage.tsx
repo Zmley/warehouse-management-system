@@ -5,7 +5,7 @@ import { fetchInventoryItem, updateInventoryItem } from "../../api/inventoryApi"
 import { InventoryItem } from "../../types/inventoryTypes";
 
 const EditInventoryPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>(); // ✅ 获取 URL 参数
+  const { id } = useParams<{ id: string }>(); 
   const navigate = useNavigate();
 
   const [inventoryItem, setInventoryItem] = useState<InventoryItem | null>(null);
@@ -40,7 +40,7 @@ const EditInventoryPage: React.FC = () => {
     setUpdateError(null);
     try {
       await updateInventoryItem(inventoryItem.id, inventoryItem);
-      navigate("/inventory"); // ✅ 更新成功后跳转回库存管理页面
+      navigate("/inventory"); 
     } catch (err) {
       setUpdateError("❌ Failed to update inventory item");
     } finally {

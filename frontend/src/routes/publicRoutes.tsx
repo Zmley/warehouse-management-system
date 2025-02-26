@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
-import LoginPage from "../pages/LoginPage";
+import { AuthContext } from "../context/authContext";
+import LoginPage from "../pages/loginPage";
 
 const PublicRoutes: React.FC = () => {
   const { isAuthenticated } = useContext(AuthContext)!;

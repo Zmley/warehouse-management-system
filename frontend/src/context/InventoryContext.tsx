@@ -18,7 +18,6 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
   );
 };
 
-// ✅ 方便组件里使用 `useInventoryContext()`
 export const useInventoryContext = () => {
   const context = useContext(InventoryContext);
   if (!context) {

@@ -1,7 +1,7 @@
 import React, { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Container, Typography, CircularProgress, Alert, Button, Box } from '@mui/material'
-import { AuthContext } from '../../context/AuthContext'
+import { AuthContext } from '../../context/authContext'
 import InventoryTable from '../../components/admin/InventoryTable'
 import useInventory from '../../hooks/useInventory'
 
@@ -36,11 +36,9 @@ const InventoryManagement: React.FC = () => {
         </Box>
       </Box>
 
-      {/* ✅ 加载 & 错误消息 */}
       {loading && <CircularProgress sx={{ display: 'block', mx: 'auto', my: 3 }} />}
       {error && <Alert severity='error' sx={{ my: 2 }}>{error}</Alert>}
 
-      {/* ✅ 库存表格 */}
       {!loading && !error && (
         <InventoryTable
           inventory={inventory}

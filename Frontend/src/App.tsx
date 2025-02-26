@@ -1,10 +1,10 @@
 import React from "react";
 import { BrowserRouter as Router } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext";
-import { InventoryProvider } from "./context/InventoryContext"; // ✅ 确保包裹 `InventoryManagement`
+import { AuthProvider } from "./context/authContext";
+import { InventoryProvider } from "./context/inventoryContext"; // ✅ 确保包裹 `InventoryManagement`
 import PublicRoutes from "./routes/publicRoutes";
 import PrivateRoutes from "./routes/privateRoutes";
-import { TransportTaskProvider } from "./context/TransportTaskContext"; // ✅ 导入 TransportTaskProvider
+import { TransportTaskProvider } from "./context/transportTaskContext"; // ✅ 导入 TransportTaskProvider
 
 
 const App: React.FC = () => {

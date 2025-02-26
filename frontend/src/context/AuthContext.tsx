@@ -1,12 +1,12 @@
 import React, { createContext, useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchUserRole, loginUser } from "../api/auth";  // ✅ 确保引入 `loginUser`
+import { fetchUserRole, loginUser } from "../api/auth"; 
 import { clearTokens, saveTokens,areTokensValid } from "../utils/storage";
 
 interface AuthContextType {
   role: string | null;
   setRole: (role: string | null) => void;
-  login: (email: string, password: string) => Promise<void>;  // ✅ 添加 login 方法
+  login: (email: string, password: string) => Promise<void>;  
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -21,15 +21,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string) => {
     try {
-      console.log("🔄 正在登录...");
-      const tokens = await loginUser(email, password); // ✅ 登录请求
-      saveTokens(tokens); // ✅ 存储 tokens
-      const userRole = await fetchUserRole(); // ✅ 获取角色
+      console.log("🔄 loading...");
+      const tokens = await loginUser(email, password); 
+      saveTokens(tokens); 
+      const userRole = await fetchUserRole(); 
       setRole(userRole);
       navigate("/dashboard");
-      console.log("✅ 登录成功，角色:", userRole);
+      console.log("✅ successfully，role is:", userRole);
     } catch (error: any) {
-      console.error("❌ 登录失败:", error.message);
+      console.error("❌ failed:", error.message);
       throw error;
     }
   };
@@ -42,14 +42,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     if (isAuthenticated && !role) {
-      console.log("🔄 正在获取用户角色...");
+      console.log("🔄 loading for the role...");
       fetchUserRole()
         .then((data) => {
-          console.log("✅ 用户角色:", data);
+          console.log("✅ role:", data);
           setRole(data);
         })
         .catch((error) => {
-          console.error("❌ 获取角色失败:", error);
+          console.error("❌ failed:", error);
           logout();
         });
     }

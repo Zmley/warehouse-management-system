@@ -1,10 +1,10 @@
 import React, { useContext } from "react";
 import { Routes, Route, Navigate, Outlet } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
-import Dashboard from "../pages/Dashboard";
+import { AuthContext } from "../context/authContext";
+import Dashboard from "../pages/dashboard";
 import InventoryManagement from "../pages/Admin/InventoryManagementPage";
-import EditInventoryPage from "../components/admin/EditInventoryPage"; // ✅ 引入编辑页面
-import TransportTask from "../pages/TransportWorker/TransportTask";
+import EditInventoryPage from "../components/admin/editInventoryPage"; // ✅ 引入编辑页面
+import TransportTask from "../pages/TransportWorker/transportTask";
 
 
 

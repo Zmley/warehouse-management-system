@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import QrScanner from "qr-scanner";
-import { useTransportTask } from "../context/TransportTaskContext"; // ✅ 关联 Context
+import { useTransportTask } from "../context/transportTaskContext"; 
 
 const useQRScanner = () => {
-  const { setIsInProcess } = useTransportTask(); // ✅ 获取 Context 状态
+  const { setIsInProcess } = useTransportTask(); 
   const [data, setData] = useState<string>("No result");
   const [isScanning, setIsScanning] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);

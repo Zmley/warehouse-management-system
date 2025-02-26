@@ -39,12 +39,10 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
     bin_qr_code: ''
   })
 
-  // ✅ 处理 Edit 跳转
   const handleEdit = (id: string) => {
     navigate(`/inventory/edit/${id}`)
   }
 
-  // ✅ 处理 Delete
   const handleDeleteConfirm = async () => {
     if (deleteId) {
       await onDeleteSuccess(deleteId)
@@ -52,10 +50,9 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
     }
   }
 
-  // ✅ 处理 Add Item 提交
   const handleAddItem = async () => {
     await onAddSuccess(newItem)
-    setOpenAddDialog(false) // ✅ 关闭弹窗
+    setOpenAddDialog(false) 
     setNewItem({
       warehouse_code: '',
       bin_code: '',
@@ -67,11 +64,10 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
 
   return (
     <>
-      {/* ✅ "Add Item" 按钮 */}
       <Button
         variant='contained'
         color='success'
-        onClick={() => setOpenAddDialog(true)} // ✅ 这里使用 `setOpenAddDialog`
+        onClick={() => setOpenAddDialog(true)} 
         sx={{ mb: 2 }}
       >
         ➕ Add Item
@@ -109,7 +105,6 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
                 <TableCell>{item.product_code}</TableCell>
                 <TableCell>{item.quantity}</TableCell>
                 <TableCell>{item.bin_qr_code}</TableCell>{' '}
-                {/* ✅ 直接显示 QR Code 的内容 */}
                 <TableCell>
                   <Button
                     variant='contained'
@@ -135,7 +130,6 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
         </Table>
       </TableContainer>
 
-      {/* ✅ Delete Confirm Dialog */}
       <Dialog open={Boolean(deleteId)} onClose={() => setDeleteId(null)}>
         <DialogTitle>Are you sure you want to delete this item?</DialogTitle>
         <DialogActions>
@@ -148,10 +142,8 @@ const InventoryTable: React.FC<InventoryTableProps> = ({
         </DialogActions>
       </Dialog>
 
-      {/* ✅ Add New Item Dialog */}
       <Dialog open={openAddDialog} onClose={() => setOpenAddDialog(false)}>
         {' '}
-        {/* ✅ 这里确保 Dialog 绑定状态 */}
         <DialogTitle>➕ Add New Inventory Item</DialogTitle>
         <DialogContent>
           <TextField

@@ -1,5 +1,5 @@
 import express from "express";
-import { authenticateToken } from "../middleware/authMiddleware"; // ✅ 解析 JWT Token
+import { authenticateToken } from "../middleware/authMiddleware"; 
 import { registerUser, confirmUser, loginUser, getUserInfo } from "../controllers/authController";
 
 
@@ -7,13 +7,12 @@ import { registerUser, confirmUser, loginUser, getUserInfo } from "../controller
 
 const router = express.Router();
 
-// 用户注册
+
 router.post("/register", registerUser);
 
 router.post("/confirmUser", confirmUser);
 
 
-// 用户登录路由
 router.post("/login", loginUser);
 router.get("/me", authenticateToken as any, getUserInfo);
 
