@@ -3,13 +3,14 @@ import { sequelize } from "../config/db";
 
 export class Task extends Model {
   public ID!: string;
+  public warehouseID!: string;
   public sourceBinID!: string;
-  public destinationBinList!: string;
+  public destinationBin!: string;
   public assignedUserID!: string;
   public productID!: string;
   public status!: "pending" | "inProgress" | "completed" | "cancel";
   public createdAt!: Date;
-  public completedAt!: Date | null;
+  public updatedAt!: Date | null;
 }
 
 Task.init(
@@ -20,13 +21,17 @@ Task.init(
       allowNull: false,
       primaryKey: true,
     },
-    sourceBinID: {
+    warehouseID: {  // ✅ 添加 warehouseID
       type: DataTypes.STRING,
       allowNull: false,
     },
+    sourceBinID: {
+      type: DataTypes.STRING,
+      allowNull: true, // ✅ 允许为空，防止任务创建时报错
+    },
     destinationBin: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true, // ✅ 允许为空，防止任务创建时报错
     },
     assignedUserID: {
       type: DataTypes.STRING,
@@ -45,7 +50,7 @@ Task.init(
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
     },
-    completedAt: {
+    updatedAt: {
       type: DataTypes.DATE,
       allowNull: true,
     },
