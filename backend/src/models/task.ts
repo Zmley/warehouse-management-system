@@ -6,6 +6,7 @@ export class Task extends Model {
   public sourceBinID!: string;
   public destinationBinList!: string;
   public assignedUserID!: string;
+  public productID!: string;
   public status!: "pending" | "inProgress" | "completed" | "cancel";
   public createdAt!: Date;
   public completedAt!: Date | null;
@@ -23,11 +24,15 @@ Task.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    destinationBinList: {
+    destinationBin: {
       type: DataTypes.STRING,
       allowNull: false,
     },
     assignedUserID: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    productID: {  // ✅ 添加新的字段
       type: DataTypes.STRING,
       allowNull: false,
     },

@@ -6,8 +6,7 @@ export class Inventory extends Model {
   public warehouseID!: string;
   public binID!: string;
   public productID!: string;
-  public quantity!: number;
-  public ownedBy!: string; // ✅ 新增字段
+  public quantity!: number
 }
 
 Inventory.init(
