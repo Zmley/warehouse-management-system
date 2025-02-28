@@ -67,8 +67,8 @@ const useQRScanner = (onScanSuccess?: (warehouseID: string, binID: string) => vo
                     if (response.success) {
                       console.log(`🚀 API Success: ${response.message}`);
 
-                      if (transportStatus === "inProcess1") {
-                        proceedToUnload(); // ✅ 进入 `inProcess2`
+                      if (transportStatus === "process") {
+                        proceedToUnload(); // ✅ 继续 process 状态
                       }
 
                       onScanSuccess?.(warehouseID, binID);

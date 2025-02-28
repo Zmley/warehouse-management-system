@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Container, Typography, Button, CircularProgress, Card, CardContent, Box } from "@mui/material";
 import useQRScanner from "../../hooks/useQRScanner";
@@ -7,19 +7,21 @@ import { processBinTask } from "../../api/transportTaskApi";
 
 const TransportTask = () => {
   const navigate = useNavigate();
-  const { transportStatus, startTask, proceedToUnload, resetTask } = useTransportContext();
+  const { transportStatus, startTask, resetTask } = useTransportContext();
   const { videoRef, isScanning, startScanning } = useQRScanner(handleScanSuccess);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+  // ✅ Load Cargo（装货）
   const handleLoadCargo = async () => {
     setError(null);
     setSuccessMessage(null);
     startScanning();
   };
 
+  // ✅ Unload Cargo（卸货）
   const handleUnloadCargo = async () => {
     setError(null);
     setSuccessMessage(null);
@@ -34,7 +36,8 @@ const TransportTask = () => {
     try {
       console.log(`🚀 Scanned warehouseID: ${warehouseID}, binID: ${binID}`);
 
-      const isLoadingToCar = transportStatus === "pending";
+      const isLoadingToCar = transportStatus === "pending"; // ✅ `pending` 状态下才是装货
+
       const response = await processBinTask(warehouseID, binID, isLoadingToCar);
 
       if (response.success) {
@@ -45,14 +48,12 @@ const TransportTask = () => {
         );
 
         if (isLoadingToCar) {
-          startTask(warehouseID, binID); // ✅ 进入 inProcess1
+          startTask(warehouseID, binID); // ✅ 进入 `process`（装货完成）
         } else {
-          proceedToUnload(); // ✅ 进入 inProcess2
-
-          // ✅ **如果 `inProcess2` 返回成功，直接刷新页面**
+          // ✅ 卸货完成，自动重置任务
           setTimeout(() => {
-            console.log("🔄 Unload success! Refreshing page...");
-            window.location.reload(); // **强制刷新 UI**
+            console.log("🔄 Unload success! Resetting task...");
+            resetTask(); // **卸货完成后重置为 `pending`**
           }, 500);
         }
       } else {
@@ -64,17 +65,6 @@ const TransportTask = () => {
       setIsLoading(false);
     }
   }
-
-  const handleResetTask = useCallback(() => {
-    if (transportStatus === "inProcess2") {
-      console.log("🔄 Resetting to pending...");
-      resetTask();
-    }
-  }, [transportStatus, resetTask]);
-
-  useEffect(() => {
-    handleResetTask();
-  }, [handleResetTask]);
 
   return (
     <Container maxWidth="sm" sx={{ textAlign: "center", padding: "20px" }}>
@@ -91,7 +81,7 @@ const TransportTask = () => {
         </CardContent>
       </Card>
 
-      {/* ✅ Load Cargo 按钮 */}
+      {/* ✅ Load Cargo 按钮（只有 `pending` 状态可用） */}
       <Button
         variant="contained"
         color="primary"
@@ -102,13 +92,13 @@ const TransportTask = () => {
         Load Cargo
       </Button>
 
-      {/* ✅ Unload Cargo 按钮 */}
+      {/* ✅ Unload Cargo 按钮（只有 `process` 状态可用） */}
       <Button
         variant="contained"
         color="secondary"
         sx={{ m: 1, width: "80%" }}
         onClick={handleUnloadCargo}
-        disabled={transportStatus === "pending"}
+        disabled={transportStatus !== "process"}
       >
         Unload Cargo
       </Button>
