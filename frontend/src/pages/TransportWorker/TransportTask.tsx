@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Container, Typography, Button, CircularProgress, Card, CardContent, Box } from "@mui/material";
-import useQRScanner from "../../hooks/useQRScanner";
 import { useTransportContext } from "../../context/transportTaskContext";
+import useQRScanner from "../../hooks/useQRScanner";
 import { processBinTask } from "../../api/transportTaskApi";
 
 const TransportTask = () => {
@@ -14,14 +14,17 @@ const TransportTask = () => {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // ✅ Load Cargo（装货）
+  // ✅ 监听 `transportStatus`，确保 UI 正确更新
+  useEffect(() => {
+    console.log(`🔄 UI Updated: Current Status = ${transportStatus}`);
+  }, [transportStatus]);
+
   const handleLoadCargo = async () => {
     setError(null);
     setSuccessMessage(null);
     startScanning();
   };
 
-  // ✅ Unload Cargo（卸货）
   const handleUnloadCargo = async () => {
     setError(null);
     setSuccessMessage(null);
@@ -36,7 +39,7 @@ const TransportTask = () => {
     try {
       console.log(`🚀 Scanned warehouseID: ${warehouseID}, binID: ${binID}`);
 
-      const isLoadingToCar = transportStatus === "pending"; // ✅ `pending` 状态下才是装货
+      const isLoadingToCar = transportStatus === "pending"; 
 
       const response = await processBinTask(warehouseID, binID, isLoadingToCar);
 
@@ -48,13 +51,10 @@ const TransportTask = () => {
         );
 
         if (isLoadingToCar) {
-          startTask(warehouseID, binID); // ✅ 进入 `process`（装货完成）
+          startTask(warehouseID, binID); // ✅ 进入 `process`
         } else {
-          // ✅ 卸货完成，自动重置任务
-          setTimeout(() => {
-            console.log("🔄 Unload success! Resetting task...");
-            resetTask(); // **卸货完成后重置为 `pending`**
-          }, 500);
+          console.log("🔄 Unload success! Resetting task...");
+          resetTask();  // **直接调用，不用 `setTimeout`**
         }
       } else {
         setError("❌ Operation failed: Unexpected response from server.");
@@ -72,7 +72,6 @@ const TransportTask = () => {
         🚚 Transport Task
       </Typography>
 
-      {/* ✅ 状态指示器 */}
       <Card variant="outlined" sx={{ mb: 2, bgcolor: "#f5f5f5" }}>
         <CardContent>
           <Typography variant="h6" color="primary">
@@ -81,7 +80,6 @@ const TransportTask = () => {
         </CardContent>
       </Card>
 
-      {/* ✅ Load Cargo 按钮（只有 `pending` 状态可用） */}
       <Button
         variant="contained"
         color="primary"
@@ -92,7 +90,6 @@ const TransportTask = () => {
         Load Cargo
       </Button>
 
-      {/* ✅ Unload Cargo 按钮（只有 `process` 状态可用） */}
       <Button
         variant="contained"
         color="secondary"
@@ -103,7 +100,6 @@ const TransportTask = () => {
         Unload Cargo
       </Button>
 
-      {/* ✅ 扫描区域 */}
       {isScanning && (
         <Box
           sx={{
@@ -121,10 +117,8 @@ const TransportTask = () => {
         </Box>
       )}
 
-      {/* ✅ 状态指示器 */}
       {isLoading && <CircularProgress sx={{ mt: 2 }} />}
 
-      {/* ✅ 成功 / 失败信息 */}
       {error && (
         <Card sx={{ bgcolor: "#ffebee", color: "#d32f2f", mt: 2 }}>
           <CardContent>
@@ -140,7 +134,6 @@ const TransportTask = () => {
         </Card>
       )}
 
-      {/* ✅ 返回按钮 */}
       <Button
         variant="outlined"
         color="inherit"

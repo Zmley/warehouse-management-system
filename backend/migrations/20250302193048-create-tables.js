@@ -30,6 +30,10 @@ module.exports = {
         type: Sequelize.ENUM("admin", "picker", "transportWorker"),
         allowNull: false,
       },
+      CarID: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+      },
       createdAt: {
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW,
@@ -49,6 +53,11 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
         primaryKey: true,
+      },
+      warehouseCode: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        unique: true,
       },
       createdAt: {
         type: Sequelize.DATE,
@@ -71,11 +80,11 @@ module.exports = {
         allowNull: false,
         primaryKey: true,
       },
-      warehouseID: {
+      warehouseCode: {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      binID: {
+      binCode: {
         type: Sequelize.STRING,
         allowNull: false,
       },
@@ -94,14 +103,6 @@ module.exports = {
         allowNull: false,
       },
     });
-
-    // ✅ 添加 `warehouseID` + `binID` 的组合唯一约束
-    await queryInterface.addConstraint("Bins", {
-      fields: ["warehouseID", "binID"],
-      type: "unique",
-      name: "unique_warehouse_bin",
-    });
-
     console.log("✅ Bins 表创建成功!");
 
     // ✅ 创建 Inventory 表
@@ -111,10 +112,6 @@ module.exports = {
         defaultValue: Sequelize.UUIDV4,
         allowNull: false,
         primaryKey: true,
-      },
-      warehouseID: {
-        type: Sequelize.STRING,
-        allowNull: false,
       },
       binID: {
         type: Sequelize.STRING,
@@ -144,10 +141,9 @@ module.exports = {
         allowNull: false,
       },
     });
-
     console.log("✅ Inventory 表创建成功!");
 
-    // ✅ 创建 Tasks 表（任务管理）
+    // ✅ 创建 Tasks 表
     await queryInterface.createTable("Tasks", {
       ID: {
         type: Sequelize.UUID,
@@ -155,28 +151,24 @@ module.exports = {
         allowNull: false,
         primaryKey: true,
       },
-      warehouseID: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
       productID: {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      sourceBinId: {
+      sourceBinID: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
-      destinationBin: { // ✅ 修改 destinationBinList 为 destinationBin
+      destinationBinID: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
-      assignedUserId: {
+      assignedUserID: {
         type: Sequelize.STRING,
         allowNull: false,
       },
       status: {
-        type: Sequelize.ENUM("pending", "inProgress", "completed", "cancel"),
+        type: Sequelize.ENUM("pending", "inProcess", "completed", "cancel"),
         allowNull: false,
         defaultValue: "pending",
       },
@@ -185,76 +177,27 @@ module.exports = {
         defaultValue: Sequelize.NOW,
         allowNull: false,
       },
-      completedAt: {
+      updatedAt: {
         type: Sequelize.DATE,
         allowNull: true,
       },
     });
-
     console.log("✅ Tasks 表创建成功!");
 
-    // ✅ 添加外键关系
+    console.log("🗑 添加外键约束...");
     await queryInterface.addConstraint("Bins", {
-      fields: ["warehouseID"],
+      fields: ["warehouseCode"],
       type: "foreign key",
       name: "fk_bins_warehouse",
       references: {
         table: "Warehouses",
-        field: "warehouseID",
+        field: "warehouseCode",
       },
       onDelete: "CASCADE",
       onUpdate: "CASCADE",
     });
 
-    await queryInterface.addConstraint("Inventory", {
-      fields: ["warehouseID", "binID"],
-      type: "foreign key",
-      name: "fk_inventory_bin",
-      references: {
-        table: "Bins",
-        fields: ["warehouseID", "binID"],
-      },
-      onDelete: "CASCADE",
-      onUpdate: "CASCADE",
-    });
-
-    await queryInterface.addConstraint("Tasks", {
-      fields: ["warehouseID", "sourceBinId"],
-      type: "foreign key",
-      name: "fk_tasks_source_bin",
-      references: {
-        table: "Bins",
-        fields: ["warehouseID", "binID"],
-      },
-      onDelete: "CASCADE",
-      onUpdate: "CASCADE",
-    });
-
-    await queryInterface.addConstraint("Tasks", {
-      fields: ["warehouseID", "destinationBin"], // ✅ 确保目标 binID 也关联 warehouseID
-      type: "foreign key",
-      name: "fk_tasks_destination_bin",
-      references: {
-        table: "Bins",
-        fields: ["warehouseID", "binID"],
-      },
-      onDelete: "CASCADE",
-      onUpdate: "CASCADE",
-    });
-
-    await queryInterface.addConstraint("Tasks", {
-      fields: ["assignedUserId"],
-      type: "foreign key",
-      name: "fk_tasks_assigned_user",
-      references: {
-        table: "Users",
-        field: "accountID",
-      },
-      onDelete: "CASCADE",
-      onUpdate: "CASCADE",
-    });
-
-    console.log("🔗 外键约束添加成功!");
+    console.log("✅ 数据库结构更新完成!");
   },
 
   down: async (queryInterface, Sequelize) => {
