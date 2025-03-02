@@ -4,99 +4,72 @@ import { createTask, updateTaskStatus } from '../utils/transportTask'
 import { loadCargoHelper, unloadCargoHelper } from '../utils/transportTask'
 import Inventory from '../models/inventory'
 import Task from "../models/task"
+import User from "../models/User" // ✅ 新增 User Model 引用
 
-
-export const loadCargo = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
+export const loadCargo = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { binID, warehouseID } = req.body
+    const { binID } = req.body
     const accountId = req.user?.sub
 
-    if (!binID || !warehouseID || !accountId) {
-      res
-        .status(400)
-        .json({ message: '❌ Missing binID, warehouseID, or accountId' })
+    if (!binID || !accountId) {
+      res.status(400).json({ message: '❌ Missing binID or accountId' })
       return
     }
 
-    const updatedProducts = await Inventory.findAll({
-      where: { binID, warehouseID },
-      attributes: ['productID']
-    })
-
-    if (!updatedProducts.length) {
-      res.status(404).json({ message: '❌ No items found in this bin.' })
+    // ✅ 获取用户的 CarID
+    const user = await User.findOne({ where: { accountID: accountId } })
+    if (!user || !user.CarID) {
+      res.status(400).json({ message: '❌ User does not have a CarID assigned' })
       return
     }
+    const carID = user.CarID
 
-    const updatedCount = await loadCargoHelper(binID, warehouseID, accountId)
+    const updatedCount = await loadCargoHelper(binID, carID, accountId)
 
     if (updatedCount === 0) {
       res.status(404).json({ message: '❌ No matching binID found to update' })
       return
     }
 
-    await createTask(warehouseID, binID, accountId, updatedProducts)
+    await createTask(binID, carID, accountId)
 
-    res
-      .status(200)
-      .json({
-        message: `✅ BinID updated to "car" and owned by ${accountId} for warehouse ${warehouseID}.`
-      })
+    res.status(200).json({
+      message: `✅ BinID updated to "${carID}" and owned by "car".`
+    })
   } catch (error) {
     console.error('❌ Error loading cargo:', error)
     res.status(500).json({ message: '❌ Internal Server Error' })
   }
 }
 
-export const unloadCargo = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
+export const unloadCargo = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { unLoadBinID, warehouseID } = req.body
+    const { unLoadBinID } = req.body
     const accountId = req.user?.sub
 
-    if (!unLoadBinID || !warehouseID || !accountId) {
-      res
-        .status(400)
-        .json({ message: '❌ Missing unLoadBinID, warehouseID, or accountId' })
+    if (!unLoadBinID || !accountId) {
+      res.status(400).json({ message: '❌ Missing unLoadBinID or accountId' })
       return
     }
 
-    const updatedCount = await unloadCargoHelper(
-      unLoadBinID,
-      warehouseID,
-      accountId
-    )
+    const user = await User.findOne({ where: { accountID: accountId } })
+    if (!user || !user.CarID) {
+      res.status(400).json({ message: '❌ User does not have a CarID assigned' })
+      return
+    }
+    const carID = user.CarID
+
+    const updatedCount = await unloadCargoHelper(unLoadBinID, carID, accountId)
 
     if (updatedCount === 0) {
       res.status(404).json({ message: '❌ No matching binID found to update' })
       return
     }
 
-    const products = await Task.findAll({
-      where: {
-        assignedUserID: accountId,
-        warehouseID: warehouseID,
-        status: 'inProgress'
-      },
-      attributes: ['productID']
-    })
-
-    for (const task of products) {
-      await updateTaskStatus(
-        accountId,
-        warehouseID,
-        task.productID,
-        unLoadBinID
-      )
-    }
+    await updateTaskStatus(accountId, unLoadBinID)
 
     res.status(200).json({
-      message: `✅ Cargo successfully unloaded into ${unLoadBinID} in warehouse ${warehouseID}.`
+      message: `✅ Cargo successfully unloaded into ${unLoadBinID}.`
     })
   } catch (error) {
     console.error('❌ Error unloading cargo:', error)

@@ -2,11 +2,10 @@ import { DataTypes, Model } from "sequelize";
 import { sequelize } from "../config/db";
 
 export class Task extends Model {
-  public ID!: string;
-  public warehouseID!: string;
+  public taskID!: string;
   public sourceBinID!: string;
-  public destinationBin!: string;
-  public assignedUserID!: string;
+  public destinationBinID!: string;
+  public accountID!: string;
   public productID!: string;
   public status!: "pending" | "inProgress" | "completed" | "cancel";
   public createdAt!: Date;
@@ -15,29 +14,25 @@ export class Task extends Model {
 
 Task.init(
   {
-    ID: {
+    taskID: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
       allowNull: false,
       primaryKey: true,
     },
-    warehouseID: {  // ✅ 添加 warehouseID
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
     sourceBinID: {
       type: DataTypes.STRING,
-      allowNull: true, // ✅ 允许为空，防止任务创建时报错
+      allowNull: true,
     },
-    destinationBin: {
+    destinationBinID: {
       type: DataTypes.STRING,
-      allowNull: true, // ✅ 允许为空，防止任务创建时报错
+      allowNull: true,
     },
-    assignedUserID: {
+    accountID: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    productID: {  // ✅ 添加新的字段
+    productID: {
       type: DataTypes.STRING,
       allowNull: false,
     },

@@ -1,37 +1,25 @@
 import Task from "../models/task";
 import Inventory from "../models/inventory";
 
-/**
- * @param binID 源 Bin ID
- * @param warehouseID 仓库 ID
- * @param accountId 用户 ID
- */
-export const loadCargoHelper = async (binID: string, warehouseID: string, accountId: string) => {
+export const loadCargoHelper = async (binID: string, carID: string, accountId: string) => {
   try {
     const updatedItems = await Inventory.update(
-      { binID: "car", ownedBy: accountId }, 
-      { where: { binID, warehouseID } }
+      { binID: carID, ownedBy: "car" },  // ✅ ownedBy 变成 "car"
+      { where: { binID } }
     );
-
-    return updatedItems[0]; // 返回受影响的行数
+    return updatedItems[0]; 
   } catch (error) {
     console.error("❌ Error in loadCargoHelper:", error);
     throw new Error("❌ Failed to load cargo.");
   }
 };
 
-/**
- * @param unLoadBinID 目标 Bin ID
- * @param warehouseID 仓库 ID
- * @param accountId 用户 ID
- */
-export const unloadCargoHelper = async (unLoadBinID: string, warehouseID: string, accountId: string) => {
+export const unloadCargoHelper = async (unLoadBinID: string, carID: string, accountId: string) => {
   try {
     const updatedItems = await Inventory.update(
       { binID: unLoadBinID, ownedBy: "warehouse" }, 
-      { where: { binID: "car", ownedBy: accountId, warehouseID } }
+      { where: { binID: carID, ownedBy: "car" } } // ✅ 现在只更新 ownedBy 是 "car" 的货物
     );
-
     return updatedItems[0]; 
   } catch (error) {
     console.error("❌ Error in unloadCargoHelper:", error);
@@ -39,86 +27,47 @@ export const unloadCargoHelper = async (unLoadBinID: string, warehouseID: string
   }
 };
 
-
-
-/**
- * 创建任务
- * @param warehouseID 
- * @param sourceBinID 
- * @param assignedUserID 
- * @param updatedProducts 
- */
-export const createTask = async (
-  warehouseID: string,
-  sourceBinID: string,
-  assignedUserID: string,
-  updatedProducts: { productID: string }[]
-) => {
+export const createTask = async (sourceBinID: string, carID: string, accountID: string) => {
   try {
-    if (!updatedProducts.length) {
-      console.warn("⚠️ No products found for task creation.");
-      return [];
-    }
-
-    const tasks = updatedProducts.map((product) => ({
-      warehouseID,
-      productID: product.productID,
-      sourceBinID, 
-      destinationBin: null, 
-      assignedUserID,
+    const task = await Task.create({
+      sourceBinID,
+      destinationBinID: null,
+      accountID,
+      productID: "ALL",
       status: "inProgress",
       createdAt: new Date(),
       updatedAt: null,
-    }));
-
-    const createdTasks = await Task.bulkCreate(tasks);
-    console.log(`✅ Created ${tasks.length} task records.`);
-    return createdTasks;
+    });
+    console.log(`✅ Created task for bin ${sourceBinID}, assigned to ${accountID}`);
+    return task;
   } catch (error) {
     console.error("❌ Error creating task:", error);
     throw new Error("❌ Failed to create task");
   }
 };
 
-/**
- * 更新任务状态
- * @param accountID 用户 ID（assignedUserID）
- * @param warehouseID 仓库 ID
- * @param productID 需要更新的产品 ID
- * @param destinationBin 目标 Bin ID（卸载时更新）
- */
-export const updateTaskStatus = async (
-    accountID: string,
-    warehouseID: string,
-    productID: string,
-    destinationBin: string
-  ) => {
-    try {
-      const tasks = await Task.findAll({
-        where: { 
-          assignedUserID: accountID,
-          warehouseID: warehouseID,
-          productID: productID,
-          status: "inProgress"
-        }
-      });
-  
-      if (!tasks.length) {
-        console.warn(`⚠️ No active tasks found for user ${accountID} in warehouse ${warehouseID} for product ${productID}.`);
-        return null;
-      }
-  
-      for (const task of tasks) {
-        task.status = "completed";
-        task.updatedAt = new Date();
-        task.destinationBin = destinationBin; 
-        await task.save();
-      }
-  
-      console.log(`✅ Updated ${tasks.length} tasks for user ${accountID} and product ${productID}`);
-      return tasks;
-    } catch (error) {
-      console.error("❌ Error updating task status:", error);
-      throw new Error("❌ Failed to update task status");
+export const updateTaskStatus = async (accountID: string, destinationBinID: string) => {
+  try {
+    const tasks = await Task.findAll({
+      where: { accountID, status: "inProgress" }
+    });
+
+    if (!tasks.length) {
+      console.warn(`⚠️ No active tasks found for user ${accountID}`);
+      return null;
     }
-  };
+
+    for (const task of tasks) {
+      task.status = "completed";
+      task.updatedAt = new Date();
+      task.destinationBinID = destinationBinID; 
+      await task.save();
+    }
+
+    console.log(`✅ Updated ${tasks.length} tasks for user ${accountID}`);
+    return tasks;
+  } catch (error) {
+    console.error("❌ Error updating task status:", error);
+    throw new Error("❌ Failed to update task status");
+  }
+};

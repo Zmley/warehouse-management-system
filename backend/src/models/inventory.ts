@@ -1,25 +1,21 @@
 import { DataTypes, Model } from "sequelize";
 import { sequelize } from "../config/db";
 
+// ✅ Inventory Model
 export class Inventory extends Model {
-  public ID!: string;
-  public warehouseID!: string;
+  public inventoryID!: string;
   public binID!: string;
   public productID!: string;
-  public quantity!: number
+  public quantity!: number;
 }
 
 Inventory.init(
   {
-    ID: {
+    inventoryID: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
       allowNull: false,
       primaryKey: true,
-    },
-    warehouseID: {
-      type: DataTypes.STRING,
-      allowNull: false,
     },
     binID: {
       type: DataTypes.STRING,
@@ -36,7 +32,7 @@ Inventory.init(
     },
     ownedBy: {
       type: DataTypes.STRING,
-      allowNull: false, // ✅ 代表库存的所有者
+      allowNull: false,
     },
   },
   {

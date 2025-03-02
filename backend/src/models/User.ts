@@ -1,22 +1,13 @@
 import { DataTypes, Model } from "sequelize";
 import { sequelize } from "../config/db";
 
-export interface UserAttributes {
-  accountID: string;
-  email: string;
-  role: "admin" | "transportWorker" | "picker";
-  firstName?: string;
-  lastName?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
-
-export class User extends Model<UserAttributes> implements UserAttributes {
+export class User extends Model {
   public accountID!: string;
   public email!: string;
   public role!: "admin" | "transportWorker" | "picker";
   public firstName!: string;
   public lastName!: string;
+  public CarID!: string | null;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -47,6 +38,10 @@ User.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    CarID: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
@@ -60,7 +55,6 @@ User.init(
     sequelize,
     tableName: "Users",
     timestamps: true,
-    underscored: false, // ✅ 驼峰命名
   }
 );
 
