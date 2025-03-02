@@ -31,7 +31,7 @@ module.exports = {
         allowNull: false,
       },
       CarID: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING, // ✅ 修改为 STRING
         allowNull: true,
       },
       createdAt: {
@@ -74,7 +74,7 @@ module.exports = {
 
     // ✅ 创建 Bins 表
     await queryInterface.createTable("Bins", {
-      ID: {
+      binID: {
         type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4,
         allowNull: false,
@@ -107,7 +107,7 @@ module.exports = {
 
     // ✅ 创建 Inventory 表
     await queryInterface.createTable("Inventory", {
-      ID: {
+      inventoryID: {
         type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4,
         allowNull: false,
@@ -145,7 +145,7 @@ module.exports = {
 
     // ✅ 创建 Tasks 表
     await queryInterface.createTable("Tasks", {
-      ID: {
+      taskID: {
         type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4,
         allowNull: false,
@@ -163,7 +163,7 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: true,
       },
-      assignedUserID: {
+      accountID: {
         type: Sequelize.STRING,
         allowNull: false,
       },
