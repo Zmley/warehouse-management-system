@@ -5,6 +5,7 @@ import cors from "cors";
 import authRoutes from "./routes/authRoutes";
 import inventoryRoutes from "./routes/inventoryRoutes"; 
 import transportTaskRoutes from "./routes/transportTaskRoutes"; 
+import taskRoutes from "./routes/taskRoutes"; 
 import { connectDB } from "./config/db";
 
 
@@ -28,6 +29,8 @@ app.use(cors());
 app.use("/api/auth", authRoutes);
 app.use("/api/inventory", inventoryRoutes); 
 app.use("/api/transport", transportTaskRoutes); 
+app.use("/api/tasks",taskRoutes); 
+
 
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {

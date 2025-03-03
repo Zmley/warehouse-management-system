@@ -30,7 +30,7 @@ Task.init(
     },
     accountID: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     productID: {
       type: DataTypes.STRING,
