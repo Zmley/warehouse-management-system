@@ -7,6 +7,8 @@ export class Bin extends Model {
   public warehouseCode!: string;
   public binCode!: string;
   public emptyStatus!: boolean;
+  public type!: "pick up" | "inventory" | "unload"; // ✅ 添加 `type` 字段
+  public productID!: string | null; // ✅ 添加 `productID`，允许为 null
 }
 
 Bin.init(
@@ -29,6 +31,15 @@ Bin.init(
     emptyStatus: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
+    },
+    type: {
+      type: DataTypes.ENUM("pick up", "inventory", "unload"), // ✅ Enum 类型
+      allowNull: false,
+      defaultValue: "inventory",
+    },
+    productID: {
+      type: DataTypes.STRING,
+      allowNull: true, // ✅ 允许为空
     },
   },
   {

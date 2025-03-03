@@ -5,6 +5,11 @@ import { loadCargoHelper, unloadCargoHelper } from '../utils/transportTask'
 import Inventory from '../models/inventory'
 import Task from "../models/task"
 import User from "../models/User" // ✅ 新增 User Model 引用
+import Bin from "../models/bin";
+import { Op } from "sequelize";
+
+
+
 
 export const loadCargo = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -76,3 +81,100 @@ export const unloadCargo = async (req: AuthRequest, res: Response): Promise<void
     res.status(500).json({ message: '❌ Internal Server Error' })
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//test.....................................................................................for transportor to scan pick up area bin 
+
+
+
+export const scanPickerareaBin = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { pickerBinID } = req.body;
+    const accountID = req.user?.sub; // ✅ 获取当前用户 ID
+
+    if (!pickerBinID || !accountID) {
+      res.status(400).json({ message: "❌ Missing pickerBinID or accountID" });
+      return;
+    }
+
+    // ✅ 查找用户的 `CarID`
+    const user = await User.findOne({ where: { accountID } });
+    if (!user || !user.CarID) {
+      res.status(400).json({ message: "❌ User does not have a CarID assigned" });
+      return;
+    }
+    const carID = user.CarID;
+
+    // ✅ 查询 `pickerBinID` 允许的 `productID`
+    const pickerBin = await Bin.findOne({ where: { binID: pickerBinID }, attributes: ["productID"] });
+
+    if (!pickerBin || !pickerBin.productID) {
+      res.status(400).json({ message: "❌ pickerBinID must have a predefined productID." });
+      return;
+    }
+
+    const requiredProductID = pickerBin.productID;
+
+    // ✅ 查询 `carID` 里是否有该 `productID`
+    const productInCar = await Inventory.findOne({
+      where: { binID: carID, productID: requiredProductID },
+      attributes: ["inventoryID", "quantity", "productID"],
+    });
+
+    if (!productInCar) {
+      res.status(404).json({
+        message: `❌ Car does not contain the required product: ${requiredProductID}`,
+        carID,
+        requiredProductID,
+      });
+      return;
+    }
+
+    // ✅ 查询 `pickerBinID` 在 `Inventory` 里是否已经存在
+    const existingPickerBin = await Inventory.findOne({
+      where: { binID: pickerBinID, productID: requiredProductID },
+    });
+
+    if (existingPickerBin) {
+      // ✅ `pickerBinID` 已有 `productID`，直接加数量
+      await existingPickerBin.update({
+        quantity: existingPickerBin.quantity + productInCar.quantity,
+      });
+
+      // ✅ 删除 `carID` 里的 `row`
+      await Inventory.destroy({ where: { inventoryID: productInCar.inventoryID } });
+
+      res.status(200).json({
+        message: `✅ Moved ${productInCar.quantity} of ${requiredProductID} to picker bin ${pickerBinID}`,
+        updatedQuantity: existingPickerBin.quantity,
+      });
+    } else {
+      // ✅ `pickerBinID` 为空，直接更新 `binID`
+      await productInCar.update({ binID: pickerBinID, ownedBy: "pick" });
+
+      res.status(200).json({
+        message: `✅ Product ${requiredProductID} moved from car ${carID} to picker bin ${pickerBinID}`,
+        movedProductID: requiredProductID,
+      });
+    }
+  } catch (error: any) {
+    console.error("❌ Error scanning picker area bin:", error.message);
+    res.status(500).json({ message: "❌ Internal Server Error", error: error.message });
+  }
+};
