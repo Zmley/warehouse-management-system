@@ -3,7 +3,7 @@ import QrScanner from "qr-scanner";
 import { useTransportContext } from "../context/transportTaskContext";
 import { processBinTask } from "../api/transportTaskApi";
 
-const useQRScanner = (onScanSuccess?: (warehouseID: string, binID: string) => void) => {
+const useQRScanner = (onScanSuccess?: (binID: string) => void) => {
   const { startTask, proceedToUnload, transportStatus } = useTransportContext();
   const [isScanning, setIsScanning] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -52,17 +52,17 @@ const useQRScanner = (onScanSuccess?: (warehouseID: string, binID: string) => vo
                 console.log("✅ QR Code scanned:", result.data);
                 stopScanning(); // ✅ **扫描成功后停止摄像头**
 
-                const [warehouseID, binID] = result.data.split("+");
-                if (warehouseID && binID) {
-                  console.log(`✅ Parsed warehouseID: ${warehouseID}, binID: ${binID}`);
+                const binID = result.data.trim(); // ✅ 直接读取 `binID`
+
+                if (binID) {
+                  console.log(`✅ Parsed binID: ${binID}`);
 
                   try {
-                    // ✅ 立即更新状态，防止按钮状态错误
                     if (transportStatus === "pending") {
-                      startTask(warehouseID, binID);
+                      startTask(binID);
                     }
 
-                    const response = await processBinTask(warehouseID, binID, transportStatus === "pending");
+                    const response = await processBinTask(binID, transportStatus === "pending");
 
                     if (response.success) {
                       console.log(`🚀 API Success: ${response.message}`);
@@ -71,7 +71,7 @@ const useQRScanner = (onScanSuccess?: (warehouseID: string, binID: string) => vo
                         proceedToUnload(); // ✅ 继续 process 状态
                       }
 
-                      onScanSuccess?.(warehouseID, binID);
+                      onScanSuccess?.(binID);
                     } else {
                       console.error("❌ Operation failed: Unexpected response from server.");
                     }
@@ -79,7 +79,7 @@ const useQRScanner = (onScanSuccess?: (warehouseID: string, binID: string) => vo
                     console.error(`❌ API Error: ${err.response?.data?.message || err.message}`);
                   }
                 } else {
-                  console.error("❌ Invalid QR format, expected 'WH-001+BIN-2'");
+                  console.error("❌ Invalid QR format, expected UUID binID");
                 }
               }
             },

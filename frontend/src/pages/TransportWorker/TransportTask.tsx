@@ -14,7 +14,6 @@ const TransportTask = () => {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // ✅ 监听 `transportStatus`，确保 UI 正确更新
   useEffect(() => {
     console.log(`🔄 UI Updated: Current Status = ${transportStatus}`);
   }, [transportStatus]);
@@ -31,30 +30,30 @@ const TransportTask = () => {
     startScanning();
   };
 
-  async function handleScanSuccess(warehouseID: string, binID: string) {
+  async function handleScanSuccess(binID: string) {
     setIsLoading(true);
     setError(null);
     setSuccessMessage(null);
 
     try {
-      console.log(`🚀 Scanned warehouseID: ${warehouseID}, binID: ${binID}`);
+      console.log(`🚀 Scanned binID: ${binID}`);
 
       const isLoadingToCar = transportStatus === "pending"; 
 
-      const response = await processBinTask(warehouseID, binID, isLoadingToCar);
+      const response = await processBinTask(binID, isLoadingToCar);
 
       if (response.success) {
         setSuccessMessage(
           isLoadingToCar
-            ? `✅ Cargo from ${warehouseID} - ${binID} successfully loaded into the car.`
-            : `✅ Cargo from ${warehouseID} - ${binID} successfully unloaded.`
+            ? `✅ Cargo from bin ${binID} successfully loaded into the car.`
+            : `✅ Cargo from bin ${binID} successfully unloaded.`
         );
 
         if (isLoadingToCar) {
-          startTask(warehouseID, binID); // ✅ 进入 `process`
+          startTask(binID);
         } else {
           console.log("🔄 Unload success! Resetting task...");
-          resetTask();  // **直接调用，不用 `setTimeout`**
+          resetTask();
         }
       } else {
         setError("❌ Operation failed: Unexpected response from server.");
@@ -68,9 +67,7 @@ const TransportTask = () => {
 
   return (
     <Container maxWidth="sm" sx={{ textAlign: "center", padding: "20px" }}>
-      <Typography variant="h4" gutterBottom>
-        🚚 Transport Task
-      </Typography>
+      <Typography variant="h4" gutterBottom>🚚 Transport Task</Typography>
 
       <Card variant="outlined" sx={{ mb: 2, bgcolor: "#f5f5f5" }}>
         <CardContent>
@@ -101,47 +98,19 @@ const TransportTask = () => {
       </Button>
 
       {isScanning && (
-        <Box
-          sx={{
-            width: "100%",
-            maxWidth: "400px",
-            height: "250px",
-            borderRadius: "10px",
-            border: "2px solid #1976d2",
-            overflow: "hidden",
-            mx: "auto",
-            mt: 2,
-          }}
-        >
+        <Box sx={{
+          width: "100%", maxWidth: "400px", height: "250px", borderRadius: "10px",
+          border: "2px solid #1976d2", overflow: "hidden", mx: "auto", mt: 2,
+        }}>
           <video ref={videoRef} style={{ width: "100%", height: "100%" }} autoPlay playsInline />
         </Box>
       )}
 
       {isLoading && <CircularProgress sx={{ mt: 2 }} />}
+      {error && <Card sx={{ bgcolor: "#ffebee", color: "#d32f2f", mt: 2 }}><CardContent><Typography>{error}</Typography></CardContent></Card>}
+      {successMessage && <Card sx={{ bgcolor: "#e8f5e9", color: "#2e7d32", mt: 2 }}><CardContent><Typography>{successMessage}</Typography></CardContent></Card>}
 
-      {error && (
-        <Card sx={{ bgcolor: "#ffebee", color: "#d32f2f", mt: 2 }}>
-          <CardContent>
-            <Typography variant="body1">{error}</Typography>
-          </CardContent>
-        </Card>
-      )}
-      {successMessage && (
-        <Card sx={{ bgcolor: "#e8f5e9", color: "#2e7d32", mt: 2 }}>
-          <CardContent>
-            <Typography variant="body1">{successMessage}</Typography>
-          </CardContent>
-        </Card>
-      )}
-
-      <Button
-        variant="outlined"
-        color="inherit"
-        sx={{ mt: 2, width: "80%" }}
-        onClick={() => navigate("/")}
-      >
-        Back to Main
-      </Button>
+      <Button variant="outlined" color="inherit" sx={{ mt: 2, width: "80%" }} onClick={() => navigate("/")}>Back to Main</Button>
     </Container>
   );
 };

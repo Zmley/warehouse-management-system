@@ -1,15 +1,14 @@
 import apiClient from "./axiosClient.ts";  
 
-export const processBinTask = async (warehouseID: string, binID: string, isLoadingToCar: boolean) => {
+export const processBinTask = async (binID: string, isLoadingToCar: boolean) => {
   try {
     const endpoint = isLoadingToCar 
       ? "/api/transport/load-cargo" 
-      : "/api/transport/unload-cargo"; // ✅ 确保 `transport` 路由正确
+      : "/api/transport/unload-cargo"; 
 
-    // ✅ **修正参数，Unloading 时使用 `unLoadBinID`**
     const payload = isLoadingToCar
-      ? { warehouseID, binID } // ✅ Load Cargo
-      : { warehouseID, unLoadBinID: binID }; // ✅ Unload Cargo
+      ? { binID, action: "load" }  // ✅ Load 任务，binID 直接传输
+      : { unLoadBinID: binID, action: "unload" };  // ✅ Unload 任务，binID 作为 unLoadBinID
 
     console.log(`📡 Calling ${endpoint} with payload:`, payload); 
 
