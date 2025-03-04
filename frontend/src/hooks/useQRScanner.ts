@@ -13,6 +13,7 @@ const useQRScanner = (onScanSuccess?: (binID: string) => void) => {
 
   const stopScanning = () => {
     if (scannerRef.current) {
+      console.log("📷 Stopping QR Scanner...");
       scannerRef.current.stop();
       scannerRef.current.destroy();
       scannerRef.current = null;
@@ -20,9 +21,11 @@ const useQRScanner = (onScanSuccess?: (binID: string) => void) => {
     setIsScanning(false);
 
     if (videoRef.current) {
-      const tracks = (videoRef.current.srcObject as MediaStream)?.getTracks();
-      tracks?.forEach((track) => track.stop());
-      videoRef.current.srcObject = null;
+      const stream = videoRef.current.srcObject as MediaStream;
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+        videoRef.current.srcObject = null;
+      }
     }
   };
 
@@ -33,6 +36,9 @@ const useQRScanner = (onScanSuccess?: (binID: string) => void) => {
   }, []);
 
   const startScanning = async () => {
+    console.log("🚀 Starting QR Scanner...");
+    stopScanning(); // ✅ 确保每次都清理之前的 scanner
+
     setIsScanning(true);
 
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -58,22 +64,15 @@ const useQRScanner = (onScanSuccess?: (binID: string) => void) => {
                   console.log(`✅ Parsed binID: ${binID}`);
 
                   try {
-                    // ✅ **如果 `transportStatus === "completed"`，调用 `load-cargo`**
-                    // ✅ **如果 `transportStatus === "inProgress"`，调用 `unload-cargo`**
                     const isLoadingToCar = transportStatus === "completed";
                     const response = await processBinTask(binID, isLoadingToCar);
 
-                    if (response.success) {
+                    if (response && response.success) {
                       console.log(`🚀 API Success: ${response.message}`);
                       await fetchTaskStatus(); // ✅ 更新任务状态
-
-                      // ✅ **确保状态更新后跳转**
-                      setTimeout(() => {
-                        navigate("/in-process-task");
-                      }, 500);
-
                       onScanSuccess?.(binID);
                     } else {
+                      await fetchTaskStatus(); // ✅ 更新任务状态
                       console.error("❌ Operation failed: Unexpected response from server.");
                     }
                   } catch (err: any) {
@@ -85,13 +84,19 @@ const useQRScanner = (onScanSuccess?: (binID: string) => void) => {
               }
             },
             {
-              highlightScanRegion: false,
+              highlightScanRegion: false, // ✅ 避免 `highlightScanRegion` 错误
               highlightCodeOutline: false,
             }
           );
         }
 
-        await scannerRef.current.start();
+        if (scannerRef.current) {
+          try {
+            await scannerRef.current.start();
+          } catch (error) {
+            console.error("❌ Scanner failed to start:", error);
+          }
+        }
       }
     } catch (error) {
       console.error("❌ Unable to access camera:", error);

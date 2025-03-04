@@ -15,28 +15,29 @@ const InProcessTaskPage = () => {
   const { transportStatus, taskData, fetchTaskStatus } = useTransportContext(); // ✅ 直接使用 Context 数据
 
 
-  // ✅ 页面加载时获取任务数据
-  useEffect(() => {
-    fetchTaskStatus(); // ✅ 页面加载时更新数据
-  }, [fetchTaskStatus,taskData]);
+//   // ✅ 页面加载时获取任务数据
+//   useEffect(() => {
+//     fetchTaskStatus(); // ✅ 页面加载时更新数据
+//   }, [fetchTaskStatus,taskData]);
 
   // ✅ 扫码后处理 API 请求
   // ✅ 任务完成时自动更新 Context，不需要 setTaskData
-async function handleScanSuccess(binID: string) {
-    console.log(`✅ Unloading cargo from bin: ${binID}`);
+  async function handleScanSuccess(binID: string) {
+    console.log(`✅ Scanned bin: ${binID}`);
+    stopScanning(); // ✅ 立即停止扫描，避免重复扫描
     setIsLoading(true);
-  
+
     try {
       const response = await processBinTask(binID, false);
       if (response.success) {
-        await fetchTaskStatus(); // ✅ 让 Context 自动更新 taskData
+        await fetchTaskStatus(); // ✅ 更新任务状态
       }
     } catch (error) {
       console.error("❌ Failed to unload cargo:", error);
     } finally {
       setIsLoading(false);
     }
-  }
+}
 
   // ✅ 如果没有任务数据，显示加载动画
   if (!taskData.taskID) {
