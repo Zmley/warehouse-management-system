@@ -6,7 +6,7 @@ import { useTransportContext } from "../../context/transportTaskContext";
 
 const ScanTaskPage = () => {
   const navigate = useNavigate();
-  const { videoRef, isScanning, startScanning, stopScanning } = useQRScanner(handleScanSuccess);
+  const { videoRef, startScanning, stopScanning } = useQRScanner(handleScanSuccess);
   const { fetchTaskStatus } = useTransportContext();
 
   useEffect(() => {

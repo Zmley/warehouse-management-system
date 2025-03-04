@@ -12,21 +12,25 @@ const useQRScanner = (onScanSuccess?: (binID: string) => void) => {
   const scannerRef = useRef<QrScanner | null>(null);
 
   const stopScanning = () => {
+    console.log("📷 Stopping QR Scanner...");
+  
     if (scannerRef.current) {
-      console.log("📷 Stopping QR Scanner...");
       scannerRef.current.stop();
       scannerRef.current.destroy();
       scannerRef.current = null;
     }
-    setIsScanning(false);
-
-    if (videoRef.current) {
+  
+    if (videoRef.current && videoRef.current.srcObject) {
       const stream = videoRef.current.srcObject as MediaStream;
-      if (stream) {
-        stream.getTracks().forEach((track) => track.stop());
-        videoRef.current.srcObject = null;
-      }
+      console.log(`🛑 Stopping ${stream.getTracks().length} tracks...`);
+      stream.getTracks().forEach((track) => {
+        track.stop();
+        console.log(`🛑 Track ${track.kind} stopped.`);
+      });
+      videoRef.current.srcObject = null;
     }
+  
+    setIsScanning(false);
   };
 
   useEffect(() => {
@@ -38,6 +42,8 @@ const useQRScanner = (onScanSuccess?: (binID: string) => void) => {
   const startScanning = async () => {
     console.log("🚀 Starting QR Scanner...");
     stopScanning(); // ✅ 确保每次都清理之前的 scanner
+    await new Promise((resolve) => setTimeout(resolve, 100)); // ✅ 添加 100ms 延迟，确保摄像头完全释放
+
 
     setIsScanning(true);
 
@@ -71,14 +77,19 @@ const useQRScanner = (onScanSuccess?: (binID: string) => void) => {
                       console.log(`🚀 API Success: ${response.message}`);
                       await fetchTaskStatus(); // ✅ 更新任务状态
                       onScanSuccess?.(binID);
+                      stopScanning();
                     } else {
+                      stopScanning();
                       await fetchTaskStatus(); // ✅ 更新任务状态
+                      stopScanning();
                       console.error("❌ Operation failed: Unexpected response from server.");
                     }
                   } catch (err: any) {
+                    stopScanning();
                     console.error(`❌ API Error: ${err.response?.data?.message || err.message}`);
                   }
                 } else {
+                  stopScanning();
                   console.error("❌ Invalid QR format, expected UUID binID");
                 }
               }
