@@ -19,3 +19,22 @@ export const processBinTask = async (binID: string, isLoadingToCar: boolean) => 
     throw error;
   }
 };
+
+
+
+
+/**
+ * 获取当前用户的任务状态
+ * @returns {Promise<{ status: string; currentBinID: string | null }>}
+ */
+export const getUserTaskStatus = async () => {
+  try {
+    console.log("📡 Fetching user task status...");
+    const response = await apiClient.get("/api/transport/user-task-status");
+    console.log("✅ Task status received:", response.data);
+    return response.data; // { status: "inProgress" | "completed", currentBinID: "xxx" | null }
+  } catch (error: any) {
+    console.error("❌ Error fetching task status:", error.response?.data || error.message);
+    throw error;
+  }
+};

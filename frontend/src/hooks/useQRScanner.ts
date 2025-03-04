@@ -4,12 +4,11 @@ import { useTransportContext } from "../context/transportTaskContext";
 import { processBinTask } from "../api/transportTaskApi";
 
 const useQRScanner = (onScanSuccess?: (binID: string) => void) => {
-  const { startTask, proceedToUnload, transportStatus } = useTransportContext();
+  const { fetchTaskStatus } = useTransportContext();
   const [isScanning, setIsScanning] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const scannerRef = useRef<QrScanner | null>(null);
 
-  // ✅ **定义 stopScanning 方法**
   const stopScanning = () => {
     if (scannerRef.current) {
       scannerRef.current.stop();
@@ -27,7 +26,7 @@ const useQRScanner = (onScanSuccess?: (binID: string) => void) => {
 
   useEffect(() => {
     return () => {
-      stopScanning(); // ✅ **确保离开页面时清理摄像头**
+      stopScanning();
     };
   }, []);
 
@@ -50,27 +49,18 @@ const useQRScanner = (onScanSuccess?: (binID: string) => void) => {
             async (result) => {
               if (result.data) {
                 console.log("✅ QR Code scanned:", result.data);
-                stopScanning(); // ✅ **扫描成功后停止摄像头**
+                stopScanning();
 
-                const binID = result.data.trim(); // ✅ 直接读取 `binID`
-
+                const binID = result.data.trim();
                 if (binID) {
                   console.log(`✅ Parsed binID: ${binID}`);
 
                   try {
-                    if (transportStatus === "pending") {
-                      startTask(binID);
-                    }
-
-                    const response = await processBinTask(binID, transportStatus === "pending");
+                    const response = await processBinTask(binID, true);
 
                     if (response.success) {
                       console.log(`🚀 API Success: ${response.message}`);
-
-                      if (transportStatus === "process") {
-                        proceedToUnload(); // ✅ 继续 process 状态
-                      }
-
+                      await fetchTaskStatus(); // ✅ 确保任务状态更新
                       onScanSuccess?.(binID);
                     } else {
                       console.error("❌ Operation failed: Unexpected response from server.");
@@ -98,7 +88,7 @@ const useQRScanner = (onScanSuccess?: (binID: string) => void) => {
     }
   };
 
-  return { videoRef, isScanning, startScanning, stopScanning }; // ✅ **返回 stopScanning**
+  return { videoRef, isScanning, startScanning, stopScanning };
 };
 
 export default useQRScanner;

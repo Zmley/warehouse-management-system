@@ -187,6 +187,22 @@ export const scanPickerareaBin = async (req: AuthRequest, res: Response): Promis
 //test for the get task status -------------------------------------------------------------------------------------------
 
 
+// ✅ 获取 binID 对应的 BinCode
+const getBinCode = async (binID: string | null): Promise<string | null> => {
+  if (!binID) return null;
+  
+  try {
+    const bin = await Bin.findOne({ where: { binID } });
+    return bin ? bin.binCode : null; // ✅ 返回 binCode，如果 bin 不存在返回 null
+  } catch (error) {
+    console.error(`❌ Error fetching BinCode for binID ${binID}:`, error);
+    return null;
+  }
+};
+
+
+
+
 export const getUserTaskStatus = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const accountId = req.user?.sub; // 获取用户 ID
@@ -206,9 +222,14 @@ export const getUserTaskStatus = async (req: AuthRequest, res: Response): Promis
       return;
     }
 
+    const binCode = await getBinCode(task.sourceBinID);
+
     res.status(200).json({
       status: task.status, // 任务状态（"inProgress" | "completed"）
       currentBinID: task.sourceBinID, // 任务对应的 binID
+      taskID: task.taskID, // 任务对应的 binID
+      binCode: binCode,
+      targetBin: task.destinationBinID,
     });
   } catch (error) {
     console.error("❌ Error fetching user task status:", error);

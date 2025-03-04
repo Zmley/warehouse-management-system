@@ -1,5 +1,5 @@
 import React, { useContext, useEffect } from "react";
-import { Container, Typography, Button } from "@mui/material";
+import { Container, Typography, Button, CircularProgress } from "@mui/material";
 import { AuthContext } from "../context/authContext";
 import { useNavigate } from "react-router-dom";
 import { useTransportContext } from "../context/transportTaskContext";
@@ -12,11 +12,15 @@ const roleTitles: { [key: string]: string } = {
 
 const Dashboard: React.FC = () => {
   const { role, logout, isAuthenticated } = useContext(AuthContext)!;
-  const { transportStatus, resetTask } = useTransportContext(); // ✅ 读取状态 & 允许重置任务
+  const { transportStatus, fetchTaskStatus } = useTransportContext();
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log("🔄 Mounted Dashboard - Role:", role, " | Transport Status:", transportStatus);
+    fetchTaskStatus(); // ✅ 确保获取最新状态
+  }, [fetchTaskStatus]); // ✅ 解决 ESLint 警告，正确依赖 fetchTaskStatus
+
+  useEffect(() => {
+    console.log("🔄 Dashboard Loaded - Role:", role, " | Transport Status:", transportStatus);
   }, [role, transportStatus]);
 
   if (!isAuthenticated) {
@@ -26,6 +30,22 @@ const Dashboard: React.FC = () => {
   if (!role) {
     return <Typography variant="h5">⏳ Loading role...</Typography>;
   }
+
+  if (transportStatus === null) {
+    return (
+      <Container sx={{ textAlign: "center", marginTop: "50px" }}>
+        <CircularProgress />
+      </Container>
+    );
+  }
+
+  const handleTransportTask = () => {
+    if (transportStatus === "completed") {
+      navigate("/scan-task"); // ✅ 任务完成后，进入扫码页面
+    } else if (transportStatus === "inProgress") {
+      navigate("/in-progress-task"); // ✅ 任务未完成，进入任务详情页
+    }
+  };
 
   return (
     <Container
@@ -46,33 +66,16 @@ const Dashboard: React.FC = () => {
         Welcome, your role is <strong>{role || "unknown"}</strong>
       </Typography>
 
-      {/* ✅ Admin 专属：库存管理 */}
-      {role === "admin" && (
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => navigate("/inventory")}
-          sx={{ marginBottom: 2 }}
-        >
-          📦 Inventory Management
-        </Button>
-      )}
-
       {/* ✅ Transport Worker 任务入口 */}
       {role === "transportWorker" && (
-       <Button
-       variant="contained"
-       color="secondary"
-       onClick={() => {
-         if (transportStatus === "pending") {
-           resetTask(); // ✅ 确保只有在 pending 状态下重置任务
-         }
-         navigate("/transport-task");
-       }}
-       sx={{ marginBottom: 2 }}
-     >
-       🚛 Go to Transport Task
-     </Button>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={handleTransportTask}
+          sx={{ marginBottom: 2 }}
+        >
+          🚛 Go to Transport Task
+        </Button>
       )}
 
       <Button variant="contained" color="error" onClick={logout}>

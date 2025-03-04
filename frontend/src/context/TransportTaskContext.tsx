@@ -1,41 +1,31 @@
-import { createContext, useContext, useState, ReactNode, useCallback } from "react";
+import { createContext, useContext, useState, useCallback, ReactNode } from "react";
+import { getUserTaskStatus } from "../api/transportTaskApi"; // ✅ 调用 API 获取任务状态
 
-type TransportStatus = "pending" | "process";
+type TransportStatus = "completed" | "inProgress" | null;
 
 interface TransportContextProps {
   transportStatus: TransportStatus;
-  sourceBinID: string | null;
-  startTask: (bin: string) => void;
-  proceedToUnload: () => void;
-  resetTask: () => void;
+  fetchTaskStatus: () => Promise<void>;
 }
 
 const TransportContext = createContext<TransportContextProps | undefined>(undefined);
 
 export const TransportProvider = ({ children }: { children: ReactNode }) => {
-  const [transportStatus, setTransportStatus] = useState<TransportStatus>("pending");
-  const [sourceBinID, setSourceBinID] = useState<string | null>(null);
-  const [, forceUpdate] = useState(0); 
+  const [transportStatus, setTransportStatus] = useState<TransportStatus>(null);
 
-  const startTask = (bin: string) => {
-    setSourceBinID(bin);
-    setTransportStatus("process");
-    forceUpdate((prev) => prev + 1);
-  };
-
-  const proceedToUnload = () => {
-    setTransportStatus("process");
-    forceUpdate((prev) => prev + 1);
-  };
-
-  const resetTask = useCallback(() => {
-    setSourceBinID(null);
-    setTransportStatus("pending");
-    forceUpdate((prev) => prev + 1);
+  // ✅ 获取任务状态
+  const fetchTaskStatus = useCallback(async () => {
+    try {
+      const response = await getUserTaskStatus(); // 调用 API
+      setTransportStatus(response.status); // ✅ 确保状态正确更新
+      console.log(`🚀 Updated Transport Status: ${response.status}`);
+    } catch (error) {
+      console.error("❌ Failed to fetch task status:", error);
+    }
   }, []);
 
   return (
-    <TransportContext.Provider value={{ transportStatus, sourceBinID, startTask, proceedToUnload, resetTask }}>
+    <TransportContext.Provider value={{ transportStatus, fetchTaskStatus }}>
       {children}
     </TransportContext.Provider>
   );
