@@ -5,6 +5,8 @@ import Dashboard from "../pages/dashboard";
 import InventoryManagement from "../pages/Admin/InventoryManagementPage";
 import EditInventoryPage from "../components/admin/InventoryPage"; 
 import InProcessTaskPage from "../pages/transportWorker/InProcessTaskPage"; // ✅ 任务进行中界面
+import ScanTaskPage from "../pages/transportWorker/ScanTaskPage"; // ✅ 任务进行中界面
+
 // import TransportTask from "../pages/transportWorker/transportTask";
 // import ScanCargo from "../pages/transportWorker/transportTask"; // ✅ 确保引入页面
 // import LoadCargo from "../pages/transportWorker/transportTask"; // ✅ 确保这个组件存在
@@ -28,6 +30,8 @@ const PrivateRoutes: React.FC = () => {
         {/* <Route path="/scan-cargo" element={<ScanCargo />} />
         <Route path="/load-cargo" element={<LoadCargo />} /> ✅ 确保这个路由存在 */}
                 <Route path="/in-progress-task" element={<InProcessTaskPage />} />
+                <Route path="/scan-task" element={<ScanTaskPage />} />
+
       </Route>
     </Routes>
   );

@@ -2,9 +2,11 @@ import { useState, useRef, useEffect } from "react";
 import QrScanner from "qr-scanner";
 import { useTransportContext } from "../context/transportTaskContext";
 import { processBinTask } from "../api/transportTaskApi";
+import { useNavigate } from "react-router-dom"; // ✅ 添加跳转
 
 const useQRScanner = (onScanSuccess?: (binID: string) => void) => {
-  const { fetchTaskStatus } = useTransportContext();
+  const navigate = useNavigate();
+  const { fetchTaskStatus, transportStatus } = useTransportContext();
   const [isScanning, setIsScanning] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const scannerRef = useRef<QrScanner | null>(null);
@@ -56,11 +58,20 @@ const useQRScanner = (onScanSuccess?: (binID: string) => void) => {
                   console.log(`✅ Parsed binID: ${binID}`);
 
                   try {
-                    const response = await processBinTask(binID, true);
+                    // ✅ **如果 `transportStatus === "completed"`，调用 `load-cargo`**
+                    // ✅ **如果 `transportStatus === "inProgress"`，调用 `unload-cargo`**
+                    const isLoadingToCar = transportStatus === "completed";
+                    const response = await processBinTask(binID, isLoadingToCar);
 
                     if (response.success) {
                       console.log(`🚀 API Success: ${response.message}`);
-                      await fetchTaskStatus(); // ✅ 确保任务状态更新
+                      await fetchTaskStatus(); // ✅ 更新任务状态
+
+                      // ✅ **确保状态更新后跳转**
+                      setTimeout(() => {
+                        navigate("/in-process-task");
+                      }, 500);
+
                       onScanSuccess?.(binID);
                     } else {
                       console.error("❌ Operation failed: Unexpected response from server.");

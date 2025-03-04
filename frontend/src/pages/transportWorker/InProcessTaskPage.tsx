@@ -3,48 +3,42 @@ import { useNavigate } from "react-router-dom";
 import { Container, Typography, Button, CircularProgress, Box, Card, CardContent } from "@mui/material";
 import useQRScanner from "../../hooks/useQRScanner";
 import { useTransportContext } from "../../context/transportTaskContext";
-import { getUserTaskStatus } from "../../api/transportTaskApi";
+import {  processBinTask } from "../../api/transportTaskApi";
 
 const InProcessTaskPage = () => {
-  const navigate = useNavigate(); // ✅ 添加导航功能
+  const navigate = useNavigate();
   const { videoRef, isScanning, startScanning, stopScanning } = useQRScanner(handleScanSuccess);
-  const { fetchTaskStatus } = useTransportContext();
   const [isLoading, setIsLoading] = useState(false);
-  const [taskData, setTaskData] = useState({
-    status: "",
-    taskID: "",
-    currentBinID: "",
-    targetBin: "",
-    binCode: "",
-    targetCode:"",
-  });
 
+
+
+  const { transportStatus, taskData, fetchTaskStatus } = useTransportContext(); // ✅ 直接使用 Context 数据
+
+
+  // ✅ 页面加载时获取任务数据
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await getUserTaskStatus();
-        setTaskData(response);
-        fetchTaskStatus(); // ✅ 确保 transportStatus 也更新
-      } catch (error) {
-        console.error("❌ Failed to fetch task details:", error);
-      }
-    };
-    fetchData();
-  }, [fetchTaskStatus]);
+    fetchTaskStatus(); // ✅ 页面加载时更新数据
+  }, [fetchTaskStatus,taskData]);
 
-  async function handleScanSuccess(binID: string) {
+  // ✅ 扫码后处理 API 请求
+  // ✅ 任务完成时自动更新 Context，不需要 setTaskData
+async function handleScanSuccess(binID: string) {
     console.log(`✅ Unloading cargo from bin: ${binID}`);
     setIsLoading(true);
-
+  
     try {
-      await fetchTaskStatus();
+      const response = await processBinTask(binID, false);
+      if (response.success) {
+        await fetchTaskStatus(); // ✅ 让 Context 自动更新 taskData
+      }
     } catch (error) {
-      console.error("❌ Failed to update task status:", error);
+      console.error("❌ Failed to unload cargo:", error);
     } finally {
       setIsLoading(false);
     }
   }
 
+  // ✅ 如果没有任务数据，显示加载动画
   if (!taskData.taskID) {
     return (
       <Container sx={{ textAlign: "center", marginTop: "50px" }}>
@@ -84,7 +78,7 @@ const InProcessTaskPage = () => {
           <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", mt: 2 }}>
             <Box
               sx={{
-                bgcolor: taskData.status === "inProgress" ? "#A5D6A7" : "#BDBDBD",
+                bgcolor: transportStatus === "inProgress" ? "#A5D6A7" : "#BDBDBD",
                 color: "black",
                 padding: "6px 12px",
                 borderRadius: "20px",
@@ -95,9 +89,16 @@ const InProcessTaskPage = () => {
                 gap: "6px",
               }}
             >
-              <span>●</span> {taskData.status === "inProgress" ? "Goods Picked" : "Goods Delivered"}
+              <span>●</span> {transportStatus === "inProgress" ? "Goods Picked" : "Goods Delivered"}
             </Box>
           </Box>
+
+          {/* ✅ 任务完成提示 */}
+          {transportStatus === "completed" && (
+            <Typography variant="h6" sx={{ color: "#2e7d32", fontWeight: "bold", mt: 2 }}>
+              ✅ Task Completed!
+            </Typography>
+          )}
 
           {/* 扫码 & 取消按钮 */}
           <Box sx={{ mt: 3 }}>
@@ -107,7 +108,7 @@ const InProcessTaskPage = () => {
               fullWidth
               sx={{ borderRadius: "10px", fontSize: "14px" }}
               onClick={startScanning}
-              disabled={isScanning}
+              disabled={isScanning || transportStatus === "completed"} // ✅ 任务完成后禁用按钮
             >
               {isScanning ? "Scanning..." : "SCAN 📷"}
             </Button>
