@@ -178,3 +178,40 @@ export const scanPickerareaBin = async (req: AuthRequest, res: Response): Promis
     res.status(500).json({ message: "❌ Internal Server Error", error: error.message });
   }
 };
+
+
+
+
+
+
+//test for the get task status -------------------------------------------------------------------------------------------
+
+
+export const getUserTaskStatus = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const accountId = req.user?.sub; // 获取用户 ID
+    if (!accountId) {
+      res.status(400).json({ message: "❌ Missing accountId" });
+      return;
+    }
+
+    // 查询用户的最新任务状态
+    const task = await Task.findOne({
+      where: { accountID: accountId },
+      order: [["updatedAt", "DESC"]], // 获取最新的一条任务记录
+    });
+
+    if (!task) {
+      res.status(200).json({ status: "completed", currentBinID: null }); // 默认状态为 completed
+      return;
+    }
+
+    res.status(200).json({
+      status: task.status, // 任务状态（"inProgress" | "completed"）
+      currentBinID: task.sourceBinID, // 任务对应的 binID
+    });
+  } catch (error) {
+    console.error("❌ Error fetching user task status:", error);
+    res.status(500).json({ message: "❌ Internal Server Error" });
+  }
+};
