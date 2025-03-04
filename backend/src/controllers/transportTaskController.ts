@@ -223,6 +223,7 @@ export const getUserTaskStatus = async (req: AuthRequest, res: Response): Promis
     }
 
     const binCode = await getBinCode(task.sourceBinID);
+    const targetCode = await getBinCode(task.destinationBinID);
 
     res.status(200).json({
       status: task.status, // 任务状态（"inProgress" | "completed"）
@@ -230,6 +231,8 @@ export const getUserTaskStatus = async (req: AuthRequest, res: Response): Promis
       taskID: task.taskID, // 任务对应的 binID
       binCode: binCode,
       targetBin: task.destinationBinID,
+      targetCode: targetCode,
+
     });
   } catch (error) {
     console.error("❌ Error fetching user task status:", error);

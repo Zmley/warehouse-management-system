@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Container, Typography, Button, CircularProgress, Box, Card, CardContent } from "@mui/material";
 import useQRScanner from "../../hooks/useQRScanner";
 import { useTransportContext } from "../../context/transportTaskContext";
 import { getUserTaskStatus } from "../../api/transportTaskApi";
 
 const InProcessTaskPage = () => {
+  const navigate = useNavigate(); // ✅ 添加导航功能
   const { videoRef, isScanning, startScanning, stopScanning } = useQRScanner(handleScanSuccess);
   const { fetchTaskStatus } = useTransportContext();
   const [isLoading, setIsLoading] = useState(false);
@@ -14,6 +16,7 @@ const InProcessTaskPage = () => {
     currentBinID: "",
     targetBin: "",
     binCode: "",
+    targetCode:"",
   });
 
   useEffect(() => {
@@ -68,12 +71,12 @@ const InProcessTaskPage = () => {
           {/* Source Bin & Target Bin */}
           <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
             <Box>
-              <Typography variant="subtitle2" sx={{ fontSize: "14px", fontWeight: "bold" }}>Source Bin Code</Typography>
+              <Typography variant="subtitle2" sx={{ fontSize: "14px", fontWeight: "bold" }}>Source Bin</Typography>
               <Typography variant="body1" sx={{ fontSize: "16px", fontWeight: "bold" }}>{taskData.binCode || "--"}</Typography>
             </Box>
             <Box>
               <Typography variant="subtitle2" sx={{ fontSize: "14px", fontWeight: "bold" }}>Target Bin</Typography>
-              <Typography variant="body1" sx={{ fontSize: "16px", fontWeight: "bold" }}>{taskData.targetBin || "--"}</Typography>
+              <Typography variant="body1" sx={{ fontSize: "16px", fontWeight: "bold" }}>{taskData.targetCode || "--"}</Typography>
             </Box>
           </Box>
 
@@ -142,6 +145,17 @@ const InProcessTaskPage = () => {
           {isLoading && <CircularProgress sx={{ mt: 2 }} />}
         </CardContent>
       </Card>
+
+      {/* ✅ 返回 Dashboard 按钮 */}
+      <Button
+        variant="outlined"
+        color="secondary"
+        fullWidth
+        sx={{ borderRadius: "10px", mt: 2, fontSize: "14px", fontWeight: "bold" }}
+        onClick={() => navigate("/dashboard")}
+      >
+        🔙 Back to Dashboard
+      </Button>
     </Container>
   );
 };
