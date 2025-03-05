@@ -1,4 +1,4 @@
-import apiClient from "./axiosClient.ts";  
+import apiClient from "./axiosClient.ts.js";  
 
 export const processBinTask = async (binID: string, isLoadingToCar: boolean) => {
   try {

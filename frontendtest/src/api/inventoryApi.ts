@@ -1,4 +1,4 @@
-import apiClient from "./axiosClient.ts"; 
+import apiClient from "./axiosClient.ts.js"; 
 
 export const fetchInventory = async () => {
   try {
