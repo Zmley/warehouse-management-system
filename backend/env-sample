@@ -1,0 +1,12 @@
+NODE_ENV=production
+PORT=5100
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_SESSION_TOKEN=
+SOCKET_SERVER_URL=
+# 下面需要改成自己用的Printer Name
+PRINTER_NAME=
+# 下面需要改成自己用的OneDrive根路径
+ONEDRIVE_ROOT_PATH=
+# 下面需要改成自己用的Client ID
+CLIENTID=
