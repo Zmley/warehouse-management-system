@@ -1,4 +1,4 @@
-import apiClient from "./axiosClient.ts"; // ✅ 复用全局 API 客户端
+import apiClient from "./axiosClient.ts.js"; // ✅ 复用全局 API 客户端
 
 /**
  * ✅ 获取所有库存数据
