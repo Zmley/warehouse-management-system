@@ -43,7 +43,7 @@ const Dashboard: React.FC = () => {
     if (transportStatus === "completed") {
       navigate("/scan-task"); // ✅ 任务完成后，进入扫码页面
     } else if (transportStatus === "inProgress") {
-      navigate("/in-progress-task"); // ✅ 任务未完成，进入任务详情页
+      navigate("/in-process-task"); // ✅ 任务未完成，进入任务详情页
     }
   };
 

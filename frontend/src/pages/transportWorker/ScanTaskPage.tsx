@@ -35,7 +35,7 @@ const ScanTaskPage = () => {
     // ✅ 任务成功后跳转到 InProcessTaskPage
     setTimeout(() => {
       navigate("/in-process-task");
-    }, 500);
+    });
   }
 
   return (

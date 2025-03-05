@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { AuthContext } from "../context/authContext";
-import Dashboard from "../pages/dashboard";
+import Dashboard from "../pages/Dashboard";
 import InventoryManagement from "../pages/Admin/InventoryManagementPage";
 import EditInventoryPage from "../components/admin/InventoryPage"; 
 import InProcessTaskPage from "../pages/transportWorker/InProcessTaskPage"; // ✅ 任务进行中界面
@@ -29,7 +29,7 @@ const PrivateRoutes: React.FC = () => {
         <Route path="/inventory/edit/:id" element={<EditInventoryPage />} /> 
         {/* <Route path="/scan-cargo" element={<ScanCargo />} />
         <Route path="/load-cargo" element={<LoadCargo />} /> ✅ 确保这个路由存在 */}
-                <Route path="/in-progress-task" element={<InProcessTaskPage />} />
+                <Route path="/in-process-task" element={<InProcessTaskPage />} />
                 <Route path="/scan-task" element={<ScanTaskPage />} />
 
       </Route>

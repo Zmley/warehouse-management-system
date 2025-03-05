@@ -13,10 +13,19 @@ export const processBinTask = async (binID: string, isLoadingToCar: boolean) => 
     console.log(`📡 Calling ${endpoint} with payload:`, payload); 
 
     const response = await apiClient.post(endpoint, payload);
-    return response.data;
+
+    // ✅ 确保返回的对象里有 `success` 字段
+    return {
+      success: true,
+      data: response.data, // 可能包含 `message` 或其他返回信息
+    };
   } catch (error: any) {
     console.error("❌ Error in processBinTask:", error.response?.data || error.message);
-    throw error;
+
+    return {
+      success: false,
+      error: error.response?.data || error.message,
+    };
   }
 };
 

@@ -74,22 +74,18 @@ const useQRScanner = (onScanSuccess?: (binID: string) => void) => {
                     const response = await processBinTask(binID, isLoadingToCar);
 
                     if (response && response.success) {
-                      console.log(`🚀 API Success: ${response.message}`);
+                      console.log(`🚀 API Success: ${response}`);
                       await fetchTaskStatus(); // ✅ 更新任务状态
                       onScanSuccess?.(binID);
                       stopScanning();
                     } else {
-                      stopScanning();
-                      await fetchTaskStatus(); // ✅ 更新任务状态
-                      stopScanning();
+            
                       console.error("❌ Operation failed: Unexpected response from server.");
                     }
                   } catch (err: any) {
-                    stopScanning();
                     console.error(`❌ API Error: ${err.response?.data?.message || err.message}`);
                   }
                 } else {
-                  stopScanning();
                   console.error("❌ Invalid QR format, expected UUID binID");
                 }
               }
