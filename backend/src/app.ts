@@ -1,32 +1,16 @@
-import express, { Application } from 'express'
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
 
-import httpContext from 'express-http-context'
+dotenv.config();
 
-import cors from 'cors'
-import httpLogger from 'utils/httpLogger'
-import errorHandling from 'middlewares/errorHandling.middleware'
-import uniqueReqId from 'middlewares/uniqueReqId.middleware'
-import http404 from 'routes/404/404.router'
+const app = express();
 
-import api from 'api'
+app.use(express.json());
+app.use(cors());
 
-const app: Application = express()
+app.get("/", (req, res) => {
+  res.send("Warehouse Management System Backend is running...");
+});
 
-const corsOptions = {
-  origin: ['http://localhost:4100'],
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // The methods you want to allow
-  credentials: true, // This allows session cookies to be sent back and forth
-  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
-}
-
-app.use(cors(corsOptions))
-app.use(httpContext.middleware)
-app.use(httpLogger.successHandler)
-app.use(httpLogger.errorHandler)
-app.use(uniqueReqId)
-app.use(express.json())
-app.use('/api', api)
-app.use(http404)
-app.use(errorHandling)
-
-export default app
+export default app;

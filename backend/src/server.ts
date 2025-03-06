@@ -1,37 +1,33 @@
-import { Server } from 'http'
-import app from 'app'
-import config from 'config/config'
-import logger from 'utils/logger'
-import errorHandler from 'utils/errorHandler'
-import { runSocket } from 'utils/socketHandler'
+import dotenv from 'dotenv'
+dotenv.config()
+import express from "express";
+import cors from "cors";
+import authRoutes from "./routes/authRoutes";
+import { connectDB } from "./config/db";
 
-const { port } = config
 
-const server: Server = app.listen(port, (): void => {
-  logger.info(`Application listens on PORT: ${port}`)
-})
+connectDB();
 
-runSocket()
 
-process.on('uncaughtException', error => {
-  console.error('Uncaught Exception:', error)
-  unexpectedErrorHandler(error)
-})
 
-const exitHandler = (): void => {
-  if (app) {
-    server.close(() => {
-      logger.info('Server closed')
-      process.exit(1)
-    })
-  } else {
-    process.exit(1)
-  }
-}
+const app = express();
 
-const unexpectedErrorHandler = (error: Error): void => {
-  errorHandler.handleError(error)
-  if (!errorHandler.isTrustedError(error)) {
-    exitHandler()
-  }
-}
+
+app.use(
+  cors({
+    origin: ["http://localhost:3000", "http://192.168.4.90:3000"], 
+    credentials: true,
+  })
+);
+
+app.use(express.json());
+app.use(cors());
+
+app.use("/api/auth", authRoutes);
+
+
+
+const PORT = process.env.PORT || 5001;
+app.listen(PORT, () => {
+  console.log(`🚀 Server is running on http://localhost:${PORT}`);
+});
