@@ -9,6 +9,7 @@ import {
   CognitoUserAttribute,
 } from "amazon-cognito-identity-js";
 import User from "../models/User"; 
+import { CognitoIdentityProviderClient, InitiateAuthCommand,AuthFlowType } from "@aws-sdk/client-cognito-identity-provider";
 
 const cognito = new AWS.CognitoIdentityServiceProvider({
   region: process.env.AWS_REGION, 
@@ -21,23 +22,31 @@ const poolData = {
 const userPool = new CognitoUserPool(poolData);
 
 
+// ✅ 使用 AWS SDK v3 连接 Cognito（不需要 AWS 访问凭证）
+const cognitoClient = new CognitoIdentityProviderClient({
+  region: process.env.AWS_REGION!,
+});
+
+
 export const loginUser = async (req: Request, res: Response) => {
   const { email, password } = req.body;
   console.log("🟢 Received Login Request:", { email });
 
   try {
+    // ✅ 使用 AuthFlowType.USER_PASSWORD_AUTH
     const params = {
-      AuthFlow: "ADMIN_NO_SRP_AUTH",
+      AuthFlow: AuthFlowType.USER_PASSWORD_AUTH,
       ClientId: process.env.COGNITO_CLIENT_ID!,
-      UserPoolId: process.env.COGNITO_USER_POOL_ID!,
       AuthParameters: {
         USERNAME: email,
         PASSWORD: password,
       },
     };
 
-    const authResponse = await cognito.adminInitiateAuth(params).promise();
-    console.log("🟢 Cognito Auth Success:", authResponse);
+    const command = new InitiateAuthCommand(params);
+    const authResponse = await cognitoClient.send(command);
+
+    console.log("✅ Cognito Auth Success:", authResponse.AuthenticationResult);
 
     res.json({
       accessToken: authResponse.AuthenticationResult?.AccessToken,
@@ -48,13 +57,13 @@ export const loginUser = async (req: Request, res: Response) => {
     console.error("❌ Cognito Login Error:", error);
 
     let errorMessage = "❌ Login failed";
-    if (error.code === "NotAuthorizedException") {
+    if (error.name === "NotAuthorizedException") {
       errorMessage = "❌ Incorrect username or password";
-    } else if (error.code === "UserNotFoundException") {
+    } else if (error.name === "UserNotFoundException") {
       errorMessage = "❌ User does not exist";
-    } else if (error.code === "UserNotConfirmedException") {
+    } else if (error.name === "UserNotConfirmedException") {
       errorMessage = "❌ User is not confirmed. Please check your email.";
-    } else if (error.code === "PasswordResetRequiredException") {
+    } else if (error.name === "PasswordResetRequiredException") {
       errorMessage = "❌ Password reset is required.";
     }
 

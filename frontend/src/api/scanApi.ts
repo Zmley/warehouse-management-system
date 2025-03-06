@@ -1,4 +1,4 @@
-import apiClient from "./axiosClient.ts.js"; // 确保 axiosClient 正确引入
+import apiClient from "./axiosClient.ts"; // 确保 axiosClient 正确引入
 
 // 更新 bin 所有权的 API 调用
 export const updateBinOwnership = async (binID: string, accountId: string) => {

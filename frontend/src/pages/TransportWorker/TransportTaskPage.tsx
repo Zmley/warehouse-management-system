@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTransportContext } from "../../context/transportTaskContext";
-import ScanTaskPage from "./ScanTaskPage"; // ✅ 扫码界面
-import InProcessTaskPage from "./InProcessTaskPage"; // ✅ 任务进行中界面
+import ScanTaskPage from "./ScanTask"; // ✅ 扫码界面
+import InProcessTaskPage from "./InProcessPage"; // ✅ 任务进行中界面
 import { CircularProgress, Container } from "@mui/material";
 
 const TransportTask = () => {

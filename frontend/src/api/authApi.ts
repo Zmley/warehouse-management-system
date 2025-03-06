@@ -1,4 +1,4 @@
-import apiClient from "./axiosClient.ts.js"; 
+import apiClient from "./axiosClient.ts"; 
 
 export const loginUser = async (email: string, password: string) => {
   const response = await apiClient.post("/api/auth/login", { email, password });
