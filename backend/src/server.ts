@@ -1,37 +1,18 @@
-import { Server } from 'http'
-import app from 'app'
-import config from 'config/config'
-import logger from 'utils/logger'
-import errorHandler from 'utils/errorHandler'
-import { runSocket } from 'utils/socketHandler'
+import dotenv from 'dotenv'
+dotenv.config()
 
-const { port } = config
+import app from './app'
+import { connectDB } from './config/db'
 
-const server: Server = app.listen(port, (): void => {
-  logger.info(`Application listens on PORT: ${port}`)
+connectDB()
+  .then(() => {
+    console.log('✅ Database Connected')
+  })
+  .catch(error => {
+    console.error('❌ Database Connection Failed:', error)
+  })
+
+const PORT = process.env.PORT || 5001
+app.listen(PORT, () => {
+  console.log(`🚀 Server is running on http://localhost:${PORT}`)
 })
-
-runSocket()
-
-process.on('uncaughtException', error => {
-  console.error('Uncaught Exception:', error)
-  unexpectedErrorHandler(error)
-})
-
-const exitHandler = (): void => {
-  if (app) {
-    server.close(() => {
-      logger.info('Server closed')
-      process.exit(1)
-    })
-  } else {
-    process.exit(1)
-  }
-}
-
-const unexpectedErrorHandler = (error: Error): void => {
-  errorHandler.handleError(error)
-  if (!errorHandler.isTrustedError(error)) {
-    exitHandler()
-  }
-}
