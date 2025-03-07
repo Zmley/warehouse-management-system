@@ -15,13 +15,16 @@ const InProcessTaskPage = () => {
   const { transportStatus, taskData, fetchTaskStatus } = useTransportContext(); // ✅ 直接使用 Context 数据
 
 
-//   // ✅ 页面加载时获取任务数据
-//   useEffect(() => {
-//     fetchTaskStatus(); // ✅ 页面加载时更新数据
-//   }, [fetchTaskStatus,taskData]);
+  useEffect(() => {
+    console.log("Fetching task status on mount...");
+    fetchTaskStatus(); // ✅ 只在页面加载时调用
+  
+    // ✅ 组件卸载时清理
+    return () => {
+      console.log("Cleaning up task status effect...");
+    };
+  }, []); // ✅ 依赖数组为空，确保 `fetchTaskStatus` 只执行一次
 
-  // ✅ 扫码后处理 API 请求
-  // ✅ 任务完成时自动更新 Context，不需要 setTaskData
   async function handleScanSuccess(binID: string) {
     console.log(`✅ Scanned bin: ${binID}`);
     stopScanning(); // ✅ 立即停止扫描，避免重复扫描
