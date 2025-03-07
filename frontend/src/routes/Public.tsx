@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthContext } from "../context/authContext";
-import LoginPage from "../pages/loginPage";
+import LoginPage from "../pages/Login";
 
 const PublicRoutes: React.FC = () => {
   const { isAuthenticated } = useContext(AuthContext)!;
@@ -10,7 +10,6 @@ const PublicRoutes: React.FC = () => {
 
   return (
     <Routes>
-      {/* ✅ 如果用户已登录，自动跳转到 `/dashboard` */}
       <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" /> : <LoginPage />} />
     </Routes>
   );

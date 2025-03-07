@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { fetchUserProfile, loginUser } from '../api/authApi'
-import { clearTokens, saveTokens, areTokensValid } from '../utils/storage'
+import { clearTokens, saveTokens, areTokensValid } from '../utils/Storages'
 
 interface UserProfile {
   firstname: string;
@@ -53,10 +53,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .then((userData) => {
           console.log('✅ Loaded:', userData);
           setUserProfile({
-            firstname: userData.firstName,
-            lastname: userData.lastName,
-            email: userData.email,
-            role: userData.role,
+            firstname: userData.user.firstName,
+            lastname: userData.user.lastName,
+            email: userData.user.email,
+            role: userData.user.role,
           });
         })
         .catch(error => {

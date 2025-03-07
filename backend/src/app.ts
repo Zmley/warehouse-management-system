@@ -1,16 +1,21 @@
-import express from "express";
-import cors from "cors";
-import dotenv from "dotenv";
+import express from 'express'
+import cors from 'cors'
+import authRoutes from './routes/authRoutes'
 
-dotenv.config();
+const app = express()
 
-const app = express();
+app.use(
+  cors({
+    origin: ['http://localhost:3000'],
+    credentials: true
+  })
+)
+app.use(express.json())
 
-app.use(express.json());
-app.use(cors());
+app.use('/api/auth', authRoutes)
 
-app.get("/", (req, res) => {
-  res.send("Warehouse Management System Backend is running...");
-});
+app.get('/', (req, res) => {
+  res.send('Warehouse Management System Backend is running...')
+})
 
-export default app;
+export default app

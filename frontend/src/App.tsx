@@ -1,8 +1,8 @@
 import React from "react";
 import { BrowserRouter as Router } from "react-router-dom";
 import { AuthProvider } from "./context/authContext";
-import PublicRoutes from "./routes/publicRoutes";
-import PrivateRoutes from "./routes/privateRoutes";
+import PublicRoutes from "./routes/Public";
+import PrivateRoutes from "./routes/Private";
 
 
 

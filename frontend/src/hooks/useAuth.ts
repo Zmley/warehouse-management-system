@@ -2,7 +2,7 @@ import { useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AuthContext } from '../context/authContext'
 import { loginUser, fetchUserProfile } from '../api/authApi'
-import { saveTokens } from '../utils/storage'
+import { saveTokens } from '../utils/Storages'
 
 export const useAuth = () => {
   const { logout, isAuthenticated, userProfile, setUserProfile } =

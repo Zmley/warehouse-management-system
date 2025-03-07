@@ -10,7 +10,7 @@ import {
 import { useAuth } from '../hooks/useAuth'
 
 const LoginPage: React.FC = () => {
-  const { handleLogin } = useAuth() 
+  const { handleLogin } = useAuth()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -18,7 +18,7 @@ const LoginPage: React.FC = () => {
   return (
     <Box
       sx={{
-        backgroundImage: "url('/background.png')", 
+        backgroundImage: "url('/background.png')",
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         width: '100vw',
@@ -32,7 +32,7 @@ const LoginPage: React.FC = () => {
         sx={{
           width: '100%',
           maxWidth: '400px',
-          background: 'rgba(255, 255, 255, 0.1)', 
+          background: 'rgba(255, 255, 255, 0.1)',
           padding: '40px',
           borderRadius: '12px',
           textAlign: 'center',
@@ -62,7 +62,7 @@ const LoginPage: React.FC = () => {
           onChange={e => setEmail(e.target.value)}
           sx={{
             mb: 2,
-            background: 'rgba(255, 255, 255, 0.2)', 
+            background: 'rgba(255, 255, 255, 0.2)',
             borderRadius: '8px',
             input: { color: '#FFF' },
             '& .MuiOutlinedInput-root': {
@@ -80,7 +80,7 @@ const LoginPage: React.FC = () => {
           onChange={e => setPassword(e.target.value)}
           sx={{
             mb: 2,
-            background: 'rgba(255, 255, 255, 0.2)', 
+            background: 'rgba(255, 255, 255, 0.2)',
             borderRadius: '8px',
             input: { color: '#FFF' },
             '& .MuiOutlinedInput-root': {

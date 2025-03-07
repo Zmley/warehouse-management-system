@@ -11,13 +11,11 @@ export const awsConfig = {
   clientId: process.env.COGNITO_CLIENT_ID!,
 };
 
-// 确保环境变量正确加载
 console.log("🟢 AWS Cognito Config Loaded:");
 console.log(`   🌍 AWS_REGION: ${awsConfig.region}`);
 console.log(`   🔑 COGNITO_USER_POOL_ID: ${awsConfig.userPoolId}`);
 console.log(`   🆔 COGNITO_CLIENT_ID: ${awsConfig.clientId}`);
 
-// 创建 AWS Cognito 客户端（v3）
 export const cognitoClient = new CognitoIdentityProviderClient({
   region: awsConfig.region,
   credentials: {
