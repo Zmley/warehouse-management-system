@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import Task from "../models/task";
+import Bin from "../models/bin";
 import { AuthRequest } from "../middleware/authMiddleware";
 
 /**
@@ -53,26 +54,60 @@ export const createPendingTask = async (
     }
   };
 
+
+  /**
+ * 通过 binId 获取 binCode
+ * @param binId Bin 表中的 ID
+ * @returns binCode 或者 "N/A"（如果未找到）
+ */
+export const getBinCodeById = async (binId: string): Promise<string> => {
+  try {
+    const bin = await Bin.findOne({
+      where: { binID: binId },
+      attributes: ["binCode"],
+    });
+
+    return bin ? bin.binCode : "N/A"; // ✅ 如果找不到，返回 "N/A"
+  } catch (error) {
+    console.error(`❌ Error fetching binCode for binId ${binId}:`, error);
+    return "N/A"; // ✅ 发生错误时，返回 "N/A"
+  }
+};
+
 /**
  * 获取所有 "pending" 状态的任务
  * @route GET /api/task/pending
  */
-export const getPendingTasks = async (
-    req: Request,
-    res: Response
-  ): Promise<void> => {
-    try {
-      const pendingTasks = await Task.findAll({
-        where: { status: "pending" },
-      });
-  
-      res.status(200).json({
-        message: `✅ 查询成功，共 ${pendingTasks.length} 条任务`,
-        tasks: pendingTasks,
-      });
-    } catch (error: unknown) { // 👈 显式声明 error
-      const errorMessage = error instanceof Error ? error.message : "Unknown error";
-      console.error("❌ Error fetching pending tasks:", errorMessage);
-      res.status(500).json({ message: "❌ Internal Server Error", error: errorMessage });
+export const getPendingTasks = async (req: Request, res: Response): Promise<void> => {
+  try {
+    // ✅ 查找所有 `pending` 任务
+    const pendingTasks = await Task.findAll({
+      where: { status: "pending" },
+      attributes: ["taskID", "status", "sourceBinID", "destinationBinID"],
+    });
+
+    if (pendingTasks.length === 0) {
+      res.status(200).json({ message: "✅ 没有待处理的任务", tasks: [] });
+      return;
     }
-  };
+
+    // ✅ 获取 sourceBinCode 和 destinationBinCode
+    const formattedTasks = await Promise.all(
+      pendingTasks.map(async (task) => ({
+        id: task.taskID,
+        status: task.status,
+        sourceBinCode: await getBinCodeById(task.sourceBinID), // 获取来源仓位 binCode
+        destinationBinCode: await getBinCodeById(task.destinationBinID), // 获取目标仓位 binCode
+      }))
+    );
+
+    res.status(200).json({
+      message: `✅ 查询成功，共 ${formattedTasks.length} 条任务`,
+      tasks: formattedTasks,
+    });
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    console.error("❌ Error fetching pending tasks:", errorMessage);
+    res.status(500).json({ message: "❌ Internal Server Error", error: errorMessage });
+  }
+};

@@ -10,29 +10,26 @@ const ScanTaskPage = () => {
   const { fetchTaskStatus } = useTransportContext();
 
   useEffect(() => {
-    fetchTaskStatus(); // ✅ 进入页面时检查任务状态
+    fetchTaskStatus(); 
 
-    // ✅ 预请求摄像头权限，避免进入页面才弹窗
     navigator.mediaDevices.getUserMedia({ video: true })
       .then(() => {
         console.log("✅ Camera permission granted");
-        startScanning(); // ✅ 确保摄像头自动启动
+        startScanning(); 
       })
       .catch(err => {
         console.warn("⚠️ Camera permission denied:", err);
         alert("Please enable camera permissions to use scanning.");
       });
 
-    return () => stopScanning(); // ✅ 组件卸载时自动关闭摄像头
+    return () => stopScanning(); 
   }, []);
 
   async function handleScanSuccess(binID: string) {
     console.log(`✅ Scanned new bin ID: ${binID}`);
 
-    // ✅ 任务创建成功后，检查任务状态
     await fetchTaskStatus();
 
-    // ✅ 任务成功后跳转到 InProcessTaskPage
     setTimeout(() => {
       navigate("/in-process-task");
     });

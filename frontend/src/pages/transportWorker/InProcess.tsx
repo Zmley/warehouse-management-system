@@ -1,127 +1,182 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Container, Typography, Button, CircularProgress, Box, Card, CardContent } from "@mui/material";
-import useQRScanner from "../../hooks/useQRScanner";
-import { useTransportContext } from "../../context/transportTaskContext";
-import {  processBinTask } from "../../api/transportTaskApi";
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import {
+  Container,
+  Typography,
+  Button,
+  CircularProgress,
+  Box,
+  Card,
+  CardContent
+} from '@mui/material'
+import useQRScanner from '../../hooks/useQRScanner'
+import { useTransportContext } from '../../context/transportTaskContext'
+import { processBinTask } from '../../api/transportTaskApi'
 
 const InProcessTaskPage = () => {
-  const navigate = useNavigate();
-  const { videoRef, isScanning, startScanning, stopScanning } = useQRScanner(handleScanSuccess);
-  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate()
+  const { videoRef, isScanning, startScanning, stopScanning } =
+    useQRScanner(handleScanSuccess)
+  const [isLoading, setIsLoading] = useState(false)
 
-
-
-  const { transportStatus, taskData, fetchTaskStatus } = useTransportContext(); // ✅ 直接使用 Context 数据
-
+  const { transportStatus, taskData, fetchTaskStatus } = useTransportContext()
 
   useEffect(() => {
-    console.log("Fetching task status on mount...");
-    fetchTaskStatus(); // ✅ 只在页面加载时调用
-  
-    // ✅ 组件卸载时清理
+    console.log('Fetching task status on mount...')
+    fetchTaskStatus()
+
     return () => {
-      console.log("Cleaning up task status effect...");
-    };
-  }, []); // ✅ 依赖数组为空，确保 `fetchTaskStatus` 只执行一次
+      console.log('Cleaning up task status effect...')
+    }
+  }, [])
 
   async function handleScanSuccess(binID: string) {
-    console.log(`✅ Scanned bin: ${binID}`);
-    stopScanning(); // ✅ 立即停止扫描，避免重复扫描
-    setIsLoading(true);
+    console.log(`✅ Scanned bin: ${binID}`)
+    stopScanning()
+    setIsLoading(true)
 
     try {
-      const response = await processBinTask(binID, false);
+      const response = await processBinTask(binID, false)
       if (response.success) {
-        await fetchTaskStatus(); // ✅ 更新任务状态
+        await fetchTaskStatus()
+        window.location.reload()
       }
     } catch (error) {
-      console.error("❌ Failed to unload cargo:", error);
+      console.error('❌ Failed to unload cargo:', error)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-}
+  }
 
-  // ✅ 如果没有任务数据，显示加载动画
   if (!taskData.taskID) {
     return (
-      <Container sx={{ textAlign: "center", marginTop: "50px" }}>
+      <Container sx={{ textAlign: 'center', marginTop: '50px' }}>
         <CircularProgress />
       </Container>
-    );
+    )
   }
 
   return (
-    <Container maxWidth="sm" sx={{ textAlign: "center", padding: "20px" }}>
-      {/* 任务标题 + 图标 */}
-      <Typography variant="h5" gutterBottom sx={{ fontWeight: "bold", display: "flex", justifyContent: "center", alignItems: "center", gap: "8px" }}>
+    <Container maxWidth='sm' sx={{ textAlign: 'center', padding: '20px' }}>
+      <Typography
+        variant='h5'
+        gutterBottom
+        sx={{
+          fontWeight: 'bold',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: '8px'
+        }}
+      >
         📦 Task Detail
       </Typography>
 
-      {/* 任务详情卡片 */}
-      <Card variant="outlined" sx={{ bgcolor: "#f5f5f5", borderRadius: "12px", padding: 2 }}>
+      <Card
+        variant='outlined'
+        sx={{ bgcolor: '#f5f5f5', borderRadius: '12px', padding: 2 }}
+      >
         <CardContent>
-          {/* 任务 ID */}
-          <Typography variant="subtitle2" sx={{ fontSize: "14px", fontWeight: "bold", color: "#555" }}>
+          <Typography
+            variant='subtitle2'
+            sx={{ fontSize: '14px', fontWeight: 'bold', color: '#555' }}
+          >
             Task ID: {taskData.taskID}
           </Typography>
 
           {/* Source Bin & Target Bin */}
-          <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
             <Box>
-              <Typography variant="subtitle2" sx={{ fontSize: "14px", fontWeight: "bold" }}>Source Bin</Typography>
-              <Typography variant="body1" sx={{ fontSize: "16px", fontWeight: "bold" }}>{taskData.binCode || "--"}</Typography>
+              <Typography
+                variant='subtitle2'
+                sx={{ fontSize: '14px', fontWeight: 'bold' }}
+              >
+                Source Bin
+              </Typography>
+              <Typography
+                variant='body1'
+                sx={{ fontSize: '16px', fontWeight: 'bold' }}
+              >
+                {taskData.binCode || '--'}
+              </Typography>
             </Box>
             <Box>
-              <Typography variant="subtitle2" sx={{ fontSize: "14px", fontWeight: "bold" }}>Target Bin</Typography>
-              <Typography variant="body1" sx={{ fontSize: "16px", fontWeight: "bold" }}>{taskData.targetCode || "--"}</Typography>
+              <Typography
+                variant='subtitle2'
+                sx={{ fontSize: '14px', fontWeight: 'bold' }}
+              >
+                Target Bin
+              </Typography>
+              <Typography
+                variant='body1'
+                sx={{ fontSize: '16px', fontWeight: 'bold' }}
+              >
+                {taskData.targetCode || '--'}
+              </Typography>
             </Box>
           </Box>
 
-          {/* 任务状态 */}
-          <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", mt: 2 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              mt: 2
+            }}
+          >
             <Box
               sx={{
-                bgcolor: transportStatus === "inProgress" ? "#A5D6A7" : "#BDBDBD",
-                color: "black",
-                padding: "6px 12px",
-                borderRadius: "20px",
-                fontSize: "14px",
-                fontWeight: "bold",
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
+                bgcolor:
+                  transportStatus === 'inProgress' ? '#A5D6A7' : '#BDBDBD',
+                color: 'black',
+                padding: '6px 12px',
+                borderRadius: '20px',
+                fontSize: '14px',
+                fontWeight: 'bold',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
               }}
             >
-              <span>●</span> {transportStatus === "inProgress" ? "Goods Picked" : "Goods Delivered"}
+              <span>●</span>{' '}
+              {transportStatus === 'inProgress'
+                ? 'Goods Picked'
+                : 'Goods Delivered'}
             </Box>
           </Box>
 
-          {/* ✅ 任务完成提示 */}
-          {transportStatus === "completed" && (
-            <Typography variant="h6" sx={{ color: "#2e7d32", fontWeight: "bold", mt: 2 }}>
+          {transportStatus === 'completed' && (
+            <Typography
+              variant='h6'
+              sx={{ color: '#2e7d32', fontWeight: 'bold', mt: 2 }}
+            >
               ✅ Task Completed!
             </Typography>
           )}
 
-          {/* 扫码 & 取消按钮 */}
           <Box sx={{ mt: 3 }}>
             <Button
-              variant="contained"
-              color="primary"
+              variant='contained'
+              color='primary'
               fullWidth
-              sx={{ borderRadius: "10px", fontSize: "14px" }}
+              sx={{ borderRadius: '10px', fontSize: '14px' }}
               onClick={startScanning}
-              disabled={isScanning || transportStatus === "completed"} // ✅ 任务完成后禁用按钮
+              disabled={isScanning || transportStatus === 'completed'} // ✅ 任务完成后禁用按钮
             >
-              {isScanning ? "Scanning..." : "SCAN 📷"}
+              {isScanning ? 'Scanning...' : 'SCAN 📷'}
             </Button>
 
             <Button
-              variant="contained"
-              color="error"
+              variant='contained'
+              color='error'
               fullWidth
-              sx={{ borderRadius: "10px", mt: 1, fontSize: "14px", bgcolor: "#D32F2F", color: "white" }}
+              sx={{
+                borderRadius: '10px',
+                mt: 1,
+                fontSize: '14px',
+                bgcolor: '#D32F2F',
+                color: 'white'
+              }}
               onClick={stopScanning}
               disabled={!isScanning}
             >
@@ -129,21 +184,25 @@ const InProcessTaskPage = () => {
             </Button>
           </Box>
 
-          {/* 视频扫码区域 */}
           {isScanning && (
             <Box
               sx={{
-                width: "100%",
-                maxWidth: "400px",
-                height: "250px",
-                borderRadius: "10px",
-                border: "2px solid #1976d2",
-                overflow: "hidden",
-                mx: "auto",
-                mt: 2,
+                width: '100%',
+                maxWidth: '400px',
+                height: '250px',
+                borderRadius: '10px',
+                border: '2px solid #1976d2',
+                overflow: 'hidden',
+                mx: 'auto',
+                mt: 2
               }}
             >
-              <video ref={videoRef} style={{ width: "100%", height: "100%" }} autoPlay playsInline />
+              <video
+                ref={videoRef}
+                style={{ width: '100%', height: '100%' }}
+                autoPlay
+                playsInline
+              />
             </Box>
           )}
 
@@ -153,16 +212,21 @@ const InProcessTaskPage = () => {
 
       {/* ✅ 返回 Dashboard 按钮 */}
       <Button
-        variant="outlined"
-        color="secondary"
+        variant='outlined'
+        color='secondary'
         fullWidth
-        sx={{ borderRadius: "10px", mt: 2, fontSize: "14px", fontWeight: "bold" }}
-        onClick={() => navigate("/dashboard")}
+        sx={{
+          borderRadius: '10px',
+          mt: 2,
+          fontSize: '14px',
+          fontWeight: 'bold'
+        }}
+        onClick={() => navigate('/dashboard')}
       >
         🔙 Back to Dashboard
       </Button>
     </Container>
-  );
-};
+  )
+}
 
-export default InProcessTaskPage;
+export default InProcessTaskPage
