@@ -3,7 +3,7 @@ import apiClient from "./axiosClient.ts";
 export const processBinTask = async (
   binID: string,
   isLoadingToCar: boolean,
-  selectedProducts?: { productID: string; quantity: number }[]
+  selectedProducts?: { productID: string; quantity: number; inventoryID: string }[] // ✅ 确保传递 `inventoryID`
 ) => {
   try {
     const endpoint = isLoadingToCar
@@ -12,15 +12,23 @@ export const processBinTask = async (
 
     const payload = isLoadingToCar
       ? { binID, action: "load" } // ✅ Load 任务，不需要产品列表
-      : { unLoadBinID: binID, action: "unload", productList: selectedProducts || [] }; // ✅ Unload 任务，添加 `productList`
+      : { 
+          unLoadBinID: binID, 
+          action: "unload", 
+          productList: selectedProducts?.map(({ productID, quantity, inventoryID }) => ({
+            productID,
+            quantity,
+            inventoryID, 
+          })) || [] 
+        }; 
 
-    console.log(`📡 Calling ${endpoint} with payload:`, payload);
+    console.log(`📡 Calling ${endpoint} with payload:`, JSON.stringify(payload, null, 2));
 
     const response = await apiClient.post(endpoint, payload);
 
     return {
       success: true,
-      data: response.data, // 可能包含 `message` 或其他返回信息
+      data: response.data,
     };
   } catch (error: any) {
     console.error("❌ Error in processBinTask:", error.response?.data || error.message);

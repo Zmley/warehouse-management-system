@@ -19,24 +19,19 @@ const InProcessTaskPage = () => {
   const navigate = useNavigate();
   const { videoRef, isScanning, startScanning, stopScanning } = useQRScanner(handleScanSuccess);
   const [isLoading, setIsLoading] = useState(false);
-  const { transportStatus, taskData, fetchTaskStatus } = useTransportContext();
-
-  // ✅ 管理 productList，存储选中状态
-  const [selectedProducts, setSelectedProducts] = useState<
-    { productID: string; quantity: number; selected: boolean }[]
-  >([]);
+  const { transportStatus, taskData, fetchTaskStatus, selectedProducts, setSelectedProducts } = useTransportContext();
 
   useEffect(() => {
-    console.log("Fetching task status on mount...");
     fetchTaskStatus();
   }, []);
 
   useEffect(() => {
-    if (taskData.productList) {
+    if (taskData.productList && selectedProducts.length === 0) {
       setSelectedProducts(
         taskData.productList.map((product) => ({
           productID: product.productID,
-          quantity: product.quantity, // 默认选中全部
+          quantity: product.quantity,
+          inventoryID: product.inventoryID,
           selected: true, // ✅ 默认选中
         }))
       );
@@ -47,12 +42,31 @@ const InProcessTaskPage = () => {
     console.log(`✅ Scanned bin: ${binID}`);
     stopScanning();
     setIsLoading(true);
-
+  
     try {
-      const response = await processBinTask(binID, false);
+      // ✅ 直接从 `selectedProducts` 里获取选中的货物，并确保传递 `inventoryID`
+      const selectedProductsToUnload = selectedProducts
+        .filter((product) => product.selected)
+        .map(({ productID, quantity, inventoryID }) => ({
+          productID,
+          quantity,
+          inventoryID, 
+        }));
+  
+      if (selectedProductsToUnload.length === 0) {
+        alert("Please select at least one product to unload.");
+        setIsLoading(false);
+        return;
+      }
+  
+      // ✅ 传递 `selectedProductsToUnload` 到 API
+      const response = await processBinTask(binID, false, selectedProductsToUnload);
+  
       if (response.success) {
         await fetchTaskStatus();
         window.location.reload();
+      } else {
+        console.error("❌ Failed to process unload:", response.error);
       }
     } catch (error) {
       console.error("❌ Failed to unload cargo:", error);
@@ -69,37 +83,9 @@ const InProcessTaskPage = () => {
     );
   }
 
-  // ✅ 切换 Checkbox 选中状态
-  const handleCheckboxChange = (productID: string) => {
-    setSelectedProducts((prev) =>
-      prev.map((product) =>
-        product.productID === productID ? { ...product, selected: !product.selected } : product
-      )
-    );
-  };
-
-  // ✅ 更新数量
-  const handleQuantityChange = (productID: string, newQuantity: number) => {
-    setSelectedProducts((prev) =>
-      prev.map((product) =>
-        product.productID === productID ? { ...product, quantity: Math.max(0, newQuantity) } : product
-      )
-    );
-  };
-
   return (
     <Container maxWidth="sm" sx={{ textAlign: "center", padding: "20px" }}>
-      <Typography
-        variant="h5"
-        gutterBottom
-        sx={{
-          fontWeight: "bold",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          gap: "8px",
-        }}
-      >
+      <Typography variant="h5" gutterBottom sx={{ fontWeight: "bold" }}>
         📦 Task Detail
       </Typography>
 
@@ -150,7 +136,13 @@ const InProcessTaskPage = () => {
                 >
                   <Checkbox
                     checked={product.selected}
-                    onChange={() => handleCheckboxChange(product.productID)}
+                    onChange={() =>
+                      setSelectedProducts((prev) =>
+                        prev.map((p) =>
+                          p.productID === product.productID ? { ...p, selected: !p.selected } : p
+                        )
+                      )
+                    }
                   />
                   <Typography variant="body1" sx={{ fontWeight: "bold" }}>
                     {product.productID}
@@ -159,7 +151,13 @@ const InProcessTaskPage = () => {
                     type="number"
                     size="small"
                     value={product.quantity}
-                    onChange={(e) => handleQuantityChange(product.productID, Math.max(0, Number(e.target.value)))}
+                    onChange={(e) =>
+                      setSelectedProducts((prev) =>
+                        prev.map((p) =>
+                          p.productID === product.productID ? { ...p, quantity: Math.max(0, Number(e.target.value)) } : p
+                        )
+                      )
+                    }
                     sx={{ width: "80px", textAlign: "center" }}
                     inputProps={{ min: 0 }}
                     disabled={!product.selected} // ✅ 未选中时禁用输入框
@@ -174,31 +172,11 @@ const InProcessTaskPage = () => {
           </Box>
 
           <Box sx={{ mt: 3 }}>
-            <Button
-              variant="contained"
-              color="primary"
-              fullWidth
-              sx={{ borderRadius: "10px", fontSize: "14px" }}
-              onClick={startScanning}
-              disabled={isScanning || transportStatus === "completed"}
-            >
+            <Button variant="contained" color="primary" fullWidth onClick={startScanning} disabled={isScanning}>
               {isScanning ? "Scanning..." : "SCAN 📷"}
             </Button>
 
-            <Button
-              variant="contained"
-              color="error"
-              fullWidth
-              sx={{
-                borderRadius: "10px",
-                mt: 1,
-                fontSize: "14px",
-                bgcolor: "#D32F2F",
-                color: "white",
-              }}
-              onClick={stopScanning}
-              disabled={!isScanning}
-            >
+            <Button variant="contained" color="error" fullWidth sx={{ mt: 1 }} onClick={stopScanning} disabled={!isScanning}>
               CANCEL ❌
             </Button>
           </Box>

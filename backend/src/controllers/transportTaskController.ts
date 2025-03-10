@@ -2,6 +2,7 @@ import { Request, Response } from 'express'
 import { AuthRequest } from '../middleware/authMiddleware'
 import { createTask, updateTaskStatus } from '../utils/transportTask'
 import { loadCargoHelper, unloadCargoHelper } from '../utils/transportTask'
+import {  getCarIdByAccountId , getProductsByBinId } from '../utils/task'
 import Inventory from '../models/inventory'
 import Task from "../models/task"
 import User from "../models/User" // ✅ 新增 User Model 引用
@@ -49,40 +50,47 @@ export const loadCargo = async (req: AuthRequest, res: Response): Promise<void> 
 
 export const unloadCargo = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { unLoadBinID } = req.body
-    const accountId = req.user?.sub
+    const { unLoadBinID, productList } = req.body;
+    const accountId = req.user?.sub;
 
     if (!unLoadBinID || !accountId) {
-      res.status(400).json({ message: '❌ Missing unLoadBinID or accountId' })
-      return
+      res.status(400).json({ message: "❌ Missing unLoadBinID or accountId" });
+      return;
     }
 
-    const user = await User.findOne({ where: { accountID: accountId } })
+    if (!Array.isArray(productList) || productList.length === 0) {
+      res.status(400).json({ message: "❌ Product list is required for unloading" });
+      return;
+    }
+
+    // ✅ 获取用户的 CarID
+    const user = await User.findOne({ where: { accountID: accountId } });
     if (!user || !user.CarID) {
-      res.status(400).json({ message: '❌ User does not have a CarID assigned' })
-      return
+      res.status(400).json({ message: "❌ User does not have a CarID assigned" });
+      return;
     }
-    const carID = user.CarID
+    const carID = user.CarID;
 
-    const updatedCount = await unloadCargoHelper(unLoadBinID, carID, accountId)
+    // ✅ 处理部分卸货
+    const updatedCount = await unloadCargoHelper(unLoadBinID, carID, accountId, productList);
 
     if (updatedCount === 0) {
-      res.status(404).json({ message: '❌ No matching binID found to update' })
-      return
+      res.status(404).json({ message: "❌ No matching products found to update" });
+      return;
     }
 
-    await updateTaskStatus(accountId, unLoadBinID)
+    // ✅ 更新任务状态
+    await updateTaskStatus(accountId, unLoadBinID);
 
     res.status(200).json({
-      message: `✅ Cargo successfully unloaded into ${unLoadBinID}.`
-    })
+      message: `✅ Cargo successfully unloaded into ${unLoadBinID}.`,
+      updatedProducts: updatedCount,
+    });
   } catch (error) {
-    console.error('❌ Error unloading cargo:', error)
-    res.status(500).json({ message: '❌ Internal Server Error' })
+    console.error("❌ Error unloading cargo:", error);
+    res.status(500).json({ message: "❌ Internal Server Error" });
   }
-}
-
-
+};
 
 
 
@@ -197,52 +205,6 @@ const getBinCode = async (binID: string | null): Promise<string | null> => {
   } catch (error) {
     console.error(`❌ Error fetching BinCode for binID ${binID}:`, error);
     return null;
-  }
-};
-
-
-
-/**
- * 通过 binID 获取该仓库下的产品列表及数量
- * @param binId 仓库 ID
- * @returns 该仓库下的产品列表（包含产品 ID、名称、数量）
- */
-export const getProductsByBinId = async (binID: string): Promise<{ productID: string; quantity: number }[]> => {
-  try {
-    if (!binID) return [];
-
-    const productsInBin = await Inventory.findAll({
-      where: { binID },
-      attributes: ["productID", "quantity"], // ✅ 直接查询 productName
-    });
-
-    return productsInBin.map((inventory) => ({
-      productID: inventory.productID,
-      quantity: inventory.quantity,
-    }));
-  } catch (error) {
-    console.error(`❌ Error fetching products for binID ${binID}:`, error);
-    return [];
-  }
-};
-
-
-export const getCarIdByAccountId = async (accountId: string): Promise<string> => {
-  try {
-    if (!accountId) {
-      console.warn("⚠️ Invalid accountId provided:", accountId);
-      return "N/A";
-    }
-
-    const user = await User.findOne({
-      where: { accountID: accountId },
-      attributes: ["CarID"], // ✅ 只查询 carID
-    });
-
-    return user?.CarID || "N/A"; // ✅ 确保返回值不会为空
-  } catch (error) {
-    console.error(`❌ Error fetching carID for accountId ${accountId}:`, error);
-    return "N/A"; // ✅ 发生错误时，返回 "N/A"
   }
 };
 

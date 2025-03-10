@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Container, Typography, Button, Box } from "@mui/material";
 import useQRScanner from "../../hooks/useQRScanner";
 import { useTransportContext } from "../../context/transportTaskContext";
+import { processBinTask } from "../../api/transportTaskApi"; // ✅ 引入 API 请求
 
 const ScanTaskPage = () => {
   const navigate = useNavigate();
@@ -27,12 +28,27 @@ const ScanTaskPage = () => {
 
   async function handleScanSuccess(binID: string) {
     console.log(`✅ Scanned new bin ID: ${binID}`);
+    
+    try {
+      // ✅ 调用 API 发送请求
+      const response = await processBinTask(binID, true); // 这里 true 表示 `isLoadingToCar`
+      
+      if (response.success) {
+        console.log(`🚀 Task created for bin ${binID}:`, response.data);
 
-    await fetchTaskStatus();
-
-    setTimeout(() => {
-      navigate("/in-process-task");
-    });
+        // await fetchTaskStatus(); // ✅ 更新任务状态
+        
+        setTimeout(() => {
+          navigate("/in-process-task");
+        });
+      } else {
+        console.error("❌ Task creation failed:", response.error);
+        // alert("Task creation failed: " + response.error);
+      }
+    } catch (error) {
+      console.error("❌ Error processing bin task:", error);
+      alert("Error processing bin task. Please try again.");
+    }
   }
 
   return (
