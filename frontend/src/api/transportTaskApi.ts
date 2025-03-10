@@ -1,20 +1,23 @@
 import apiClient from "./axiosClient.ts";  
 
-export const processBinTask = async (binID: string, isLoadingToCar: boolean) => {
+export const processBinTask = async (
+  binID: string,
+  isLoadingToCar: boolean,
+  selectedProducts?: { productID: string; quantity: number }[]
+) => {
   try {
-    const endpoint = isLoadingToCar 
-      ? "/api/transport/load-cargo" 
-      : "/api/transport/unload-cargo"; 
+    const endpoint = isLoadingToCar
+      ? "/api/transport/load-cargo"
+      : "/api/transport/unload-cargo";
 
     const payload = isLoadingToCar
-      ? { binID, action: "load" }  // ✅ Load 任务，binID 直接传输
-      : { unLoadBinID: binID, action: "unload" };  // ✅ Unload 任务，binID 作为 unLoadBinID
+      ? { binID, action: "load" } // ✅ Load 任务，不需要产品列表
+      : { unLoadBinID: binID, action: "unload", productList: selectedProducts || [] }; // ✅ Unload 任务，添加 `productList`
 
-    console.log(`📡 Calling ${endpoint} with payload:`, payload); 
+    console.log(`📡 Calling ${endpoint} with payload:`, payload);
 
     const response = await apiClient.post(endpoint, payload);
 
-    // ✅ 确保返回的对象里有 `success` 字段
     return {
       success: true,
       data: response.data, // 可能包含 `message` 或其他返回信息
@@ -28,7 +31,6 @@ export const processBinTask = async (binID: string, isLoadingToCar: boolean) => 
     };
   }
 };
-
 
 
 

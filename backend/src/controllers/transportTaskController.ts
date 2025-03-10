@@ -202,6 +202,51 @@ const getBinCode = async (binID: string | null): Promise<string | null> => {
 
 
 
+/**
+ * 通过 binID 获取该仓库下的产品列表及数量
+ * @param binId 仓库 ID
+ * @returns 该仓库下的产品列表（包含产品 ID、名称、数量）
+ */
+export const getProductsByBinId = async (binID: string): Promise<{ productID: string; quantity: number }[]> => {
+  try {
+    if (!binID) return [];
+
+    const productsInBin = await Inventory.findAll({
+      where: { binID },
+      attributes: ["productID", "quantity"], // ✅ 直接查询 productName
+    });
+
+    return productsInBin.map((inventory) => ({
+      productID: inventory.productID,
+      quantity: inventory.quantity,
+    }));
+  } catch (error) {
+    console.error(`❌ Error fetching products for binID ${binID}:`, error);
+    return [];
+  }
+};
+
+
+export const getCarIdByAccountId = async (accountId: string): Promise<string> => {
+  try {
+    if (!accountId) {
+      console.warn("⚠️ Invalid accountId provided:", accountId);
+      return "N/A";
+    }
+
+    const user = await User.findOne({
+      where: { accountID: accountId },
+      attributes: ["CarID"], // ✅ 只查询 carID
+    });
+
+    return user?.CarID || "N/A"; // ✅ 确保返回值不会为空
+  } catch (error) {
+    console.error(`❌ Error fetching carID for accountId ${accountId}:`, error);
+    return "N/A"; // ✅ 发生错误时，返回 "N/A"
+  }
+};
+
+
 
 export const getUserTaskStatus = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -218,21 +263,26 @@ export const getUserTaskStatus = async (req: AuthRequest, res: Response): Promis
     });
 
     if (!task) {
-      res.status(200).json({ status: "completed", currentBinID: null }); // 默认状态为 completed
+      res.status(200).json({ status: "completed", currentBinID: null, productList: [] }); // 默认状态为 completed
       return;
     }
 
     const binCode = await getBinCode(task.sourceBinID);
     const targetCode = await getBinCode(task.destinationBinID);
 
+    // ✅ 获取当前 Bin 的产品列表
+    const CarID = await getCarIdByAccountId(accountId);
+    const productList = await getProductsByBinId(CarID);
+
     res.status(200).json({
       status: task.status, // 任务状态（"inProgress" | "completed"）
       currentBinID: task.sourceBinID, // 任务对应的 binID
-      taskID: task.taskID, // 任务对应的 binID
+      taskID: task.taskID, // 任务 ID
       binCode: binCode,
       targetBin: task.destinationBinID,
       targetCode: targetCode,
-
+      carID:CarID,
+      productList: productList, // ✅ 额外返回产品列表
     });
   } catch (error) {
     console.error("❌ Error fetching user task status:", error);

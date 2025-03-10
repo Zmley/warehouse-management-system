@@ -3,10 +3,16 @@ import { getUserTaskStatus } from "../api/transportTaskApi";
 
 type TransportStatus = "completed" | "inProgress" | null;
 
+interface Product {
+  productID: string;
+  quantity: number;
+}
+
 interface TaskData {
   taskID: string;
   binCode: string;
   targetCode: string;
+  productList: Product[]; // ✅ 新增 productList
 }
 
 interface TransportContextProps {
@@ -19,7 +25,12 @@ const TransportContext = createContext<TransportContextProps | undefined>(undefi
 
 export const TransportProvider = ({ children }: { children: ReactNode }) => {
   const [transportStatus, setTransportStatus] = useState<TransportStatus>(null);
-  const [taskData, setTaskData] = useState<TaskData>({ taskID: "", binCode: "", targetCode: "" });
+  const [taskData, setTaskData] = useState<TaskData>({
+    taskID: "",
+    binCode: "",
+    targetCode: "",
+    productList: [], // ✅ 初始化 productList
+  });
 
   // ✅ 获取任务状态
   const fetchTaskStatus = useCallback(async () => {
@@ -30,6 +41,7 @@ export const TransportProvider = ({ children }: { children: ReactNode }) => {
         taskID: response.taskID,
         binCode: response.binCode,
         targetCode: response.targetCode,
+        productList: response.productList || [], // ✅ 保存 productList
       });
       console.log(`🚀 Updated Transport Status: ${response.status}`, response);
     } catch (error) {
