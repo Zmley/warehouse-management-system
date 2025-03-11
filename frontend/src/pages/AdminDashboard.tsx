@@ -25,15 +25,6 @@ const AdminDashboard: React.FC = () => {
         {/* 顶部 Topbar */}
         <Topbar />
 
-        {/* 主内容区 */}
-        <Container maxWidth="lg" sx={{ marginTop: 4 }}>
-          <Grid container justifyContent="space-between" alignItems="center">
-            <Typography variant="h4">Admin Dashboard</Typography>
-            <Button variant="contained" color="error" onClick={handleLogout}>
-              Logout
-            </Button>
-          </Grid>
-        </Container>
       </Box>
     </Box>
   );

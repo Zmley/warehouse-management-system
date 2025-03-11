@@ -1,8 +1,21 @@
-import React from "react";
-import { Box, TextField, InputAdornment, IconButton, Typography } from "@mui/material";
+import React, { useState } from "react";
+import { Box, TextField, InputAdornment, IconButton, Typography, Popover } from "@mui/material";
 import { Search, Menu } from "@mui/icons-material";
+import Profile from "../pages/Profile"; // 导入 Profile 组件
 
 const Topbar: React.FC = () => {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+  // 处理菜单点击
+  const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  // 关闭弹窗
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
   return (
     <Box
       sx={{
@@ -43,9 +56,31 @@ const Topbar: React.FC = () => {
       />
 
       {/* 菜单按钮 */}
-      <IconButton>
+      <IconButton onClick={handleMenuClick}>
         <Menu sx={{ fontSize: "28px", color: "#333" }} />
       </IconButton>
+
+      {/* 弹出 Profile */}
+      <Popover
+        open={Boolean(anchorEl)}
+        anchorEl={anchorEl}
+        onClose={handleClose}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "right",
+        }}
+        transformOrigin={{
+          vertical: "top",
+          horizontal: "right",
+        }}
+        sx={{
+          mt: 1,
+        }}
+      >
+        <Box sx={{ width: 350, height: 700 }}>
+          <Profile /> {/* 这里加载 Profile.tsx */}
+        </Box>
+      </Popover>
     </Box>
   );
 };
