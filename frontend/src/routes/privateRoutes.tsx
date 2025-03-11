@@ -4,8 +4,8 @@ import { AuthContext } from "../context/authContext";
 import Dashboard from "../pages/Dashboard";
 import InventoryManagement from "../pages/admin/InventoryManagement";
 import EditInventoryPage from "../components/admin/InventoryPage"; 
-import InProcessTaskPage from "../pages/transportWorker/InProcess"; // ✅ 任务进行中界面
-import ScanTaskPage from "../pages/transportWorker/ScanTaskPage"; // ✅ 任务进行中界面
+import InProcessTaskPage from "../pages/TransportWorker/InProcessPage"; // ✅ 任务进行中界面
+import ScanTaskPage from "../pages/TransportWorker/ScanTask"; // ✅ 任务进行中界面
 import LoadingPage from "../pages/LoadingPage"; // ✅ 任务进行中界面
 
 // import TransportTask from "../pages/transportWorker/transportTask";
