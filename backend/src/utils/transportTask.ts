@@ -1,12 +1,12 @@
 import Task from "../models/task";
 import Inventory from "../models/inventory";
-import { Bin } from "../models/bin"; // ✅ 确保路径正确
+import { Bin } from "../models/bin"; 
 import {  getBinType,checkExistingInventory } from '../utils/task'
 
 export const loadCargoHelper = async (binID: string, carID: string, accountId: string) => {
   try {
     const updatedItems = await Inventory.update(
-      { binID: carID, ownedBy: "car" },  // ✅ ownedBy 变成 "car"
+      { binID: carID, ownedBy: "car" },  
       { where: { binID } }
     );
     return updatedItems[0]; 

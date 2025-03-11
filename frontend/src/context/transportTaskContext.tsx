@@ -44,6 +44,7 @@ export const TransportProvider = ({ children }: { children: ReactNode }) => {
   // ✅ 获取任务状态，并更新 `taskData` 和 `selectedProducts`
   const fetchTaskStatus = useCallback(async () => {
     try {
+      
       const response = await getUserTaskStatus();
       setTransportStatus(response.status);
   

@@ -28,7 +28,7 @@ const Dashboard: React.FC = () => {
   }
 
   if (!role) {
-    return <Typography variant="h5">⏳ Loading role...</Typography>;
+    return <Typography variant="h5"></Typography>;
   }
 
   if (transportStatus === null) {
