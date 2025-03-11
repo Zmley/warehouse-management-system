@@ -1,115 +1,30 @@
-import React, { useContext } from 'react'
-import {
-  Typography,
-  Box,
-  IconButton,
-  BottomNavigation,
-  BottomNavigationAction
-} from '@mui/material'
-import { Menu as MenuIcon } from '@mui/icons-material'
-import { AuthContext } from '../context/authContext'
-import { useNavigate } from 'react-router-dom'
+
+import React, { useContext } from "react";
+import { AuthContext } from "../context/authContext";
+import { Navigate } from "react-router-dom";
+import AdminDashboard from "./AdminDashboard";
+import WorkerDashboard from "./WokerDashboard";
+import { Container, Typography } from "@mui/material";
 
 const Dashboard: React.FC = () => {
-  const { userProfile, isAuthenticated } = useContext(AuthContext)!
-  const navigate = useNavigate()
+  const { userProfile, isAuthenticated } = useContext(AuthContext)!;
 
+  // ✅ 如果用户未登录，跳转到登录页
   if (!isAuthenticated) {
-    return (
-      <Typography variant='h5'>❌ Not logged in, redirecting...</Typography>
-    )
+    return <Navigate to="/login" />;
   }
 
+  // ✅ 如果用户信息还未加载，显示 "加载中"
   if (!userProfile) {
-    return <Typography variant='h5'></Typography>
+    return (
+      <Container sx={{ textAlign: "center", marginTop: "50px" }}>
+        <Typography variant="h5">🔄 Loading...</Typography>
+      </Container>
+    );
   }
 
-  return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100vh',
-        backgroundColor: '#F7F9FC'
-      }}
-    >
-      {/* ✅ 顶部导航栏 */}
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '16px',
-          backgroundColor: '#FFF',
-          boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)'
-        }}
-      >
-        <IconButton onClick={() => navigate('/profile')}>
-          <MenuIcon sx={{ fontSize: '28px', color: '#333' }} />
-        </IconButton>
+  // ✅ 根据 `role` 显示不同的 Dashboard
+  return userProfile.role === "admin" ? <AdminDashboard /> : <WorkerDashboard />;
+};
 
-        <Typography variant='h6' sx={{ fontWeight: 'bold', color: '#333' }}>
-          Hello, {userProfile.firstname} {userProfile.lastname}!
-        </Typography>
-
-        <Box sx={{ width: '48px' }} />
-      </Box>
-
-      {/* ✅ 中间内容区域（待开发） */}
-      <Box
-        sx={{
-          flexGrow: 1,
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          textAlign: 'center'
-        }}
-      >
-        <Typography variant='h6' sx={{ color: '#666' }}>
-          🚧 Task List Section (Under Development)
-        </Typography>
-      </Box>
-
-      <BottomNavigation
-        showLabels
-        sx={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          backgroundColor: '#FFF',
-          boxShadow: '0px -2px 4px rgba(0, 0, 0, 0.1)'
-        }}
-      >
-        <BottomNavigationAction
-          label='Task List'
-          showLabel
-          icon={
-            <img
-              src='/Vector-2.png'
-              alt='Task List'
-              style={{ width: 24, height: 24 }}
-            />
-          }
-          onClick={() => navigate('/task-list')}
-          sx={{ minWidth: '50%' }}
-        />
-        <BottomNavigationAction
-          label='Create new task'
-          showLabel
-          icon={
-            <img
-              src='/Vector.png'
-              alt='Create new task'
-              style={{ width: 24, height: 24 }}
-            />
-          }
-          onClick={() => navigate('/create-task')}
-          sx={{ minWidth: '50%' }}
-        />
-      </BottomNavigation>
-    </Box>
-  )
-}
-
-export default Dashboard
+export default Dashboard;
