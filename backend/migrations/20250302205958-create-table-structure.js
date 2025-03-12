@@ -4,7 +4,6 @@ module.exports = {
   up: async (queryInterface, Sequelize) => {
     console.log("🚀 开始创建数据库表...");
 
-    // ✅ 创建 Users 表
     await queryInterface.createTable("Users", {
       accountID: {
         type: Sequelize.STRING,
@@ -31,7 +30,7 @@ module.exports = {
         allowNull: false,
       },
       CarID: {
-        type: Sequelize.STRING, // ✅ 修改为 STRING
+        type: Sequelize.STRING, 
         allowNull: true,
       },
       createdAt: {
@@ -47,7 +46,6 @@ module.exports = {
     });
     console.log("✅ Users 表创建成功!");
 
-    // ✅ 创建 Warehouses 表
     await queryInterface.createTable("Warehouses", {
       warehouseID: {
         type: Sequelize.STRING,
@@ -72,7 +70,6 @@ module.exports = {
     });
     console.log("✅ Warehouses 表创建成功!");
 
-    // ✅ 创建 Bins 表
     await queryInterface.createTable("Bins", {
       binID: {
         type: Sequelize.UUID,
@@ -105,7 +102,6 @@ module.exports = {
     });
     console.log("✅ Bins 表创建成功!");
 
-    // ✅ 创建 Inventory 表
     await queryInterface.createTable("Inventory", {
       inventoryID: {
         type: Sequelize.UUID,
@@ -143,7 +139,6 @@ module.exports = {
     });
     console.log("✅ Inventory 表创建成功!");
 
-    // ✅ 创建 Tasks 表
     await queryInterface.createTable("Tasks", {
       taskID: {
         type: Sequelize.UUID,
