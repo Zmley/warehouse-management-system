@@ -1,5 +1,19 @@
 import apiClient from "./axiosClient.ts"; 
 
+
+
+export const fetchBinsForUser = async () => {
+  try {
+    const response = await apiClient.get("/api/inventory/bins-for-user"); // ✅ 请求用户所属的 Bin
+    console.log("🟢 Fetched Bins:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("❌ Failed to fetch bins:", error);
+    throw error;
+  }
+};
+
+
 export const fetchInventory = async () => {
   try {
     const response = await apiClient.get("/api/inventory");
@@ -31,9 +45,15 @@ export const addInventoryItem = async (item: {
 /**
  * ✅ 更新库存数据
  */
-export const updateInventoryItem = async (id: string, updatedData: Partial<any>) => {
+export const updateInventoryItem = async (inventoryID: string, updatedData: Partial<any>) => {
+  if (!inventoryID) {
+    console.error("❌ Missing inventoryID in API call");
+    return;
+  }
+
   try {
-    const response = await apiClient.put(`/api/inventory/${id}`, updatedData);
+    console.log(`🟢 API Call: PUT /api/inventory/${inventoryID}`, updatedData);
+    const response = await apiClient.put(`/api/inventory/${inventoryID}`, updatedData); // ✅ 确保 URL 里包含 `inventoryID`
     console.log("🟢 更新库存成功:", response.data);
     return response.data;
   } catch (error) {

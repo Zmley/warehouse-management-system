@@ -5,6 +5,39 @@ import User from "../models/User";
 import { AuthRequest } from '../middleware/authMiddleware'
 
 
+export const getBinsForUser = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const accountID = req.user?.sub;
+    if (!accountID) {
+      res.status(401).json({ message: "❌ Unauthorized: No User Info" });
+      return;
+    }
+
+    const user = await User.findOne({
+      where: { accountID },
+      attributes: ["warehouseID"],
+    });
+
+    if (!user || !user.warehouseID) {
+      res.status(404).json({ message: "❌ User not found or no warehouse assigned" });
+      return;
+    }
+
+    const bins = await Bin.findAll({
+      where: { warehouseID: user.warehouseID },
+      attributes: ["binCode", "binID"],
+    });
+
+    // ✅ 直接返回 `binID` 和 `binCode` 作为对象数组
+    res.json(bins);
+  } catch (error) {
+    console.error("❌ Error fetching bins:", error);
+    res.status(500).json({ message: "❌ Internal Server Error" });
+  }
+};
+
+
+
 export const getInventory = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const accountID = req.user?.sub;
@@ -125,22 +158,30 @@ export const deleteInventoryItem = async (req: Request, res: Response): Promise<
 
 export const updateInventoryItem = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { id } = req.params;
+    const { inventoryID } = req.params; // ✅ 这里匹配 `router.put("/:inventoryID")`
     const { quantity } = req.body;
+
+    if (!inventoryID) {
+      res.status(400).json({ message: "❌ Missing inventory ID" });
+      return;
+    }
 
     if (quantity !== undefined && quantity < 0) {
       res.status(400).json({ message: "❌ Quantity cannot be negative" });
       return;
     }
 
-    const [updated] = await Inventory.update(req.body, { where: { id } });
+    const [updated] = await Inventory.update(
+      { quantity }, 
+      { where: { inventoryID } } // ✅ 确保 `inventoryID` 是正确的
+    );
 
     if (updated === 0) {
       res.status(404).json({ message: "❌ Item not found or no changes made" });
       return;
     }
 
-    const updatedItem = await Inventory.findByPk(id);
+    const updatedItem = await Inventory.findByPk(inventoryID);
     res.json(updatedItem);
   } catch (error) {
     console.error("❌ Error updating inventory:", error);
