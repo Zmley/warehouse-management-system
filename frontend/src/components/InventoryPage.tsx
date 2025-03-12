@@ -109,7 +109,6 @@ const InventoryPage: React.FC = () => {
       {/* ✅ 使用 `FilterComponent` */}
       <FilterComponent selectedBin={selectedBin} setSelectedBin={setSelectedBin} bins={bins} onNewProductClick={() => {}} />
 
-      <Typography variant="h5" sx={{ marginBottom: 2 }}>📦 Inventory List</Typography>
 
       <TableContainer component={Paper}>
         <Table>
