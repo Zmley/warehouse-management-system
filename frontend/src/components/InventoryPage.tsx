@@ -1,91 +1,102 @@
 import React, { useEffect, useState } from "react";
-import {
-  Container,
-  Typography,
-  CircularProgress,
-  Alert,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper
-} from "@mui/material";
+import { Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, IconButton, Paper, CircularProgress, Alert } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { fetchInventory } from "../api/inventoryApi";
 
+interface InventoryItem {
+  id: string;
+  productID: string;
+  updatedAt: string; 
+  quantity: number;
+}
+
 const InventoryPage: React.FC = () => {
-  const [inventory, setInventory] = useState<any[]>([]);
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadInventory = async () => {
+    const loadData = async () => {
       try {
-        console.log("🔄 Fetching inventory...");
         const data = await fetchInventory();
-        setInventory(data);
-        console.log("✅ Inventory loaded:", data);
+        if (data && Array.isArray(data.inventory)) {
+          setInventory(data.inventory);
+        } else {
+          setError("❌ Unexpected data format from API");
+        }
       } catch (err) {
-        console.error("❌ Inventory fetch failed:", err);
-        setError("Failed to load inventory.");
+        setError("❌ Failed to fetch inventory data");
       } finally {
         setLoading(false);
       }
     };
-
-    loadInventory();
+    loadData();
   }, []);
 
-  if (loading) return <CircularProgress sx={{ display: "block", margin: "20px auto" }} />;
+  const handleQuantityChange = (id: string, newQuantity: number) => {
+    setInventory((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, quantity: newQuantity } : item
+      )
+    );
+  };
+
+  const handleDelete = (id: string) => {
+    setInventory((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  if (loading) return <CircularProgress />;
   if (error) return <Alert severity="error">{error}</Alert>;
-  if (!inventory.length) return <Typography>No inventory data available.</Typography>;
 
   return (
-    <Container sx={{ mt: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        📦 Inventory List
-      </Typography>
-
-      <TableContainer component={Paper} sx={{ marginTop: 2 }}>
+    <Box sx={{ padding: "20px" }}>
+      <Typography variant="h5" sx={{ marginBottom: 2 }}>📦 Inventory List</Typography>
+      <TableContainer component={Paper}>
         <Table>
           <TableHead>
-            <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
-              <TableCell><b>Task ID</b></TableCell>
-              <TableCell><b>Product ID</b></TableCell>
-              <TableCell><b>Source Bin</b></TableCell>
-              <TableCell><b>Target Bin</b></TableCell>
-              <TableCell><b>Quantity</b></TableCell>
-              <TableCell><b>Status</b></TableCell>
+            <TableRow>
+              <TableCell><strong>Product ID</strong></TableCell>
+              <TableCell><strong>Imported Date</strong></TableCell>
+              <TableCell><strong>Quantity</strong></TableCell>
+              <TableCell><strong>Action</strong></TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {inventory.map((item, index) => (
-              <TableRow 
-                key={index}
-                sx={{
-                  backgroundColor: item.status === "Picked" ? "#dcdcdc" : "transparent",
-                  "&:hover": { backgroundColor: "#e8e8e8" }
-                }}
-              >
-                <TableCell># {item.task_id}</TableCell>
-                <TableCell># {item.product_id}</TableCell>
+            {inventory.map((item) => (
+              <TableRow key={item.id}>
                 <TableCell>
-                  <b>{item.source_bin}</b>
+                  <Typography
+                    component="a"
+                    href={`/product/${item.productID}`}
+                    sx={{ textDecoration: "underline", color: "blue", cursor: "pointer" }}
+                  >
+                    {item.productID}
+                  </Typography>
+                </TableCell>
+                <TableCell>{item.updatedAt}</TableCell>
+                <TableCell>
+                  <TextField
+                    type="number"
+                    size="small"
+                    value={item.quantity}
+                    onChange={(e) => handleQuantityChange(item.id, Number(e.target.value))}
+                    sx={{
+                      width: "60px",
+                      "& input": { textAlign: "center", padding: "4px" },
+                    }}
+                  />
                 </TableCell>
                 <TableCell>
-                  <b>{item.target_bin}</b>
+                  <IconButton onClick={() => handleDelete(item.id)} color="error">
+                    <DeleteIcon />
+                  </IconButton>
                 </TableCell>
-                <TableCell>
-                  <b>{item.quantity}</b>
-                </TableCell>
-                <TableCell>{item.status}</TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
-    </Container>
+    </Box>
   );
 };
 

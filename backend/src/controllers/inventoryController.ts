@@ -1,17 +1,63 @@
 import { Request, Response } from "express";
 import Inventory from "../models/inventory";
+import Bin from "../models/bin";
+import User from "../models/User";
+import { AuthRequest } from '../middleware/authMiddleware'
 
 
-export const getInventory = async (req: Request, res: Response) => {
+export const getInventory = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const inventory = await Inventory.findAll();
-    res.json(inventory);
+    const accountID = req.user?.sub;
+    if (!accountID) {
+      res.status(401).json({ message: "❌ Unauthorized: No User Info" });
+      return;
+    }
+
+    // 1️⃣ 获取当前用户的 `warehouseID`
+    const user = await User.findOne({
+      where: { accountID },
+      attributes: ["warehouseID"],
+    });
+
+    if (!user || !user.warehouseID) {
+      res.status(404).json({ message: "❌ User not found or no warehouse assigned" });
+      return;
+    }
+
+    console.log("🟢 User's warehouseID:", user.warehouseID);
+
+    // 2️⃣ 获取该 `warehouseID` 下的所有 `binID`
+    const bins = await Bin.findAll({
+      where: { warehouseID: user.warehouseID },
+      attributes: ["binID"],
+    });
+
+    if (!bins.length) {
+      res.status(404).json({ message: "❌ No bins found for this warehouse" });
+      return;
+    }
+
+    const binIDs = bins.map((bin) => bin.binID);
+    console.log("🟢 Retrieved binIDs:", binIDs);
+
+    // 3️⃣ 查询属于这些 `binID` 的 `inventory` 数据
+    const inventoryItems = await Inventory.findAll({
+      where: { binID: binIDs },
+    });
+
+    console.log("🟢 Raw inventory items from database:", inventoryItems);
+
+    // 4️⃣ **提取 `dataValues` 只返回纯数据**
+    const formattedInventory = inventoryItems.map((item) => item.get({ plain: true }));
+
+    console.log("🟢 Formatted inventory items:", formattedInventory);
+
+    res.json({ inventory: formattedInventory });
   } catch (error) {
     console.error("❌ Error fetching inventory:", error);
     res.status(500).json({ message: "❌ Internal Server Error" });
   }
 };
-
 
 export const addInventoryItem = async (req: Request, res: Response): Promise<void> => {
   try {

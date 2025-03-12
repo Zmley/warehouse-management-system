@@ -4,6 +4,7 @@ import { sequelize } from "../config/db";
 // ✅ Bin Model
 export class Bin extends Model {
   public binID!: string;
+  public warehouseID!: string;  // ✅ 添加 warehouseID
   public warehouseCode!: string;
   public binCode!: string;
   public emptyStatus!: boolean;
@@ -21,6 +22,10 @@ Bin.init(
     },
     warehouseCode: {
       type: DataTypes.STRING,
+      allowNull: false,
+    },
+    warehouseID: {
+      type: DataTypes.STRING,  // ✅ 新增字段
       allowNull: false,
     },
     binCode: {

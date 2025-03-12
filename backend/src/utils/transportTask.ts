@@ -1,10 +1,12 @@
 import Task from "../models/task";
 import Inventory from "../models/inventory";
+import { Bin } from "../models/bin"; 
+import {  getBinType,checkExistingInventory } from './task'
 
 export const loadCargoHelper = async (binID: string, carID: string, accountId: string) => {
   try {
     const updatedItems = await Inventory.update(
-      { binID: carID, ownedBy: "car" },  // ✅ ownedBy 变成 "car"
+      { binID: carID, ownedBy: "car" },  
       { where: { binID } }
     );
     return updatedItems[0]; 
@@ -14,17 +16,71 @@ export const loadCargoHelper = async (binID: string, carID: string, accountId: s
   }
 };
 
-export const unloadCargoHelper = async (unLoadBinID: string, carID: string, accountId: string) => {
-  try {
-    const updatedItems = await Inventory.update(
-      { binID: unLoadBinID, ownedBy: "warehouse" }, 
-      { where: { binID: carID, ownedBy: "car" } } // ✅ 现在只更新 ownedBy 是 "car" 的货物
-    );
-    return updatedItems[0]; 
-  } catch (error) {
-    console.error("❌ Error in unloadCargoHelper:", error);
-    throw new Error("❌ Failed to unload cargo.");
+
+/**
+ * @param unLoadBinID 
+ * @param carID 
+ * @param accountId 
+ * @param productList 
+ */
+export const unloadCargoHelper = async (
+  unLoadBinID: string,
+  carID: string,
+  accountId: string,
+  productList: { inventoryID: string; quantity: number }[]
+): Promise<number> => {
+  let updatedCount = 0;
+
+  for (const { inventoryID, quantity } of productList) {
+    const inventoryItem = await Inventory.findOne({ where: { inventoryID, binID: carID } });
+
+    if (!inventoryItem) {
+      console.warn(`⚠️ Inventory item ${inventoryID} not found in car ${carID}`);
+      continue;
+    }
+
+    const currentQuantity = inventoryItem.quantity;
+    const productID = inventoryItem.productID;
+
+    if (currentQuantity < quantity) {
+      console.warn(`⚠️ Requested unload quantity (${quantity}) exceeds car stock (${currentQuantity}) for inventory ${inventoryID}`);
+      continue;
+    }
+
+    const binType = await getBinType(unLoadBinID);
+    const ownedBy = binType || "unknown";
+
+    // 检查目标bin是否已有该productID库存
+    const targetInventory = await Inventory.findOne({ where: { binID: unLoadBinID, productID } });
+
+    if (targetInventory) {
+      // 合并库存到目标bin
+      await targetInventory.update({ quantity: targetInventory.quantity + quantity });
+    } else {
+      // 目标bin没有该product，创建新库存记录
+      await Inventory.create({
+        binID: unLoadBinID,
+        productID,
+        quantity,
+        ownedBy,
+      });
+    }
+
+    // 更新原库存数量或删除记录
+    if (currentQuantity === quantity) {
+      // 完全卸载：删除原记录
+      await inventoryItem.destroy();
+      console.log(`✅ Fully moved and deleted inventory ${inventoryID} from car ${carID}`);
+    } else {
+      // 部分卸载：更新数量
+      await inventoryItem.update({ quantity: currentQuantity - quantity });
+      console.log(`✅ Partially moved inventory ${inventoryID}, reduced quantity by ${quantity} from car ${carID}`);
+    }
+
+    updatedCount++;
   }
+
+  return updatedCount;
 };
 
 export const createTask = async (sourceBinID: string, carID: string, accountID: string) => {

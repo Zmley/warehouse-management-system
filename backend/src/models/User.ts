@@ -8,6 +8,7 @@ export class User extends Model {
   public firstName!: string;
   public lastName!: string;
   public CarID!: string | null;
+  public warehouseID!: string | null;  // ✅ 添加 warehouseID
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -40,6 +41,10 @@ User.init(
     },
     CarID: {
       type: DataTypes.STRING,
+      allowNull: true,
+    },
+    warehouseID: {
+      type: DataTypes.STRING,  // ✅ 新增字段
       allowNull: true,
     },
     createdAt: {
