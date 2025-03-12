@@ -67,7 +67,7 @@ const Dashboard: React.FC = () => {
       </Typography>
 
       {/* ✅ Transport Worker 任务入口 */}
-      {role === "transportWorker" && (
+      {role === "TRANSPORT_WORKER" && (
         <Button
           variant="contained"
           color="secondary"
