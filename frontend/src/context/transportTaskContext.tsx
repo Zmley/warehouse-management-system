@@ -15,6 +15,7 @@ interface TaskData {
   binCode: string;
   targetCode: string;
   productList: Product[]; // ✅ 确保 `productList` 存在
+  pickerNeededProduct?: string; // ✅ 新增 pickerNeededProduct
 }
 
 // ✅ 定义 Context 需要提供的状态和方法
@@ -36,7 +37,8 @@ export const TransportProvider = ({ children }: { children: ReactNode }) => {
     taskID: "",
     binCode: "",
     targetCode: "",
-    productList: [],
+    productList: [], 
+     pickerNeededProduct: undefined, // ✅ 这里加上 pickerNeededProduct
   });
 
   const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
@@ -61,6 +63,7 @@ export const TransportProvider = ({ children }: { children: ReactNode }) => {
         binCode: response.binCode || "",
         targetCode: response.targetCode || "",
         productList: updatedProductList,
+        pickerNeededProduct: response.pickerNeededProduct || null, // ✅ 赋值 pickerNeededProduct
       });
   
       // ✅ 让 `selectedProducts` **每次都更新**

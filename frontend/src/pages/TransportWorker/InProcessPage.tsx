@@ -20,12 +20,8 @@ const InProcessTaskPage = () => {
   const { videoRef, isScanning, startScanning, stopScanning } =
     useQRScanner(handleScanSuccess)
   const [isLoading, setIsLoading] = useState(false)
-  const {
-    taskData,
-    fetchTaskStatus,
-    selectedProducts,
-    setSelectedProducts
-  } = useTransportContext()
+  const { taskData, fetchTaskStatus, selectedProducts, setSelectedProducts } =
+    useTransportContext()
 
   useEffect(() => {
     fetchTaskStatus()
@@ -50,7 +46,7 @@ const InProcessTaskPage = () => {
     setIsLoading(true)
 
     try {
-      // ✅ 直接从 `selectedProducts` 里获取选中的货物，并确保传递 `inventoryID`
+      // ✅ 获取选中的货物
       const selectedProductsToUnload = selectedProducts
         .filter(product => product.selected)
         .map(({ productID, quantity, inventoryID }) => ({
@@ -72,7 +68,6 @@ const InProcessTaskPage = () => {
 
       if (response.success) {
         await fetchTaskStatus()
-        // window.location.reload()
       } else {
         console.error('❌ Failed to process unload:', response.error)
       }
@@ -109,9 +104,17 @@ const InProcessTaskPage = () => {
             Task ID: {taskData.taskID}
           </Typography>
 
-          {/* Source Bin & Target Bin */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
-            <Box>
+          {/* ✅ Source Bin、Needed Product & Target Bin */}
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              mt: 2
+            }}
+          >
+            {/* ✅ Source Bin */}
+            <Box sx={{ textAlign: 'center', flex: 1 }}>
               <Typography
                 variant='subtitle2'
                 sx={{ fontSize: '14px', fontWeight: 'bold' }}
@@ -125,7 +128,25 @@ const InProcessTaskPage = () => {
                 {taskData.binCode || '--'}
               </Typography>
             </Box>
-            <Box>
+
+            {/* ✅ Needed Product */}
+            <Box sx={{ textAlign: 'center', flex: 1 }}>
+              <Typography
+                variant='subtitle2'
+                sx={{ fontSize: '14px', fontWeight: 'bold', color: '#d32f2f' }}
+              >
+                Needed
+              </Typography>
+              <Typography
+                variant='body1'
+                sx={{ fontSize: '16px', fontWeight: 'bold', color: '#d32f2f' }}
+              >
+                {taskData.pickerNeededProduct || '--'} {/* ✅ 这里确保有值 */}
+              </Typography>
+            </Box>
+
+            {/* ✅ Target Bin */}
+            <Box sx={{ textAlign: 'center', flex: 1 }}>
               <Typography
                 variant='subtitle2'
                 sx={{ fontSize: '14px', fontWeight: 'bold' }}
@@ -141,7 +162,7 @@ const InProcessTaskPage = () => {
             </Box>
           </Box>
 
-          {/* 产品列表 */}
+          {/* 📋 Product List */}
           <Box sx={{ mt: 3 }}>
             <Typography variant='h6' sx={{ fontWeight: 'bold' }}>
               📋 Product List
@@ -193,7 +214,7 @@ const InProcessTaskPage = () => {
                     }
                     sx={{ width: '80px', textAlign: 'center' }}
                     inputProps={{ min: 0 }}
-                    disabled={!product.selected} // ✅ 未选中时禁用输入框
+                    disabled={!product.selected}
                   />
                 </Box>
               ))

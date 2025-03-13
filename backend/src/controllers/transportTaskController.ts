@@ -196,14 +196,30 @@ export const scanPickerareaBin = async (req: AuthRequest, res: Response): Promis
 
 
 // ✅ 获取 binID 对应的 BinCode
-const getBinCode = async (binID: string | null): Promise<string | null> => {
-  if (!binID) return null;
-  
+const getBinCode = async (binInput: string | null): Promise<string | null> => {
+  if (!binInput) return null;
+
   try {
-    const bin = await Bin.findOne({ where: { binID } });
-    return bin ? bin.binCode : null; // ✅ 返回 binCode，如果 bin 不存在返回 null
+    // ✅ 尝试解析 JSON，如果解析成功，则提取 binCode
+    let binIDsArray: { binID: string; binCode: string }[] | null = null;
+    
+    try {
+      binIDsArray = JSON.parse(binInput); // 尝试解析 JSON
+    } catch (e) {
+      binIDsArray = null; // 解析失败，则视为单个 binID
+    }
+
+    if (Array.isArray(binIDsArray)) {
+      // ✅ 解析成功，提取 `binCode`
+      const binCodes = binIDsArray.map((bin) => bin.binCode).filter(Boolean);
+      return binCodes.length ? binCodes.join("/") : null;
+    } else {
+      // ✅ 解析失败，说明是单个 binID，直接查询数据库
+      const bin = await Bin.findOne({ where: { binID: binInput } });
+      return bin ? bin.binCode : null;
+    }
   } catch (error) {
-    console.error(`❌ Error fetching BinCode for binID ${binID}:`, error);
+    console.error(`❌ Error fetching BinCode for input ${binInput}:`, error);
     return null;
   }
 };
@@ -245,6 +261,7 @@ export const getUserTaskStatus = async (req: AuthRequest, res: Response): Promis
       targetCode: targetCode,
       carID:CarID,
       productList: productList, // ✅ 额外返回产品列表
+      pickerNeededProduct: task.productID || null, // ✅ 任务所需的 `productID`
     });
   } catch (error) {
     console.error("❌ Error fetching user task status:", error);

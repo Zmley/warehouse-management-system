@@ -83,6 +83,23 @@ const AcceptedProcessTaskPage: React.FC = () => {
                 {taskData.binCode || "--"}
               </Typography>
             </Box>
+
+                {/* ✅ Needed Product */}
+                <Box sx={{ textAlign: 'center', flex: 1 }}>
+              <Typography
+                variant='subtitle2'
+                sx={{ fontSize: '14px', fontWeight: 'bold', color: '#d32f2f' }}
+              >
+                Needed
+              </Typography>
+              <Typography
+                variant='body1'
+                sx={{ fontSize: '16px', fontWeight: 'bold', color: '#d32f2f' }}
+              >
+                {taskData.pickerNeededProduct || '--'} {/* ✅ 这里确保有值 */}
+              </Typography>
+            </Box>
+            
             <Box>
               <Typography
                 variant="subtitle2"
