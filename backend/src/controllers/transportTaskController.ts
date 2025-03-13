@@ -37,7 +37,7 @@ export const loadCargo = async (req: AuthRequest, res: Response): Promise<void> 
       return
     }
 
-    await createTask(binID, carID, accountId)
+    // await createTask(binID, carID, accountId)
 
     res.status(200).json({
       message: `✅ BinID updated to "${carID}" and owned by "car".`

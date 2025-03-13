@@ -268,3 +268,27 @@ export const acceptTask = async (
     res.status(500).json({ message: "❌ Internal Server Error", error: errorMessage });
   }
 };
+
+
+
+
+export const checkOngoingTask = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const accountID = req.user?.sub; // ✅ 通过 JWT 解析 `accountID`
+
+    if (!accountID) {
+      res.status(400).json({ message: "❌ Missing accountID in request" });
+      return;
+    }
+
+    // ✅ 检查 `task` 表中是否有 `status = "inProgress"` 且 `accountID = 当前用户`
+    const ongoingTask = await Task.findOne({
+      where: { accountID, status: "inProgress" },
+    });
+
+    res.status(200).json({ hasTask: !!ongoingTask }); // ✅ 返回 `true`（有任务）或 `false`（无任务）
+  } catch (error) {
+    console.error("❌ Error checking ongoing task:", error);
+    res.status(500).json({ message: "❌ Internal Server Error" });
+  }
+};

@@ -1,5 +1,16 @@
 import apiClient from "./axiosClient.ts";  
 
+
+export const checkOngoingTask = async (): Promise<boolean> => {
+  try {
+    const response = await apiClient.get("/api/tasks/check-ongoing-task");
+    return response.data.hasTask; // ✅ 确保 `true` / `false`
+  } catch (error) {
+    console.error("❌ Error checking ongoing task:", error);
+    return false; // ❌ 出错时默认返回 `false`
+  }
+};
+
 export const processBinTask = async (
   binID: string,
   isLoadingToCar: boolean,

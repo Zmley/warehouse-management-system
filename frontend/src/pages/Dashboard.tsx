@@ -3,6 +3,8 @@ import { Container, Typography, Button, CircularProgress } from "@mui/material";
 import { AuthContext } from "../context/authContext";
 import { useNavigate } from "react-router-dom";
 import { useTransportContext } from "../context/transportTaskContext";
+import { checkOngoingTask } from "../api/transportTaskApi";
+
 
 const roleTitles: { [key: string]: string } = {
   admin: "Admin Dashboard 🎩",
@@ -39,11 +41,22 @@ const Dashboard: React.FC = () => {
     );
   }
 
+  // ✅ 任务按钮逻辑
   const handleTransportTask = () => {
     if (transportStatus === "completed") {
       navigate("/scan-task"); // ✅ 任务完成后，进入扫码页面
     } else if (transportStatus === "inProgress") {
       navigate("/in-process-task"); // ✅ 任务未完成，进入任务详情页
+    }
+  };
+
+  // ✅ 进入 `AcceptedProcessTaskPage.tsx`
+  const handleAcceptedTask = async () => {
+    const hasTask = await checkOngoingTask();
+    if (hasTask) {
+      navigate("/accepted-process-task");
+    } else {
+      alert("⚠️ No ongoing task found.");
     }
   };
 
@@ -68,14 +81,26 @@ const Dashboard: React.FC = () => {
 
       {/* ✅ Transport Worker 任务入口 */}
       {role === "TRANSPORT_WORKER" && (
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={handleTransportTask}
-          sx={{ marginBottom: 2 }}
-        >
-          🚛 Go to Transport Task
-        </Button>
+        <>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={handleTransportTask}
+            sx={{ marginBottom: 2 }}
+          >
+            🚛 Go to Transport Task
+          </Button>
+
+          {/* ✅ 进入 `AcceptedProcessTaskPage.tsx` 的按钮 */}
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleAcceptedTask}
+            sx={{ marginBottom: 2 }}
+          >
+            📦 Go to Accepted Task
+          </Button>
+        </>
       )}
 
       <Button variant="contained" color="error" onClick={logout}>

@@ -7,6 +7,8 @@ import EditInventoryPage from "../components/admin/InventoryPage";
 import InProcessTaskPage from "../pages/TransportWorker/InProcessPage"; // ✅ 任务进行中界面
 import ScanTaskPage from "../pages/TransportWorker/ScanTask"; // ✅ 任务进行中界面
 import LoadingPage from "../pages/LoadingPage"; // ✅ 任务进行中界面
+import AcceptedProcessTaskPage from "../pages/TransportWorker/AcceptedProcessTaskPage"; // ✅ 任务进行中界面
+
 
 // import TransportTask from "../pages/transportWorker/transportTask";
 // import ScanCargo from "../pages/transportWorker/transportTask"; // ✅ 确保引入页面
@@ -30,6 +32,8 @@ const PrivateRoutes: React.FC = () => {
         <Route path="/in-process-task" element={<InProcessTaskPage />} />
         <Route path="/scan-task" element={<ScanTaskPage />} />
         <Route path="/loading" element={<LoadingPage />} />
+        <Route path="/accepted-process-task" element={<AcceptedProcessTaskPage />} />
+
 
       </Route>
     </Routes>
