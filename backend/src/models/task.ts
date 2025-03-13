@@ -7,6 +7,10 @@ export class Task extends Model {
   public destinationBinID!: string;
   public accountID!: string;
   public productID!: string;
+
+  public creatorID!: string;
+
+  
   public status!: "pending" | "inProgress" | "completed" | "cancel";
   public createdAt!: Date;
   public updatedAt!: Date | null;
@@ -29,6 +33,11 @@ Task.init(
       allowNull: true,
     },
     accountID: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+
+    creatorID: {
       type: DataTypes.STRING,
       allowNull: true,
     },

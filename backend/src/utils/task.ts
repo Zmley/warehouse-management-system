@@ -2,6 +2,8 @@ import Task from "../models/task";
 import Inventory from "../models/inventory";
 import User from "../models/User" // ✅ 新增 User Model 引用
 import Bin from "../models/bin";
+import { Request, Response } from "express";
+
 
 
 
@@ -88,3 +90,74 @@ export const getCarIdByAccountId = async (accountId: string): Promise<string> =>
       return false;
     }
   };
+
+
+
+
+
+
+
+
+  export const getPickerProduct = async (binID: string): Promise<string> => {
+    // ✅ 查找 `Bin` 表中 `binID` 匹配的 `row`
+    const binRow = await Bin.findOne({
+      where: { binID },
+      attributes: ["productID"], // ✅ 只返回 `productID`
+    });
+  
+    if (!binRow || !binRow.productID) {
+      return "NONE"; // ✅ 处理空值情况，防止 `null` 影响数据库
+    }
+  
+    return binRow.productID; // ✅ 直接返回 `string`
+  };
+
+
+
+
+
+export const getWarehouseID = async (accountID: string): Promise<string | null> => {
+  try {
+    // ✅ 在 `User` 表中查找匹配的 `accountID`
+    const user = await User.findOne({
+      where: { accountID },
+      attributes: ["warehouseID"], // ✅ 只返回 `warehouseID`
+    });
+
+    if (!user || !user.warehouseID) {
+      return null; // ❌ 用户不存在或没有 warehouseID，则返回 null
+    }
+
+    return user.warehouseID; // ✅ 返回找到的 `warehouseID`
+  } catch (error) {
+    console.error("❌ Error fetching warehouseID:", error);
+    return null; // ❌ 发生错误时返回 null
+  }
+};
+
+
+
+
+
+
+
+export const hasActiveTask = async (accountID: string): Promise<boolean> => {
+  try {
+    // ✅ 查询是否有 `status = "inProcess"` 的任务
+    const activeTask = await Task.findOne({
+      where: { accountID, status: "inProgress" },
+    });
+
+    return activeTask !== null; // ✅ 如果找到任务，返回 `true`，否则返回 `false`
+  } catch (error) {
+    console.error("❌ Error checking active task:", error);
+    return false; // 遇到异常时返回 `false`
+  }
+};
+
+
+
+
+
+
+

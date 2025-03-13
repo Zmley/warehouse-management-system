@@ -8,6 +8,7 @@ export class User extends Model {
   public firstName!: string;
   public lastName!: string;
   public CarID!: string | null;
+  public warehouseID!: string | null;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -39,6 +40,11 @@ User.init(
       allowNull: false,
     },
     CarID: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+
+    warehouseID: {
       type: DataTypes.STRING,
       allowNull: true,
     },
