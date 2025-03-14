@@ -7,7 +7,7 @@ export class task extends Model {
   public destinationBinID!: string;
   public accountID!: string;
   public productID!: string;
-  public status!: "pending" | "inProgress" | "completed" | "cancel";
+  public status!: "PENDING" | "IN_PROCESS" | "COMPLETED" | "CANCEL";
   public createdAt!: Date;
   public updatedAt!: Date | null;
 }
@@ -37,7 +37,7 @@ task.init(
       allowNull: false,
     },
     status: {
-      type: DataTypes.ENUM("pending", "inProgress", "completed", "cancel"),
+      type: DataTypes.ENUM('PENDING', 'IN_PROCESS', 'COMPLETED', 'CANCEL'),
       allowNull: false,
       defaultValue: "pending",
     },

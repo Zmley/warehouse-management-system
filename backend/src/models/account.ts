@@ -7,7 +7,7 @@ export class account extends Model {
   public role!: 'ADMIN' | 'TRANSPORT_WORKER' | 'PICKER' | 'SUPER_ADMIN'
   public firstName!: string
   public lastName!: string
-  public CarID!: string | null
+  public carID!: string | null
   public readonly createdAt!: Date
   public readonly updatedAt!: Date
 }
