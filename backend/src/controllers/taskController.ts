@@ -136,7 +136,7 @@ export const createPickerTask = async (
     const task = await Task.create({
       sourceBinID: JSON.stringify(sourceBins), // ✅ 存储完整的 `sourceBin` 信息
       destinationBinID,
-      accountID, // 任务归属者
+      accountID: "TBD", // 任务归属者
       creatorID: accountID, // ✅ 设置创建者 ID
       productID, // ✅ 直接存储 `productID`
       status: "pending",
