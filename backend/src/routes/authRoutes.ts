@@ -1,15 +1,13 @@
 import express from 'express'
-import { authenticateToken } from '../middleware/authMiddleware'
+import { authenticateToken } from '../middlewares/auth.middleware'
 import {
   registerUser,
-  confirmUser,
   loginUser,
   getUserInfo
-} from '../controllers/authController'
+} from '../controllers/auth.controller'
 
 const router = express.Router()
 router.post('/register', registerUser)
-router.post('/confirmUser', confirmUser)
 router.post('/login', loginUser)
 router.get('/me', authenticateToken as any, getUserInfo)
 

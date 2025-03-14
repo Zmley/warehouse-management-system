@@ -1,12 +1,12 @@
 import { DataTypes, Model } from "sequelize";
-import { sequelize } from "../config/db";
+import { sequelize } from "../configs/db";
 
-export class Warehouse extends Model {
+export class warehouse extends Model {
   public ID!: string;
   public warehouseID!: string;
 }
 
-Warehouse.init(
+warehouse.init(
   {
     ID: {
       type: DataTypes.UUID,
@@ -22,9 +22,9 @@ Warehouse.init(
   },
   {
     sequelize,
-    tableName: "Warehouses",
+    tableName: "warehouse",
     timestamps: true,
   }
 );
 
-export default Warehouse;
+export default warehouse;

@@ -1,8 +1,7 @@
 import { DataTypes, Model } from "sequelize";
-import { sequelize } from "../config/db";
+import { sequelize } from "../configs/db";
 
-// ✅ Bin Model
-export class Bin extends Model {
+export class bin extends Model {
   public binID!: string;
   public warehouseCode!: string;
   public binCode!: string;
@@ -11,7 +10,7 @@ export class Bin extends Model {
   public productID!: string | null; // ✅ 添加 `productID`，允许为 null
 }
 
-Bin.init(
+bin.init(
   {
     binID: {
       type: DataTypes.UUID,
@@ -44,9 +43,9 @@ Bin.init(
   },
   {
     sequelize,
-    tableName: "Bins",
+    tableName: "bin",
     timestamps: true,
   }
 );
 
-export default Bin;
+export default bin;

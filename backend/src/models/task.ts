@@ -1,7 +1,7 @@
 import { DataTypes, Model } from "sequelize";
-import { sequelize } from "../config/db";
+import { sequelize } from "../configs/db";
 
-export class Task extends Model {
+export class task extends Model {
   public taskID!: string;
   public sourceBinID!: string;
   public destinationBinID!: string;
@@ -12,7 +12,7 @@ export class Task extends Model {
   public updatedAt!: Date | null;
 }
 
-Task.init(
+task.init(
   {
     taskID: {
       type: DataTypes.UUID,
@@ -52,9 +52,9 @@ Task.init(
   },
   {
     sequelize,
-    tableName: "Tasks",
+    tableName: "task",
     timestamps: true,
   }
 );
 
-export default Task;
+export default task;

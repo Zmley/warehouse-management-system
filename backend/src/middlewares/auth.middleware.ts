@@ -2,15 +2,13 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import axios from 'axios'; 
 import { jwtVerify, importJWK } from 'jose'; 
-import { awsConfig } from '../config/awsConfig'; 
+import { awsConfig } from '../configs/awsConfig'; 
+import { getCognitoPublicKeysUrl } from "../utils/awsUtil";
+import { getPublicKeyForToken } from "../utils/authUtil";
 
 export interface AuthRequest extends Request {
   user?: any; 
 }
-
-const getCognitoPublicKeysUrl = (userPoolId: string, region: string) => {
-  return `https://cognito-idp.${region}.amazonaws.com/${userPoolId}/.well-known/jwks.json`;
-};
 
 export const authenticateToken = async (
   req: AuthRequest,

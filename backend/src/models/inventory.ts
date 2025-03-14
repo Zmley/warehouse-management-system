@@ -1,15 +1,14 @@
 import { DataTypes, Model } from "sequelize";
-import { sequelize } from "../config/db";
+import { sequelize } from "../configs/db";
 
-// ✅ Inventory Model
-export class Inventory extends Model {
+export class inventory extends Model {
   public inventoryID!: string;
   public binID!: string;
   public productID!: string;
   public quantity!: number;
 }
 
-Inventory.init(
+inventory.init(
   {
     inventoryID: {
       type: DataTypes.UUID,
@@ -37,9 +36,9 @@ Inventory.init(
   },
   {
     sequelize,
-    tableName: "Inventory",
+    tableName: "inventory",
     timestamps: true,
   }
 );
 
-export default Inventory;
+export default inventory;
