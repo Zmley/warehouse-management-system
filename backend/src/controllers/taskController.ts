@@ -87,7 +87,7 @@ export const createPickerTask = async (
 
     // ✅ 检查是否已有相同的任务
     const existingTask = await Task.findOne({
-      where: { destinationBinID, accountID, status: "pending" },
+      where: { destinationBinID, status: "pending" },
     });
 
     if (existingTask) {

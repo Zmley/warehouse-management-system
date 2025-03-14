@@ -5,7 +5,7 @@ import { getUserTaskStatus } from "../api/transportTaskApi";
 interface Product {
   productID: string;
   quantity: number;
-  inventoryID: string; // ✅ 添加 inventoryID
+  inventoryID: string;
   selected: boolean;
 }
 
@@ -14,8 +14,8 @@ interface TaskData {
   taskID: string;
   binCode: string;
   targetCode: string;
-  productList: Product[]; // ✅ 确保 `productList` 存在
-  pickerNeededProduct?: string; // ✅ 新增 pickerNeededProduct
+  productList: Product[];
+  pickerNeededProduct?: string;
 }
 
 // ✅ 定义 Context 需要提供的状态和方法
@@ -23,6 +23,7 @@ interface TransportContextProps {
   transportStatus: "completed" | "inProgress" | null;
   taskData: TaskData;
   fetchTaskStatus: () => Promise<void>;
+  clearTaskData: () => void; // ✅ 添加清除数据的方法
   selectedProducts: Product[];
   setSelectedProducts: React.Dispatch<React.SetStateAction<Product[]>>;
 }
@@ -31,55 +32,66 @@ const TransportContext = createContext<TransportContextProps | undefined>(undefi
 
 export const TransportProvider = ({ children }: { children: ReactNode }) => {
   const [transportStatus, setTransportStatus] = useState<"completed" | "inProgress" | null>(null);
-  
-  // ✅ 初始化 `taskData`，确保 `productList` 是空数组
+
+  // ✅ 初始化 `taskData`
   const [taskData, setTaskData] = useState<TaskData>({
     taskID: "",
     binCode: "",
     targetCode: "",
-    productList: [], 
-     pickerNeededProduct: undefined, // ✅ 这里加上 pickerNeededProduct
+    productList: [],
+    pickerNeededProduct: undefined,
   });
 
   const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
 
-  // ✅ 获取任务状态，并更新 `taskData` 和 `selectedProducts`
+  // ✅ 获取任务状态并更新 `taskData`
   const fetchTaskStatus = useCallback(async () => {
     try {
-      
       const response = await getUserTaskStatus();
       setTransportStatus(response.status);
-  
-      // ✅ 确保 `productList` 存在并包含 `inventoryID`
+
       const updatedProductList = response.productList?.map((product: Product) => ({
         productID: product.productID,
         quantity: product.quantity,
-        inventoryID: product.inventoryID || "", // ⚠ 这里确保 inventoryID 存在
-        selected: true, // ✅ 默认选中
+        inventoryID: product.inventoryID || "",
+        selected: true,
       })) || [];
-  
+
       setTaskData({
         taskID: response.taskID || "",
         binCode: response.binCode || "",
         targetCode: response.targetCode || "",
         productList: updatedProductList,
-        pickerNeededProduct: response.pickerNeededProduct || null, // ✅ 赋值 pickerNeededProduct
+        pickerNeededProduct: response.pickerNeededProduct || undefined,
       });
-  
-      // ✅ 让 `selectedProducts` **每次都更新**
+
       setSelectedProducts(updatedProductList);
-  
       console.log(`🚀 Updated Transport Status: ${response.status}`, response);
     } catch (error) {
       console.error("❌ Failed to fetch task status:", error);
     }
   }, []);
 
+  // ✅ 清除任务数据的方法
+  const clearTaskData = () => {
+    setTaskData({
+      taskID: "",
+      binCode: "",
+      targetCode: "",
+      productList: [],
+      pickerNeededProduct: undefined,
+    });
+    setSelectedProducts([]);
+    setTransportStatus(null);
+    console.log("🧹 Task data cleared!");
+  };
+
   return (
     <TransportContext.Provider value={{
       transportStatus,
       taskData,
       fetchTaskStatus,
+      clearTaskData, // ✅ 提供清空数据的方法
       selectedProducts,
       setSelectedProducts,
     }}>

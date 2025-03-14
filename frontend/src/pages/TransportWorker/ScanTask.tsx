@@ -8,9 +8,10 @@ import { processBinTask } from "../../api/transportTaskApi";
 const ScanTaskPage = () => {
   const navigate = useNavigate();
   const { videoRef, startScanning, stopScanning } = useQRScanner(handleScanSuccess);
-  const { fetchTaskStatus } = useTransportContext();
+  const { fetchTaskStatus, clearTaskData } = useTransportContext();
 
   useEffect(() => {
+    clearTaskData(); // ✅ 进入 ScanTaskPage 先清空数据
     fetchTaskStatus();
 
     navigator.mediaDevices.getUserMedia({ video: true })

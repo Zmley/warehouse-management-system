@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 import { AuthRequest } from '../middleware/authMiddleware'
 import { createTask, updateTaskStatus } from '../utils/transportTask'
 import { loadCargoHelper, unloadCargoHelper } from '../utils/transportTask'
-import {  getCarIdByAccountId , getProductsByBinId } from '../utils/task'
+import {  getCarIdByAccountId , getProductsByBinId, hasActiveTask } from '../utils/task'
 import Inventory from '../models/inventory'
 import Task from "../models/task"
 import User from "../models/User" // ✅ 新增 User Model 引用
@@ -38,6 +38,12 @@ export const loadCargo = async (req: AuthRequest, res: Response): Promise<void> 
     }
 
     // await createTask(binID, carID, accountId)
+
+    // ✅ 先检查是否已有进行中的任务
+    const hasTask = await hasActiveTask(accountId);
+    if (!hasTask) {
+     await createTask(binID, carID, accountId)
+  }
 
     res.status(200).json({
       message: `✅ BinID updated to "${carID}" and owned by "car".`

@@ -139,6 +139,19 @@ export const getWarehouseID = async (accountID: string): Promise<string | null> 
 
 
 
+export const hasCargoInCar = async (carID: string): Promise<boolean> => {
+  try {
+    const cargoCount = await Inventory.count({
+      where: { binID: carID },
+    });
+
+    return cargoCount > 0; // ✅ 有货物返回 `true`，否则返回 `false`
+  } catch (error) {
+    console.error(`❌ Error checking cargo in car ${carID}:`, error);
+    return false;
+  }
+};
+
 
 
 export const hasActiveTask = async (accountID: string): Promise<boolean> => {

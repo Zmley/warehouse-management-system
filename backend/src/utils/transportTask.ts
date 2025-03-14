@@ -1,7 +1,7 @@
 import Task from "../models/task";
 import Inventory from "../models/inventory";
 import { Bin } from "../models/bin"; 
-import {  getBinType,checkExistingInventory } from '../utils/task'
+import {  getBinType,checkExistingInventory,getCarIdByAccountId,hasCargoInCar } from '../utils/task'
 
 export const loadCargoHelper = async (binID: string, carID: string, accountId: string) => {
   try {
@@ -91,6 +91,7 @@ export const createTask = async (sourceBinID: string, carID: string, accountID: 
       accountID,
       productID: "ALL",
       status: "inProgress",
+      creatorID: accountID, // ✅ 设置创建者 ID
       createdAt: new Date(),
       updatedAt: null,
     });
@@ -113,12 +114,30 @@ export const updateTaskStatus = async (accountID: string, destinationBinID: stri
       return null;
     }
 
+
+    const carID = await getCarIdByAccountId(accountID);
+    if (carID === "N/A") {
+      console.warn(`⚠️ No CarID found for user ${accountID}`);
+      return null;
+    }
+
+    // ✅ 检查 `inventory` 是否还有 `binID = carID` 的货物
+    const hasCargo = await hasCargoInCar(carID);
+
+
+
     for (const task of tasks) {
-      task.status = "completed";
+      if (!hasCargo) {
+        task.status = "completed"; // ✅ 只有在车上没货物时才标记 `completed`
+      } else {
+        console.log(`🚛 Cargo still in car ${carID}, task remains in progress.`);
+      }
+
       task.updatedAt = new Date();
-      task.destinationBinID = destinationBinID; 
+      task.destinationBinID = destinationBinID;
       await task.save();
     }
+
 
     console.log(`✅ Updated ${tasks.length} tasks for user ${accountID}`);
     return tasks;
