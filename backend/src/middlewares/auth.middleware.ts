@@ -4,7 +4,6 @@ import axios from 'axios';
 import { jwtVerify, importJWK } from 'jose'; 
 import { awsConfig } from '../configs/awsConfig'; 
 import { getCognitoPublicKeysUrl } from "../utils/awsUtil";
-import { getPublicKeyForToken } from "../utils/authUtil";
 
 export interface AuthRequest extends Request {
   user?: any; 

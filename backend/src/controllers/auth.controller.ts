@@ -6,7 +6,7 @@ import { CognitoUser, CognitoUserAttribute } from "amazon-cognito-identity-js";
 import { InitiateAuthCommand, AuthFlowType } from "@aws-sdk/client-cognito-identity-provider";
 import {  userPool, cognitoClient } from "../utils/awsUtil";
 import { getCognitoErrorMessage } from "../utils/errorUtil";
-import { getUserByAccountID } from "../utils/userUtil";
+import { getUserByAccountID } from "../utils/accountUtil";
 import account from "../models/account";
 
 export const loginUser = async (req: Request, res: Response) => {
