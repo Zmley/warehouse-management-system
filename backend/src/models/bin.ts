@@ -1,12 +1,12 @@
-import { DataTypes, Model } from "sequelize";
-import { sequelize } from "../configs/db";
+import { DataTypes, Model } from 'sequelize'
+import { sequelize } from '../db/db'
 
 export class bin extends Model {
-  public binID!: string;
-  public warehouseID!: string;
-  public binCode!: string;
-  public type!: "PICK_UP" | "INVENTORY" | "UNLOAD" | "CART";
-  public productID!: string | null; 
+  public binID!: string
+  public warehouseID!: string
+  public binCode!: string
+  public type!: 'PICK_UP' | 'INVENTORY' | 'UNLOAD' | 'CART'
+  public productID!: string | null
 }
 
 bin.init(
@@ -15,31 +15,31 @@ bin.init(
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
       allowNull: false,
-      primaryKey: true,
+      primaryKey: true
     },
     warehouseID: {
       type: DataTypes.UUID,
-      allowNull: false,
+      allowNull: false
     },
     binCode: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
+      unique: true
     },
     type: {
       type: DataTypes.ENUM('PICK_UP', 'INVENTORY', 'CART'),
-      allowNull: false,
+      allowNull: false
     },
     productID: {
       type: DataTypes.STRING,
-      allowNull: true, 
-    },
+      allowNull: true
+    }
   },
   {
     sequelize,
-    tableName: "bin",
-    timestamps: true,
+    tableName: 'bin',
+    timestamps: true
   }
-);
+)
 
-export default bin;
+export default bin

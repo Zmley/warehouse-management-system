@@ -4,7 +4,6 @@ module.exports = {
   up: async (queryInterface, Sequelize) => {
     console.log("🚀 开始插入数据...");
 
-    // ✅ 插入 warehouse 表（不提供 warehouseID，让数据库自动生成）
     const warehouses = await queryInterface.bulkInsert(
       "warehouse",
       [
@@ -19,18 +18,17 @@ module.exports = {
           updatedAt: new Date(),
         },
       ],
-      { returning: ["warehouseID", "warehouseCode"] } // ✅ 让数据库返回自动生成的 warehouseID
+      { returning: ["warehouseID", "warehouseCode"] } 
     );
 
     console.log("✅ warehouse 数据插入成功!", warehouses);
 
-    // ✅ 插入 bin 表（使用数据库自动生成的 warehouseID）
     const bins = [];
     for (const warehouse of warehouses) {
       for (let b = 1; b <= 3; b++) {
         bins.push({
           binCode: `bin-${b}`,
-          warehouseID: warehouse.warehouseID, // ✅ 绑定 warehouseID
+          warehouseID: warehouse.warehouseID,
           type: "INVENTORY",
           defaultProductID: null,
           createdAt: new Date(),
@@ -38,11 +36,10 @@ module.exports = {
         });
       }
 
-      // ✅ 额外为每个 warehouse 添加一个 CART 类型的 bin
       bins.push({
         binCode: `cart-bin-${warehouse.warehouseCode}`,
-        warehouseID: warehouse.warehouseID, // ✅ 绑定 warehouseID
-        type: 'CART', // ✅ 设置 type 为 CART
+        warehouseID: warehouse.warehouseID, 
+        type: 'CART', 
         defaultProductID: null,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -54,7 +51,6 @@ module.exports = {
     });
     console.log("✅ bin 数据插入成功!", insertedBins);
 
-    // ✅ 插入 inventory 表
     const inventory = [];
     for (const bin of insertedBins) {
       for (let p = 1; p <= 3; p++) {

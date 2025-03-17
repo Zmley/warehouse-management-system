@@ -2,7 +2,7 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 import app from './app'
-import { connectDB } from './configs/db'
+import { connectDB } from './db/db'
 
 connectDB()
   .then(() => {

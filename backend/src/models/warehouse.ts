@@ -1,11 +1,11 @@
-import { DataTypes, Model } from "sequelize";
-import { sequelize } from "../configs/db";
+import { DataTypes, Model } from 'sequelize'
+import { sequelize } from '../db/db'
 
 export class warehouse extends Model {
-  public warehouseID!: string;
-  public warehouseCode!: string;
-  public createdAt!: Date;
-  public updatedAt!: Date | null;
+  public warehouseID!: string
+  public warehouseCode!: string
+  public createdAt!: Date
+  public updatedAt!: Date | null
 }
 
 warehouse.init(
@@ -14,27 +14,27 @@ warehouse.init(
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
       allowNull: false,
-      primaryKey: true,
+      primaryKey: true
     },
     warehouseCode: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
+      unique: true
     },
     createdAt: {
       type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
+      defaultValue: DataTypes.NOW
     },
     updatedAt: {
       type: DataTypes.DATE,
-      allowNull: true,
-    },
+      allowNull: true
+    }
   },
   {
     sequelize,
-    tableName: "warehouse",
-    timestamps: true,
+    tableName: 'warehouse',
+    timestamps: true
   }
-);
+)
 
-export default warehouse;
+export default warehouse

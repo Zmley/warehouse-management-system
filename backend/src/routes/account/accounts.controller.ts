@@ -8,8 +8,7 @@ import {
   AuthFlowType
 } from '@aws-sdk/client-cognito-identity-provider'
 import { userPool, cognitoClient } from '../../utils/awsUtil'
-import { getCognitoErrorMessage } from '../../utils/errorUtil'
-import { getUserByAccountID } from '../../utils/accountUtil'
+import { getUserById,getCognitoErrorMessage } from './account.service'
 import account from '../../models/account'
 
 export const loginUser = async (req: Request, res: Response) => {
@@ -63,7 +62,9 @@ export const registerUser = async (req: Request, res: Response) => {
         role: 'ADMIN',
         firstName: 'TBD',
         lastName: 'TBD',
-        createdAt: new Date()
+        createdAt: new Date(),
+        updatedAt: new Date()
+
       })
 
       console.log('✅ User information saved to database:', {
@@ -93,7 +94,7 @@ export const getUserInfo = async (
       return
     }
 
-    const user = await getUserByAccountID(accountID)
+    const user = await getUserById(accountID)
     if (!user) {
       res.status(404).json({ message: '❌ User not found' })
       return

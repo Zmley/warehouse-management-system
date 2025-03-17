@@ -1,7 +1,7 @@
 import express from 'express'
 import cors from 'cors'
-import authRoutes from './routes/accounts/accounts.router'
-import httpLogger from './middlewares/httpLogger'
+import authRoutes from './routes/account/accounts.router'
+import httpLogger from './utils/httpLogger'
 
 const httpContext = require('express-http-context')
 const app = express()

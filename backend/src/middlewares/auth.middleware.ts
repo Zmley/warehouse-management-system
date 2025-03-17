@@ -19,7 +19,7 @@ export const authenticateToken = async (
   const authHeader = req.headers['authorization']
   if (!authHeader) {
     res.status(401).json({ message: '❌ Unauthorized: No Token' })
-    return // ✅ 直接 return，避免返回 Response
+    return 
   }
 
   const token = authHeader.split(' ')[1]
@@ -62,7 +62,7 @@ export const authenticateToken = async (
 
     console.log('✅ Token verified successfully for user:', payload.sub)
 
-    next() // ✅ 让请求继续，不返回 Response
+    next() 
   } catch (err) {
     console.error('❌ Invalid Token:', err)
     res.status(403).json({ message: '❌ Forbidden: Invalid Token' })
