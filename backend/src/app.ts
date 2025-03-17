@@ -21,7 +21,7 @@ const corsOptions = {
 
 app.use(cors(corsOptions))
 app.use(httpContext.middleware)
-// app.use(httpLogger.successHandler)
+app.use(httpLogger)
 
 app.use(express.json())
 
