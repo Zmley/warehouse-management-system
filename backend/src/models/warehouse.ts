@@ -1,14 +1,14 @@
 import { DataTypes, Model } from 'sequelize'
 import { sequelize } from '../db/db'
 
-export class warehouse extends Model {
+export class Warehouse extends Model {
   public warehouseID!: string
   public warehouseCode!: string
   public createdAt!: Date
   public updatedAt!: Date | null
 }
 
-warehouse.init(
+Warehouse.init(
   {
     warehouseID: {
       type: DataTypes.UUID,
@@ -37,4 +37,4 @@ warehouse.init(
   }
 )
 
-export default warehouse
+export default Warehouse

@@ -1,7 +1,7 @@
 import { DataTypes, Model } from 'sequelize'
 import { sequelize } from '../db/db'
 
-export class bin extends Model {
+export class Bin extends Model {
   public binID!: string
   public warehouseID!: string
   public binCode!: string
@@ -9,7 +9,7 @@ export class bin extends Model {
   public productID!: string | null
 }
 
-bin.init(
+Bin.init(
   {
     binID: {
       type: DataTypes.UUID,
@@ -42,4 +42,4 @@ bin.init(
   }
 )
 
-export default bin
+export default Bin

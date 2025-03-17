@@ -1,7 +1,7 @@
 import { DataTypes, Model } from 'sequelize'
 import { sequelize } from '../db/db'
 
-export class task extends Model {
+export class Task extends Model {
   public taskID!: string
   public sourceBinID!: string
   public destinationBinID!: string
@@ -12,7 +12,7 @@ export class task extends Model {
   public updatedAt!: Date | null
 }
 
-task.init(
+Task.init(
   {
     taskID: {
       type: DataTypes.UUID,
@@ -60,4 +60,4 @@ task.init(
   }
 )
 
-export default task
+export default Task

@@ -1,7 +1,5 @@
 import { CognitoIdentityProviderClient } from '@aws-sdk/client-cognito-identity-provider'
-import dotenv from 'dotenv'
 
-dotenv.config()
 
 export const awsConfig = {
   region: process.env.AWS_REGION!,

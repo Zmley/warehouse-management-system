@@ -2,7 +2,7 @@ import { DataTypes, Model } from 'sequelize'
 import { sequelize } from '../db/db'
 import bin from './bin'
 
-export class inventory extends Model {
+export class Inventory extends Model {
   public inventoryID!: string
   public binID!: string
   public productID!: string
@@ -11,7 +11,7 @@ export class inventory extends Model {
   public updatedAt!: Date | null
 }
 
-inventory.init(
+Inventory.init(
   {
     inventoryID: {
       type: DataTypes.UUID,
@@ -48,8 +48,8 @@ inventory.init(
   }
 )
 
-inventory.belongsTo(bin, {
+Inventory.belongsTo(bin, {
   foreignKey: 'binID'
 })
 
-export default inventory
+export default Inventory

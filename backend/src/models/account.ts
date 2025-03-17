@@ -1,7 +1,7 @@
 import { DataTypes, Model } from 'sequelize'
 import { sequelize } from '../db/db'
 
-export class account extends Model {
+export class Account extends Model {
   public accountID!: string
   public email!: string
   public role!: 'ADMIN' | 'TRANSPORT_WORKER' | 'PICKER' | 'SUPER_ADMIN'
@@ -13,7 +13,7 @@ export class account extends Model {
   public readonly updatedAt!: Date
 }
 
-account.init(
+Account.init(
   {
     accountID: {
       type: DataTypes.UUID,
@@ -68,4 +68,4 @@ account.init(
   }
 )
 
-export default account
+export default Account

@@ -1,5 +1,3 @@
-import dotenv from 'dotenv'
-dotenv.config()
 import { Request, Response } from 'express'
 import httpContext from 'express-http-context'
 import { CognitoUser, CognitoUserAttribute } from 'amazon-cognito-identity-js'
