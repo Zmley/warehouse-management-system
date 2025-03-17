@@ -7,7 +7,7 @@ export class account extends Model {
   public role!: 'ADMIN' | 'TRANSPORT_WORKER' | 'PICKER' | 'SUPER_ADMIN'
   public firstName!: string
   public lastName!: string
-  public carID!: string | null
+  public cartID!: string | null
   public readonly createdAt!: Date
   public readonly updatedAt!: Date
 }
@@ -15,7 +15,7 @@ export class account extends Model {
 account.init(
   {
     accountID: {
-      type: DataTypes.STRING,
+      type: DataTypes.UUID,
       allowNull: false,
       primaryKey: true,
       unique: true
@@ -43,7 +43,7 @@ account.init(
       type: DataTypes.STRING,
       allowNull: false
     },
-    carID: {
+    cartID: {
       type: DataTypes.STRING,
       allowNull: true
     },

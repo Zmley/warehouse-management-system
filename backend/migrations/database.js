@@ -32,7 +32,7 @@ module.exports = {
         ),
         allowNull: false
       },
-      carID: {
+      cartID: {
         type: Sequelize.STRING,
         allowNull: true
       },
@@ -83,23 +83,19 @@ module.exports = {
         allowNull: false,
         primaryKey: true
       },
-      warehouseCode: {
+      warehouseID: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: true
       },
       binCode: {
         type: Sequelize.STRING,
         allowNull: false
       },
       type: {
-        type: Sequelize.ENUM('PICK_UP', 'INVENTORY', 'UNLOAD', 'CART'),
+        type: Sequelize.ENUM('PICK_UP', 'INVENTORY', 'CART'),
         allowNull: false
       },
-      productID: {
-        type: Sequelize.STRING,
-        allowNull: true
-      },
-      warehouseID: {
+      defaultProductID: {
         type: Sequelize.STRING,
         allowNull: true
       },
@@ -135,10 +131,6 @@ module.exports = {
         allowNull: false,
         defaultValue: 0
       },
-      ownedBy: {
-        type: Sequelize.ENUM('PICK_UP', 'INVENTORY', 'UNLOAD', 'CART'),
-        allowNull: false
-      },
       createdAt: {
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW,
@@ -170,16 +162,16 @@ module.exports = {
         type: Sequelize.UUID,
         allowNull: true
       },
-      accountID: {
+      creatorID: {
         type: Sequelize.UUID,
-        allowNull: false
+        allowNull: true
       },
       accepterID: {
         type: Sequelize.UUID,
-        allowNull: false
+        allowNull: true
       },
       status: {
-        type: Sequelize.ENUM('PENDING', 'IN_PROCESS', 'COMPLETED', 'CANCEL'),
+        type: Sequelize.ENUM('PENDING', 'IN_PROCESS', 'COMPLETED', 'CANCELED'),
         allowNull: false
       },
       createdAt: {
@@ -193,6 +185,35 @@ module.exports = {
       }
     })
 
+    //account.warehouseID -> warehouse.warehouseID
+    await queryInterface.addConstraint('account', {
+      fields: ['warehouseID'],
+      type: 'foreign key',
+      name: 'fk_account_warehouse',
+      references: {
+        table: 'warehouse',
+        field: 'warehouseID'
+      },
+      onDelete: 'SET NULL',
+      onUpdate: 'CASCADE'
+    });
+
+
+    //bin.warehouseID -> warehouse.warehouseID
+    await queryInterface.addConstraint('bin', {
+      fields: ['warehouseID'],
+      type: 'foreign key',
+      name: 'fk_bin_warehouse',
+      references: {
+        table: 'warehouse',
+        field: 'warehouseID'
+      },
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE'
+    });
+
+
+    //inventory.binID -> bin.binID
     await queryInterface.addConstraint('bin', {
       fields: ['warehouseCode'],
       type: 'foreign key',
@@ -205,8 +226,62 @@ module.exports = {
       onUpdate: 'CASCADE'
     })
 
+
+    // task.sourceBinID & task.destinationBinID -> bin.binID
+
+    await queryInterface.addConstraint('task', {
+      fields: ['sourceBinID'],
+      type: 'foreign key',
+      name: 'fk_task_source_bin',
+      references: {
+        table: 'bin',
+        field: 'binID'
+      },
+      onDelete: 'SET NULL',
+      onUpdate: 'CASCADE'
+    });
+    
+    await queryInterface.addConstraint('task', {
+      fields: ['destinationBinID'],
+      type: 'foreign key',
+      name: 'fk_task_destination_bin',
+      references: {
+        table: 'bin',
+        field: 'binID'
+      },
+      onDelete: 'SET NULL',
+      onUpdate: 'CASCADE'
+    });
+
+
+    // task.creatorID & task.accepterID -> account.accountID
+
+    await queryInterface.addConstraint('task', {
+      fields: ['creatorID'],
+      type: 'foreign key',
+      name: 'fk_task_creator',
+      references: {
+        table: 'account',
+        field: 'accountID'
+      },
+      onDelete: 'SET NULL',
+      onUpdate: 'CASCADE'
+    });
+    
+    await queryInterface.addConstraint('task', {
+      fields: ['accepterID'],
+      type: 'foreign key',
+      name: 'fk_task_accepter',
+      references: {
+        table: 'account',
+        field: 'accountID'
+      },
+      onDelete: 'SET NULL',
+      onUpdate: 'CASCADE'
+    });
+
     await queryInterface.addConstraint('bin', {
-      fields: ['warehouseCode', 'binCode'],
+      fields: ['warehouseID', 'binCode'],
       type: 'unique',
       name: 'unique_warehouse_bin'
     })

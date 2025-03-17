@@ -2,19 +2,19 @@ import { DataTypes, Model } from "sequelize";
 import { sequelize } from "../configs/db";
 
 export class warehouse extends Model {
-  public ID!: string;
   public warehouseID!: string;
+  public warehouseCode!: string;
 }
 
 warehouse.init(
   {
-    ID: {
+    warehouseID: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
       allowNull: false,
       primaryKey: true,
     },
-    warehouseID: {
+    warehouseCode: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,

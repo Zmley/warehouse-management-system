@@ -1,0 +1,10 @@
+# Database connection URL
+DATABASE_URL=
+
+# Server port
+PORT=3000
+
+# AWS Cognito configuration
+AWS_REGION=
+COGNITO_USER_POOL_ID=
+COGNITO_CLIENT_ID=

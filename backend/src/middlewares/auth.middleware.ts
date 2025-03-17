@@ -6,8 +6,9 @@ import httpContext from 'express-http-context'
 import { awsConfig } from '../configs/awsConfig'
 import { getCognitoPublicKeysUrl } from '../utils/awsUtil'
 
+
 export interface AuthRequest extends Request {
-  user?: { sub: string }
+  user?: { sub: string };
 }
 
 export const authenticateToken = async (
@@ -17,20 +18,21 @@ export const authenticateToken = async (
 ) => {
   const authHeader = req.headers['authorization']
   if (!authHeader) {
-    return res.status(401).json({ message: '❌ Unauthorized: No Token' })
+    res.status(401).json({ message: '❌ Unauthorized: No Token' })
+    return // ✅ 直接 return，避免返回 Response
   }
 
   const token = authHeader.split(' ')[1]
   if (!token) {
-    return res
-      .status(401)
-      .json({ message: '❌ Unauthorized: Invalid Token Format' })
+    res.status(401).json({ message: '❌ Unauthorized: Invalid Token Format' })
+    return
   }
 
   try {
     const decodedHeader: any = jwt.decode(token, { complete: true })
     if (!decodedHeader?.header?.kid) {
-      return res.status(401).json({ message: '❌ Invalid token format' })
+      res.status(401).json({ message: '❌ Invalid token format' })
+      return
     }
 
     const kid = decodedHeader.header.kid
@@ -43,29 +45,26 @@ export const authenticateToken = async (
     const publicKey = data.keys.find((key: any) => key.kid === kid)
 
     if (!publicKey) {
-      return res
-        .status(401)
-        .json({ message: '❌ Invalid token: Key not found' })
+      res.status(401).json({ message: '❌ Invalid token: Key not found' })
+      return
     }
 
     const key = await importJWK(publicKey, 'RS256')
     const { payload } = await jwtVerify(token, key)
 
     if (!payload.sub) {
-      return res
-        .status(401)
-        .json({ message: '❌ Invalid token: Missing user ID' })
+      res.status(401).json({ message: '❌ Invalid token: Missing user ID' })
+      return
     }
 
     req.user = { sub: payload.sub }
-
     httpContext.set('accountID', payload.sub)
 
     console.log('✅ Token verified successfully for user:', payload.sub)
 
-    next()
+    next() // ✅ 让请求继续，不返回 Response
   } catch (err) {
     console.error('❌ Invalid Token:', err)
-    return res.status(403).json({ message: '❌ Forbidden: Invalid Token' })
+    res.status(403).json({ message: '❌ Forbidden: Invalid Token' })
   }
 }

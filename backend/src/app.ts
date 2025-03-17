@@ -1,6 +1,6 @@
 import express from 'express'
 import cors from 'cors'
-import authRoutes from './routes/authRoutes'
+import authRoutes from './routes/accounts/accounts.router'
 import httpLogger from './middlewares/httpLogger'
 
 const httpContext = require('express-http-context')
