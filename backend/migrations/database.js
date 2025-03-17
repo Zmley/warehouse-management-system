@@ -2,6 +2,30 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
+    await queryInterface.createTable('warehouse', {
+      warehouseID: {
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.fn('uuid_generate_v4'),
+        allowNull: false,
+        primaryKey: true
+      },
+      warehouseCode: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        unique: true
+      },
+      createdAt: {
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.NOW,
+        allowNull: false
+      },
+      updatedAt: {
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.NOW,
+        allowNull: false
+      }
+    })
+
     await queryInterface.createTable('account', {
       accountID: {
         type: Sequelize.UUID,
@@ -33,36 +57,12 @@ module.exports = {
         allowNull: false
       },
       cartID: {
-        type: Sequelize.STRING,
+        type: Sequelize.UUID,
         allowNull: true
       },
-      warehouseID: {
-        type: Sequelize.STRING,
-        allowNull: true
-      },
-      createdAt: {
-        type: Sequelize.DATE,
-        defaultValue: Sequelize.NOW,
-        allowNull: false
-      },
-      updatedAt: {
-        type: Sequelize.DATE,
-        defaultValue: Sequelize.NOW,
-        allowNull: false
-      }
-    })
-
-    await queryInterface.createTable('warehouse', {
       warehouseID: {
         type: Sequelize.UUID,
-        defaultValue: Sequelize.fn('uuid_generate_v4'),
-        allowNull: false,
-        primaryKey: true
-      },
-      warehouseCode: {
-        type: Sequelize.STRING,
-        allowNull: false,
-        unique: true
+        allowNull: true
       },
       createdAt: {
         type: Sequelize.DATE,
@@ -84,7 +84,7 @@ module.exports = {
         primaryKey: true
       },
       warehouseID: {
-        type: Sequelize.STRING,
+        type: Sequelize.UUID,
         allowNull: true
       },
       binCode: {
@@ -196,8 +196,7 @@ module.exports = {
       },
       onDelete: 'SET NULL',
       onUpdate: 'CASCADE'
-    });
-
+    })
 
     //bin.warehouseID -> warehouse.warehouseID
     await queryInterface.addConstraint('bin', {
@@ -210,22 +209,20 @@ module.exports = {
       },
       onDelete: 'CASCADE',
       onUpdate: 'CASCADE'
-    });
-
+    })
 
     //inventory.binID -> bin.binID
-    await queryInterface.addConstraint('bin', {
-      fields: ['warehouseCode'],
+    await queryInterface.addConstraint('inventory', {
+      fields: ['binID'],
       type: 'foreign key',
-      name: 'fk_bins_warehouse',
+      name: 'fk_inventory_bin',
       references: {
-        table: 'warehouse',
-        field: 'warehouseCode'
+        table: 'bin',
+        field: 'binID'
       },
       onDelete: 'CASCADE',
       onUpdate: 'CASCADE'
     })
-
 
     // task.sourceBinID & task.destinationBinID -> bin.binID
 
@@ -239,8 +236,8 @@ module.exports = {
       },
       onDelete: 'SET NULL',
       onUpdate: 'CASCADE'
-    });
-    
+    })
+
     await queryInterface.addConstraint('task', {
       fields: ['destinationBinID'],
       type: 'foreign key',
@@ -251,8 +248,7 @@ module.exports = {
       },
       onDelete: 'SET NULL',
       onUpdate: 'CASCADE'
-    });
-
+    })
 
     // task.creatorID & task.accepterID -> account.accountID
 
@@ -266,8 +262,8 @@ module.exports = {
       },
       onDelete: 'SET NULL',
       onUpdate: 'CASCADE'
-    });
-    
+    })
+
     await queryInterface.addConstraint('task', {
       fields: ['accepterID'],
       type: 'foreign key',
@@ -278,7 +274,7 @@ module.exports = {
       },
       onDelete: 'SET NULL',
       onUpdate: 'CASCADE'
-    });
+    })
 
     await queryInterface.addConstraint('bin', {
       fields: ['warehouseID', 'binCode'],
@@ -291,7 +287,7 @@ module.exports = {
     await queryInterface.dropTable('task')
     await queryInterface.dropTable('inventory')
     await queryInterface.dropTable('bin')
-    await queryInterface.dropTable('warehouse')
     await queryInterface.dropTable('account')
+    await queryInterface.dropTable('warehouse')
   }
 }

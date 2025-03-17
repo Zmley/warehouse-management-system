@@ -8,6 +8,7 @@ export class account extends Model {
   public firstName!: string
   public lastName!: string
   public cartID!: string | null
+  public warehouseID!: string | null
   public readonly createdAt!: Date
   public readonly updatedAt!: Date
 }
@@ -44,7 +45,11 @@ account.init(
       allowNull: false
     },
     cartID: {
-      type: DataTypes.STRING,
+      type: DataTypes.UUID,
+      allowNull: true
+    },
+    warehouseID: {
+      type: DataTypes.UUID,
       allowNull: true
     },
     createdAt: {

@@ -4,6 +4,8 @@ import { sequelize } from "../configs/db";
 export class warehouse extends Model {
   public warehouseID!: string;
   public warehouseCode!: string;
+  public createdAt!: Date;
+  public updatedAt!: Date | null;
 }
 
 warehouse.init(
@@ -18,6 +20,14 @@ warehouse.init(
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
     },
   },
   {

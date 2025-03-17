@@ -30,10 +30,9 @@ module.exports = {
       for (let b = 1; b <= 3; b++) {
         bins.push({
           binCode: `bin-${b}`,
-          warehouseCode: warehouse.warehouseCode, // ✅ 确保 warehouseCode 赋值正确
           warehouseID: warehouse.warehouseID, // ✅ 绑定 warehouseID
           type: "INVENTORY",
-          productID: null,
+          defaultProductID: null,
           createdAt: new Date(),
           updatedAt: new Date(),
         });
@@ -42,10 +41,9 @@ module.exports = {
       // ✅ 额外为每个 warehouse 添加一个 CART 类型的 bin
       bins.push({
         binCode: `cart-bin-${warehouse.warehouseCode}`,
-        warehouseCode: warehouse.warehouseCode, // ✅ 关联到 warehouseCode
         warehouseID: warehouse.warehouseID, // ✅ 绑定 warehouseID
         type: 'CART', // ✅ 设置 type 为 CART
-        productID: null,
+        defaultProductID: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -64,7 +62,6 @@ module.exports = {
           binID: bin.binID,
           productID: `p00${p}`,
           quantity: Math.floor(Math.random() * 100) + 1,
-          ownedBy: "INVENTORY",
           createdAt: new Date(),
           updatedAt: new Date(),
         });

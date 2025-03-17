@@ -3,10 +3,10 @@ import { sequelize } from "../configs/db";
 
 export class bin extends Model {
   public binID!: string;
-  public warehouseCode!: string;
+  public warehouseID!: string;
   public binCode!: string;
-  public type!: "PICK_UP" | "INVENTORY" | "UNLOAD" | "CART"; // ✅ 添加 `type` 字段
-  public productID!: string | null; // ✅ 添加 `productID`，允许为 null
+  public type!: "PICK_UP" | "INVENTORY" | "UNLOAD" | "CART";
+  public productID!: string | null; 
 }
 
 bin.init(
@@ -17,8 +17,8 @@ bin.init(
       allowNull: false,
       primaryKey: true,
     },
-    warehouseCode: {
-      type: DataTypes.STRING,
+    warehouseID: {
+      type: DataTypes.UUID,
       allowNull: false,
     },
     binCode: {
@@ -28,9 +28,7 @@ bin.init(
     },
     type: {
       type: DataTypes.ENUM('PICK_UP', 'INVENTORY', 'CART'),
-
       allowNull: false,
-      defaultValue: "INVENTORY",
     },
     productID: {
       type: DataTypes.STRING,

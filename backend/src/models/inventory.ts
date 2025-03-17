@@ -7,6 +7,8 @@ export class inventory extends Model {
   public binID!: string;
   public productID!: string;
   public quantity!: number;
+  public createdAt!: Date;
+  public updatedAt!: Date | null;
 }
 
 inventory.init(
@@ -18,7 +20,7 @@ inventory.init(
       primaryKey: true,
     },
     binID: {
-      type: DataTypes.STRING,
+      type: DataTypes.UUID,
       allowNull: false,
     },
     productID: {
@@ -30,9 +32,13 @@ inventory.init(
       allowNull: false,
       defaultValue: 0,
     },
-    ownedBy: {
-      type: DataTypes.STRING,
-      allowNull: false,
+    createdAt: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
     },
   },
   {

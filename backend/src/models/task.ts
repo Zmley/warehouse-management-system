@@ -21,15 +21,19 @@ task.init(
       primaryKey: true,
     },
     sourceBinID: {
-      type: DataTypes.STRING,
+      type: DataTypes.UUID,
       allowNull: true,
     },
     destinationBinID: {
-      type: DataTypes.STRING,
+      type: DataTypes.UUID,
       allowNull: true,
     },
-    accountID: {
-      type: DataTypes.STRING,
+    creatorID: {
+      type: DataTypes.UUID,
+      allowNull: true,
+    },
+    accepterID: {
+      type: DataTypes.UUID,
       allowNull: true,
     },
     productID: {
@@ -37,9 +41,8 @@ task.init(
       allowNull: false,
     },
     status: {
-      type: DataTypes.ENUM('PENDING', 'IN_PROCESS', 'COMPLETED', 'CANCEL'),
+      type: DataTypes.ENUM('PENDING', 'IN_PROCESS', 'COMPLETED', 'CANCELED'),
       allowNull: false,
-      defaultValue: "pending",
     },
     createdAt: {
       type: DataTypes.DATE,
