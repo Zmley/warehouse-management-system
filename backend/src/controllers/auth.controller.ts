@@ -1,10 +1,10 @@
 import dotenv from "dotenv";
 dotenv.config();
 import { Request, Response } from "express";
-import { AuthRequest } from "../middlewares/auth.middleware";
+import httpContext from "express-http-context"; 
 import { CognitoUser, CognitoUserAttribute } from "amazon-cognito-identity-js";
 import { InitiateAuthCommand, AuthFlowType } from "@aws-sdk/client-cognito-identity-provider";
-import {  userPool, cognitoClient } from "../utils/awsUtil";
+import { userPool, cognitoClient } from "../utils/awsUtil";
 import { getCognitoErrorMessage } from "../utils/errorUtil";
 import { getUserByAccountID } from "../utils/accountUtil";
 import account from "../models/account";
@@ -71,10 +71,10 @@ export const registerUser = async (req: Request, res: Response) => {
   });
 };
 
-
-export const getUserInfo = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getUserInfo = async (req: Request, res: Response): Promise<void> => {
   try {
-    const accountID = req.user?.sub;
+    const accountID = httpContext.get("accountID");
+
     if (!accountID) {
       res.status(401).json({ message: "❌ Unauthorized: No User Info" });
       return;

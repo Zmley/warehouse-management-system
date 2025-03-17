@@ -1,8 +1,9 @@
 import express from 'express'
 import cors from 'cors'
 import authRoutes from './routes/authRoutes'
-import httpContext from 'express-http-context';
+import httpLogger from './middlewares/httpLogger'
 
+const httpContext = require('express-http-context')
 const app = express()
 
 app.use(
@@ -13,14 +14,14 @@ app.use(
 )
 
 const corsOptions = {
-  origin: '*', 
+  origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-};
+  allowedHeaders: ['Content-Type', 'Authorization']
+}
 
 app.use(cors(corsOptions))
 app.use(httpContext.middleware)
-app.use(httpLogger.successHandler)
+// app.use(httpLogger.successHandler)
 
 app.use(express.json())
 
