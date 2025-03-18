@@ -6,19 +6,15 @@ const LoginPage: React.FC = () => {
   const { handleLogin } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [errorMessage, setErrorMessage] = useState<string | null>(null) // ✅ 存储错误信息
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const handleLoginClick = async () => {
+    setErrorMessage(null)
     try {
-      setErrorMessage(null) // ✅ 清除之前的错误信息
       await handleLogin(email, password)
     } catch (error: any) {
-      console.error('❌ Login Error:', error.response?.data) // ✅ 确保这里打印出的是正确的 JSON
+      console.error('❌ Login Error:', error.message)
 
-      // ✅ 解析后端错误信息
-      const errorMsg =
-        error.response?.data + '❌ Login failed. Please try again.'
-
-      setErrorMessage(errorMsg) // ✅ 设置错误信息
+      setErrorMessage(error.message)
     }
   }
 
@@ -59,7 +55,6 @@ const LoginPage: React.FC = () => {
           Inventory System!
         </Typography>
 
-        {/* ✅ 显示错误信息 */}
         {errorMessage && (
           <Alert severity='error' sx={{ mb: 2 }}>
             {errorMessage}
@@ -109,7 +104,7 @@ const LoginPage: React.FC = () => {
             textTransform: 'none',
             '&:hover': { backgroundColor: '#1A5BCC' }
           }}
-          onClick={handleLoginClick} // ✅ 调用修改后的 handleLoginClick
+          onClick={handleLoginClick}
         >
           Login
         </Button>

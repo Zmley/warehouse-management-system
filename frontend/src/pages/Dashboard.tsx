@@ -33,7 +33,6 @@ const Dashboard: React.FC = () => {
         backgroundColor: '#F7F9FC'
       }}
     >
-      {/* ✅ 顶部导航栏 */}
       <Box
         sx={{
           display: 'flex',
@@ -55,7 +54,6 @@ const Dashboard: React.FC = () => {
         <Box sx={{ width: '48px' }} />
       </Box>
 
-      {/* ✅ 中间内容区域（待开发） */}
       <Box
         sx={{
           flexGrow: 1,

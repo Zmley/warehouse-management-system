@@ -22,18 +22,19 @@ export const useAuth = () => {
         email: userData.email,
         role: userData.role
       })
-
+  
       console.log('✅ Navigating to /dashboard now...')
-
       navigate('/dashboard')
     } catch (err: any) {
       console.error(
         '❌ Login Error:',
         err.response?.data?.message || 'Unknown error'
       )
-      setError(
-        err.response?.data?.message || '❌ Login failed due to unknown error.'
-      )
+      
+      const errorMsg = err.response?.data?.message || '❌ Login failed due to unknown error.'
+      setError(errorMsg)
+  
+      throw new Error(errorMsg) // ✅ 确保 `handleLoginClick` 也能捕获错误
     }
   }
 
