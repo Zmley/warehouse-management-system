@@ -1,18 +1,18 @@
 import React from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 
 import LoginPage from '../pages/Login'
+import Dashboard from '../pages/userDashboard/Dashboard'
+import Profile from '../pages/userDashboard/Profile'
 
 const PublicRoutes: React.FC = () => {
   const { isAuthenticated } = useAuth()
 
   return (
     <Routes>
-      <Route
-        path='/'
-        element={isAuthenticated ? <Navigate to='/dashboard' /> : <LoginPage />}
-      />
+      <Route path="/" element={isAuthenticated ? <Dashboard /> : <LoginPage />} />
+      {isAuthenticated && <Route path="/profile" element={<Profile />} />}
     </Routes>
   )
 }

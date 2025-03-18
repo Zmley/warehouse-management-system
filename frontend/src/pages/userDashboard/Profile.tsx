@@ -14,13 +14,16 @@ import {
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import { AuthContext } from '../../contexts/auth'
-import { useAuth } from '../../hooks/useAuth' // ✅ 现在要用 `useAuth`
+import { useAuth } from '../../hooks/useAuth';
+
 
 const Profile: React.FC = () => {
   const navigate = useNavigate()
   const { userProfile } = useContext(AuthContext)!
 
-  const { handleLogout } = useAuth() // ✅ 用 `useAuth` 获取 `logout`
+  const { handleLogout } = useAuth();
+
+
 
   return (
     <Container
