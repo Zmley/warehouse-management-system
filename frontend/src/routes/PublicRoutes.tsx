@@ -1,6 +1,6 @@
 import React, { useContext } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { AuthContext } from '../contexts/authContext'
+import { AuthContext } from '../contexts/auth'
 import LoginPage from '../pages/Login'
 
 const PublicRoutes: React.FC = () => {

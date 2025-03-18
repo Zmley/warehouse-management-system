@@ -7,7 +7,7 @@ import {
   BottomNavigationAction
 } from '@mui/material'
 import { Menu as MenuIcon } from '@mui/icons-material'
-import { AuthContext } from '../../contexts/authContext'
+import { AuthContext } from '../../contexts/auth'
 import { useNavigate } from 'react-router-dom'
 
 const Dashboard: React.FC = () => {

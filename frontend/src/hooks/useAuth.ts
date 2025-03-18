@@ -1,6 +1,6 @@
 import { useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { AuthContext } from '../contexts/authContext'
+import { AuthContext } from '../contexts/auth'
 import { loginUser, fetchUserProfile } from '../api/authApi'
 import { saveTokens } from '../utils/Storages'
 
@@ -35,7 +35,7 @@ export const useAuth = () => {
         err.response?.data?.message || '❌ Login failed due to unknown error.'
       setError(errorMsg)
 
-      throw new Error(errorMsg) 
+      throw new Error(errorMsg)
     }
   }
 

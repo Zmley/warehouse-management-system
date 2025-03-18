@@ -13,7 +13,7 @@ import {
   Logout as LogoutIcon
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
-import { AuthContext } from '../../contexts/authContext'
+import { AuthContext } from '../../contexts/auth'
 
 const Profile: React.FC = () => {
   const navigate = useNavigate()
