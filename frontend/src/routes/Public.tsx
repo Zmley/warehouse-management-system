@@ -1,6 +1,5 @@
-import React, { useContext } from 'react'
+import React from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { AuthContext } from '../contexts/auth'
 import { useAuth } from '../hooks/useAuth'
 
 import LoginPage from '../pages/Login'
