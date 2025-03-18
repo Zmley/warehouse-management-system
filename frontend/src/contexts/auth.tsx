@@ -8,25 +8,25 @@ interface UserProfile {
   role: string;
 }
 
-const defaultUserProfile: UserProfile = {
+interface AuthContextType {
+  userProfile: UserProfile;
+  setUserProfile: (profile: UserProfile) => void;
+  isAuthenticated: boolean;
+  setIsAuthenticated: (isAuth: boolean) => void;
+}
+
+export const defaultUserProfile: UserProfile = {
   firstname: 'Guest',
   lastname: '',
   email: '',
   role: 'guest'
 };
 
-interface AuthContextType {
-  userProfile: UserProfile | null;
-  setUserProfile: (profile: UserProfile | null) => void;
-  isAuthenticated: boolean;
-  setIsAuthenticated: (isAuth: boolean) => void;
-}
-
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(defaultUserProfile);
+  const [userProfile, setUserProfile] = useState<UserProfile>(defaultUserProfile); 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(areTokensValid());
 
   return (

@@ -1,6 +1,6 @@
 import { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../contexts/auth';
+import { AuthContext, defaultUserProfile } from '../contexts/auth';  // ✅ 直接从 context 引入
 import { loginUser, fetchUserProfile } from '../api/authApi';
 import { saveTokens, clearTokens } from '../utils/Storages';
 
@@ -14,7 +14,7 @@ export const useAuth = () => {
     try {
       const tokens = await loginUser(email, password);
       saveTokens(tokens);
-      setIsAuthenticated(true); 
+      setIsAuthenticated(true);
 
       const userData = await fetchUserProfile();
       setUserProfile({
@@ -35,7 +35,7 @@ export const useAuth = () => {
   const handleLogout = () => {
     console.log("❌ Logging out...");
     clearTokens();
-    setUserProfile(null);
+    setUserProfile(defaultUserProfile);  
     setIsAuthenticated(false);
     navigate('/');
   };

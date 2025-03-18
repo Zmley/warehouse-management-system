@@ -24,9 +24,9 @@ const Dashboard: React.FC = () => {
     )
   }
 
-  if (!userProfile) {
-    return <Typography variant='h5'></Typography>
-  }
+  // if (!userProfile) {
+  //   return <Typography variant='h5'></Typography>
+  // }
 
   return (
     <Box
