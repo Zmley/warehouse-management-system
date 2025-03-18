@@ -6,7 +6,6 @@ export const saveTokens = (data: {
   localStorage.setItem('accessToken', data.accessToken)
   localStorage.setItem('idToken', data.idToken)
   localStorage.setItem('refreshToken', data.refreshToken)
-  console.log('✅ Tokens stored:', data)
 }
 
 export const getAccessToken = (): string | null => {

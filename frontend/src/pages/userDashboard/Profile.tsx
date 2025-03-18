@@ -38,7 +38,7 @@ const Profile: React.FC = () => {
     >
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
         <IconButton
-          onClick={() => navigate('/dashboard')}
+          onClick={() => navigate('/')}
           sx={{ alignSelf: 'flex-start' }}
         >
           <ArrowBackIcon sx={{ fontSize: '28px', color: '#333' }} />

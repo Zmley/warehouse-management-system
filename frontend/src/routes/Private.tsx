@@ -13,7 +13,7 @@ const PrivateRoutes: React.FC = () => {
     <Routes>
       <Route element={<PrivateRoute />}>
         <Route path='/' element={<Dashboard />} />
-        <Route path='/Profile' element={<Profile />} />
+        <Route path='/profile' element={<Profile />} />
       </Route>
     </Routes>
   )
