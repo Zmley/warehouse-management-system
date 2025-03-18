@@ -1,6 +1,6 @@
 import { useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { AuthContext } from '../context/authContext'
+import { AuthContext } from '../contexts/authContext'
 import { loginUser, fetchUserProfile } from '../api/authApi'
 import { saveTokens } from '../utils/Storages'
 
@@ -22,7 +22,7 @@ export const useAuth = () => {
         email: userData.email,
         role: userData.role
       })
-  
+
       console.log('✅ Navigating to /dashboard now...')
       navigate('/dashboard')
     } catch (err: any) {
@@ -30,11 +30,12 @@ export const useAuth = () => {
         '❌ Login Error:',
         err.response?.data?.message || 'Unknown error'
       )
-      
-      const errorMsg = err.response?.data?.message || '❌ Login failed due to unknown error.'
+
+      const errorMsg =
+        err.response?.data?.message || '❌ Login failed due to unknown error.'
       setError(errorMsg)
-  
-      throw new Error(errorMsg) // ✅ 确保 `handleLoginClick` 也能捕获错误
+
+      throw new Error(errorMsg) 
     }
   }
 
