@@ -1,19 +1,26 @@
 import React, { useState } from 'react'
-import {
-  Typography,
-  Button,
-  TextField,
-  Box,
-  Checkbox,
-  FormControlLabel
-} from '@mui/material'
+import { Typography, Button, TextField, Box, Alert } from '@mui/material'
 import { useAuth } from '../hooks/useAuth'
 
 const LoginPage: React.FC = () => {
   const { handleLogin } = useAuth()
-
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [errorMessage, setErrorMessage] = useState<string | null>(null) // ✅ 存储错误信息
+  const handleLoginClick = async () => {
+    try {
+      setErrorMessage(null) // ✅ 清除之前的错误信息
+      await handleLogin(email, password)
+    } catch (error: any) {
+      console.error('❌ Login Error:', error.response?.data) // ✅ 确保这里打印出的是正确的 JSON
+
+      // ✅ 解析后端错误信息
+      const errorMsg =
+        error.response?.data + '❌ Login failed. Please try again.'
+
+      setErrorMessage(errorMsg) // ✅ 设置错误信息
+    }
+  }
 
   return (
     <Box
@@ -32,42 +39,44 @@ const LoginPage: React.FC = () => {
         sx={{
           width: '100%',
           maxWidth: '400px',
-          background: 'rgba(255, 255, 255, 0.1)',
-          padding: '40px',
+          background: '#FFF',
+          padding: '30px',
           borderRadius: '12px',
           textAlign: 'center',
-          boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
-          backdropFilter: 'blur(8px)'
+          boxShadow: '0 4px 10px rgba(0,0,0,0.1)'
         }}
       >
         <Typography
           variant='h5'
-          sx={{ color: '#FFF', fontWeight: 'bold', mb: 2 }}
+          sx={{ fontWeight: 'bold', mb: 2, color: '#2272FF' }}
         >
-          LOGO
+          Welcome to
+        </Typography>
+        <Typography
+          variant='h5'
+          sx={{ fontWeight: 'bold', mb: 3, color: '#2272FF' }}
+        >
+          Inventory System!
         </Typography>
 
-        <Typography
-          variant='h4'
-          sx={{ color: '#FFF', fontWeight: '500', mb: 3 }}
-        >
-          Sign in
-        </Typography>
+        {/* ✅ 显示错误信息 */}
+        {errorMessage && (
+          <Alert severity='error' sx={{ mb: 2 }}>
+            {errorMessage}
+          </Alert>
+        )}
 
         <TextField
-          label='Login'
+          label='User name'
           variant='outlined'
           fullWidth
           value={email}
           onChange={e => setEmail(e.target.value)}
           sx={{
             mb: 2,
-            background: 'rgba(255, 255, 255, 0.2)',
             borderRadius: '8px',
-            input: { color: '#FFF' },
             '& .MuiOutlinedInput-root': {
-              '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.5)' },
-              '&:hover fieldset': { borderColor: '#FFF' }
+              borderRadius: '8px'
             }
           }}
         />
@@ -80,43 +89,12 @@ const LoginPage: React.FC = () => {
           onChange={e => setPassword(e.target.value)}
           sx={{
             mb: 2,
-            background: 'rgba(255, 255, 255, 0.2)',
             borderRadius: '8px',
-            input: { color: '#FFF' },
             '& .MuiOutlinedInput-root': {
-              '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.5)' },
-              '&:hover fieldset': { borderColor: '#FFF' }
+              borderRadius: '8px'
             }
           }}
         />
-
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            mb: 2
-          }}
-        >
-          <FormControlLabel
-            control={<Checkbox sx={{ color: '#FFF' }} />}
-            label={
-              <Typography sx={{ color: '#FFF', fontSize: '14px' }}>
-                Remember me
-              </Typography>
-            }
-          />
-          <Typography
-            sx={{
-              color: '#FFF',
-              fontSize: '14px',
-              cursor: 'pointer',
-              textDecoration: 'underline'
-            }}
-          >
-            Forgot password?
-          </Typography>
-        </Box>
 
         <Button
           variant='contained'
@@ -124,17 +102,20 @@ const LoginPage: React.FC = () => {
           sx={{
             backgroundColor: '#2272FF',
             color: '#FFF',
-            padding: '10px',
+            padding: '12px',
             borderRadius: '8px',
+            fontSize: '16px',
+            fontWeight: 'bold',
+            textTransform: 'none',
             '&:hover': { backgroundColor: '#1A5BCC' }
           }}
-          onClick={() => handleLogin(email, password)}
+          onClick={handleLoginClick} // ✅ 调用修改后的 handleLoginClick
         >
           Login
         </Button>
 
-        <Typography sx={{ color: '#FFF', fontSize: '12px', mt: 3 }}>
-          Copyright
+        <Typography sx={{ color: '#555', fontSize: '14px', mt: 2 }}>
+          Forgot password?
         </Typography>
       </Box>
     </Box>

@@ -1,6 +1,6 @@
 import { Express } from 'express'
 import authRoutes from './routes/account/accounts.router'
 
-export const setupApiRoutes = (app: Express) => {
+export const authApi = (app: Express) => {
   app.use('/api/auth', authRoutes)
 }
