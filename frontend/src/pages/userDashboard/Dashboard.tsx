@@ -12,19 +12,22 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 
 const Dashboard: React.FC = () => {
-  const { userProfile } = useContext(AuthContext)!
-  const { isAuthenticated } = useAuth() 
+  const {
+    userProfile = {
+      firstName: '',
+      lastName: '',
+      email: '',
+      role: ''
+    }
+  } = useContext(AuthContext)!
+  const { isAuthenticated } = useAuth()
   const navigate = useNavigate()
-
-
 
   if (!isAuthenticated) {
     return (
       <Typography variant='h5'>❌ Not logged in, redirecting...</Typography>
     )
   }
-
-  const safeUserProfile = userProfile || { firstname: '', lastname: '', email: '', role: '' };
 
   return (
     <Box
@@ -50,7 +53,7 @@ const Dashboard: React.FC = () => {
         </IconButton>
 
         <Typography variant='h6' sx={{ fontWeight: 'bold', color: '#333' }}>
-          Hello, {safeUserProfile.firstname} {safeUserProfile.lastname}!
+          Hello, {userProfile?.firstName} {userProfile?.lastName}!
         </Typography>
 
         <Box sx={{ width: '48px' }} />

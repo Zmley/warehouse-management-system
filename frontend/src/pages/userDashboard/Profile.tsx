@@ -14,16 +14,12 @@ import {
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import { AuthContext } from '../../contexts/auth'
-import { useAuth } from '../../hooks/useAuth';
-
+import { useAuth } from '../../hooks/useAuth'
 
 const Profile: React.FC = () => {
   const navigate = useNavigate()
   const { userProfile } = useContext(AuthContext)!
-
-  const { handleLogout } = useAuth();
-
-
+  const { handleLogout } = useAuth()
 
   return (
     <Container
@@ -72,7 +68,7 @@ const Profile: React.FC = () => {
           sx={{ width: 70, height: 70, marginRight: '12px' }}
         />
         <Typography variant='h6' sx={{ fontWeight: 'bold' }}>
-          {userProfile?.firstname} {userProfile?.lastname}
+          {userProfile?.firstName} {userProfile?.lastName}
         </Typography>
       </Box>
 
@@ -89,7 +85,7 @@ const Profile: React.FC = () => {
           First Name
         </Typography>
         <Typography sx={{ color: '#2279B8', fontWeight: 'bold', mb: 1 }}>
-          {userProfile?.firstname}
+          {userProfile?.firstName}
         </Typography>
         <Divider sx={{ width: '80%', borderColor: '#DDD' }} />
 
@@ -97,7 +93,7 @@ const Profile: React.FC = () => {
           Last Name
         </Typography>
         <Typography sx={{ color: '#2279B8', fontWeight: 'bold', mb: 1 }}>
-          {userProfile?.lastname}
+          {userProfile?.lastName}
         </Typography>
         <Divider sx={{ width: '80%', borderColor: '#DDD' }} />
 

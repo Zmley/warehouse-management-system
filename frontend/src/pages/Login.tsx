@@ -3,19 +3,11 @@ import { Typography, Button, TextField, Box, Alert } from '@mui/material'
 import { useAuth } from '../hooks/useAuth'
 
 const LoginPage: React.FC = () => {
-  const { handleLogin } = useAuth()
+  const { handleLogin, error } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const handleLoginClick = async () => {
-    setErrorMessage(null)
-    try {
-      await handleLogin(email, password)
-    } catch (error: any) {
-      console.error('❌ Login Error:', error.message)
-
-      setErrorMessage(error.message)
-    }
+  const handleLoginClick = () => {
+    handleLogin(email, password)
   }
 
   return (
@@ -55,9 +47,9 @@ const LoginPage: React.FC = () => {
           Inventory System!
         </Typography>
 
-        {errorMessage && (
+        {error && (
           <Alert severity='error' sx={{ mb: 2 }}>
-            {errorMessage}
+            {error}
           </Alert>
         )}
 
