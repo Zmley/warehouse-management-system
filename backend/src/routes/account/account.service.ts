@@ -1,6 +1,6 @@
 import Account from '../../models/account'
 
-export const getUserById = async (accountID: string) => {
+export const getAccountById = async (accountID: string) => {
   return await Account.findOne({
     where: { accountID },
     attributes: ['role', 'firstName', 'lastName', 'email']
