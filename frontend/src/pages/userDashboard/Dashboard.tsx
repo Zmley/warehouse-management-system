@@ -24,9 +24,7 @@ const Dashboard: React.FC = () => {
     )
   }
 
-
   const safeUserProfile = userProfile || { firstname: '', lastname: '', email: '', role: '' };
-
 
   return (
     <Box

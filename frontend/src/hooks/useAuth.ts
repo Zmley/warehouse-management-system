@@ -14,7 +14,7 @@ export const useAuth = () => {
     try {
       const tokens = await loginUser(email, password);
       saveTokens(tokens);
-      setIsAuthenticated(true); 
+      setIsAuthenticated(true);
 
       const userData = await fetchUserProfile();
       setUserProfile({
@@ -35,7 +35,7 @@ export const useAuth = () => {
   const handleLogout = () => {
     console.log("❌ Logging out...");
     clearTokens();
-    setUserProfile(null);
+    setUserProfile(null);  
     setIsAuthenticated(false);
     navigate('/');
   };
