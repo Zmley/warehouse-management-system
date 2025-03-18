@@ -1,12 +1,14 @@
-import { DataTypes, Model } from "sequelize";
-import { sequelize } from "../config/db";
+import { DataTypes, Model } from 'sequelize'
+import { sequelize } from '../config/db'
+import bin from './bin'
 
-// ✅ Inventory Model
 export class Inventory extends Model {
-  public inventoryID!: string;
-  public binID!: string;
-  public productID!: string;
-  public quantity!: number;
+  public inventoryID!: string
+  public binID!: string
+  public productID!: string
+  public quantity!: number
+  public createdAt!: Date
+  public updatedAt!: Date | null
 }
 
 Inventory.init(
@@ -15,31 +17,39 @@ Inventory.init(
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
       allowNull: false,
-      primaryKey: true,
+      primaryKey: true
     },
     binID: {
-      type: DataTypes.STRING,
-      allowNull: false,
+      type: DataTypes.UUID,
+      allowNull: false
     },
     productID: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: false
     },
     quantity: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      defaultValue: 0,
+      defaultValue: 0
     },
-    ownedBy: {
-      type: DataTypes.STRING,
-      allowNull: false,
+    createdAt: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW
     },
+    updatedAt: {
+      type: DataTypes.DATE,
+      allowNull: true
+    }
   },
   {
     sequelize,
-    tableName: "Inventory",
-    timestamps: true,
+    tableName: 'inventory',
+    timestamps: true
   }
-);
+)
 
-export default Inventory;
+Inventory.belongsTo(bin, {
+  foreignKey: 'binID'
+})
+
+export default Inventory

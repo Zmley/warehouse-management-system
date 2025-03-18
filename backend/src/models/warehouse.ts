@@ -1,30 +1,40 @@
-import { DataTypes, Model } from "sequelize";
-import { sequelize } from "../config/db";
+import { DataTypes, Model } from 'sequelize'
+import { sequelize } from '../config/db'
 
 export class Warehouse extends Model {
-  public ID!: string;
-  public warehouseID!: string;
+  public warehouseID!: string
+  public warehouseCode!: string
+  public createdAt!: Date
+  public updatedAt!: Date | null
 }
 
 Warehouse.init(
   {
-    ID: {
+    warehouseID: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
       allowNull: false,
-      primaryKey: true,
+      primaryKey: true
     },
-    warehouseID: {
+    warehouseCode: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
+      unique: true
     },
+    createdAt: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      allowNull: true
+    }
   },
   {
     sequelize,
-    tableName: "Warehouses",
-    timestamps: true,
+    tableName: 'warehouse',
+    timestamps: true
   }
-);
+)
 
-export default Warehouse;
+export default Warehouse

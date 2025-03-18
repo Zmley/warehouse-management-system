@@ -1,19 +1,15 @@
-import { DataTypes, Model } from "sequelize";
-import { sequelize } from "../config/db";
+import { DataTypes, Model } from 'sequelize'
+import { sequelize } from '../config/db'
 
 export class Task extends Model {
-  public taskID!: string;
-  public sourceBinID!: string;
-  public destinationBinID!: string;
-  public accountID!: string;
-  public productID!: string;
-
-  public creatorID!: string;
-
-  
-  public status!: "pending" | "inProgress" | "completed" | "cancel";
-  public createdAt!: Date;
-  public updatedAt!: Date | null;
+  public taskID!: string
+  public sourceBinID!: string
+  public destinationBinID!: string
+  public accountID!: string
+  public productID!: string
+  public status!: 'PENDING' | 'IN_PROCESS' | 'COMPLETED' | 'CANCEL'
+  public createdAt!: Date
+  public updatedAt!: Date | null
 }
 
 Task.init(
@@ -22,48 +18,46 @@ Task.init(
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
       allowNull: false,
-      primaryKey: true,
+      primaryKey: true
     },
     sourceBinID: {
-      type: DataTypes.STRING,
-      allowNull: true,
+      type: DataTypes.UUID,
+      allowNull: true
     },
     destinationBinID: {
-      type: DataTypes.STRING,
-      allowNull: true,
+      type: DataTypes.UUID,
+      allowNull: true
     },
-    accountID: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-
     creatorID: {
-      type: DataTypes.STRING,
-      allowNull: true,
+      type: DataTypes.UUID,
+      allowNull: true
+    },
+    accepterID: {
+      type: DataTypes.UUID,
+      allowNull: true
     },
     productID: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: false
     },
     status: {
-      type: DataTypes.ENUM("pending", "inProgress", "completed", "cancel"),
-      allowNull: false,
-      defaultValue: "pending",
+      type: DataTypes.ENUM('PENDING', 'IN_PROCESS', 'COMPLETED', 'CANCELED'),
+      allowNull: false
     },
     createdAt: {
       type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
+      defaultValue: DataTypes.NOW
     },
     updatedAt: {
       type: DataTypes.DATE,
-      allowNull: true,
-    },
+      allowNull: true
+    }
   },
   {
     sequelize,
-    tableName: "Tasks",
-    timestamps: true,
+    tableName: 'task',
+    timestamps: true
   }
-);
+)
 
-export default Task;
+export default Task

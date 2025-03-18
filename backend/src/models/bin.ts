@@ -1,14 +1,12 @@
-import { DataTypes, Model } from "sequelize";
-import { sequelize } from "../config/db";
+import { DataTypes, Model } from 'sequelize'
+import { sequelize } from '../config/db'
 
-// ✅ Bin Model
 export class Bin extends Model {
-  public binID!: string;
-  public warehouseCode!: string;
-  public binCode!: string;
-  public emptyStatus!: boolean;
-  public type!: "pick up" | "inventory" | "unload"; // ✅ 添加 `type` 字段
-  public productID!: string | null; // ✅ 添加 `productID`，允许为 null
+  public binID!: string
+  public warehouseID!: string
+  public binCode!: string
+  public type!: 'PICK_UP' | 'INVENTORY' | 'UNLOAD' | 'CART'
+  public productID!: string | null
 }
 
 Bin.init(
@@ -17,36 +15,31 @@ Bin.init(
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
       allowNull: false,
-      primaryKey: true,
+      primaryKey: true
     },
-    warehouseCode: {
-      type: DataTypes.STRING,
-      allowNull: false,
+    warehouseID: {
+      type: DataTypes.UUID,
+      allowNull: false
     },
     binCode: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
-    },
-    emptyStatus: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: true,
+      unique: true
     },
     type: {
-      type: DataTypes.ENUM("pick up", "inventory", "unload"), // ✅ Enum 类型
-      allowNull: false,
-      defaultValue: "inventory",
+      type: DataTypes.ENUM('PICK_UP', 'INVENTORY', 'CART'),
+      allowNull: false
     },
     productID: {
       type: DataTypes.STRING,
-      allowNull: true, // ✅ 允许为空
-    },
+      allowNull: true
+    }
   },
   {
     sequelize,
-    tableName: "Bins",
-    timestamps: true,
+    tableName: 'bin',
+    timestamps: true
   }
-);
+)
 
-export default Bin;
+export default Bin
