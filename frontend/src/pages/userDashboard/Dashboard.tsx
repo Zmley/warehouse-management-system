@@ -13,14 +13,18 @@ import { useAuth } from '../../hooks/useAuth'
 
 const Dashboard: React.FC = () => {
   const { userProfile } = useContext(AuthContext)!
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated } = useAuth() 
   const navigate = useNavigate()
+
+
 
   if (!isAuthenticated) {
     return (
       <Typography variant='h5'>❌ Not logged in, redirecting...</Typography>
     )
   }
+
+  const safeUserProfile = userProfile || { firstname: '', lastname: '', email: '', role: '' };
 
   return (
     <Box
@@ -46,7 +50,7 @@ const Dashboard: React.FC = () => {
         </IconButton>
 
         <Typography variant='h6' sx={{ fontWeight: 'bold', color: '#333' }}>
-          Hello, {userProfile.firstname} {userProfile.lastname}!
+          Hello, {safeUserProfile.firstname} {safeUserProfile.lastname}!
         </Typography>
 
         <Box sx={{ width: '48px' }} />
