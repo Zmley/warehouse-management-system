@@ -17,11 +17,13 @@ export const useAuth = () => {
       saveTokens(tokens)
       const userData = await fetchUserProfile()
       setUserProfile({
-        firstname: userData.user.firstName,
-        lastname: userData.user.lastName,
-        email: userData.user.email,
-        role: userData.user.role
+        firstname: userData.firstName,
+        lastname: userData.lastName,
+        email: userData.email,
+        role: userData.role
       })
+
+      console.log('✅ Navigating to /dashboard now...')
 
       navigate('/dashboard')
     } catch (err: any) {
