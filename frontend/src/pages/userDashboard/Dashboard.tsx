@@ -16,6 +16,8 @@ const Dashboard: React.FC = () => {
   const { isAuthenticated } = useAuth() 
   const navigate = useNavigate()
 
+
+
   if (!isAuthenticated) {
     return (
       <Typography variant='h5'>❌ Not logged in, redirecting...</Typography>
