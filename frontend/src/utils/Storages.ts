@@ -10,13 +10,8 @@ export const saveTokens = (data: { accessToken: string; idToken: string; refresh
   };
   
   export const clearTokens = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("idToken");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("role");
-    localStorage.removeItem("username");
-    console.log("❌ Tokens removed, user logged out");
-  };
+    localStorage.clear();
+};
 
 export const areTokensValid = (): boolean => {
     return !!(
