@@ -6,7 +6,7 @@ import LoginPage from '../pages/Login'
 import Dashboard from '../pages/userDashboard/Dashboard'
 import Profile from '../pages/userDashboard/Profile'
 
-const PublicRoutes: React.FC = () => {
+const PublicRoute: React.FC = () => {
   const { isAuthenticated } = useAuth()
 
   return (
@@ -17,4 +17,4 @@ const PublicRoutes: React.FC = () => {
   )
 }
 
-export default PublicRoutes
+export default PublicRoute
