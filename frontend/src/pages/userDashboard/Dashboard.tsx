@@ -24,9 +24,9 @@ const Dashboard: React.FC = () => {
     )
   }
 
-  if (!userProfile) {
-    return <Typography variant='h5'></Typography>
-  }
+
+  const safeUserProfile = userProfile || { firstname: '', lastname: '', email: '', role: '' };
+
 
   return (
     <Box
@@ -52,7 +52,7 @@ const Dashboard: React.FC = () => {
         </IconButton>
 
         <Typography variant='h6' sx={{ fontWeight: 'bold', color: '#333' }}>
-          Hello, {userProfile.firstname} {userProfile.lastname}!
+          Hello, {safeUserProfile.firstname} {safeUserProfile.lastname}!
         </Typography>
 
         <Box sx={{ width: '48px' }} />
