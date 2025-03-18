@@ -4,13 +4,13 @@ dotenv.config()
 import app from './app'
 import { connectDB } from './db/db'
 
-connectDB()
-  .then(() => {
-    console.log('✅ Database Connected')
-  })
-  .catch(error => {
-    console.error('❌ Database Connection Failed:', error)
-  })
+// connectDB()
+//   .then(() => {
+//     console.log('✅ Database Connected')
+//   })
+//   .catch(error => {
+//     console.error('❌ Database Connection Failed:', error)
+//   })
 
 const PORT = process.env.PORT || 5001
 app.listen(PORT, () => {
