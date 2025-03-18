@@ -1,15 +1,10 @@
 import { Sequelize } from 'sequelize'
 import env from 'config/config'
 
-export const sequelize = new Sequelize(
-  env.dbHosting,
-  env.dbUser,
-  env.dbPassword,
-  {
-    dialect: 'postgres',
-    logging: false
-  }
-)
+export const sequelize = new Sequelize(env.dbName, env.dbUser, env.dbPassword, {
+  dialect: 'postgres',
+  logging: false
+})
 
 sequelize
   .authenticate()

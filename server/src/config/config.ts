@@ -41,7 +41,7 @@ export default {
   env: envVars.NODE_ENV,
   port: envVars.PORT,
   xApiKey: envVars.API_KEY_TOKEN,
-  dbHosting: envVars.DB_HOSTING,
+  dbName: envVars.DB_NAME,
   dbUser: envVars.DB_USER,
   dbPassword: envVars.DB_PASSWORD,
   awsRegion: envVars.AWS_REGION,
