@@ -9,9 +9,11 @@ import {
 import { Menu as MenuIcon } from '@mui/icons-material'
 import { AuthContext } from '../../contexts/auth'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../hooks/useAuth'
 
 const Dashboard: React.FC = () => {
-  const { userProfile, isAuthenticated } = useContext(AuthContext)!
+  const { userProfile } = useContext(AuthContext)!
+  const { isAuthenticated } = useAuth() 
   const navigate = useNavigate()
 
   if (!isAuthenticated) {

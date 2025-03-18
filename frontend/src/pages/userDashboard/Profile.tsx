@@ -14,10 +14,13 @@ import {
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import { AuthContext } from '../../contexts/auth'
+import { useAuth } from '../../hooks/useAuth' // ✅ 现在要用 `useAuth`
 
 const Profile: React.FC = () => {
   const navigate = useNavigate()
-  const { logout, userProfile } = useContext(AuthContext)!
+  const { userProfile } = useContext(AuthContext)!
+
+  const { handleLogout } = useAuth() // ✅ 用 `useAuth` 获取 `logout`
 
   return (
     <Container
@@ -115,7 +118,7 @@ const Profile: React.FC = () => {
         <Button
           variant='outlined'
           onClick={() => {
-            logout()
+            handleLogout()
             navigate('/')
           }}
           sx={{

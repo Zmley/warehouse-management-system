@@ -1,11 +1,10 @@
-import React, { useContext } from 'react'
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom'
-import { AuthContext } from '../contexts/auth'
 import Dashboard from '../pages/userDashboard/Dashboard'
 import Profile from '../pages/userDashboard/Profile'
+import { useAuth } from '../hooks/useAuth'
 
 const PrivateRoute: React.FC = () => {
-  const { isAuthenticated } = useContext(AuthContext)!
+  const { isAuthenticated } = useAuth()
   return isAuthenticated ? <Outlet /> : <Navigate to='/' />
 }
 
