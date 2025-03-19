@@ -1,26 +1,24 @@
-import React, { useContext, useEffect } from 'react'
-import { Routes, Route } from 'react-router-dom'
-import { AuthContext } from '../contexts/auth'
-import LoginPage from '../pages/Login'
-import Dashboard from '../pages/userDashboard/Dashboard'
-import Profile from '../pages/userDashboard/Profile'
+import React, { useContext, useEffect } from 'react';
+import { Routes, Route } from 'react-router-dom';
+import { AuthContext } from '../contexts/auth';
+import LoginPage from '../pages/Login';
+import Dashboard from '../pages/userDashboard/Dashboard';
 
 const PublicRoute: React.FC = () => {
-  const { isAuthenticated, getMe } = useContext(AuthContext)!
+  const { isAuthenticated, getMe } = useContext(AuthContext)!;
 
   useEffect(() => {
     if (isAuthenticated) {
-      getMe();  
+      getMe();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated]);
 
   return (
     <Routes>
       <Route path="/" element={isAuthenticated ? <Dashboard /> : <LoginPage />} />
-      {isAuthenticated && <Route path="/profile" element={<Profile />} />}
     </Routes>
-  )
-}
+  );
+};
 
-export default PublicRoute
+export default PublicRoute;
