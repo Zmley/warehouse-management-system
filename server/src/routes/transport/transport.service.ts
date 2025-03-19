@@ -17,7 +17,7 @@ export const loadCargoHelper = async (
       throw new AppError(404, '❌ No inventory updated for the given binID')
     }
 
-    await createTask(binID, cartID, accountID)
+    await createTask(binID, accountID)
 
     return {
       status: 200,

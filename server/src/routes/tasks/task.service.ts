@@ -1,11 +1,7 @@
 import Task from './task.model'
 import AppError from '../../utils/appError'
 
-export const createTask = async (
-  sourceBinID: string,
-  cartID: string,
-  accountID: string
-) => {
+export const createTask = async (sourceBinID: string, accountID: string) => {
   try {
     const task = await Task.create({
       sourceBinID,
