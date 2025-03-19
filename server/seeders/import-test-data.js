@@ -2,8 +2,6 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    console.log('🚀 开始插入数据...')
-
     const warehouses = await queryInterface.bulkInsert(
       'warehouse',
       [
@@ -20,8 +18,6 @@ module.exports = {
       ],
       { returning: ['warehouseID', 'warehouseCode'] }
     )
-
-    console.log('✅ warehouse 数据插入成功!', warehouses)
 
     const bins = []
     for (const warehouse of warehouses) {
@@ -49,7 +45,6 @@ module.exports = {
     const insertedBins = await queryInterface.bulkInsert('bin', bins, {
       returning: ['binID', 'binCode']
     })
-    console.log('✅ bin 数据插入成功!', insertedBins)
 
     const inventory = []
     for (const bin of insertedBins) {
@@ -65,14 +60,11 @@ module.exports = {
     }
 
     await queryInterface.bulkInsert('inventory', inventory)
-    console.log('✅ inventory 数据插入成功!')
   },
 
   down: async (queryInterface, Sequelize) => {
-    console.log('🗑 开始删除数据...')
     await queryInterface.bulkDelete('inventory', null, {})
     await queryInterface.bulkDelete('bin', null, {})
     await queryInterface.bulkDelete('warehouse', null, {})
-    console.log('✅ 数据删除完成！')
   }
 }
