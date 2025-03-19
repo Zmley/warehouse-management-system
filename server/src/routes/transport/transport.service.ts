@@ -4,12 +4,12 @@ import Inventory from '../../models/inventory'
 import AppError from '../../utils/appError'
 
 export const loadCargo = async (binID: string, accountID: string): Promise<{ status: number; message: string }> => {
-  const Account = await getAccountById(accountID)
-  if (!Account) {
+  const account = await getAccountById(accountID)
+  if (!account) {
     throw new AppError(404, '❌ User account not found')
   }
 
-  const cartID = Account.cartID
+  const cartID = account.cartID
   if (!cartID) {
     throw new AppError(400, '❌ only transport worker can use car')
   }
