@@ -4,6 +4,7 @@ import axios from 'axios'
 import jwkToPem from 'jwk-to-pem'
 import { getCognitoPublicKeysUrl } from 'utils/aws'
 import { CognitoIdentityProviderClient } from '@aws-sdk/client-cognito-identity-provider'
+import { getAccountById } from '../routes/accounts/accounts.service'
 
 export const awsConfig = {
   region: process.env.AWS_REGION!,
@@ -29,7 +30,7 @@ export interface AuthRequest extends Request {
 
 let cachedJwks: any[] | null = null
 let lastFetchTime = 0
-const JWKS_CACHE_TTL = 5 * 60 * 1000 // 5分钟
+const JWKS_CACHE_TTL = 5 * 60 * 1000
 
 async function getJwks() {
   const now = Date.now()
@@ -78,6 +79,15 @@ export const authenticateToken = async (
         .json({ message: '❌ Invalid token: Missing user ID' })
 
     res.locals.accountID = payload.sub
+
+    const account = await getAccountById(payload.sub)
+    if (!account) {
+      return res.status(404).json({ message: '❌ Account not found' })
+    }
+
+    res.locals.role = account.role
+    res.locals.cartID = account.cartID
+
 
     next()
   } catch (err) {

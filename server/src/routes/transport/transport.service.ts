@@ -1,47 +1,30 @@
-import { getAccountById } from '../accounts/accounts.service'
-import { createTask,hasActiveTask } from '../../routes/tasks/task.service'
-import Inventory from '../../models/inventory'
+import { createTask } from '../tasks/task.service'
+import Inventory from '../inventory/inventory.model'
 import AppError from '../../utils/appError'
 
-export const loadCargo = async (binID: string, accountID: string): Promise<{ status: number; message: string }> => {
-  const account = await getAccountById(accountID)
-  if (!account) {
-    throw new AppError(404, '❌ User account not found')
-  }
-
-  const cartID = account.cartID
-  if (!cartID) {
-    throw new AppError(400, '❌ only transport worker can use car')
-  }
-
-  const updatedCount = await loadCargoHelper(binID, cartID)
-  if (updatedCount === 0) {
-    throw new AppError(404, '❌ No matching binID found to update')
-  }
-
-  const hasTask = await hasActiveTask(accountID)
-  if (!hasTask) {
-    await createTask(binID, cartID, accountID)
-  }
-
-  return {
-    status: 200,
-    message: `✅ BinID updated to "${cartID}".`
-  }
-}
-
-export const loadCargoHelper = async (binID: string, cartID: string) => {
+export const loadCargoHelper = async (
+  binID: string,
+  accountID: string,
+  cartID: string
+): Promise<{ status: number; message: string }> => {
   try {
     const updatedItems = await Inventory.update(
       { binID: cartID },
       { where: { binID } }
     )
+
     if (!updatedItems[0]) {
       throw new AppError(404, '❌ No inventory updated for the given binID')
     }
-    return updatedItems[0]
+
+    await createTask(binID, cartID, accountID)
+
+    return {
+      status: 200,
+      message: `✅ BinID updated to "${cartID}".`
+    }
   } catch (error) {
-    console.error('❌ Error in loadCargoHelper:', error)
+    console.error('❌ Error loading cargo:', error)
     throw new AppError(500, '❌ Failed to load cargo due to an internal error.')
   }
 }

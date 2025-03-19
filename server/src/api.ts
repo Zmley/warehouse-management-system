@@ -9,5 +9,4 @@ router.use(healthCheck)
 router.use(accountRoutes)
 router.use(transportRoutes)
 
-
 export default router

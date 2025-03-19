@@ -1,25 +1,35 @@
 import { DataTypes, Model } from 'sequelize'
-import { sequelize } from '../config/db'
+import { sequelize } from 'config/db'
 
-export class Warehouse extends Model {
-  public warehouseID!: string
-  public warehouseCode!: string
+export class Inventory extends Model {
+  public inventoryID!: string
+  public binID!: string
+  public productID!: string
+  public quantity!: number
   public createdAt!: Date
   public updatedAt!: Date | null
 }
 
-Warehouse.init(
+Inventory.init(
   {
-    warehouseID: {
+    inventoryID: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
       allowNull: false,
       primaryKey: true
     },
-    warehouseCode: {
+    binID: {
+      type: DataTypes.UUID,
+      allowNull: false
+    },
+    productID: {
       type: DataTypes.STRING,
+      allowNull: false
+    },
+    quantity: {
+      type: DataTypes.INTEGER,
       allowNull: false,
-      unique: true
+      defaultValue: 0
     },
     createdAt: {
       type: DataTypes.DATE,
@@ -32,9 +42,9 @@ Warehouse.init(
   },
   {
     sequelize,
-    tableName: 'warehouse',
+    tableName: 'inventory',
     timestamps: true
   }
 )
 
-export default Warehouse
+export default Inventory
