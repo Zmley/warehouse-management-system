@@ -1,4 +1,4 @@
-import React, { useContext } from 'react'
+import React from 'react'
 import {
   Container,
   Typography,
@@ -13,13 +13,11 @@ import {
   Logout as LogoutIcon
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
-import { AuthContext } from '../../contexts/auth'
-import { useAuth } from '../../hooks/useAuth'
+import { useAuth } from '../hooks/useAuth'
 
 const Profile: React.FC = () => {
   const navigate = useNavigate()
-  const { userProfile } = useContext(AuthContext)!
-  const { handleLogout } = useAuth()
+  const { handleLogout, userProfile } = useAuth()
 
   return (
     <Container

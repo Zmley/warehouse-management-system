@@ -1,4 +1,4 @@
-import React, { useContext } from 'react'
+import React from 'react'
 import {
   Typography,
   Box,
@@ -7,27 +7,12 @@ import {
   BottomNavigationAction
 } from '@mui/material'
 import { Menu as MenuIcon } from '@mui/icons-material'
-import { AuthContext } from '../../contexts/auth'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../../hooks/useAuth'
+import { useAuth } from '../hooks/useAuth'
 
 const Dashboard: React.FC = () => {
-  const {
-    userProfile = {
-      firstName: '',
-      lastName: '',
-      email: '',
-      role: ''
-    }
-  } = useContext(AuthContext)!
-  const { isAuthenticated } = useAuth()
+  const { userProfile } = useAuth()
   const navigate = useNavigate()
-
-  if (!isAuthenticated) {
-    return (
-      <Typography variant='h5'>❌ Not logged in, redirecting...</Typography>
-    )
-  }
 
   return (
     <Box
@@ -53,7 +38,7 @@ const Dashboard: React.FC = () => {
         </IconButton>
 
         <Typography variant='h6' sx={{ fontWeight: 'bold', color: '#333' }}>
-          Hello, {userProfile?.firstName} {userProfile?.lastName}!
+          Hello, {userProfile.firstName} {userProfile.lastName}!
         </Typography>
 
         <Box sx={{ width: '48px' }} />

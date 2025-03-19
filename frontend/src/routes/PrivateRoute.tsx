@@ -1,13 +1,8 @@
-import { Routes, Route, Navigate, Outlet } from 'react-router-dom'
-import Profile from '../pages/userDashboard/Profile'
+import { Routes, Route } from 'react-router-dom'
+import Profile from '../pages/Profile'
 import { useContext, useEffect } from 'react'
 import { AuthContext } from '../contexts/auth'
-
-const PrivateRoute: React.FC = () => {
-  const { isAuthenticated } = useContext(AuthContext)!
-
-  return isAuthenticated ? <Outlet /> : <Navigate to='/' />
-}
+import Dashboard from '../pages/Dashboard'
 
 const PrivateRoutes: React.FC = () => {
   const { getMe } = useContext(AuthContext)!
@@ -17,9 +12,8 @@ const PrivateRoutes: React.FC = () => {
   }, [])
   return (
     <Routes>
-      <Route element={<PrivateRoute />}>
-        <Route path='/profile' element={<Profile />} />
-      </Route>
+      <Route path='/' element={<Dashboard />} />
+      <Route path='/profile' element={<Profile />} />
     </Routes>
   )
 }

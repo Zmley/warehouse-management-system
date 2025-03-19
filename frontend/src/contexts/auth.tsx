@@ -10,8 +10,8 @@ interface UserProfile {
 }
 
 interface AuthContextType {
-  userProfile: UserProfile | null
-  setUserProfile: (profile: UserProfile | null) => void
+  userProfile: UserProfile
+  setUserProfile: (profile: UserProfile) => void
   isAuthenticated: boolean
   setIsAuthenticated: (isAuth: boolean) => void
   getMe: () => void
@@ -22,7 +22,12 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children
 }) => {
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
+  const [userProfile, setUserProfile] = useState<UserProfile>({
+    firstName: '',
+    lastName: '',
+    email: '',
+    role: ''
+  })
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(
     areTokensValid()
   )

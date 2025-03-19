@@ -22,17 +22,15 @@ const currentAccount = async (
     const account = await Account.findOne({ where: { accountID } })
 
     if (!account) {
-      throw new AppError(
-        httpStatus.FORBIDDEN,
-        '❌ Forbidden: User not found in out database'
-      )
+      res
+        .status(httpStatus.UNAUTHORIZED)
+        .json({ error: '❌ Unauthorized: Account not found' })
     }
 
     res.locals.currentAccount = account.dataValues
     next()
   } catch (error) {
     res.status(httpStatus.UNAUTHORIZED).json({ error: error.message })
-    throw new AppError(httpStatus.UNAUTHORIZED, error)
   }
 }
 

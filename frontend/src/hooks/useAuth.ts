@@ -5,7 +5,7 @@ import { loginUser } from '../api/authApi'
 import { saveTokens, clearTokens } from '../utils/Storages'
 
 export const useAuth = () => {
-  const { setUserProfile, isAuthenticated, setIsAuthenticated } =
+  const { isAuthenticated, setIsAuthenticated, userProfile } =
     useContext(AuthContext)!
   const [error, setError] = useState<string | null>(null)
   const navigate = useNavigate()
@@ -31,10 +31,9 @@ export const useAuth = () => {
 
   const handleLogout = () => {
     clearTokens()
-    setUserProfile(null)
     setIsAuthenticated(false)
     navigate('/')
   }
 
-  return { handleLogin, handleLogout, isAuthenticated, error }
+  return { handleLogin, handleLogout, isAuthenticated, error, userProfile }
 }
