@@ -2,37 +2,14 @@ import { Request, Response, NextFunction } from 'express'
 import { verify, decode, JwtPayload } from 'jsonwebtoken'
 import axios from 'axios'
 import jwkToPem from 'jwk-to-pem'
-import { getCognitoPublicKeysUrl } from 'utils/aws'
-import { CognitoIdentityProviderClient } from '@aws-sdk/client-cognito-identity-provider'
-import { getAccountById } from '../routes/accounts/accounts.service'
+import { awsConfig, getCognitoPublicKeysUrl } from 'utils/aws'
+import {getAccountById} from '../routes/accounts/accounts.service'
 
-export const awsConfig = {
-  region: process.env.AWS_REGION!,
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-  userPoolId: process.env.COGNITO_USER_POOL_ID!,
-  clientId: process.env.COGNITO_CLIENT_ID!
-}
+const getJwks = async () => {
+  let cachedJwks
+  let lastFetchTime = 0
+  const JWKS_CACHE_TTL = 5 * 60 * 1000
 
-export const cognitoClient = new CognitoIdentityProviderClient({
-  region: awsConfig.region,
-  credentials: {
-    accessKeyId: awsConfig.accessKeyId,
-    secretAccessKey: awsConfig.secretAccessKey
-  }
-})
-
-console.log('✅ AWS Cognito Client Initialized Successfully!')
-
-export interface AuthRequest extends Request {
-  user?: { sub: string }
-}
-
-let cachedJwks: any[] | null = null
-let lastFetchTime = 0
-const JWKS_CACHE_TTL = 5 * 60 * 1000
-
-async function getJwks() {
   const now = Date.now()
   if (!cachedJwks || now - lastFetchTime > JWKS_CACHE_TTL) {
     const url = getCognitoPublicKeysUrl(awsConfig.userPoolId, awsConfig.region)
@@ -44,7 +21,7 @@ async function getJwks() {
 }
 
 export const authenticateToken = async (
-  req: AuthRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
@@ -59,7 +36,7 @@ export const authenticateToken = async (
       .json({ message: '❌ Unauthorized: Invalid Token Format' })
 
   try {
-    const decoded: any = decode(token, { complete: true })
+    const decoded = decode(token, { complete: true })
     if (!decoded?.header?.kid)
       return res.status(401).json({ message: '❌ Invalid token format' })
 
@@ -87,7 +64,6 @@ export const authenticateToken = async (
 
     res.locals.role = account.role
     res.locals.cartID = account.cartID
-
 
     next()
   } catch (err) {
