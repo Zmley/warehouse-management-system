@@ -3,7 +3,7 @@ import Account from './accounts.model'
 export const getAccountById = async (accountID: string) => {
   return await Account.findOne({
     where: { accountID },
-    attributes: ['role', 'firstName', 'lastName', 'email', 'cartID']
+    attributes: ['role', 'firstName', 'lastName', 'email']
   })
 }
 
