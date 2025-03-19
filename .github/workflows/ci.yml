@@ -1,9 +1,9 @@
-name: "CI"
+name: 'CI'
 on:
   pull_request:
     paths-ignore:
-      - "**/*.md"
-      - ".github/**"
+      - '**/*.md'
+      - '.github/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
   ci:
-    name: "Format, lint, and typecheck"
+    name: 'Format, lint, and typecheck'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code 🛒
@@ -22,16 +22,20 @@ jobs:
         with:
           node-version: 20
           cache: yarn
-          cache-dependency-path: yarn.lock
+          cache-dependency-path: server/yarn.lock
 
       - name: Install dependencies 🚚
         run: yarn install --immutable
+        working-directory: ./server
 
       - name: Check formatting 💅
         run: yarn format
+        working-directory: ./server
 
       - name: Lint 🧹
         run: yarn lint
+        working-directory: ./server
 
       - name: Typecheck 🧪
         run: yarn typecheck
+        working-directory: ./server
