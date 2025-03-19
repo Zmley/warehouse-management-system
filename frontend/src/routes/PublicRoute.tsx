@@ -1,13 +1,19 @@
-import React from 'react'
+import React, { useContext, useEffect } from 'react'
 import { Routes, Route } from 'react-router-dom'
-import { useAuth } from '../hooks/useAuth'
-
+import { AuthContext } from '../contexts/auth'
 import LoginPage from '../pages/Login'
 import Dashboard from '../pages/userDashboard/Dashboard'
 import Profile from '../pages/userDashboard/Profile'
 
 const PublicRoute: React.FC = () => {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, getMe } = useContext(AuthContext)!
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      getMe();  
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]);
 
   return (
     <Routes>
