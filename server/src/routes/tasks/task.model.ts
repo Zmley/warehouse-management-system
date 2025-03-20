@@ -5,7 +5,7 @@ export class Task extends Model {
   public taskID!: string
   public sourceBinID!: string
   public destinationBinID!: string
-  public accountID!: string
+  public accepterID!: string
   public productID!: string
   public status!: 'PENDING' | 'IN_PROCESS' | 'COMPLETED' | 'CANCEL'
   public createdAt!: Date
