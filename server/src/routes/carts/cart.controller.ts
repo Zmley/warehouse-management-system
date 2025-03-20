@@ -12,12 +12,8 @@ export const loadCargo = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { role, cartID } = res.locals
+    const { cartID } = res.locals
     const { binID } = req.body
-
-    if (role !== 'TRANSPORT_WORKER') {
-      return next(new AppError(403, '❌ Only transport workers can use a car'))
-    }
 
     const hasCargo = await hasCargoInCart(cartID)
     if (hasCargo) {
