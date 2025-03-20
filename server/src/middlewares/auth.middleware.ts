@@ -58,9 +58,6 @@ export const authenticateToken = async (
     res.locals.accountID = payload.sub
 
     const account = await getAccountById(payload.sub)
-    if (!account) {
-      return res.status(404).json({ message: '❌ Account not found' })
-    }
 
     res.locals.role = account.role
     res.locals.cartID = account.cartID

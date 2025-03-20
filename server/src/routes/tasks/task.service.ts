@@ -1,5 +1,6 @@
 import Task from './task.model'
 import AppError from '../../utils/appError'
+import { hasCargoInCar } from '../transport/transport.service'
 
 export const createTask = async (sourceBinID: string, accountID: string) => {
   try {
@@ -29,5 +30,42 @@ export const hasActiveTask = async (accountID: string): Promise<boolean> => {
   } catch (error) {
     console.error('❌ Error checking active task:', error)
     throw new AppError(500, '❌ Error checking active task')
+  }
+}
+
+export const updateTaskStatus = async (
+  accepterID: string,
+  destinationBinID: string,
+  cartID: string
+) => {
+  try {
+    // **🔍 查找工人唯一的 "IN_PROCESS" 任务**
+    const task = await Task.findOne({
+      where: { accepterID, status: 'IN_PROCESS' },
+      order: [['createdAt', 'DESC']] // **确保是最新创建的任务**
+    })
+
+    if (!task) {
+      console.warn(`⚠️ No active task found for accepter ${accepterID}`)
+      return null
+    }
+
+    const hasCargo = await hasCargoInCar(cartID)
+
+    if (!hasCargo) {
+      task.status = 'COMPLETED' // ✅ 只有在车上没货物时才标记 `completed`
+    } else {
+      console.log(`🚛 Cargo still in car ${cartID}, task remains in progress.`)
+    }
+
+    task.updatedAt = new Date()
+    task.destinationBinID = destinationBinID
+    await task.save()
+
+    console.log(`✅ Updated task for user ${accepterID}`)
+    return task
+  } catch (error) {
+    console.error('❌ Error updating task status:', error)
+    throw new Error('❌ Failed to update task status')
   }
 }
