@@ -39,6 +39,30 @@ export const updateTaskStatus = async (
   cartID: string
 ) => {
   try {
+    const task = await getCurrentTask(accepterID)
+
+    const hasCargo = await hasCargoInCar(cartID)
+
+    if (!hasCargo) {
+      task.status = 'COMPLETED'
+    } else {
+      console.log(`Cargo still in car ${cartID}, task remains in progress.`)
+    }
+
+    task.updatedAt = new Date()
+    task.destinationBinID = destinationBinID
+    await task.save()
+
+    console.log(`Updated task for user ${accepterID}`)
+    return task
+  } catch (error) {
+    console.error('❌ Error updating task status:', error)
+    throw new Error('❌ Failed to update task status')
+  }
+}
+
+export const getCurrentTask = async (accepterID: string) => {
+  try {
     const task = await Task.findOne({
       where: { accepterID, status: 'IN_PROCESS' },
       order: [['createdAt', 'DESC']]
@@ -49,22 +73,9 @@ export const updateTaskStatus = async (
       return null
     }
 
-    const hasCargo = await hasCargoInCar(cartID)
-
-    if (!hasCargo) {
-      task.status = 'COMPLETED'
-    } else {
-      console.log(`🚛 Cargo still in car ${cartID}, task remains in progress.`)
-    }
-
-    task.updatedAt = new Date()
-    task.destinationBinID = destinationBinID
-    await task.save()
-
-    console.log(`✅ Updated task for user ${accepterID}`)
     return task
   } catch (error) {
-    console.error('❌ Error updating task status:', error)
-    throw new Error('❌ Failed to update task status')
+    console.error('❌ Error fetching current task:', error)
+    throw new AppError(500, '❌ Failed to fetch current task')
   }
 }

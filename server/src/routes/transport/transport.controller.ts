@@ -42,10 +42,6 @@ export const unloadCargo = async (
     const cartID = res.locals.cartID
     const { unLoadBinID, productList } = req.body
 
-    // if (!unLoadBinID) {
-    //   return next(new AppError(400, '❌ Missing unLoadBinID'))
-    // }
-
     if (!Array.isArray(productList) || productList.length === 0) {
       return next(
         new AppError(400, '❌ Product list is required for unloading')
