@@ -2,8 +2,8 @@ import { Request, Response, NextFunction } from 'express'
 import {
   loadCargoHelper,
   unloadCargoHelper,
-  hasCargoInCar
-} from './transport.service'
+  hasCargoInCart
+} from './cart.service'
 import AppError from '../../utils/appError'
 
 export const loadCargo = async (
@@ -19,7 +19,7 @@ export const loadCargo = async (
       return next(new AppError(403, '❌ Only transport workers can use a car'))
     }
 
-    const hasCargo = await hasCargoInCar(cartID)
+    const hasCargo = await hasCargoInCart(cartID)
     if (hasCargo) {
       return next(new AppError(400, '❌ you have cargo in your using car!'))
     }

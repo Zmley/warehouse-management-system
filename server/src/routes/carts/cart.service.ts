@@ -79,7 +79,7 @@ export const unloadCargoHelper = async (
   }
 }
 
-export const hasCargoInCar = async (cartID: string): Promise<boolean> => {
+export const hasCargoInCart = async (cartID: string): Promise<boolean> => {
   try {
     const cargoCount = await Inventory.count({
       where: { binID: cartID }
