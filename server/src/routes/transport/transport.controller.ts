@@ -1,8 +1,10 @@
 import { Request, Response, NextFunction } from 'express'
-import { loadCargoHelper, unloadCargoHelper } from './transport.service'
-import { hasActiveTask } from '../tasks/task.service'
+import {
+  loadCargoHelper,
+  unloadCargoHelper,
+  hasCargoInCar
+} from './transport.service'
 import AppError from '../../utils/appError'
-import { updateTaskStatus } from '../tasks/task.service'
 
 export const loadCargo = async (
   req: Request,
@@ -10,21 +12,19 @@ export const loadCargo = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const accountID = res.locals.accountID
-    const role = res.locals.role
-    const cartID = res.locals.cartID
+    const { role, cartID } = res.locals
     const { binID } = req.body
 
     if (role !== 'TRANSPORT_WORKER') {
       return next(new AppError(403, '❌ Only transport workers can use a car'))
     }
 
-    const hasTask = await hasActiveTask(accountID)
-    if (hasTask) {
-      return next(new AppError(400, '❌ You already have an active task!'))
+    const hasCargo = await hasCargoInCar(cartID)
+    if (hasCargo) {
+      return next(new AppError(400, '❌ you have cargo in your using car!'))
     }
 
-    const result = await loadCargoHelper(binID, accountID, cartID)
+    const result = await loadCargoHelper(binID, cartID)
 
     res.status(result.status).json({ message: result.message })
   } catch (error) {
@@ -38,30 +38,16 @@ export const unloadCargo = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const accountID = res.locals.accountID
-    const cartID = res.locals.cartID
-    const { unLoadBinID, productList } = req.body
+    const { unloadBinID, productList } = req.body
 
-    if (!Array.isArray(productList) || productList.length === 0) {
-      return next(
-        new AppError(400, '❌ Product list is required for unloading')
-      )
-    }
-
-    const updatedCount = await unloadCargoHelper(
-      unLoadBinID,
-      cartID,
-      productList
-    )
+    const updatedCount = await unloadCargoHelper(unloadBinID, productList)
 
     if (updatedCount === 0) {
       return next(new AppError(404, '❌ No matching products found to update'))
     }
 
-    await updateTaskStatus(accountID, unLoadBinID, cartID)
-
     res.status(200).json({
-      message: `✅ Cargo successfully unloaded into ${unLoadBinID}.`,
+      message: `✅ ${updatedCount} Cargo successfully unloaded into ${unloadBinID}.`,
       updatedProducts: updatedCount
     })
   } catch (error) {
