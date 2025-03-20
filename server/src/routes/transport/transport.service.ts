@@ -36,30 +36,20 @@ export const unloadCargoHelper = async (
 ): Promise<number> => {
   let updatedCount = 0
 
+  //update each inventory row by for loop
   for (const { inventoryID, quantity } of productList) {
     const inventoryItem = await Inventory.findOne({
       where: { inventoryID, binID: carID }
     })
 
-    if (!inventoryItem) {
-      console.warn(`⚠️ Inventory item ${inventoryID} not found in car ${carID}`)
-      continue
-    }
-
     const currentQuantity = inventoryItem.quantity
     const productID = inventoryItem.productID
-
-    if (currentQuantity < quantity) {
-      console.warn(
-        `⚠️ Requested unload quantity (${quantity}) exceeds car stock (${currentQuantity}) for inventory ${inventoryID}`
-      )
-      continue
-    }
 
     const targetInventory = await Inventory.findOne({
       where: { binID: unLoadBinID, productID }
     })
 
+    //update target inventory row, creat one row if there is no target Inventory, which means new to this bin.
     if (targetInventory) {
       await targetInventory.update({
         quantity: targetInventory.quantity + quantity
@@ -72,16 +62,11 @@ export const unloadCargoHelper = async (
       })
     }
 
+    //update inventory in car, delete whole inventory row if I move all, delete partical if I move paticially
     if (currentQuantity === quantity) {
       await inventoryItem.destroy()
-      console.log(
-        `✅ Fully moved and deleted inventory ${inventoryID} from car ${carID}`
-      )
     } else {
       await inventoryItem.update({ quantity: currentQuantity - quantity })
-      console.log(
-        `✅ Partially moved inventory ${inventoryID}, reduced quantity by ${quantity} from car ${carID}`
-      )
     }
 
     updatedCount++
@@ -99,6 +84,6 @@ export const hasCargoInCar = async (cartID: string): Promise<boolean> => {
     return cargoCount > 0
   } catch (error) {
     console.error(`❌ Error checking cargo in car ${cartID}:`, error)
-    return false
+    throw new AppError(500, `❌ Failed to check cargo in car: ${cartID}`)
   }
 }
