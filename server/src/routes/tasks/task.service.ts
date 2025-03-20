@@ -39,10 +39,9 @@ export const updateTaskStatus = async (
   cartID: string
 ) => {
   try {
-    // **🔍 查找工人唯一的 "IN_PROCESS" 任务**
     const task = await Task.findOne({
       where: { accepterID, status: 'IN_PROCESS' },
-      order: [['createdAt', 'DESC']] // **确保是最新创建的任务**
+      order: [['createdAt', 'DESC']]
     })
 
     if (!task) {
@@ -53,7 +52,7 @@ export const updateTaskStatus = async (
     const hasCargo = await hasCargoInCar(cartID)
 
     if (!hasCargo) {
-      task.status = 'COMPLETED' // ✅ 只有在车上没货物时才标记 `completed`
+      task.status = 'COMPLETED'
     } else {
       console.log(`🚛 Cargo still in car ${cartID}, task remains in progress.`)
     }
