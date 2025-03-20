@@ -1,9 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
-import {
-  loadCargoHelper,
-  unloadCargoHelper,
-  hasCargoInCart
-} from './cart.service'
+import { loadCargoHelper, unloadCargoHelper } from './cart.service'
 import AppError from '../../utils/appError'
 
 export const loadCargo = async (
@@ -14,11 +10,6 @@ export const loadCargo = async (
   try {
     const { cartID } = res.locals
     const { binID } = req.body
-
-    const hasCargo = await hasCargoInCart(cartID)
-    if (hasCargo) {
-      return next(new AppError(400, '❌ you have cargo in your using car!'))
-    }
 
     const result = await loadCargoHelper(binID, cartID)
 

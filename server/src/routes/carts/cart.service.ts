@@ -78,16 +78,3 @@ export const unloadCargoHelper = async (
     )
   }
 }
-
-export const hasCargoInCart = async (cartID: string): Promise<boolean> => {
-  try {
-    const cargoCount = await Inventory.count({
-      where: { binID: cartID }
-    })
-
-    return cargoCount > 0
-  } catch (error) {
-    console.error(`❌ Error checking cargo in car ${cartID}:`, error)
-    throw new AppError(500, `❌ Failed to check cargo in car: ${cartID}`)
-  }
-}
