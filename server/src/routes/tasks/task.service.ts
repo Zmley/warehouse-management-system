@@ -20,10 +20,10 @@ export const createTask = async (
   productList: any,
   accountID: string
 ) => {
-  const existingTask = await sourceBinInTask(sourceBinID)
+  const existingTask = await checkBinAvailability(sourceBinID)
 
   if (existingTask) {
-    throw new AppError(409, '⚠️ Source Bin is in task')
+    throw new AppError(409, 'Source Bin is in task')
   }
 
   const task = await Task.create({
@@ -55,7 +55,7 @@ export const acceptTaskService = async (accountID: string, taskID: string) => {
   return task
 }
 
-export const sourceBinInTask = async (sourceBinID: string) => {
+export const checkBinAvailability = async (sourceBinID: string) => {
   const existingTask = await Task.findOne({
     where: { sourceBinID, status: 'IN_PROCESS' }
   })
