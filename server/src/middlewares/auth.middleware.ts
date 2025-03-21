@@ -3,6 +3,7 @@ import { verify, decode, JwtPayload } from 'jsonwebtoken'
 import axios from 'axios'
 import jwkToPem from 'jwk-to-pem'
 import { awsConfig, getCognitoPublicKeysUrl } from 'utils/aws'
+import { getAccountById } from '../routes/accounts/accounts.service'
 
 const getJwks = async () => {
   let cachedJwks
@@ -55,6 +56,11 @@ export const authenticateToken = async (
         .json({ message: '❌ Invalid token: Missing user ID' })
 
     res.locals.accountID = payload.sub
+
+    const account = await getAccountById(payload.sub)
+
+    res.locals.role = account.role
+    res.locals.cartID = account.cartID
 
     next()
   } catch (err) {
