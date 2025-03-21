@@ -61,6 +61,7 @@ export const authenticateToken = async (
 
     res.locals.role = account.role
     res.locals.cartID = account.cartID
+    res.locals.warehouseID = account.warehouseID
 
     next()
   } catch (err) {

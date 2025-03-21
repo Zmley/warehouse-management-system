@@ -1,5 +1,6 @@
 import { DataTypes, Model } from 'sequelize'
 import { sequelize } from 'config/db'
+import { Bin } from '../bins/bin.model'
 
 export class Inventory extends Model {
   public inventoryID!: string
@@ -46,5 +47,10 @@ Inventory.init(
     timestamps: true
   }
 )
+
+Inventory.belongsTo(Bin, {
+  foreignKey: 'binID',
+  targetKey: 'binID'
+})
 
 export default Inventory

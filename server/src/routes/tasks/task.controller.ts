@@ -1,5 +1,9 @@
 import { Request, Response, NextFunction } from 'express'
-import { createTask, acceptTaskService } from '../tasks/task.service'
+import {
+  createTask,
+  acceptTaskService,
+  createPickerTaskService
+} from '../tasks/task.service'
 import AppError from '../../utils/appError'
 
 export const createAsAdmin = async (
@@ -40,6 +44,26 @@ export const acceptTask = async (
 
     res.status(200).json({
       message: `Task accepted successfully and is now in progress`,
+      task
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const createAsPicker = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { binID } = req.body
+    const { accountID, warehouseID } = res.locals
+
+    const task = await createPickerTaskService(binID, accountID, warehouseID)
+
+    res.status(201).json({
+      message: `Picker Task created successfully`,
       task
     })
   } catch (error) {
