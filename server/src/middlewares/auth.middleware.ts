@@ -68,3 +68,5 @@ export const authenticateToken = async (
     return res.status(403).json({ message: '❌ Forbidden: Invalid Token' })
   }
 }
+
+export default authenticateToken
