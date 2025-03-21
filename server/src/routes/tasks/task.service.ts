@@ -1,5 +1,9 @@
 import Task from './task.model'
+import Inventory from '../inventory/inventory.model'
+import Bin from '../bins/bin.model'
+import { getDefaultProduct } from '../bins/bin.service'
 import AppError from '../../utils/appError'
+import { Op } from 'sequelize'
 
 export const hasActiveTask = async (accountID: string): Promise<boolean> => {
   try {
@@ -61,4 +65,65 @@ export const checkBinAvailability = async (sourceBinID: string) => {
   })
 
   return existingTask
+}
+
+export const createPickerTaskService = async (
+  binID: string,
+  accountID: string,
+  warehouseID: string
+) => {
+  await checkExistingPickUpTask(binID)
+
+  const productID = await getDefaultProduct(binID)
+
+  const inventories = await Inventory.findAll({
+    where: { productID },
+    include: [
+      {
+        model: Bin,
+        where: {
+          warehouseID,
+          type: 'INVENTORY'
+        },
+        attributes: ['binID']
+      }
+    ]
+  })
+
+  if (inventories.length === 0) {
+    throw new AppError(404, 'No bins have this product in this warehouse')
+  }
+
+  //extract each binID from inventories
+  const sourceBins = inventories.map(inv => ({
+    binID: inv.binID
+  }))
+
+  const task = await Task.create({
+    destinationBinID: binID,
+    creatorID: accountID,
+    productID,
+    status: 'PENDING'
+  })
+
+  return { task, sourceBins }
+}
+
+export const checkExistingPickUpTask = async (binID: string) => {
+  const existingTask = await Task.findOne({
+    where: {
+      destinationBinID: binID,
+      status: {
+        [Op.in]: ['PENDING', 'IN_PROCESS']
+      }
+    },
+    order: [['createdAt', 'DESC']]
+  })
+
+  if (existingTask) {
+    throw new AppError(
+      409,
+      'A pending or in-process task already exists for this picker bin.'
+    )
+  }
 }
