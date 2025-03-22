@@ -38,10 +38,10 @@ export const unloadCargoHelper = async (
       })
 
       const currentQuantity = inventoryItem.quantity
-      const productID = inventoryItem.productID
+      const productCode = inventoryItem.productCode
 
       const targetInventory = await Inventory.findOne({
-        where: { binID: unLoadBinID, productID }
+        where: { binID: unLoadBinID, productCode }
       })
 
       // update target inventory and its quantity, creat one if there is no product in this bin
@@ -52,11 +52,10 @@ export const unloadCargoHelper = async (
       } else {
         await Inventory.create({
           binID: unLoadBinID,
-          productID,
+          productCode,
           quantity
         })
       }
-
       // update inventory in car and its quantity
       if (currentQuantity === quantity) {
         await inventoryItem.destroy()

@@ -5,7 +5,7 @@ import { Bin } from '../bins/bin.model'
 export class Inventory extends Model {
   public inventoryID!: string
   public binID!: string
-  public productID!: string
+  public productCode!: string
   public quantity!: number
   public createdAt!: Date
   public updatedAt!: Date | null
@@ -23,7 +23,7 @@ Inventory.init(
       type: DataTypes.UUID,
       allowNull: false
     },
-    productID: {
+    productCode: {
       type: DataTypes.STRING,
       allowNull: false
     },

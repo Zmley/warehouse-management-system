@@ -6,7 +6,7 @@ export class Bin extends Model {
   public warehouseID!: string
   public binCode!: string
   public type!: 'PICK_UP' | 'INVENTORY' | 'CART'
-  public defaultProductID!: string | null
+  public defaultProductCodes!: string | null
 }
 
 Bin.init(
@@ -30,7 +30,7 @@ Bin.init(
       type: DataTypes.ENUM('PICK_UP', 'INVENTORY', 'CART'),
       allowNull: false
     },
-    defaultProductID: {
+    defaultProductCodes: {
       type: DataTypes.STRING,
       allowNull: true
     }

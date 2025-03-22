@@ -1,9 +1,7 @@
 import Task from './task.model'
 import Inventory from '../inventory/inventory.model'
 import Bin from '../bins/bin.model'
-import { getDefaultProduct } from '../bins/bin.service'
 import AppError from '../../utils/appError'
-import { Op } from 'sequelize'
 
 export const hasActiveTask = async (accountID: string): Promise<boolean> => {
   try {
@@ -21,7 +19,7 @@ export const hasActiveTask = async (accountID: string): Promise<boolean> => {
 export const createTask = async (
   sourceBinID: string,
   destinationBinID: string,
-  productList: any,
+  productCode: string,
   accountID: string
 ) => {
   const existingTask = await checkBinAvailability(sourceBinID)
@@ -34,7 +32,7 @@ export const createTask = async (
     sourceBinID,
     destinationBinID,
     creatorID: accountID,
-    productID: JSON.stringify(productList),
+    productCode: productCode,
     status: 'PENDING'
   })
   return task
@@ -70,14 +68,11 @@ export const checkBinAvailability = async (sourceBinID: string) => {
 export const createPickerTaskService = async (
   binID: string,
   accountID: string,
-  warehouseID: string
+  warehouseID: string,
+  productCode: string
 ) => {
-  await checkExistingPickUpTask(binID)
-
-  const productID = await getDefaultProduct(binID)
-
   const inventories = await Inventory.findAll({
-    where: { productID },
+    where: { productCode },
     include: [
       {
         model: Bin,
@@ -102,28 +97,37 @@ export const createPickerTaskService = async (
   const task = await Task.create({
     destinationBinID: binID,
     creatorID: accountID,
-    productID,
+    productCode,
     status: 'PENDING'
   })
 
-  return { task, sourceBins }
+  return { ...task.toJSON(), sourceBins }
 }
 
-export const checkExistingPickUpTask = async (binID: string) => {
-  const existingTask = await Task.findOne({
+export const getCurrentInProcessTask = async (accountID: string) => {
+  const task = await Task.findOne({
     where: {
-      destinationBinID: binID,
-      status: {
-        [Op.in]: ['PENDING', 'IN_PROCESS']
-      }
-    },
-    order: [['createdAt', 'DESC']]
+      accepterID: accountID,
+      status: 'IN_PROCESS'
+    }
   })
 
-  if (existingTask) {
-    throw new AppError(
-      409,
-      'A pending or in-process task already exists for this picker bin.'
-    )
+  if (!task) {
+    throw new AppError(404, '❌ No in-process task found for this account')
   }
+
+  return task
+}
+
+export const completeTask = async (taskID: string) => {
+  const task = await Task.findByPk(taskID)
+
+  if (!task) {
+    throw new AppError(404, '❌ Task not found')
+  }
+
+  task.status = 'COMPLETED'
+  await task.save()
+
+  return task
 }

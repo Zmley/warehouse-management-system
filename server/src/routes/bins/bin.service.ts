@@ -8,11 +8,11 @@ export const getDefaultProduct = async (binID: string): Promise<string> => {
       attributes: ['defaultProductID']
     })
 
-    if (!bin || !bin.defaultProductID) {
+    if (!bin || !bin.defaultProductCodes) {
       throw new AppError(404, '❌ No product found in the given bin')
     }
 
-    return bin.defaultProductID
+    return bin.defaultProductCodes
   } catch (error) {
     console.error('❌ Error fetching picker product:', error)
     throw new AppError(500, '❌ Failed to fetch picker product')

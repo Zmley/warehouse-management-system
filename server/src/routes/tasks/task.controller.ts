@@ -12,13 +12,13 @@ export const createAsAdmin = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { sourceBinID, destinationBinID, productList } = req.body
+    const { sourceBinID, destinationBinID, productCode } = req.body
     const accountID = res.locals.accountID
 
     const task = await createTask(
       sourceBinID,
       destinationBinID,
-      productList,
+      productCode,
       accountID
     )
 
@@ -57,10 +57,15 @@ export const createAsPicker = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { binID } = req.body
+    const { binID, productCode } = req.body
     const { accountID, warehouseID } = res.locals
 
-    const task = await createPickerTaskService(binID, accountID, warehouseID)
+    const task = await createPickerTaskService(
+      binID,
+      accountID,
+      warehouseID,
+      productCode
+    )
 
     res.status(201).json({
       message: `Picker Task created successfully`,

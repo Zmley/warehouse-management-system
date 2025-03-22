@@ -98,7 +98,7 @@ module.exports = {
         type: Sequelize.ENUM('PICK_UP', 'INVENTORY', 'CART'),
         allowNull: false
       },
-      defaultProductID: {
+      defaultProductCodes: {
         type: Sequelize.STRING,
         allowNull: true
       },
@@ -125,7 +125,7 @@ module.exports = {
         type: Sequelize.UUID,
         allowNull: false
       },
-      productID: {
+      productCode: {
         type: Sequelize.STRING,
         allowNull: false
       },
@@ -153,7 +153,7 @@ module.exports = {
         allowNull: false,
         primaryKey: true
       },
-      productID: {
+      productCode: {
         type: Sequelize.STRING,
         allowNull: false
       },
