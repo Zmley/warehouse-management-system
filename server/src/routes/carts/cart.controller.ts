@@ -32,10 +32,6 @@ export const unloadCargo = async (
 
     const updatedCount = await unloadCargoHelper(unloadBinID, productList)
 
-    if (updatedCount === 0) {
-      return next(new AppError(404, '❌ No matching products found to update'))
-    }
-
     res.status(200).json({
       message: `✅ ${updatedCount} Cargo successfully unloaded into ${unloadBinID}.`,
       updatedProducts: updatedCount
@@ -69,9 +65,6 @@ export const unloadTaskCargo = async (
     const productList = await getTaskUnloadInventory(cartID, productCode)
     const updatedCount = await unloadCargoHelper(binID, productList)
 
-    if (updatedCount === 0) {
-      return next(new AppError(404, '❌ No matching inventory found to update'))
-    }
     await completeTask(task.taskID)
 
     res.status(200).json({

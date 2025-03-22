@@ -68,6 +68,10 @@ export const unloadCargoHelper = async (
 
     const results = await Promise.all(updateTasks)
 
+    if (results.length === 0) {
+      throw new AppError(404, '❌ No matching inventory unload to this bin')
+    }
+
     return results.length
   } catch (error) {
     console.error('❌ Error in unloadCargoHelper:', error)

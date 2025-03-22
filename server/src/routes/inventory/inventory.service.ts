@@ -13,6 +13,10 @@ export const getTaskUnloadInventory = async (
     attributes: ['inventoryID', 'quantity']
   })
 
+  if (!inventories.length) {
+    throw new AppError(404, '❌ No matching inventory found in the cart')
+  }
+
   return inventories.map(item => ({
     inventoryID: item.inventoryID,
     quantity: item.quantity
