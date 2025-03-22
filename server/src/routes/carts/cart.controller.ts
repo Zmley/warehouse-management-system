@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express'
 import { loadCargoHelper, unloadCargoHelper } from './cart.service'
 import { getTaskUnloadInventory } from '../inventory/inventory.service'
 import { getCurrentInProcessTask, completeTask } from '../tasks/task.service'
+import { checkIfCartHasCargo } from './cart.service'
 
 import AppError from '../../utils/appError'
 
@@ -70,6 +71,25 @@ export const unloadTaskCargo = async (
     res.status(200).json({
       message: `${updatedCount} item(s) successfully unloaded into ${binID}`,
       updated: updatedCount
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const hasCargoInCar = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const cartID = res.locals.cartID
+
+    const result = await checkIfCartHasCargo(cartID)
+
+    res.status(200).json({
+      hasCargoInCar: result.hasCargo,
+      inventories: result.inventories
     })
   } catch (error) {
     next(error)

@@ -81,3 +81,21 @@ export const unloadCargoHelper = async (
     )
   }
 }
+
+export const checkIfCartHasCargo = async (
+  cartID: string
+): Promise<{
+  hasCargo: boolean
+  inventories: Inventory[]
+}> => {
+  const inventories = await Inventory.findAll({
+    where: { binID: cartID }
+  })
+
+  const hasCargo = inventories.length > 0
+
+  return {
+    hasCargo,
+    inventories
+  }
+}
