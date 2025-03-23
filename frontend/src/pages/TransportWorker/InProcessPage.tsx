@@ -86,6 +86,11 @@ const InProcessTaskPage = () => {
       >
         <CardContent>
           <InventoryListCard
+            taskID=''
+            sourceBin=''
+            targetBin=''
+            totalQuantity={2}
+            statusPicked={true}
             inventories={inventories}
             selectedList={selectedList}
             onQuantityChange={handleQuantityChange}

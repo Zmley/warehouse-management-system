@@ -1,8 +1,20 @@
 import React from 'react'
-import { Box, TextField, Checkbox, Typography } from '@mui/material'
+import {
+  Box,
+  TextField,
+  Checkbox,
+  Typography,
+  Chip,
+  Divider
+} from '@mui/material'
 import { InventoryItem } from '../../types/inventory'
 
 interface Props {
+  taskID: string
+  sourceBin: string
+  targetBin?: string
+  totalQuantity: number
+  statusPicked: boolean
   inventories: InventoryItem[]
   selectedList: {
     inventoryID: string
@@ -14,13 +26,77 @@ interface Props {
 }
 
 const InventoryListCard: React.FC<Props> = ({
+  taskID,
+  sourceBin,
+  targetBin,
+  //   totalQuantity,
+  statusPicked,
   inventories,
   selectedList,
   onQuantityChange,
   onCheckboxChange
 }) => {
   return (
-    <>
+    <Box>
+      {/* 🧾 Top Task Info Section */}
+      <Box
+        sx={{
+          backgroundColor: '#f0f4f7',
+          borderRadius: 3,
+          p: 2,
+          mb: 2
+        }}
+      >
+        <Typography fontWeight='bold'>Task ID # {taskID}</Typography>
+
+        <Box display='flex' justifyContent='space-between' mt={1}>
+          <Box>
+            <Typography variant='caption' fontWeight='bold'>
+              Source Bin
+            </Typography>
+            <Typography fontSize={18} fontWeight='bold'>
+              {sourceBin}
+            </Typography>
+          </Box>
+          <Box>
+            {/* <Typography variant='caption' fontWeight='bold'>
+              Quantity
+            </Typography>
+            <Typography fontSize={18} fontWeight='bold'>
+              {totalQuantity}
+            </Typography> */}
+          </Box>
+          <Box>
+            <Typography variant='caption' fontWeight='bold'>
+              Target Bin
+            </Typography>
+            <Typography fontSize={18} fontWeight='bold'>
+              {targetBin || '--'}
+            </Typography>
+          </Box>
+        </Box>
+
+        {/* 状态按钮 */}
+        <Box display='flex' justifyContent='space-between' mt={2}>
+          <Chip
+            label='● Task Picked'
+            color='success'
+            variant='filled'
+            sx={{ borderRadius: '16px' }}
+          />
+          <Chip
+            label='● Task Delivered'
+            color='default'
+            variant='outlined'
+            sx={{ borderRadius: '16px' }}
+          />
+        </Box>
+      </Box>
+
+      {/* Divider */}
+      <Divider sx={{ mb: 2 }} />
+
+      {/* 📦 Product List */}
       {selectedList.map(item => {
         const inv = inventories.find(i => i.inventoryID === item.inventoryID)
         return (
@@ -64,7 +140,7 @@ const InventoryListCard: React.FC<Props> = ({
           </Box>
         )
       })}
-    </>
+    </Box>
   )
 }
 
