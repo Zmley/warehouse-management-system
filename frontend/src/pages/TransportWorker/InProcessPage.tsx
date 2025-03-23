@@ -12,6 +12,7 @@ import {
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCargoContext } from '../../contexts/cargo'
+import InventoryListCard from './InventoryListCard'
 
 interface InventoryItem {
   inventoryID: string
@@ -84,50 +85,12 @@ const InProcessTaskPage = () => {
         sx={{ borderRadius: '12px', backgroundColor: '#f9f9f9' }}
       >
         <CardContent>
-          {/* Inventory Items */}
-          {selectedList.map(item => {
-            const inv = inventories.find(
-              i => i.inventoryID === item.inventoryID
-            )
-            return (
-              <Box
-                key={item.inventoryID}
-                sx={{
-                  mt: 2,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between'
-                }}
-              >
-                <Box>
-                  <Typography fontSize={14} fontWeight='bold'>
-                    #{inv?.productCode}
-                  </Typography>
-                  <Typography fontSize={12}>
-                    Total <strong>{inv?.quantity}</strong>
-                  </Typography>
-                </Box>
-
-                <TextField
-                  size='small'
-                  type='number'
-                  value={item.quantity}
-                  sx={{ width: 80 }}
-                  disabled={!item.selected}
-                  onChange={e =>
-                    handleQuantityChange(
-                      item.inventoryID,
-                      Number(e.target.value)
-                    )
-                  }
-                />
-                <Checkbox
-                  checked={item.selected}
-                  onChange={() => handleCheckboxChange(item.inventoryID)}
-                />
-              </Box>
-            )
-          })}
+          <InventoryListCard
+            inventories={inventories}
+            selectedList={selectedList}
+            onQuantityChange={handleQuantityChange}
+            onCheckboxChange={handleCheckboxChange}
+          />
 
           {/* Go to Scan Page */}
           <Box sx={{ mt: 3 }}>

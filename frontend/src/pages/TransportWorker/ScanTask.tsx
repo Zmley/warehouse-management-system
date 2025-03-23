@@ -41,7 +41,7 @@ const ScanTaskPage = () => {
   async function handleScanSuccess(binID: string) {
     console.log(`✅ Scanned new bin ID: ${binID}`)
     setTimeout(() => {
-      window.location.href = '/in-process-task'
+      navigate('/in-process-task')
     })
   }
 
@@ -98,7 +98,7 @@ const ScanTaskPage = () => {
         ❌ Cancel
       </Button>
 
-      {/* <Button
+      <Button
         ref={stopButtonRef}
         onClick={async () => {
           console.log('🎯 Hidden stop button triggered')
@@ -107,7 +107,7 @@ const ScanTaskPage = () => {
         style={{ display: 'none' }}
       >
         Hidden Stop
-      </Button> */}
+      </Button>
     </Container>
   )
 }
