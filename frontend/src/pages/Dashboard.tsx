@@ -10,6 +10,7 @@ import { Menu as MenuIcon } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useCargoContext } from '../contexts/cargo'
+import PendingTaskList from './TransportWorker/PendingTaskList'
 
 const Dashboard: React.FC = () => {
   const { userProfile } = useAuth()
@@ -55,18 +56,8 @@ const Dashboard: React.FC = () => {
         <Box sx={{ width: '48px' }} />
       </Box>
 
-      <Box
-        sx={{
-          flexGrow: 1,
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          textAlign: 'center'
-        }}
-      >
-        <Typography variant='h6' sx={{ color: '#666' }}>
-          🚧 Task List Section (Under Development)
-        </Typography>
+      <Box sx={{ flexGrow: 1, overflowY: 'auto' }}>
+        <PendingTaskList />
       </Box>
 
       <BottomNavigation
