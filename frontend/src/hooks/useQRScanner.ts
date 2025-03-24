@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import QrScanner from 'qr-scanner'
 import { useNavigate } from 'react-router-dom'
-import { processCart } from '../api/cartApi'
+import { processCart, checkHasCargoInCar } from '../api/cartApi'
 import { useCargoContext } from '../contexts/cargo'
 
 const useQRScanner = (onScanSuccess?: (binID: string) => void) => {
@@ -93,8 +93,21 @@ const useQRScanner = (onScanSuccess?: (binID: string) => void) => {
                     )
 
                     if (response?.success) {
-                      console.log('✅ [QrScanner] Task success, navigating')
+                      const binCode = response.data?.binCode
+                      const storageKey = isLoadingToCar
+                        ? 'sourceBinCode'
+                        : 'destinationBinCode'
+
+                      if (binCode) {
+                        localStorage.setItem(storageKey, binCode)
+                        console.log(`📦 Stored ${storageKey}:`, binCode)
+                      }
+
+                      console.log(
+                        '✅ [QrScanner] Task success, refreshing cargo status'
+                      )
                       await refreshCargoStatus()
+
                       onScanSuccess?.(binID)
                       stopScanning()
                     } else {

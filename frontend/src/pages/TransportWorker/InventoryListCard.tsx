@@ -10,6 +10,7 @@ import {
   Alert
 } from '@mui/material'
 import { InventoryItem } from '../../types/inventory'
+import useBinCodes from '../../hooks/useBinCodes'
 
 interface Props {
   taskID: string
@@ -20,7 +21,7 @@ interface Props {
   inventories: InventoryItem[]
   selectedList: {
     inventoryID: string
-    quantity: number | string // 支持 "" 临时状态
+    quantity: number | string
     selected: boolean
   }[]
   onQuantityChange: (inventoryID: string, newQuantity: number) => void
@@ -29,8 +30,8 @@ interface Props {
 
 const InventoryListCard: React.FC<Props> = ({
   taskID,
-  sourceBin,
-  targetBin,
+  //   sourceBin,
+  //   targetBin,
   totalQuantity,
   statusPicked,
   inventories,
@@ -40,11 +41,11 @@ const InventoryListCard: React.FC<Props> = ({
 }) => {
   const [errorOpen, setErrorOpen] = React.useState(false)
   const [errorMessage, setErrorMessage] = React.useState('')
+  const { sourceBin, destinationBin } = useBinCodes()
 
   const handleInputChange = (inventoryID: string, value: string) => {
-    const sanitized = value.replace(/^0+(?!$)/, '') // 去除前导 0，但保留单独的 '0'
+    const sanitized = value.replace(/^0+(?!$)/, '')
 
-    // 如果输入为空，默认视为 0
     const numericValue = sanitized === '' ? 0 : Number(sanitized)
 
     const inventory = inventories.find(i => i.inventoryID === inventoryID)
@@ -85,12 +86,11 @@ const InventoryListCard: React.FC<Props> = ({
               Target Bin
             </Typography>
             <Typography fontSize={18} fontWeight='bold'>
-              {targetBin || '--'}
+              {destinationBin || '--'}
             </Typography>
           </Box>
         </Box>
 
-        {/* 状态按钮 */}
         <Box display='flex' justifyContent='space-between' mt={2}>
           <Chip
             label='● Task Picked'

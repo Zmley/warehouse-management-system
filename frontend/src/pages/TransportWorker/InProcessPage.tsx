@@ -4,21 +4,13 @@ import {
   Card,
   CardContent,
   Container,
-  Typography,
-  TextField,
-  Checkbox,
-  CircularProgress
+  Typography
 } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCargoContext } from '../../contexts/cargo'
 import InventoryListCard from './InventoryListCard'
-
-interface InventoryItem {
-  inventoryID: string
-  productCode: string
-  quantity: number
-}
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 
 const InProcessTaskPage = () => {
   const navigate = useNavigate()
@@ -28,12 +20,15 @@ const InProcessTaskPage = () => {
     { inventoryID: string; quantity: number; selected: boolean }[]
   >([])
 
-  const [isLoading, setIsLoading] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
 
   useEffect(() => {
     if (inventories.length === 0) {
-      navigate('/')
-      return
+      setIsSuccess(true)
+      const timeout = setTimeout(() => {
+        navigate('/')
+      }, 3000)
+      return () => clearTimeout(timeout)
     }
 
     const defaultList = inventories.map(item => ({
@@ -64,6 +59,28 @@ const InProcessTaskPage = () => {
             }
           : item
       )
+    )
+  }
+
+  if (isSuccess) {
+    return (
+      <Container maxWidth='sm'>
+        <Card
+          sx={{
+            mt: 10,
+            py: 6,
+            backgroundColor: '#f0f6fb',
+            textAlign: 'center',
+            boxShadow: 4,
+            borderRadius: 3
+          }}
+        >
+          <CheckCircleIcon sx={{ fontSize: 60, color: '#2f7abf' }} />
+          <Typography mt={2} fontWeight='bold'>
+            Offload succeeded
+          </Typography>
+        </Card>
+      </Container>
     )
   }
 
@@ -113,7 +130,7 @@ const InProcessTaskPage = () => {
               }}
               sx={{ borderRadius: '12px', py: 1.2 }}
             >
-              📷 Go to Scan Page
+              Scan to unload
             </Button>
           </Box>
 

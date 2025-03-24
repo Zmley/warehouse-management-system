@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import { loadCargoHelper, unloadCargoHelper } from './cart.service'
+import { getBinByID } from '../bins/bin.service'
 import { getTaskUnloadInventory } from '../inventory/inventory.service'
 import { getCurrentInProcessTask, completeTask } from '../tasks/task.service'
 import { checkIfCartHasCargo } from './cart.service'
@@ -17,7 +18,10 @@ export const loadCargo = async (
 
     const result = await loadCargoHelper(binID, cartID)
 
-    res.status(result.status).json({ message: result.message })
+    const loadBin = await getBinByID(binID)
+    const binCode = loadBin.binCode
+
+    res.status(result.status).json({ message: result.message, binCode })
   } catch (error) {
     next(error)
   }
@@ -33,9 +37,13 @@ export const unloadCargo = async (
 
     const updatedCount = await unloadCargoHelper(unloadBinID, productList)
 
+    const unloadBin = await getBinByID(unloadBinID)
+    const binCode = unloadBin.binCode
+
     res.status(200).json({
       message: `✅ ${updatedCount} Cargo successfully unloaded into ${unloadBinID}.`,
-      updatedProducts: updatedCount
+      updatedProducts: updatedCount,
+      binCode
     })
   } catch (error) {
     next(error)

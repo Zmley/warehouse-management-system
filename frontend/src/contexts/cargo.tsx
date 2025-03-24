@@ -40,6 +40,11 @@ export const CargoProvider = ({ children }: { children: ReactNode }) => {
       const response = await checkHasCargoInCar()
       setHasCargoInCar(response.hasCargoInCar)
       setInventories(response.inventories || [])
+
+      if (!response.hasCargoInCar) {
+        localStorage.removeItem('sourceBinCode')
+        localStorage.removeItem('destinationBinCode')
+      }
     } catch (error) {
       console.error('❌ Failed to check cargo status:', error)
     }

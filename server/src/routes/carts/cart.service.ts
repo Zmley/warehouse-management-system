@@ -1,4 +1,5 @@
 import Inventory from '../inventory/inventory.model'
+import { getBinByID } from '../bins/bin.service'
 import AppError from '../../utils/appError'
 
 export const loadCargoHelper = async (
@@ -11,13 +12,16 @@ export const loadCargoHelper = async (
       { where: { binID } }
     )
 
+    const bin = await getBinByID(binID)
+    const binCode = bin.binCode
+
     if (!updatedItems[0]) {
       throw new AppError(404, '❌ No inventory updated for the given binID')
     }
 
     return {
       status: 200,
-      message: `loaded to cart "${cartID}".`
+      message: `"${binCode}".`
     }
   } catch (error) {
     console.error('❌ Error loading cargo:', error)
@@ -30,7 +34,7 @@ export const unloadCargoHelper = async (
 
   //update each inventory thronw array function by using promise.all
   productList: { inventoryID: string; quantity: number }[]
-): Promise<number> => {
+): Promise<{ status: number; updatedCount: number }> => {
   try {
     const updateTasks = productList.map(async ({ inventoryID, quantity }) => {
       const inventoryItem = await Inventory.findOne({
@@ -72,7 +76,10 @@ export const unloadCargoHelper = async (
       throw new AppError(404, '❌ No matching inventory unload to this bin')
     }
 
-    return results.length
+    return {
+      status: 200,
+      updatedCount: results.length
+    }
   } catch (error) {
     console.error('❌ Error in unloadCargoHelper:', error)
     throw new AppError(
