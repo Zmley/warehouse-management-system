@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import {
   loadProductByBinID,
-  unloadProductToBinByWoker,
+  unloadProductListToBinByWoker,
   unloadProductToBin
 } from './cart.service'
 import { getCurrentInProcessTask, completeTask } from '../tasks/task.service'
@@ -31,9 +31,9 @@ export const unloadProductByWoker = async (
 ): Promise<void> => {
   try {
     // Get the binID and the list of products to unload(each product has inventoryID and quantity that needs to be unloaded)
-    const { binID, unloadInventoryList } = req.body
+    const { binID, unloadProductList } = req.body
 
-    const result = await unloadProductToBinByWoker(binID, unloadInventoryList)
+    const result = await unloadProductListToBinByWoker(binID, unloadProductList)
 
     res.status(200).json({
       message: `✅ ${result} Product successfully unloaded into ${binID}.`,
@@ -70,7 +70,7 @@ export const unloadProductByTask = async (
       productCode
     })
 
-    if (result.length === 0) {
+    if (result === 0) {
       throw new AppError(404, '❌ No matching inventory unload to this bin')
     }
 

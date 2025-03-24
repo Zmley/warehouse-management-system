@@ -24,17 +24,52 @@ const moveInventoriesToBin = async (
   inventories: { inventoryID: string; quantity: number }[],
   binID: string
 ) => {
+  let updatedItemCount = 0
+
   const updatedInventories = inventories.map(async item => {
     const inventory = await Inventory.findOne({
       where: { inventoryID: item.inventoryID }
     })
 
-    if (inventory) {
-      await inventory.update({ binID })
+    if (!inventory) {
+      throw new AppError(
+        404,
+        `❌ Inventory with ID ${item.inventoryID} not found`
+      )
     }
+
+    const targetInventory = await Inventory.findOne({
+      where: { binID, productCode: inventory.productCode }
+    })
+
+    if (targetInventory) {
+      await targetInventory.update({
+        quantity: targetInventory.quantity + item.quantity
+      })
+    } else {
+      await Inventory.create({
+        binID,
+        productCode: inventory.productCode,
+        quantity: item.quantity
+      })
+    }
+
+    await inventory.update({
+      quantity: inventory.quantity - item.quantity
+    })
+
+    if (inventory.quantity === 0) {
+      await inventory.destroy()
+    }
+
+    updatedItemCount++
+
+    return item
   })
 
-  return await Promise.all(updatedInventories)
+  await Promise.all(updatedInventories)
+
+  return updatedItemCount
 }
 
 export const unloadProductToBin = async ({
@@ -78,113 +113,17 @@ export const loadProductByBinID = async (
     throw new AppError(500, '❌ Failed to load cargo due to an internal error.')
   }
 }
-
-export const unloadProductToBinByWoker = async (
-  unLoadBinID: string,
-
-  //update each inventory thronw array function by using promise.all
-  productList: { inventoryID: string; quantity: number }[]
-): Promise<number> => {
-  try {
-    const updateTasks = productList.map(async ({ inventoryID, quantity }) => {
-      const inventoryItem = await Inventory.findOne({
-        where: { inventoryID }
-      })
-
-      const currentQuantity = inventoryItem.quantity
-      const productID = inventoryItem.productCode
-
-      const targetInventory = await Inventory.findOne({
-        where: { binID: unLoadBinID, productID }
-      })
-
-      // update target inventory and its quantity, creat one if there is no product in this bin
-      if (targetInventory) {
-        await targetInventory.update({
-          quantity: targetInventory.quantity + quantity
-        })
-      } else {
-        await Inventory.create({
-          binID: unLoadBinID,
-          productID,
-          quantity
-        })
-      }
-
-      // update inventory in car and its quantity
-      if (currentQuantity === quantity) {
-        await inventoryItem.destroy()
-      } else {
-        await inventoryItem.update({ quantity: currentQuantity - quantity })
-      }
-
-      return 1
-    })
-
-    const results = await Promise.all(updateTasks)
-
-    return results.length
-  } catch (error) {
-    console.error('❌ Error in unloadCargoHelper:', error)
-    throw new AppError(
-      500,
-      '❌ Failed to unload cargo due to an internal error.'
-    )
-  }
-}
-
-export const unloadCargo = async (
-  unLoadBinID: string,
-
-  //update each inventory thronw array function by using promise.all
+1
+export const unloadProductListToBinByWoker = async (
+  binID: string,
   unloadProductList: { inventoryID: string; quantity: number }[]
 ): Promise<number> => {
   try {
-    const updateInventores = unloadProductList.map(
-      async ({ inventoryID, quantity }) => {
-        const inventoryItem = await Inventory.findOne({
-          where: { inventoryID }
-        })
+    const result = await moveInventoriesToBin(unloadProductList, binID)
 
-        const currentQuantity = inventoryItem.quantity
-        const productCode = inventoryItem.productCode
-
-        const targetInventory = await Inventory.findOne({
-          where: { binID: unLoadBinID, productCode }
-        })
-
-        // update target inventory and its quantity, creat one if there is no product in this bin
-        if (targetInventory) {
-          await targetInventory.update({
-            quantity: targetInventory.quantity + quantity
-          })
-        } else {
-          await Inventory.create({
-            binID: unLoadBinID,
-            productCode,
-            quantity
-          })
-        }
-        // update inventory in car and its quantity
-        if (currentQuantity === quantity) {
-          await inventoryItem.destroy()
-        } else {
-          await inventoryItem.update({ quantity: currentQuantity - quantity })
-        }
-
-        return 1
-      }
-    )
-
-    const results = await Promise.all(updateInventores)
-
-    if (results.length === 0) {
-      throw new AppError(404, '❌ No matching inventory unload to this bin')
-    }
-
-    return results.length
+    return result
   } catch (error) {
-    console.error('❌ Error in unloadCargoHelper:', error)
+    console.error('❌ Error in unloadProductListToBinByWoker:', error)
     throw new AppError(
       500,
       '❌ Failed to unload cargo due to an internal error.'

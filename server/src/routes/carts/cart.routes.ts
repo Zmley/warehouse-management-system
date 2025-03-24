@@ -10,6 +10,6 @@ const router = express.Router()
 
 router.post('/load', transportWorkerOnly, loadProduct)
 router.post('/unload', transportWorkerOnly, unloadProductByWoker)
-router.post('/unloadProductByTask', transportWorkerOnly, unloadProductByTask)
+router.post('/unloadByTask', transportWorkerOnly, unloadProductByTask)
 
 export default router
