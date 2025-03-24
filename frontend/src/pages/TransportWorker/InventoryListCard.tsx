@@ -5,7 +5,9 @@ import {
   Checkbox,
   Typography,
   Chip,
-  Divider
+  Divider,
+  Snackbar,
+  Alert
 } from '@mui/material'
 import { InventoryItem } from '../../types/inventory'
 
@@ -18,7 +20,7 @@ interface Props {
   inventories: InventoryItem[]
   selectedList: {
     inventoryID: string
-    quantity: number
+    quantity: number | string // 支持 "" 临时状态
     selected: boolean
   }[]
   onQuantityChange: (inventoryID: string, newQuantity: number) => void
@@ -36,6 +38,26 @@ const InventoryListCard: React.FC<Props> = ({
   onQuantityChange,
   onCheckboxChange
 }) => {
+  const [errorOpen, setErrorOpen] = React.useState(false)
+  const [errorMessage, setErrorMessage] = React.useState('')
+
+  const handleInputChange = (inventoryID: string, value: string) => {
+    const sanitized = value.replace(/^0+(?!$)/, '') // 去除前导 0，但保留单独的 '0'
+
+    // 如果输入为空，默认视为 0
+    const numericValue = sanitized === '' ? 0 : Number(sanitized)
+
+    const inventory = inventories.find(i => i.inventoryID === inventoryID)
+
+    if (inventory && numericValue > inventory.quantity) {
+      setErrorMessage(`Quantity cannot exceed total (${inventory.quantity})`)
+      setErrorOpen(true)
+      return
+    }
+
+    onQuantityChange(inventoryID, numericValue)
+  }
+
   return (
     <Box>
       {/* 🧾 Top Task Info Section */}
@@ -120,7 +142,7 @@ const InventoryListCard: React.FC<Props> = ({
               sx={{ width: 70 }}
               disabled={item.selected}
               onChange={e =>
-                onQuantityChange(item.inventoryID, Number(e.target.value))
+                handleInputChange(item.inventoryID, e.target.value)
               }
               inputProps={{ min: 0 }}
             />
@@ -132,6 +154,21 @@ const InventoryListCard: React.FC<Props> = ({
           </Box>
         )
       })}
+
+      <Snackbar
+        open={errorOpen}
+        autoHideDuration={3000}
+        onClose={() => setErrorOpen(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert
+          severity='error'
+          onClose={() => setErrorOpen(false)}
+          sx={{ width: '100%' }}
+        >
+          {errorMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   )
 }
