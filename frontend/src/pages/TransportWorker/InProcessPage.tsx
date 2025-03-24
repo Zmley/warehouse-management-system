@@ -60,11 +60,7 @@ const InProcessTaskPage = () => {
         item.inventoryID === inventoryID
           ? {
               ...item,
-              selected: !item.selected,
-              quantity: !item.selected
-                ? inventories.find(i => i.inventoryID === item.inventoryID)
-                    ?.quantity || 0
-                : item.quantity
+              selected: !item.selected
             }
           : item
       )

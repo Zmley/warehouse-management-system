@@ -29,7 +29,7 @@ const InventoryListCard: React.FC<Props> = ({
   taskID,
   sourceBin,
   targetBin,
-  //   totalQuantity,
+  totalQuantity,
   statusPicked,
   inventories,
   selectedList,
@@ -59,14 +59,6 @@ const InventoryListCard: React.FC<Props> = ({
             </Typography>
           </Box>
           <Box>
-            {/* <Typography variant='caption' fontWeight='bold'>
-              Quantity
-            </Typography>
-            <Typography fontSize={18} fontWeight='bold'>
-              {totalQuantity}
-            </Typography> */}
-          </Box>
-          <Box>
             <Typography variant='caption' fontWeight='bold'>
               Target Bin
             </Typography>
@@ -80,8 +72,8 @@ const InventoryListCard: React.FC<Props> = ({
         <Box display='flex' justifyContent='space-between' mt={2}>
           <Chip
             label='● Task Picked'
-            color='success'
-            variant='filled'
+            color={statusPicked ? 'success' : 'default'}
+            variant={statusPicked ? 'filled' : 'outlined'}
             sx={{ borderRadius: '16px' }}
           />
           <Chip
@@ -126,7 +118,7 @@ const InventoryListCard: React.FC<Props> = ({
               type='number'
               value={item.quantity}
               sx={{ width: 70 }}
-              disabled={item.selected} // ✅ 勾选后不可编辑
+              disabled={item.selected}
               onChange={e =>
                 onQuantityChange(item.inventoryID, Number(e.target.value))
               }
