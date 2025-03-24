@@ -113,7 +113,7 @@ export const loadProductByBinID = async (
     throw new AppError(500, '❌ Failed to load cargo due to an internal error.')
   }
 }
-1
+
 export const unloadProductListToBinByWoker = async (
   binID: string,
   unloadProductList: { inventoryID: string; quantity: number }[]
