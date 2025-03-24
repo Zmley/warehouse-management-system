@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express'
 import {
-  createTask,
+  createTaskAsAdmin,
   acceptTaskService,
-  createPickerTaskService
+  createTaskAsPicker
 } from '../tasks/task.service'
 import AppError from '../../utils/appError'
 
@@ -15,7 +15,7 @@ export const createAsAdmin = async (
     const { sourceBinID, destinationBinID, productCode } = req.body
     const accountID = res.locals.accountID
 
-    const task = await createTask(
+    const task = await createTaskAsAdmin(
       sourceBinID,
       destinationBinID,
       productCode,
@@ -60,7 +60,7 @@ export const createAsPicker = async (
     const { binID, productCode } = req.body
     const { accountID, warehouseID } = res.locals
 
-    const task = await createPickerTaskService(
+    const task = await createTaskAsPicker(
       binID,
       accountID,
       warehouseID,

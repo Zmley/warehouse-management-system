@@ -16,7 +16,7 @@ export const hasActiveTask = async (accountID: string): Promise<boolean> => {
   }
 }
 
-export const createTask = async (
+export const createTaskAsAdmin = async (
   sourceBinID: string,
   destinationBinID: string,
   productCode: string,
@@ -65,7 +65,7 @@ export const checkBinAvailability = async (sourceBinID: string) => {
   return existingTask
 }
 
-export const createPickerTaskService = async (
+export const createTaskAsPicker = async (
   binID: string,
   accountID: string,
   warehouseID: string,
