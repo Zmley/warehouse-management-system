@@ -1,7 +1,96 @@
 import Inventory from '../inventory/inventory.model'
 import AppError from '../../utils/appError'
 
-export const loadCargoHelper = async (
+export const getInvetoriesOnCartByProductCode = async (
+  cartID: string,
+  productCode: string
+) => {
+  const inventories = await Inventory.findAll({
+    where: {
+      binID: cartID,
+      ...(productCode !== 'ALL' && { productCode })
+    },
+    attributes: ['inventoryID', 'quantity']
+  })
+
+  if (!inventories.length) {
+    throw new AppError(404, '❌ No matching inventory found in the cart')
+  }
+
+  return inventories
+}
+
+const moveInventoriesToBin = async (
+  inventories: { inventoryID: string; quantity: number }[],
+  binID: string
+) => {
+  let updatedItemCount = 0
+
+  const updatedInventories = inventories.map(async item => {
+    const inventory = await Inventory.findOne({
+      where: { inventoryID: item.inventoryID }
+    })
+
+    if (!inventory) {
+      throw new AppError(
+        404,
+        `❌ Inventory with ID ${item.inventoryID} not found`
+      )
+    }
+
+    const targetInventory = await Inventory.findOne({
+      where: { binID, productCode: inventory.productCode }
+    })
+
+    if (targetInventory) {
+      await targetInventory.update({
+        quantity: targetInventory.quantity + item.quantity
+      })
+    } else {
+      await Inventory.create({
+        binID,
+        productCode: inventory.productCode,
+        quantity: item.quantity
+      })
+    }
+
+    await inventory.update({
+      quantity: inventory.quantity - item.quantity
+    })
+
+    if (inventory.quantity === 0) {
+      await inventory.destroy()
+    }
+
+    updatedItemCount++
+
+    return item
+  })
+
+  await Promise.all(updatedInventories)
+
+  return updatedItemCount
+}
+
+export const unloadProductToBin = async ({
+  cartID,
+  productCode,
+  binID
+}: {
+  cartID: string
+  productCode: string
+  binID: string
+}) => {
+  const inventories = await getInvetoriesOnCartByProductCode(
+    cartID,
+    productCode
+  )
+  const result = await moveInventoriesToBin(inventories, binID)
+
+  return result
+}
+
+export const loadProductByBinID = async (
   binID: string,
   cartID: string
 ): Promise<{ status: number; message: string }> => {
@@ -25,53 +114,16 @@ export const loadCargoHelper = async (
   }
 }
 
-export const unloadCargoHelper = async (
-  unLoadBinID: string,
-
-  //update each inventory thronw array function by using promise.all
-  productList: { inventoryID: string; quantity: number }[]
+export const unloadProductListToBinByWoker = async (
+  binID: string,
+  unloadProductList: { inventoryID: string; quantity: number }[]
 ): Promise<number> => {
   try {
-    const updateTasks = productList.map(async ({ inventoryID, quantity }) => {
-      const inventoryItem = await Inventory.findOne({
-        where: { inventoryID }
-      })
+    const result = await moveInventoriesToBin(unloadProductList, binID)
 
-      const currentQuantity = inventoryItem.quantity
-      const productID = inventoryItem.productID
-
-      const targetInventory = await Inventory.findOne({
-        where: { binID: unLoadBinID, productID }
-      })
-
-      // update target inventory and its quantity, creat one if there is no product in this bin
-      if (targetInventory) {
-        await targetInventory.update({
-          quantity: targetInventory.quantity + quantity
-        })
-      } else {
-        await Inventory.create({
-          binID: unLoadBinID,
-          productID,
-          quantity
-        })
-      }
-
-      // update inventory in car and its quantity
-      if (currentQuantity === quantity) {
-        await inventoryItem.destroy()
-      } else {
-        await inventoryItem.update({ quantity: currentQuantity - quantity })
-      }
-
-      return 1
-    })
-
-    const results = await Promise.all(updateTasks)
-
-    return results.length
+    return result
   } catch (error) {
-    console.error('❌ Error in unloadCargoHelper:', error)
+    console.error('❌ Error in unloadProductListToBinByWoker:', error)
     throw new AppError(
       500,
       '❌ Failed to unload cargo due to an internal error.'

@@ -8,7 +8,7 @@ import {
   SignUpCommand,
   AdminConfirmSignUpCommand
 } from '@aws-sdk/client-cognito-identity-provider'
-import { getAccountById, getCognitoErrorMessage } from './accounts.service'
+import { getCognitoErrorMessage } from './accounts.service'
 import Account from './accounts.model'
 import env from 'config/config'
 

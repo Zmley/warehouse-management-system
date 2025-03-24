@@ -1,12 +1,13 @@
 import { DataTypes, Model } from 'sequelize'
 import { sequelize } from 'config/db'
+import Inventory from '../inventory/inventory.model'
 
 export class Task extends Model {
   public taskID!: string
   public sourceBinID!: string
   public destinationBinID!: string
   public accepterID!: string
-  public productID!: string
+  public productCode!: string
   public status!: 'PENDING' | 'IN_PROCESS' | 'COMPLETED' | 'CANCEL'
   public createdAt!: Date
   public updatedAt!: Date | null
@@ -36,9 +37,9 @@ Task.init(
       type: DataTypes.UUID,
       allowNull: true
     },
-    productID: {
+    productCode: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: true
     },
     status: {
       type: DataTypes.ENUM('PENDING', 'IN_PROCESS', 'COMPLETED', 'CANCELED'),
@@ -59,5 +60,10 @@ Task.init(
     timestamps: true
   }
 )
+
+Task.hasMany(Inventory, {
+  foreignKey: 'productCode',
+  sourceKey: 'productCode'
+})
 
 export default Task

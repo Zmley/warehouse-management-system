@@ -1,5 +1,9 @@
 import { Request, Response, NextFunction } from 'express'
-import { createTask, acceptTaskService } from '../tasks/task.service'
+import {
+  createTaskAsAdmin,
+  acceptTaskService,
+  createTaskAsPicker
+} from '../tasks/task.service'
 import AppError from '../../utils/appError'
 
 export const createAsAdmin = async (
@@ -8,13 +12,13 @@ export const createAsAdmin = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { sourceBinID, destinationBinID, productList } = req.body
+    const { sourceBinID, destinationBinID, productCode } = req.body
     const accountID = res.locals.accountID
 
-    const task = await createTask(
+    const task = await createTaskAsAdmin(
       sourceBinID,
       destinationBinID,
-      productList,
+      productCode,
       accountID
     )
 
@@ -40,6 +44,31 @@ export const acceptTask = async (
 
     res.status(200).json({
       message: `Task accepted successfully and is now in progress`,
+      task
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const createAsPicker = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { binID, productCode } = req.body
+    const { accountID, warehouseID } = res.locals
+
+    const task = await createTaskAsPicker(
+      binID,
+      accountID,
+      warehouseID,
+      productCode
+    )
+
+    res.status(201).json({
+      message: `Picker Task created successfully`,
       task
     })
   } catch (error) {
