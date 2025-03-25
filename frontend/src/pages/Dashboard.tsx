@@ -9,10 +9,21 @@ import {
 import { Menu as MenuIcon } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import { useCargoContext } from '../contexts/cargo'
 
 const Dashboard: React.FC = () => {
   const { userProfile } = useAuth()
   const navigate = useNavigate()
+
+  const { hasCargoInCar } = useCargoContext()
+
+  const handleClick = () => {
+    if (hasCargoInCar) {
+      navigate('/in-process-task')
+    } else {
+      navigate('/scan-qr')
+    }
+  }
 
   return (
     <Box
@@ -42,20 +53,6 @@ const Dashboard: React.FC = () => {
         </Typography>
 
         <Box sx={{ width: '48px' }} />
-      </Box>
-
-      <Box
-        sx={{
-          flexGrow: 1,
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          textAlign: 'center'
-        }}
-      >
-        <Typography variant='h6' sx={{ color: '#666' }}>
-          🚧 Task List Section (Under Development)
-        </Typography>
       </Box>
 
       <BottomNavigation
@@ -92,7 +89,7 @@ const Dashboard: React.FC = () => {
               style={{ width: 24, height: 24 }}
             />
           }
-          onClick={() => navigate('/create-task')}
+          onClick={handleClick}
           sx={{ minWidth: '50%' }}
         />
       </BottomNavigation>

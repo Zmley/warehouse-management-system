@@ -2,8 +2,10 @@ import { Request, Response, NextFunction } from 'express'
 import {
   loadProductByBinID,
   unloadProductListToBinByWoker,
-  unloadProductToBin
+  unloadProductToBin,
+  checkIfCartHasCargo
 } from './cart.service'
+import { getBinByBinID } from '../bins/bin.service'
 import { getCurrentInProcessTask, completeTask } from '../tasks/task.service'
 import AppError from 'utils/appError'
 
@@ -18,7 +20,12 @@ export const loadProduct = async (
 
     const result = await loadProductByBinID(binID, cartID)
 
-    res.status(result.status).json({ message: result.message })
+    const unloadBin = await getBinByBinID(binID)
+    const binCode = unloadBin.binCode
+
+    res
+      .status(result.status)
+      .json({ message: result.message, binCode: binCode })
   } catch (error) {
     next(error)
   }
@@ -35,9 +42,13 @@ export const unloadProductByWoker = async (
 
     const result = await unloadProductListToBinByWoker(binID, unloadProductList)
 
+    const unloadBin = await getBinByBinID(binID)
+    const binCode = unloadBin.binCode
+
     res.status(200).json({
       message: `✅ ${result} Product successfully unloaded into ${binID}.`,
-      updatedProducts: result
+      updatedProducts: result,
+      binCode: binCode
     })
   } catch (error) {
     next(error)
@@ -79,6 +90,25 @@ export const unloadProductByTask = async (
     res.status(200).json({
       message: `${result} item(s) successfully unloaded into ${binID}`,
       updatedProducts: result
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const hasCargoInCar = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const cartID = res.locals.cartID
+
+    const result = await checkIfCartHasCargo(cartID)
+
+    res.status(200).json({
+      hasCargoInCar: result.hasCargo,
+      inventories: result.inventories
     })
   } catch (error) {
     next(error)
