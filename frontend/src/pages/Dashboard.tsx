@@ -14,8 +14,38 @@ import { useCargoContext } from '../contexts/cart'
 const Dashboard: React.FC = () => {
   const { userProfile } = useAuth()
   const navigate = useNavigate()
-
   const { hasCargoInCar } = useCargoContext()
+
+  if (
+    userProfile.role !== 'TRANSPORT_WORKER' &&
+    userProfile.role !== 'PICKER'
+  ) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100vh',
+          backgroundColor: '#F7F9FC'
+        }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '16px',
+            backgroundColor: '#FFF',
+            boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)'
+          }}
+        >
+          <Typography variant='h6' sx={{ fontWeight: 'bold', color: '#333' }}>
+            Hello, {userProfile.firstName} {userProfile.lastName}!
+          </Typography>
+        </Box>
+      </Box>
+    )
+  }
 
   const handleClick = () => {
     if (hasCargoInCar) {
