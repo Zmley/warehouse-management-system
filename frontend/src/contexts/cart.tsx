@@ -19,10 +19,10 @@ interface CartContextType {
   refreshCargoStatus: () => Promise<void>
 }
 
-const CargoContext = createContext<CartContextType | undefined>(undefined)
+const CartContext = createContext<CartContextType | undefined>(undefined)
 
 export const useCargoContext = (): CartContextType => {
-  const context = useContext(CargoContext)
+  const context = useContext(CartContext)
   if (!context) {
     throw new Error('useCargoContext must be used within a CargoProvider')
   }
@@ -56,7 +56,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   }, [])
 
   return (
-    <CargoContext.Provider
+    <CartContext.Provider
       value={{
         hasCargoInCar,
         inventories,
@@ -66,6 +66,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       }}
     >
       {children}
-    </CargoContext.Provider>
+    </CartContext.Provider>
   )
 }
