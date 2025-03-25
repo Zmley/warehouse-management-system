@@ -4,7 +4,9 @@ import {
   Card,
   CardContent,
   Container,
-  Typography
+  Typography,
+  Snackbar,
+  Alert
 } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -21,22 +23,26 @@ const InProcessTaskPage = () => {
   >([])
 
   const [isSuccess, setIsSuccess] = useState(false)
+  const [openToast, setOpenToast] = useState(false)
 
   useEffect(() => {
     if (inventories.length === 0) {
       setIsSuccess(true)
+      setOpenToast(true)
+
       const timeout = setTimeout(() => {
         navigate('/')
-      }, 1500)
-      return () => clearTimeout(timeout)
-    }
+      }, 3000)
 
-    const defaultList = inventories.map(item => ({
-      inventoryID: item.inventoryID,
-      quantity: item.quantity,
-      selected: true
-    }))
-    setSelectedList(defaultList)
+      return () => clearTimeout(timeout)
+    } else {
+      const defaultList = inventories.map(item => ({
+        inventoryID: item.inventoryID,
+        quantity: item.quantity,
+        selected: true
+      }))
+      setSelectedList(defaultList)
+    }
   }, [inventories, navigate])
 
   const handleQuantityChange = (inventoryID: string, newQuantity: number) => {
@@ -62,89 +68,99 @@ const InProcessTaskPage = () => {
     )
   }
 
-  if (isSuccess) {
-    return (
-      <Container maxWidth='sm'>
-        <Card
-          sx={{
-            mt: 10,
-            py: 6,
-            backgroundColor: '#f0f6fb',
-            textAlign: 'center',
-            boxShadow: 4,
-            borderRadius: 3
-          }}
-        >
-          <CheckCircleIcon sx={{ fontSize: 60, color: '#2f7abf' }} />
-          <Typography mt={2} fontWeight='bold'>
-            Offload succeeded
-          </Typography>
-        </Card>
-      </Container>
-    )
-  }
-
   return (
     <Container maxWidth='sm'>
-      <Typography
-        variant='h6'
-        sx={{ fontWeight: 'bold', textAlign: 'center', my: 2 }}
-      >
-        Items Currently in Cart
-      </Typography>
-
-      <Card
-        variant='outlined'
-        sx={{ borderRadius: '12px', backgroundColor: '#f9f9f9' }}
-      >
-        <CardContent>
-          <InventoryListCard
-            taskID=''
-            sourceBin=''
-            targetBin=''
-            totalQuantity={2}
-            statusPicked={true}
-            inventories={inventories}
-            selectedList={selectedList}
-            onQuantityChange={handleQuantityChange}
-            onCheckboxChange={handleCheckboxChange}
-          />
-
-          {/* Go to Scan Page */}
-          <Box sx={{ mt: 3 }}>
-            <Button
-              variant='contained'
-              color='primary'
-              fullWidth
-              onClick={() => {
-                const selectedToUnload = selectedList
-                  .filter(item => item.selected)
-                  .map(({ inventoryID, quantity }) => ({
-                    inventoryID,
-                    quantity
-                  }))
-
-                setSelectedForUnload(selectedToUnload)
-
-                navigate('/scan-qr')
-              }}
-              sx={{ borderRadius: '12px', py: 1.2 }}
-            >
-              Scan to unload
-            </Button>
-          </Box>
-
-          {/* Cancel */}
-          <Button
-            variant='outlined'
-            fullWidth
-            onClick={() => navigate('/')}
-            sx={{ mt: 1.5, borderRadius: '12px', fontSize: 14 }}
+      {isSuccess && (
+        <Snackbar
+          open={openToast}
+          autoHideDuration={3000}
+          onClose={() => setOpenToast(false)}
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+          sx={{
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            zIndex: 9999
+          }}
+        >
+          <Alert
+            severity='success'
+            onClose={() => setOpenToast(false)}
+            sx={{
+              width: 'auto',
+              borderRadius: 3,
+              backgroundColor: '#f0f6fb',
+              textAlign: 'center',
+              padding: '10px 20px',
+              fontWeight: 'bold',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              boxShadow: 4
+            }}
           >
-            Cancel ❌
-          </Button>
-        </CardContent>
-      </Card>
+            <CheckCircleIcon
+              sx={{ fontSize: 20, marginRight: 1, color: '#2f7abf' }}
+            />
+            Offload succeeded
+          </Alert>
+        </Snackbar>
+      )}
+
+      {!isSuccess && (
+        <>
+          <Typography
+            variant='h6'
+            sx={{ fontWeight: 'bold', textAlign: 'center', my: 2 }}
+          >
+            Items Currently in Cart
+          </Typography>
+
+          <Card
+            variant='outlined'
+            sx={{ borderRadius: '12px', backgroundColor: '#f9f9f9' }}
+          >
+            <CardContent>
+              <InventoryListCard
+                taskID=''
+                sourceBin=''
+                targetBin=''
+                totalQuantity={2}
+                statusPicked={true}
+                inventories={inventories}
+                selectedList={selectedList}
+                onQuantityChange={handleQuantityChange}
+                onCheckboxChange={handleCheckboxChange}
+              />
+
+              {/* Go to Scan Page */}
+              <Box sx={{ mt: 3 }}>
+                <Button
+                  variant='contained'
+                  color='primary'
+                  fullWidth
+                  onClick={() => {
+                    const selectedToUnload = selectedList
+                      .filter(item => item.selected)
+                      .map(({ inventoryID, quantity }) => ({
+                        inventoryID,
+                        quantity
+                      }))
+
+                    setSelectedForUnload(selectedToUnload)
+
+                    navigate('/scan-qr')
+                  }}
+                  sx={{ borderRadius: '12px', py: 1.2 }}
+                >
+                  Scan to unload
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
+        </>
+      )}
     </Container>
   )
 }
