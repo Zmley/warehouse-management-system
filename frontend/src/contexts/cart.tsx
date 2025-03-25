@@ -5,7 +5,7 @@ import React, {
   useEffect,
   ReactNode
 } from 'react'
-import { checkHasProductInCar } from '../api/cartApi'
+import { getInventoriesByCart } from '../api/cartApi'
 import { InventoryItem } from '../types/inventory'
 
 interface CartContextType {
@@ -37,7 +37,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const getMyCart = async () => {
     try {
-      const response = await checkHasProductInCar()
+      const response = await getInventoriesByCart()
       setHasProductInCar(response.hasProductInCar)
       setInventories(response.inventories || [])
 
