@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import QrScanner from 'qr-scanner'
 import { useNavigate } from 'react-router-dom'
 import { processCart } from '../api/cartApi'
-import { useCargoContext } from '../contexts/cart'
+import { useProductContext } from '../contexts/cart'
 
 const useQRScanner = (onScanSuccess?: (binID: string) => void) => {
   const navigate = useNavigate()
@@ -10,8 +10,8 @@ const useQRScanner = (onScanSuccess?: (binID: string) => void) => {
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const scannerRef = useRef<QrScanner | null>(null)
 
-  const { hasCargoInCar, refreshCargoStatus, selectedForUnload } =
-    useCargoContext()
+  const { hasProductInCar, refreshProductStatus, selectedForUnload } =
+    useProductContext()
 
   const stopScanning = async () => {
     if (scannerRef.current) {
@@ -65,7 +65,7 @@ const useQRScanner = (onScanSuccess?: (binID: string) => void) => {
                 const binID = result.data.trim()
                 if (binID) {
                   try {
-                    const isLoadingToCar = !hasCargoInCar
+                    const isLoadingToCar = !hasProductInCar
 
                     const productList = !isLoadingToCar
                       ? selectedForUnload
@@ -87,7 +87,7 @@ const useQRScanner = (onScanSuccess?: (binID: string) => void) => {
                         localStorage.setItem(storageKey, binCode)
                       }
 
-                      await refreshCargoStatus()
+                      await refreshProductStatus()
 
                       onScanSuccess?.(binID)
                       stopScanning()

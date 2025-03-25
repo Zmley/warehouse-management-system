@@ -8,13 +8,13 @@ import {
 } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useCargoContext } from '../../contexts/cart'
+import { useProductContext } from '../../contexts/cart'
 import InventoryListCard from './InventoryListCard'
 
 const InProcessTaskPage = () => {
   const navigate = useNavigate()
-  const { inventories, refreshCargoStatus, setSelectedForUnload } =
-    useCargoContext()
+  const { inventories, refreshProductStatus, setSelectedForUnload } =
+    useProductContext()
 
   const [selectedList, setSelectedList] = useState<
     { inventoryID: string; quantity: number; selected: boolean }[]

@@ -109,8 +109,11 @@ export const loadProductByBinID = async (
       message: `loaded to cart "${cartID}".`
     }
   } catch (error) {
-    console.error('❌ Error loading cargo:', error)
-    throw new AppError(500, '❌ Failed to load cargo due to an internal error.')
+    console.error('❌ Error loading Product:', error)
+    throw new AppError(
+      500,
+      '❌ Failed to load Product due to an internal error.'
+    )
   }
 }
 
@@ -126,25 +129,25 @@ export const unloadProductListToBinByWoker = async (
     console.error('❌ Error in unloadProductListToBinByWoker:', error)
     throw new AppError(
       500,
-      '❌ Failed to unload cargo due to an internal error.'
+      '❌ Failed to unload Product due to an internal error.'
     )
   }
 }
 
-export const checkIfCartHasCargo = async (
+export const checkIfCartHasProduct = async (
   cartID: string
 ): Promise<{
-  hasCargo: boolean
+  hasProduct: boolean
   inventories: Inventory[]
 }> => {
   const inventories = await Inventory.findAll({
     where: { binID: cartID }
   })
 
-  const hasCargo = inventories.length > 0
+  const hasProduct = inventories.length > 0
 
   return {
-    hasCargo,
+    hasProduct,
     inventories
   }
 }

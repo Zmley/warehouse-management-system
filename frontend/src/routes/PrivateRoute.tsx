@@ -6,7 +6,7 @@ import UnloadSuccess from '../pages/TransportWorker/UnloadSuccess'
 import { useContext, useEffect } from 'react'
 import { AuthContext } from '../contexts/auth'
 import Dashboard from '../pages/Dashboard'
-import { useCargoContext } from '../contexts/cart'
+import { useProductContext } from '../contexts/cart'
 
 const PrivateRoutes: React.FC = () => {
   const { getMe } = useContext(AuthContext)!
@@ -15,19 +15,19 @@ const PrivateRoutes: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const { hasCargoInCar } = useCargoContext()
+  const { hasProductInCar } = useProductContext()
   const navigate = useNavigate()
   const location = useLocation()
 
   useEffect(() => {
     if (
-      hasCargoInCar &&
+      hasProductInCar &&
       location.pathname !== '/in-process-task' &&
       location.pathname !== '/scan-qr'
     ) {
       navigate('/in-process-task')
     }
-  }, [hasCargoInCar, location.pathname, navigate])
+  }, [hasProductInCar, location.pathname, navigate])
 
   return (
     <Routes>

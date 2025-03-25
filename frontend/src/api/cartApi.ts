@@ -2,11 +2,11 @@
 import apiClient from './axiosClient.ts'
 import { InventoryItem } from '../types/inventory.js'
 
-export const checkHasCargoInCar = async (): Promise<{
-  hasCargoInCar: boolean
+export const checkHasProductInCar = async (): Promise<{
+  hasProductInCar: boolean
   inventories: InventoryItem[]
 }> => {
-  const response = await apiClient.get('cart/hasCargoInCar')
+  const response = await apiClient.get('cart/hasProductInCar')
   return response.data
 }
 

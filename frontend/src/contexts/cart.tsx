@@ -1,4 +1,3 @@
-// src/context/CargoContext.tsx
 import React, {
   createContext,
   useContext,
@@ -6,63 +5,63 @@ import React, {
   useEffect,
   ReactNode
 } from 'react'
-import { checkHasCargoInCar } from '../api/cartApi'
+import { checkHasProductInCar } from '../api/cartApi'
 import { InventoryItem } from '../types/inventory'
 
 interface CartContextType {
-  hasCargoInCar: boolean
+  hasProductInCar: boolean
   inventories: InventoryItem[]
   selectedForUnload: { inventoryID: string; quantity: number }[]
   setSelectedForUnload: (
     list: { inventoryID: string; quantity: number }[]
   ) => void
-  refreshCargoStatus: () => Promise<void>
+  refreshProductStatus: () => Promise<void>
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
 
-export const useCargoContext = (): CartContextType => {
+export const useProductContext = (): CartContextType => {
   const context = useContext(CartContext)
   if (!context) {
-    throw new Error('useCargoContext must be used within a CargoProvider')
+    throw new Error('useProductContext must be used within a ProductProvider')
   }
   return context
 }
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
-  const [hasCargoInCar, setHasCargoInCar] = useState(false)
+  const [hasProductInCar, setHasProductInCar] = useState(false)
   const [inventories, setInventories] = useState<InventoryItem[]>([])
   const [selectedForUnload, setSelectedForUnload] = useState<
     { inventoryID: string; quantity: number }[]
   >([])
 
-  const refreshCargoStatus = async () => {
+  const refreshProductStatus = async () => {
     try {
-      const response = await checkHasCargoInCar()
-      setHasCargoInCar(response.hasCargoInCar)
+      const response = await checkHasProductInCar()
+      setHasProductInCar(response.hasProductInCar)
       setInventories(response.inventories || [])
 
-      if (!response.hasCargoInCar) {
+      if (!response.hasProductInCar) {
         localStorage.removeItem('sourceBinCode')
         localStorage.removeItem('destinationBinCode')
       }
     } catch (error) {
-      console.error('❌ Failed to check cargo status:', error)
+      console.error('❌ Failed to check Product status:', error)
     }
   }
 
   useEffect(() => {
-    refreshCargoStatus()
+    refreshProductStatus()
   }, [])
 
   return (
     <CartContext.Provider
       value={{
-        hasCargoInCar,
+        hasProductInCar,
         inventories,
         selectedForUnload,
         setSelectedForUnload,
-        refreshCargoStatus
+        refreshProductStatus
       }}
     >
       {children}

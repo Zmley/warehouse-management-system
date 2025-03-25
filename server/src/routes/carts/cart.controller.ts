@@ -3,7 +3,7 @@ import {
   loadProductByBinID,
   unloadProductListToBinByWoker,
   unloadProductToBin,
-  checkIfCartHasCargo
+  checkIfCartHasProduct
 } from './cart.service'
 import { getBinByBinID } from '../bins/bin.service'
 import { getCurrentInProcessTask, completeTask } from '../tasks/task.service'
@@ -96,7 +96,7 @@ export const unloadProductByTask = async (
   }
 }
 
-export const hasCargoInCar = async (
+export const hasProductInCar = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -104,10 +104,10 @@ export const hasCargoInCar = async (
   try {
     const cartID = res.locals.cartID
 
-    const result = await checkIfCartHasCargo(cartID)
+    const result = await checkIfCartHasProduct(cartID)
 
     res.status(200).json({
-      hasCargoInCar: result.hasCargo,
+      hasProductInCar: result.hasProduct,
       inventories: result.inventories
     })
   } catch (error) {
