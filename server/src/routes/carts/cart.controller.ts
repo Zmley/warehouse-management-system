@@ -3,7 +3,7 @@ import {
   loadProductByBinID,
   unloadProductListToBinByWoker,
   unloadProductToBin,
-  checkIfCartHasProduct
+  getCartInventories
 } from './cart.service'
 import { getBinByBinID } from '../bins/bin.service'
 import { getCurrentInProcessTask, completeTask } from '../tasks/task.service'
@@ -104,7 +104,7 @@ export const hasProductInCar = async (
   try {
     const cartID = res.locals.cartID
 
-    const result = await checkIfCartHasProduct(cartID)
+    const result = await getCartInventories(cartID)
 
     res.status(200).json({
       hasProductInCar: result.hasProduct,
