@@ -113,19 +113,24 @@ const InProcessTaskPage = () => {
           {/* Go to Scan Page */}
           <Box sx={{ mt: 3 }}>
             <Button
-              sx={{
-                width: '100%',
-                padding: '16px',
-                fontSize: '16px',
-                backgroundColor: '#007BFF',
-                color: 'white',
-                borderRadius: 2,
-                '&:hover': {
-                  backgroundColor: '#0056b3'
-                }
+              variant='contained'
+              color='primary'
+              fullWidth
+              onClick={() => {
+                const selectedToUnload = selectedList
+                  .filter(item => item.selected)
+                  .map(({ inventoryID, quantity }) => ({
+                    inventoryID,
+                    quantity
+                  }))
+
+                setSelectedForUnload(selectedToUnload)
+
+                navigate('/scan-qr')
               }}
+              sx={{ borderRadius: '12px', py: 1.2 }}
             >
-              SCAN TO UNLOAD
+              Scan to unload
             </Button>
           </Box>
 
