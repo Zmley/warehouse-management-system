@@ -131,3 +131,27 @@ export const completeTask = async (taskID: string) => {
 
   return task
 }
+
+export const getPendingTasksService = async () => {
+  const tasks = await Task.findAll({
+    where: { status: 'PENDING' },
+    include: [
+      {
+        model: Bin,
+        as: 'sourceBin',
+        attributes: ['binCode']
+      },
+      {
+        model: Bin,
+        as: 'destinationBin',
+        attributes: ['binCode']
+      }
+    ]
+  })
+
+  if (!tasks.length) {
+    throw new AppError(404, '❌ No pending tasks found')
+  }
+
+  return tasks
+}

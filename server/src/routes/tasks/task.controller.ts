@@ -2,7 +2,8 @@ import { Request, Response, NextFunction } from 'express'
 import {
   createTaskAsAdmin,
   acceptTaskService,
-  createTaskAsPicker
+  createTaskAsPicker,
+  getPendingTasksService
 } from '../tasks/task.service'
 import AppError from '../../utils/appError'
 
@@ -70,6 +71,22 @@ export const createAsPicker = async (
     res.status(201).json({
       message: `Picker Task created successfully`,
       task
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const getPendingTask = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const tasks = await getPendingTasksService()
+    res.status(200).json({
+      message: 'Successfully fetched all pending tasks',
+      tasks
     })
   } catch (error) {
     next(error)

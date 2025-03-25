@@ -35,6 +35,7 @@ Bin.init(
       allowNull: true
     }
   },
+
   {
     sequelize,
     tableName: 'bin',

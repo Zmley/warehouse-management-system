@@ -3,6 +3,7 @@ import { Box, Typography } from '@mui/material'
 import { useAuth } from '../hooks/useAuth'
 import TopBar from '../components/Topbar'
 import BottomBar from '../components/Bottombar'
+import PendingTaskList from '../components/PendingTaskList'
 
 const Dashboard: React.FC = () => {
   const { userProfile } = useAuth()
@@ -43,7 +44,7 @@ const Dashboard: React.FC = () => {
       <TopBar userName={`${userProfile.firstName} ${userProfile.lastName}`} />
 
       {/* Page content */}
-      <Box
+      {/* <Box
         sx={{
           flex: 1,
           display: 'flex',
@@ -55,7 +56,10 @@ const Dashboard: React.FC = () => {
         <Typography variant='h6' sx={{ fontWeight: 'bold' }}>
           Dashboard Content Goes Here
         </Typography>
-      </Box>
+      </Box> */}
+
+      {/* PendingTaskList Component */}
+      {userProfile.role === 'TRANSPORT_WORKER' && <PendingTaskList />}
 
       {userProfile.role === 'TRANSPORT_WORKER' && <BottomBar />}
     </Box>
