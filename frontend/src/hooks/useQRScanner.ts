@@ -14,10 +14,7 @@ const useQRScanner = (onScanSuccess?: (binID: string) => void) => {
     useCargoContext()
 
   const stopScanning = async () => {
-    console.log('📷 [stopScanning] Called')
-
     if (scannerRef.current) {
-      console.log('🛑 [stopScanning] Stopping scanner...')
       await scannerRef.current.stop()
       scannerRef.current.destroy()
       scannerRef.current = null
@@ -25,9 +22,7 @@ const useQRScanner = (onScanSuccess?: (binID: string) => void) => {
 
     if (videoRef.current && videoRef.current.srcObject) {
       const stream = videoRef.current.srcObject as MediaStream
-      console.log('🛑 [stopScanning] Stopping tracks...')
       stream.getTracks().forEach(track => {
-        console.log(`🛑 [stopScanning] Stopping track: ${track.kind}`)
         track.stop()
       })
       videoRef.current.srcObject = null
@@ -37,15 +32,12 @@ const useQRScanner = (onScanSuccess?: (binID: string) => void) => {
   }
 
   useEffect(() => {
-    console.log('📦 [useEffect] QR Scanner mounted')
     return () => {
-      console.log('📦 [useEffect cleanup] Unmounting - calling stopScanning')
       stopScanning()
     }
   }, [])
 
   const startScanning = async () => {
-    console.log('🚀 [startScanning] Called')
     await stopScanning()
     await new Promise(resolve => setTimeout(resolve, 100))
     setIsScanning(true)
@@ -56,7 +48,6 @@ const useQRScanner = (onScanSuccess?: (binID: string) => void) => {
     }
 
     try {
-      console.log('📷 [startScanning] Getting media stream...')
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment' }
       })
@@ -69,18 +60,12 @@ const useQRScanner = (onScanSuccess?: (binID: string) => void) => {
             videoRef.current,
             async result => {
               if (result.data) {
-                console.log('✅ [QrScanner] Scanned:', result.data)
                 stopScanning()
 
                 const binID = result.data.trim()
                 if (binID) {
                   try {
                     const isLoadingToCar = !hasCargoInCar
-                    console.log(
-                      `[QR] Decided action: ${
-                        isLoadingToCar ? 'LOAD' : 'UNLOAD'
-                      }`
-                    )
 
                     const productList = !isLoadingToCar
                       ? selectedForUnload
@@ -100,12 +85,8 @@ const useQRScanner = (onScanSuccess?: (binID: string) => void) => {
 
                       if (binCode) {
                         localStorage.setItem(storageKey, binCode)
-                        console.log(`📦 Stored ${storageKey}:`, binCode)
                       }
 
-                      console.log(
-                        '✅ [QrScanner] Task success, refreshing cargo status'
-                      )
                       await refreshCargoStatus()
 
                       onScanSuccess?.(binID)
