@@ -15,7 +15,7 @@ interface CartContextType {
   setSelectedForUnload: (
     list: { inventoryID: string; quantity: number }[]
   ) => void
-  refreshProductStatus: () => Promise<void>
+  getMyCart: () => Promise<void>
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
@@ -35,7 +35,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     { inventoryID: string; quantity: number }[]
   >([])
 
-  const refreshProductStatus = async () => {
+  const getMyCart = async () => {
     try {
       const response = await checkHasProductInCar()
       setHasProductInCar(response.hasProductInCar)
@@ -51,7 +51,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   }
 
   useEffect(() => {
-    refreshProductStatus()
+    getMyCart()
   }, [])
 
   return (
@@ -61,7 +61,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         inventories,
         selectedForUnload,
         setSelectedForUnload,
-        refreshProductStatus
+        getMyCart
       }}
     >
       {children}

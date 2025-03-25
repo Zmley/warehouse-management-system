@@ -13,8 +13,7 @@ import InventoryListCard from './InventoryListCard'
 
 const InProcessTaskPage = () => {
   const navigate = useNavigate()
-  const { inventories, refreshProductStatus, setSelectedForUnload } =
-    useProductContext()
+  const { inventories, getMyCart, setSelectedForUnload } = useProductContext()
 
   const [selectedList, setSelectedList] = useState<
     { inventoryID: string; quantity: number; selected: boolean }[]
