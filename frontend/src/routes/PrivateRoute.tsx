@@ -1,11 +1,11 @@
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom'
 import Profile from '../pages/Profile'
-import ScanTask from '../pages/TransportWorker/ScanTask'
-import InProcessPage from '../pages/TransportWorker/InProcessPage'
+import ScanTask from '../pages/TransportWorker/ScanQRCode'
+import InProcessPage from '../pages/TransportWorker/Cart'
 import { useContext, useEffect } from 'react'
 import { AuthContext } from '../contexts/auth'
 import Dashboard from '../pages/Dashboard'
-import { useCargoContext } from '../contexts/cargo'
+import { useCargoContext } from '../contexts/cart'
 
 const PrivateRoutes: React.FC = () => {
   const { getMe } = useContext(AuthContext)!

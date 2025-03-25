@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import QrScanner from 'qr-scanner'
 import { useNavigate } from 'react-router-dom'
-import { processCart, checkHasCargoInCar } from '../api/cartApi'
-import { useCargoContext } from '../contexts/cargo'
+import { processCart } from '../api/cartApi'
+import { useCargoContext } from '../contexts/cart'
 
 const useQRScanner = (onScanSuccess?: (binID: string) => void) => {
   const navigate = useNavigate()

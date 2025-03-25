@@ -1,3 +1,4 @@
+// src/context/CargoContext.tsx
 import React, {
   createContext,
   useContext,
@@ -20,7 +21,7 @@ interface CartContextType {
 
 const CargoContext = createContext<CartContextType | undefined>(undefined)
 
-export const useCartContext = (): CartContextType => {
+export const useCargoContext = (): CartContextType => {
   const context = useContext(CargoContext)
   if (!context) {
     throw new Error('useCargoContext must be used within a CargoProvider')

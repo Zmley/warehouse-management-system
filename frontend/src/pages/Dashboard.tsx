@@ -9,7 +9,7 @@ import {
 import { Menu as MenuIcon } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import { useCargoContext } from '../contexts/cargo'
+import { useCargoContext } from '../contexts/cart'
 
 const Dashboard: React.FC = () => {
   const { userProfile } = useAuth()

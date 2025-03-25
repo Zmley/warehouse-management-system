@@ -8,7 +8,7 @@ import {
 } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useCargoContext } from '../../contexts/cargo'
+import { useCargoContext } from '../../contexts/cart'
 import InventoryListCard from './InventoryListCard'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 
@@ -27,7 +27,7 @@ const InProcessTaskPage = () => {
       setIsSuccess(true)
       const timeout = setTimeout(() => {
         navigate('/')
-      }, 3000)
+      }, 1500)
       return () => clearTimeout(timeout)
     }
 

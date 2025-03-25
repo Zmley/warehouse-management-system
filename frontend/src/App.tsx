@@ -1,16 +1,16 @@
 import React from 'react'
 import { BrowserRouter as Router } from 'react-router-dom'
 import { AuthProvider } from './contexts/auth'
-import { CargoProvider } from './contexts/cargo'
+import { CartProvider } from './contexts/cart'
 import PublicRoute from './routes/PublicRoute'
 
 const App: React.FC = () => {
   return (
     <Router>
       <AuthProvider>
-        <CargoProvider>
+        <CartProvider>
           <PublicRoute />
-        </CargoProvider>
+        </CartProvider>
       </AuthProvider>
     </Router>
   )

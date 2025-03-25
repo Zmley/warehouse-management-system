@@ -10,7 +10,6 @@ import {
   Alert
 } from '@mui/material'
 import { InventoryItem } from '../../types/inventory'
-import useBinCodes from '../../hooks/useBinCodes'
 
 interface Props {
   taskID: string
@@ -38,7 +37,8 @@ const InventoryListCard: React.FC<Props> = ({
 }) => {
   const [errorOpen, setErrorOpen] = React.useState(false)
   const [errorMessage, setErrorMessage] = React.useState('')
-  const { sourceBin, destinationBin } = useBinCodes()
+  const sourceBin = localStorage.getItem('sourceBinCode') || ''
+  const destinationBin = localStorage.getItem('destinationBinCode') || ''
 
   const handleInputChange = (inventoryID: string, value: string) => {
     const sanitized = value.replace(/^0+(?!$)/, '')

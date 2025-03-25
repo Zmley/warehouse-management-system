@@ -16,7 +16,7 @@ const ScanTaskPage = () => {
       .getUserMedia({ video: true })
       .then(s => {
         streamRef.current = s
-        console.log('✅ Camera permission granted')
+        console.log('Camera permission granted')
         startScanning()
       })
       .catch(err => {
@@ -39,7 +39,7 @@ const ScanTaskPage = () => {
   }, [])
 
   async function handleScanSuccess(binID: string) {
-    console.log(`✅ Scanned new bin ID: ${binID}`)
+    console.log(`Scanned new bin ID: ${binID}`)
     setTimeout(() => {
       navigate('/in-process-task')
     })
@@ -80,7 +80,7 @@ const ScanTaskPage = () => {
         variant='body1'
         sx={{ marginTop: 2, fontSize: '14px', color: '#666' }}
       >
-        Scan the barcode to create a new task
+        1 Scan the QRcode to process the task
       </Typography>
 
       <Button
