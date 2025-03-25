@@ -6,7 +6,7 @@ import UnloadSuccess from '../pages/TransportWorker/UnloadSuccess'
 import { useContext, useEffect } from 'react'
 import { AuthContext } from '../contexts/auth'
 import Dashboard from '../pages/Dashboard'
-import { useProductContext } from '../contexts/cart'
+import { useCartContext } from '../contexts/cart'
 
 const PrivateRoutes: React.FC = () => {
   const { getMe } = useContext(AuthContext)!
@@ -15,7 +15,7 @@ const PrivateRoutes: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const { hasProductInCar } = useProductContext()
+  const { hasProductInCar } = useCartContext()
   const navigate = useNavigate()
   const location = useLocation()
 

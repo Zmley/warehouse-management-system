@@ -20,7 +20,7 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
 
-export const useProductContext = (): CartContextType => {
+export const useCartContext = (): CartContextType => {
   const context = useContext(CartContext)
   if (!context) {
     throw new Error('useProductContext must be used within a ProductProvider')
@@ -38,6 +38,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const getMyCart = async () => {
     try {
       const response = await getInventoriesByCart()
+
       setHasProductInCar(response.hasProductInCar)
       setInventories(response.inventories || [])
 

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import QrScanner from 'qr-scanner'
 import { useNavigate } from 'react-router-dom'
 import { loadToCart, unloadFromCart } from '../api/cartApi'
-import { useProductContext } from '../contexts/cart'
+import { useCartContext } from '../contexts/cart'
 
 const useQRScanner = (onScanSuccess?: (binID: string) => void) => {
   const navigate = useNavigate()
@@ -10,7 +10,7 @@ const useQRScanner = (onScanSuccess?: (binID: string) => void) => {
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const scannerRef = useRef<QrScanner | null>(null)
 
-  const { hasProductInCar, getMyCart, selectedForUnload } = useProductContext()
+  const { hasProductInCar, getMyCart, selectedForUnload } = useCartContext()
 
   const stopScanning = async () => {
     if (scannerRef.current) {
