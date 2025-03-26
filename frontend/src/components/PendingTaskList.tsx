@@ -30,13 +30,17 @@ const PendingTaskList: React.FC = () => {
                 <Grid item xs={4}>
                   <Typography variant='caption'>Source Bin</Typography>
                   <Typography fontWeight='bold' fontSize={20}>
-                    {task.sourceBin.binCode}
+                    {/* 直接使用 sourceBinCode */}
+                    {task.sourceBinCode.join(', ')}{' '}
+                    {/* 通过 join() 拼接多个 binCode */}
                   </Typography>
                 </Grid>
                 <Grid item xs={4}>
                   <Typography variant='caption'>Target Bin</Typography>
                   <Typography fontWeight='bold' fontSize={20}>
-                    {task.destinationBin.binCode}
+                    {/* 直接使用 destinationBinCode */}
+                    {task.destinationBinCode.join(', ')}{' '}
+                    {/* 通过 join() 拼接多个 binCode */}
                   </Typography>
                 </Grid>
                 <Grid item xs={4} display='flex' justifyContent='flex-end'>

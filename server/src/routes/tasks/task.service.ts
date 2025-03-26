@@ -1,7 +1,9 @@
 import Task from './task.model'
 import Inventory from '../inventory/inventory.model'
 import Bin from '../bins/bin.model'
+import Account from '../accounts/accounts.model'
 import AppError from '../../utils/appError'
+import { Op } from 'sequelize'
 
 export const hasActiveTask = async (accountID: string): Promise<boolean> => {
   try {
@@ -132,14 +134,16 @@ export const completeTask = async (taskID: string) => {
   return task
 }
 
-export const getPendingTasksService = async () => {
-  const tasks = await Task.findAll({
-    where: { status: 'PENDING' },
+/////////////////////////////////////////////////////////
+
+export const getPickerTasksByCreatorID = async () => {
+  const pickerTasks = await Task.findAll({
+    where: { creatorID: { [Op.in]: await getPickerIDs() } },
     include: [
       {
         model: Bin,
         as: 'sourceBin',
-        attributes: ['binCode']
+        attributes: ['binCode', 'warehouseID']
       },
       {
         model: Bin,
@@ -149,9 +153,143 @@ export const getPendingTasksService = async () => {
     ]
   })
 
+  if (!pickerTasks.length) {
+    throw new AppError(404, 'No pending tasks found for picker')
+  }
+
+  return pickerTasks
+}
+
+const getPickerIDs = async () => {
+  const pickerAccounts = await Account.findAll({
+    where: { role: 'PICKER' },
+    attributes: ['accountID']
+  })
+  return pickerAccounts.map(account => account.accountID)
+}
+
+export const getBinCodesByProductCode = async (
+  productCode: string,
+  warehouseID: string
+) => {
+  const bins = await Bin.findAll({
+    where: { warehouseID },
+    include: [
+      {
+        model: Inventory,
+        where: { productCode },
+        attributes: []
+      }
+    ],
+    attributes: ['binCode']
+  })
+
+  if (!bins.length) {
+    throw new AppError(404, 'No bins have this product in this warehouse')
+  }
+
+  return bins.map(bin => bin.binCode)
+}
+
+/////////////////////////////////////////
+
+export const getBinCodesByProductCodeAndWarehouse = async (
+  productCode: string,
+  warehouseID: string
+): Promise<string[]> => {
+  try {
+    const inventories = await Bin.findAll({
+      where: {
+        warehouseID,
+        type: 'INVENTORY'
+      },
+      include: [
+        {
+          model: Inventory,
+          where: { productCode },
+          attributes: []
+        }
+      ],
+      attributes: ['binCode']
+    })
+
+    if (!inventories.length) {
+      throw new Error('No bins found for the given productCode and warehouse')
+    }
+
+    const binCodes = inventories.map(bin => bin.binCode)
+
+    return binCodes
+  } catch (error) {
+    console.error('Error fetching binCodes:', error)
+    throw new Error('Failed to fetch binCodes')
+  }
+}
+
+export const getBinCodeByBinID = async (
+  binID: string
+): Promise<string | null> => {
+  try {
+    const bin = await Bin.findOne({
+      where: { binID },
+      attributes: ['binCode']
+    })
+
+    if (!bin) {
+      return null
+    }
+
+    return bin.binCode
+  } catch (error) {
+    console.error('❌ Error fetching binCode:', error)
+    throw new Error('Failed to fetch binCode')
+  }
+}
+
+export const getPendingTasksService = async (warehouseID: string) => {
+  const tasks = await Task.findAll({
+    where: { status: 'PENDING' }
+  })
+
   if (!tasks.length) {
     throw new AppError(404, '❌ No pending tasks found')
   }
 
-  return tasks
+  const tasksWithBinCodes = await Promise.all(
+    tasks.map(async task => {
+      let sourceBinCode: string[] = []
+      let destinationBinCode: string[] = []
+
+      if (task.sourceBinID) {
+        const binCode = await getBinCodeByBinID(task.sourceBinID)
+        if (binCode) {
+          sourceBinCode = [binCode]
+        }
+      } else {
+        const binCodes = await getBinCodesByProductCodeAndWarehouse(
+          task.productCode,
+          warehouseID
+        )
+        sourceBinCode = binCodes
+      }
+
+      if (task.destinationBinID) {
+        const binCode = await getBinCodeByBinID(task.destinationBinID)
+        if (binCode) {
+          destinationBinCode = [binCode]
+        }
+      }
+
+      return {
+        taskID: task.taskID,
+        sourceBinID: task.sourceBinID,
+        sourceBinCode,
+        destinationBinID: task.destinationBinID,
+        destinationBinCode,
+        createdAt: task.createdAt
+      }
+    })
+  )
+
+  return tasksWithBinCodes
 }

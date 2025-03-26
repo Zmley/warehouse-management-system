@@ -3,6 +3,11 @@ import app from 'app'
 import config from 'config/config'
 import logger from 'utils/logger'
 import errorHandler from 'utils/errorHandler'
+import { setupAssociations } from './models/associations'
+
+// ... sequelize.authenticate() etc.
+
+setupAssociations()
 
 const { port } = config
 

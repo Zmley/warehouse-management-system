@@ -131,7 +131,7 @@ export const unloadProductListToBinByWoker = async (
   }
 }
 
-export const checkIfCartHasCargo = async (
+export const getInventoriesByCartId = async (
   cartID: string
 ): Promise<{
   hasCargo: boolean

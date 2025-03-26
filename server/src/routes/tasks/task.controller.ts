@@ -6,6 +6,8 @@ import {
   getPendingTasksService
 } from '../tasks/task.service'
 import AppError from '../../utils/appError'
+import { Task } from './task.model'
+import { get } from 'http'
 
 export const createAsAdmin = async (
   req: Request,
@@ -77,16 +79,21 @@ export const createAsPicker = async (
   }
 }
 
+////////////////////////////////
+
 export const getPendingTask = async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const tasks = await getPendingTasksService()
+    const warehouseID = res.locals.warehouseID
+
+    const tasksWithBinCodes = await getPendingTasksService(warehouseID)
+
     res.status(200).json({
-      message: 'Successfully fetched all pending tasks',
-      tasks
+      message: 'Successfully fetched all pending tasks for Picker',
+      tasks: tasksWithBinCodes
     })
   } catch (error) {
     next(error)
