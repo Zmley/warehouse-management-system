@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router-dom'
 import { useCartContext } from '../../contexts/cart'
 import InventoryListCard from './InventoryListCard'
 
-const InProcessTaskPage = () => {
+const Cart = () => {
   const navigate = useNavigate()
   const { inventoryListInCar, setSelectedForUnload, justUnloadedSuccess } =
     useCartContext()
@@ -121,4 +121,4 @@ const InProcessTaskPage = () => {
   )
 }
 
-export default InProcessTaskPage
+export default Cart
