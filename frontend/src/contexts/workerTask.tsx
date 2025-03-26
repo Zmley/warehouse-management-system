@@ -5,7 +5,8 @@ import React, {
   useState,
   ReactNode
 } from 'react'
-import apiClient from '../api/axiosClient.ts'
+
+import { getMyCartCode } from '../api/cartApi'
 
 interface WorkerTaskContextType {
   sourceBinCode: string | null
@@ -37,10 +38,8 @@ export const WorkerTaskProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchBinCodes = async () => {
     try {
-      const response = await apiClient.post('/cart/carCode')
-      const { binCode } = response.data
-
-      setSourceBinCode(binCode)
+      const { binCode } = await getMyCartCode()
+      setSourceBinCode(binCode || null)
     } catch (err) {
       console.error('❌ Failed to fetch bin codes', err)
     }

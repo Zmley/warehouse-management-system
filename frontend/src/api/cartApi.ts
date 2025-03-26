@@ -36,8 +36,7 @@ export const unloadFromCart = async (
     data: response.data
   }
 }
-
-export const getMyCartCode = async (): Promise<{}> => {
+export const getMyCartCode = async (): Promise<{ binCode: string }> => {
   const response = await apiClient.post('/cart/code')
   return response.data
 }
