@@ -12,6 +12,6 @@ const router = express.Router()
 router.post('/load', transportWorkerOnly, loadProduct)
 router.post('/unload', transportWorkerOnly, unloadProductByWoker)
 router.post('/unloadByTask', transportWorkerOnly, unloadProductByTask)
-router.post('/carCode', transportWorkerOnly, getCarCode)
+router.post('/code', transportWorkerOnly, getCarCode)
 
 export default router
