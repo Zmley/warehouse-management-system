@@ -16,12 +16,12 @@ interface WorkerTaskContextType {
   fetchBinCodes: () => Promise<void>
 }
 
-const WorkerTaskContext = createContext<WorkerTaskContextType | undefined>(
+const binCodeContext = createContext<WorkerTaskContextType | undefined>(
   undefined
 )
 
-export const useWorkerTaskContext = (): WorkerTaskContextType => {
-  const context = useContext(WorkerTaskContext)
+export const useBinCodeContext = (): WorkerTaskContextType => {
+  const context = useContext(binCodeContext)
   if (!context) {
     throw new Error(
       'useWorkerTaskContext must be used within a WorkerTaskProvider'
@@ -30,7 +30,7 @@ export const useWorkerTaskContext = (): WorkerTaskContextType => {
   return context
 }
 
-export const WorkerTaskProvider = ({ children }: { children: ReactNode }) => {
+export const BinCodeProvider = ({ children }: { children: ReactNode }) => {
   const [sourceBinCode, setSourceBinCode] = useState<string | null>(null)
   const [destinationBinCode, setDestinationBinCode] = useState<string | null>(
     null
@@ -50,7 +50,7 @@ export const WorkerTaskProvider = ({ children }: { children: ReactNode }) => {
   }, [])
 
   return (
-    <WorkerTaskContext.Provider
+    <binCodeContext.Provider
       value={{
         sourceBinCode,
         destinationBinCode,
@@ -60,6 +60,6 @@ export const WorkerTaskProvider = ({ children }: { children: ReactNode }) => {
       }}
     >
       {children}
-    </WorkerTaskContext.Provider>
+    </binCodeContext.Provider>
   )
 }

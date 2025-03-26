@@ -3,7 +3,7 @@ import QrScanner from 'qr-scanner'
 import { useNavigate } from 'react-router-dom'
 import { loadToCart, unloadFromCart } from '../api/cartApi'
 import { useCartContext } from '../contexts/cart'
-import { useWorkerTaskContext } from '../contexts/workerTask'
+import { useBinCodeContext } from '../contexts/binCode'
 
 const useQRScanner = (onScanSuccess?: (binCode: string) => void) => {
   const navigate = useNavigate()
@@ -11,7 +11,7 @@ const useQRScanner = (onScanSuccess?: (binCode: string) => void) => {
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const scannerRef = useRef<QrScanner | null>(null)
 
-  const { setDestinationBinCode, fetchBinCodes } = useWorkerTaskContext()
+  const { setDestinationBinCode, fetchBinCodes } = useBinCodeContext()
 
   const {
     hasProductInCar,

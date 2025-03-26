@@ -10,7 +10,7 @@ import {
   Alert
 } from '@mui/material'
 import { InventoryItem } from '../../types/inventory'
-import { useWorkerTaskContext } from '../../contexts/workerTask'
+import { useBinCodeContext } from '../../contexts/binCode'
 import { sanitizeQuantityInput } from '../../utils/inputHelpers'
 
 interface Props {
@@ -37,7 +37,7 @@ const InventoryListCard: React.FC<Props> = ({
   const [errorOpen, setErrorOpen] = React.useState(false)
   const [errorMessage, setErrorMessage] = React.useState('')
 
-  const { sourceBinCode, destinationBinCode } = useWorkerTaskContext()
+  const { sourceBinCode, destinationBinCode } = useBinCodeContext()
 
   const handleInputChange = (inventoryID: string, value: string) => {
     const numericValue = sanitizeQuantityInput(value)
