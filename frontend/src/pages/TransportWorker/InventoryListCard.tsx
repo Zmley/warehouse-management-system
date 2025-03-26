@@ -10,11 +10,10 @@ import {
   Alert
 } from '@mui/material'
 import { InventoryItem } from '../../types/inventory'
+import { useWorkerTaskContext } from '../../contexts/workerTask'
 
 interface Props {
   taskID: string
-  sourceBin: string
-  targetBin?: string
   totalQuantity: number
   statusPicked: boolean
   inventories: InventoryItem[]
@@ -37,16 +36,14 @@ const InventoryListCard: React.FC<Props> = ({
 }) => {
   const [errorOpen, setErrorOpen] = React.useState(false)
   const [errorMessage, setErrorMessage] = React.useState('')
-  const sourceBin = localStorage.getItem('sourceBinCode') || ''
-  const destinationBin = localStorage.getItem('destinationBinCode') || ''
+
+  const { sourceBinCode, destinationBinCode } = useWorkerTaskContext()
 
   const handleInputChange = (inventoryID: string, value: string) => {
     const sanitized = value.replace(/^0+(?!$)/, '')
-
     const numericValue = sanitized === '' ? 0 : Number(sanitized)
 
     const inventory = inventories.find(i => i.inventoryID === inventoryID)
-
     if (inventory && numericValue > inventory.quantity) {
       setErrorMessage(`Quantity cannot exceed total (${inventory.quantity})`)
       setErrorOpen(true)
@@ -74,7 +71,7 @@ const InventoryListCard: React.FC<Props> = ({
               Source Bin
             </Typography>
             <Typography fontSize={18} fontWeight='bold'>
-              {sourceBin}
+              {sourceBinCode ?? '--'}
             </Typography>
           </Box>
           <Box>
@@ -82,7 +79,7 @@ const InventoryListCard: React.FC<Props> = ({
               Target Bin
             </Typography>
             <Typography fontSize={18} fontWeight='bold'>
-              {destinationBin || '--'}
+              {destinationBinCode ?? '--'}
             </Typography>
           </Box>
         </Box>
@@ -142,12 +139,9 @@ const InventoryListCard: React.FC<Props> = ({
                 justifyContent: 'space-between'
               }}
             >
-              {/* Offload */}
               <Typography fontSize={12} sx={{ mr: 3 }}>
-                {' '}
                 Offload
               </Typography>
-              {/* Offload Input */}
               <TextField
                 size='small'
                 type='number'
@@ -159,12 +153,10 @@ const InventoryListCard: React.FC<Props> = ({
                 }
                 inputProps={{ min: 0 }}
               />
-
-              {/* Checkbox */}
               <Checkbox
                 checked={item.selected}
                 onChange={() => onCheckboxChange(item.inventoryID)}
-                sx={{ ml: 2 }} // Adds margin between checkbox and input field
+                sx={{ ml: 2 }}
               />
             </Box>
           </Box>

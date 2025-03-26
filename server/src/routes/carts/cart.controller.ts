@@ -1,13 +1,13 @@
 import { Request, Response, NextFunction } from 'express'
 import {
-  loadProductByBinID,
+  loadProductByBinCode,
   unloadProductListToBinByWoker,
-  unloadProductToBin,
-  getInventoriesByCartId
+  unloadProductToBin
 } from './cart.service'
 import { getBinByBinID } from '../bins/bin.service'
 import { getCurrentInProcessTask, completeTask } from '../tasks/task.service'
 import AppError from 'utils/appError'
+import Bin from '../bins/bin.model'
 
 export const loadProduct = async (
   req: Request,
@@ -15,17 +15,12 @@ export const loadProduct = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { cartID } = res.locals
-    const { binID } = req.body
+    const { cartID, warehouseID } = res.locals
+    const { binCode } = req.body
 
-    const result = await loadProductByBinID(binID, cartID)
+    const result = await loadProductByBinCode(binCode, cartID, warehouseID)
 
-    const unloadBin = await getBinByBinID(binID)
-    const binCode = unloadBin.binCode
-
-    res
-      .status(result.status)
-      .json({ message: result.message, binCode: binCode })
+    res.status(result.status).json({ message: result.message })
   } catch (error) {
     next(error)
   }
@@ -37,58 +32,17 @@ export const unloadProductByWoker = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    // Get the binID and the list of products to unload(each product has inventoryID and quantity that needs to be unloaded)
-    const { binID, unloadProductList } = req.body
+    const { binCode, unloadProductList } = req.body
+    const { warehouseID } = res.locals
 
-    const result = await unloadProductListToBinByWoker(binID, unloadProductList)
-
-    const unloadBin = await getBinByBinID(binID)
-    const binCode = unloadBin.binCode
-
-    res.status(200).json({
-      message: `✅ ${result} Product successfully unloaded into ${binID}.`,
-      updatedProducts: result,
-      binCode: binCode
-    })
-  } catch (error) {
-    next(error)
-  }
-}
-
-export const unloadProductByTask = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const { binID } = req.body
-    const cartID = res.locals.cartID
-    const accountID = res.locals.accountID
-
-    const task = await getCurrentInProcessTask(accountID)
-
-    const { productCode, destinationBinID } = task
-    if (binID !== destinationBinID) {
-      throw new AppError(
-        400,
-        '❌ Please unload to the bin assigned in the task'
-      )
-    }
-
-    const result = await unloadProductToBin({
-      binID,
-      cartID,
-      productCode
-    })
-
-    if (result === 0) {
-      throw new AppError(404, '❌ No matching inventory unload to this bin')
-    }
-
-    await completeTask(task.taskID)
+    const result = await unloadProductListToBinByWoker(
+      binCode,
+      unloadProductList,
+      warehouseID
+    )
 
     res.status(200).json({
-      message: `${result} item(s) successfully unloaded into ${binID}`,
+      message: `✅ ${result} Product(s) successfully unloaded into bin "${binCode}"`,
       updatedProducts: result
     })
   } catch (error) {
@@ -96,7 +50,62 @@ export const unloadProductByTask = async (
   }
 }
 
-export const getInventoriesByCart = async (
+// src/controllers/task.controller.ts
+export const unloadProductByTask = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { binCode } = req.body
+    const cartID = res.locals.cartID
+    const accountID = res.locals.accountID
+    const warehouseID = res.locals.warehouseID
+
+    const task = await getCurrentInProcessTask(accountID)
+    const { productCode, destinationBinID } = task
+
+    const destinationBin = await Bin.findOne({
+      where: {
+        warehouseID,
+        binCode
+      }
+    })
+
+    if (!destinationBin) {
+      throw new AppError(404, `❌ Bin with code "${binCode}" not found`)
+    }
+
+    if (destinationBin.binID !== destinationBinID) {
+      throw new AppError(
+        400,
+        '❌ Please unload to the bin assigned in the task'
+      )
+    }
+
+    const result = await unloadProductToBin({
+      cartID,
+      productCode,
+      binCode,
+      warehouseID
+    })
+
+    if (result === 0) {
+      throw new AppError(404, '❌ No matching inventory to unload to this bin')
+    }
+
+    await completeTask(task.taskID)
+
+    res.status(200).json({
+      message: `${result} item(s) successfully unloaded into ${binCode}`,
+      updatedProducts: result
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const getCarCode = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -104,11 +113,10 @@ export const getInventoriesByCart = async (
   try {
     const cartID = res.locals.cartID
 
-    const result = await getInventoriesByCartId(cartID)
+    const bin = await getBinByBinID(cartID)
 
     res.status(200).json({
-      hasProductInCar: result.hasProduct,
-      inventories: result.inventories
+      binCode: bin.binCode
     })
   } catch (error) {
     next(error)

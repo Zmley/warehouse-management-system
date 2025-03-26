@@ -13,7 +13,7 @@ import InventoryListCard from './InventoryListCard'
 
 const InProcessTaskPage = () => {
   const navigate = useNavigate()
-  const { inventories, getMyCart, setSelectedForUnload } = useCartContext()
+  const { inventories, setSelectedForUnload } = useCartContext()
 
   const [selectedList, setSelectedList] = useState<
     { inventoryID: string; quantity: number; selected: boolean }[]
@@ -27,7 +27,7 @@ const InProcessTaskPage = () => {
 
       setTimeout(() => {
         navigate('/success')
-      })
+      }, 1000)
     } else {
       const defaultList = inventories.map(item => ({
         inventoryID: item.inventoryID,
@@ -82,8 +82,6 @@ const InProcessTaskPage = () => {
         <CardContent>
           <InventoryListCard
             taskID=''
-            sourceBin=''
-            targetBin=''
             totalQuantity={2}
             statusPicked={true}
             inventories={inventories}

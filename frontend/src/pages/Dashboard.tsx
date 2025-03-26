@@ -1,3 +1,5 @@
+// 📁 src/pages/Dashboard.tsx
+
 import React from 'react'
 import { Box, Typography } from '@mui/material'
 import { useAuth } from '../hooks/useAuth'
@@ -7,10 +9,11 @@ import BottomBar from '../components/Bottombar'
 const Dashboard: React.FC = () => {
   const { userProfile } = useAuth()
 
-  if (
-    userProfile.role !== 'TRANSPORT_WORKER' &&
-    userProfile.role !== 'PICKER'
-  ) {
+  const isTransportWorker = userProfile.role === 'TRANSPORT_WORKER'
+  const isPicker = userProfile.role === 'PICKER'
+  const isAdmin = userProfile.role === 'ADMIN'
+
+  if (isAdmin) {
     return (
       <Box
         sx={{
@@ -24,7 +27,7 @@ const Dashboard: React.FC = () => {
           variant='h6'
           sx={{ fontWeight: 'bold', textAlign: 'center', my: 2 }}
         >
-          Hello, {userProfile.firstName} {userProfile.lastName}!
+          Hello Admin, {userProfile.firstName} {userProfile.lastName}!
         </Typography>
       </Box>
     )
@@ -57,7 +60,7 @@ const Dashboard: React.FC = () => {
         </Typography>
       </Box>
 
-      {userProfile.role === 'TRANSPORT_WORKER' && <BottomBar />}
+      {isTransportWorker && <BottomBar />}
     </Box>
   )
 }

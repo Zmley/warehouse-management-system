@@ -3,12 +3,15 @@ import QrScanner from 'qr-scanner'
 import { useNavigate } from 'react-router-dom'
 import { loadToCart, unloadFromCart } from '../api/cartApi'
 import { useCartContext } from '../contexts/cart'
+import { useWorkerTaskContext } from '../contexts/workerTask'
 
-const useQRScanner = (onScanSuccess?: (binID: string) => void) => {
+const useQRScanner = (onScanSuccess?: (binCode: string) => void) => {
   const navigate = useNavigate()
   const [isScanning, setIsScanning] = useState(false)
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const scannerRef = useRef<QrScanner | null>(null)
+
+  const { setDestinationBinCode, fetchBinCodes } = useWorkerTaskContext()
 
   const { hasProductInCar, getMyCart, selectedForUnload } = useCartContext()
 
@@ -59,32 +62,29 @@ const useQRScanner = (onScanSuccess?: (binID: string) => void) => {
             videoRef.current,
             async result => {
               if (result.data) {
-                stopScanning()
+                // stopScanning()
 
-                const binID = result.data.trim()
-                if (binID) {
+                const binCode = result.data.trim()
+                if (binCode) {
                   try {
                     const isLoadingToCar = !hasProductInCar
 
                     const productList = !isLoadingToCar ? selectedForUnload : []
 
                     const response = isLoadingToCar
-                      ? await loadToCart(binID)
-                      : await unloadFromCart(binID, productList)
+                      ? await loadToCart(binCode)
+                      : await unloadFromCart(binCode, productList)
 
                     if (response?.success) {
-                      const binCode = response.data?.binCode
-                      const storageKey = isLoadingToCar
-                        ? 'sourceBinCode'
-                        : 'destinationBinCode'
-
-                      if (binCode) {
-                        localStorage.setItem(storageKey, binCode)
+                      if (isLoadingToCar) {
+                        await fetchBinCodes()
+                      } else {
+                        setDestinationBinCode(binCode)
                       }
 
                       await getMyCart()
 
-                      onScanSuccess?.(binID)
+                      onScanSuccess?.(binCode)
                       stopScanning()
                     } else {
                       console.error('❌ [QrScanner] Unexpected response')

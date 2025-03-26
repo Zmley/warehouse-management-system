@@ -3,7 +3,7 @@ import {
   loadProduct,
   unloadProductByWoker,
   unloadProductByTask,
-  getInventoriesByCart
+  getCarCode
 } from './cart.controller'
 import transportWorkerOnly from '../../middlewares/transportWorker.middleware'
 
@@ -12,6 +12,6 @@ const router = express.Router()
 router.post('/load', transportWorkerOnly, loadProduct)
 router.post('/unload', transportWorkerOnly, unloadProductByWoker)
 router.post('/unloadByTask', transportWorkerOnly, unloadProductByTask)
-router.get('/getInventoriesByCart', transportWorkerOnly, getInventoriesByCart)
+router.post('/carCode', transportWorkerOnly, getCarCode)
 
 export default router
