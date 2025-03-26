@@ -1,9 +1,12 @@
 import React from 'react'
 import { Box, Typography, Card, CardContent, Button, Grid } from '@mui/material'
 import { usePendingTaskContext } from '../contexts/pendingTask'
+import { useNavigate } from 'react-router-dom'
 
 const PendingTaskList: React.FC = () => {
   const { pendingTasks } = usePendingTaskContext()
+
+  const navigate = useNavigate()
 
   return (
     <Box p={2}>
@@ -30,23 +33,24 @@ const PendingTaskList: React.FC = () => {
                 <Grid item xs={4}>
                   <Typography variant='caption'>Source Bin</Typography>
                   <Typography fontWeight='bold' fontSize={20}>
-                    {/* 直接使用 sourceBinCode */}
-                    {task.sourceBinCode.join(', ')}{' '}
-                    {/* 通过 join() 拼接多个 binCode */}
+                    {task.sourceBinCode.join(', ')}
                   </Typography>
                 </Grid>
+
                 <Grid item xs={4}>
-                  <Typography variant='caption'>Target Bin</Typography>
+                  <Typography variant='caption'>Product Code</Typography>
                   <Typography fontWeight='bold' fontSize={20}>
-                    {/* 直接使用 destinationBinCode */}
-                    {task.destinationBinCode.join(', ')}{' '}
-                    {/* 通过 join() 拼接多个 binCode */}
+                    {task.productCode}
                   </Typography>
                 </Grid>
+
                 <Grid item xs={4} display='flex' justifyContent='flex-end'>
                   <Button
                     variant='contained'
                     color='primary'
+                    onClick={() =>
+                      navigate(`/task/${task.taskID}`, { state: { task } })
+                    }
                     sx={{
                       borderRadius: '24px',
                       textTransform: 'none',

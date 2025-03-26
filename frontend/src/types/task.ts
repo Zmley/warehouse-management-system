@@ -9,4 +9,5 @@ export interface Task {
   creatorID: string
   accepterID: string | null // accepterID 可能为空
   createdAt: string
+  productCode: string
 }

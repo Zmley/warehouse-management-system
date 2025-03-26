@@ -282,6 +282,7 @@ export const getPendingTasksService = async (warehouseID: string) => {
 
       return {
         taskID: task.taskID,
+        productCode: task.productCode,
         sourceBinID: task.sourceBinID,
         sourceBinCode,
         destinationBinID: task.destinationBinID,
