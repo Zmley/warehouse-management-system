@@ -85,7 +85,6 @@ const InProcessTaskPage = () => {
         <CardContent>
           <InventoryListCard
             taskID=''
-            totalQuantity={2}
             statusPicked={true}
             inventories={inventoryListInCar}
             selectedList={inventoryListReadyToUnload}

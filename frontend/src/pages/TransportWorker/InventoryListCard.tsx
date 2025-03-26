@@ -15,7 +15,6 @@ import { sanitizeQuantityInput } from '../../utils/inputHelpers'
 
 interface Props {
   taskID: string
-  totalQuantity: number
   statusPicked: boolean
   inventories: InventoryItem[]
   selectedList: {
