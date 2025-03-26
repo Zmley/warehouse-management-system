@@ -13,7 +13,7 @@ import InventoryListCard from './InventoryListCard'
 
 const InProcessTaskPage = () => {
   const navigate = useNavigate()
-  const { inventoriesInCar, setSelectedForUnload, justUnloadedSuccess } =
+  const { inventoryListInCar, setSelectedForUnload, justUnloadedSuccess } =
     useCartContext()
 
   const [inventoryListReadyToUnload, setInventoryListReadyToUnload] = useState<
@@ -23,22 +23,24 @@ const InProcessTaskPage = () => {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    if (inventoriesInCar.length === 0 && justUnloadedSuccess) {
+    if (inventoryListInCar.length === 0 && justUnloadedSuccess) {
       setIsLoading(false)
 
       setTimeout(() => {
         navigate('/success')
       }, 500)
     } else {
-      const defaultInventoryListReadyToUnload = inventoriesInCar.map(item => ({
-        inventoryID: item.inventoryID,
-        quantity: item.quantity,
-        selected: true
-      }))
+      const defaultInventoryListReadyToUnload = inventoryListInCar.map(
+        item => ({
+          inventoryID: item.inventoryID,
+          quantity: item.quantity,
+          selected: true
+        })
+      )
       setInventoryListReadyToUnload(defaultInventoryListReadyToUnload)
       setIsLoading(false)
     }
-  }, [inventoriesInCar, navigate])
+  }, [inventoryListInCar, navigate])
 
   const handleQuantityChange = (inventoryID: string, newQuantity: number) => {
     setInventoryListReadyToUnload(prev =>
@@ -85,7 +87,7 @@ const InProcessTaskPage = () => {
             taskID=''
             totalQuantity={2}
             statusPicked={true}
-            inventories={inventoriesInCar}
+            inventories={inventoryListInCar}
             selectedList={inventoryListReadyToUnload}
             onQuantityChange={handleQuantityChange}
             onSelectionChange={handleSelectionChange}
