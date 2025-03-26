@@ -13,7 +13,12 @@ const useQRScanner = (onScanSuccess?: (binCode: string) => void) => {
 
   const { setDestinationBinCode, fetchBinCodes } = useWorkerTaskContext()
 
-  const { hasProductInCar, getMyCart, selectedForUnload } = useCartContext()
+  const {
+    hasProductInCar,
+    getMyCart,
+    selectedInventoriesToUnload,
+    setJustUnloadedSuccess
+  } = useCartContext()
 
   const stopScanning = async () => {
     if (scannerRef.current) {
@@ -68,13 +73,17 @@ const useQRScanner = (onScanSuccess?: (binCode: string) => void) => {
                   try {
                     const isLoadingToCar = !hasProductInCar
 
-                    const productList = !isLoadingToCar ? selectedForUnload : []
+                    const productList = !isLoadingToCar
+                      ? selectedInventoriesToUnload
+                      : []
 
                     const response = isLoadingToCar
                       ? await loadToCart(binCode)
                       : await unloadFromCart(binCode, productList)
 
                     if (response?.success) {
+                      setJustUnloadedSuccess(true)
+
                       if (isLoadingToCar) {
                         await fetchBinCodes()
                       } else {

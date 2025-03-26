@@ -11,11 +11,13 @@ import { InventoryItem } from '../types/inventory'
 interface CartContextType {
   inventories: InventoryItem[]
   hasProductInCar: boolean
-  selectedForUnload: { inventoryID: string; quantity: number }[]
+  selectedInventoriesToUnload: { inventoryID: string; quantity: number }[]
   setSelectedForUnload: (
     list: { inventoryID: string; quantity: number }[]
   ) => void
   getMyCart: () => Promise<void>
+  justUnloadedSuccess: boolean
+  setJustUnloadedSuccess: (value: boolean) => void
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
@@ -30,9 +32,10 @@ export const useCartContext = (): CartContextType => {
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [inventories, setInventories] = useState<InventoryItem[]>([])
-  const [selectedForUnload, setSelectedForUnload] = useState<
+  const [selectedInventoriesToUnload, setSelectedForUnload] = useState<
     { inventoryID: string; quantity: number }[]
   >([])
+  const [justUnloadedSuccess, setJustUnloadedSuccess] = useState(false)
 
   const getMyCart = async () => {
     try {
@@ -54,16 +57,16 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     getMyCart()
   }, [])
 
-  const [justUnloadedSuccess, setJustUnloadedSuccess] = useState(false)
-
   return (
     <CartContext.Provider
       value={{
         inventories,
         hasProductInCar: inventories.length > 0,
-        selectedForUnload,
+        selectedInventoriesToUnload,
         setSelectedForUnload,
-        getMyCart
+        getMyCart,
+        justUnloadedSuccess,
+        setJustUnloadedSuccess
       }}
     >
       {children}

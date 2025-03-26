@@ -11,6 +11,7 @@ import {
 } from '@mui/material'
 import { InventoryItem } from '../../types/inventory'
 import { useWorkerTaskContext } from '../../contexts/workerTask'
+import { sanitizeQuantityInput } from '../../utils/inputHelpers'
 
 interface Props {
   taskID: string
@@ -23,7 +24,7 @@ interface Props {
     selected: boolean
   }[]
   onQuantityChange: (inventoryID: string, newQuantity: number) => void
-  onCheckboxChange: (inventoryID: string) => void
+  onSelectionChange: (inventoryID: string) => void
 }
 
 const InventoryListCard: React.FC<Props> = ({
@@ -32,7 +33,7 @@ const InventoryListCard: React.FC<Props> = ({
   inventories,
   selectedList,
   onQuantityChange,
-  onCheckboxChange
+  onSelectionChange
 }) => {
   const [errorOpen, setErrorOpen] = React.useState(false)
   const [errorMessage, setErrorMessage] = React.useState('')
@@ -40,8 +41,7 @@ const InventoryListCard: React.FC<Props> = ({
   const { sourceBinCode, destinationBinCode } = useWorkerTaskContext()
 
   const handleInputChange = (inventoryID: string, value: string) => {
-    const sanitized = value.replace(/^0+(?!$)/, '')
-    const numericValue = sanitized === '' ? 0 : Number(sanitized)
+    const numericValue = sanitizeQuantityInput(value)
 
     const inventory = inventories.find(i => i.inventoryID === inventoryID)
     if (inventory && numericValue > inventory.quantity) {
@@ -155,7 +155,7 @@ const InventoryListCard: React.FC<Props> = ({
               />
               <Checkbox
                 checked={item.selected}
-                onChange={() => onCheckboxChange(item.inventoryID)}
+                onChange={() => onSelectionChange(item.inventoryID)}
                 sx={{ ml: 2 }}
               />
             </Box>

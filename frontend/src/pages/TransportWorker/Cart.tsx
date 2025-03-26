@@ -13,7 +13,8 @@ import InventoryListCard from './InventoryListCard'
 
 const InProcessTaskPage = () => {
   const navigate = useNavigate()
-  const { inventories, setSelectedForUnload } = useCartContext()
+  const { inventories, setSelectedForUnload, justUnloadedSuccess } =
+    useCartContext()
 
   const [selectedList, setSelectedList] = useState<
     { inventoryID: string; quantity: number; selected: boolean }[]
@@ -22,12 +23,12 @@ const InProcessTaskPage = () => {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    if (inventories.length === 0) {
+    if (inventories.length === 0 && justUnloadedSuccess) {
       setIsLoading(false)
 
       setTimeout(() => {
         navigate('/success')
-      }, 1000)
+      }, 500)
     } else {
       const defaultList = inventories.map(item => ({
         inventoryID: item.inventoryID,
@@ -49,7 +50,7 @@ const InProcessTaskPage = () => {
     )
   }
 
-  const handleCheckboxChange = (inventoryID: string) => {
+  const handleSelectionChange = (inventoryID: string) => {
     setSelectedList(prev =>
       prev.map(item =>
         item.inventoryID === inventoryID
@@ -87,7 +88,7 @@ const InProcessTaskPage = () => {
             inventories={inventories}
             selectedList={selectedList}
             onQuantityChange={handleQuantityChange}
-            onCheckboxChange={handleCheckboxChange}
+            onSelectionChange={handleSelectionChange}
           />
 
           {/* Go to Scan Page */}
