@@ -9,7 +9,7 @@ import { getInventoriesByCart } from '../api/cartApi'
 import { InventoryItem } from '../types/inventory'
 
 interface CartContextType {
-  inventories: InventoryItem[]
+  inventoriesInCar: InventoryItem[]
   hasProductInCar: boolean
   selectedInventoriesToUnload: { inventoryID: string; quantity: number }[]
   setSelectedForUnload: (
@@ -31,7 +31,7 @@ export const useCartContext = (): CartContextType => {
 }
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
-  const [inventories, setInventories] = useState<InventoryItem[]>([])
+  const [inventoriesInCar, setInventoriesInCar] = useState<InventoryItem[]>([])
   const [selectedInventoriesToUnload, setSelectedForUnload] = useState<
     { inventoryID: string; quantity: number }[]
   >([])
@@ -42,12 +42,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       const response = await getInventoriesByCart()
       const list = response.inventories || []
 
-      setInventories(list)
-
-      if (list.length === 0) {
-        localStorage.removeItem('sourceBinCode')
-        localStorage.removeItem('destinationBinCode')
-      }
+      setInventoriesInCar(list)
     } catch (error) {
       console.error('❌ Failed to fetch cart:', error)
     }
@@ -60,8 +55,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   return (
     <CartContext.Provider
       value={{
-        inventories,
-        hasProductInCar: inventories.length > 0,
+        inventoriesInCar,
+        hasProductInCar: inventoriesInCar.length > 0,
         selectedInventoriesToUnload,
         setSelectedForUnload,
         getMyCart,

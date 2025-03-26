@@ -13,35 +13,35 @@ import InventoryListCard from './InventoryListCard'
 
 const InProcessTaskPage = () => {
   const navigate = useNavigate()
-  const { inventories, setSelectedForUnload, justUnloadedSuccess } =
+  const { inventoriesInCar, setSelectedForUnload, justUnloadedSuccess } =
     useCartContext()
 
-  const [selectedList, setSelectedList] = useState<
+  const [inventoryListReadyToUnload, setInventoryListReadyToUnload] = useState<
     { inventoryID: string; quantity: number; selected: boolean }[]
   >([])
 
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    if (inventories.length === 0 && justUnloadedSuccess) {
+    if (inventoriesInCar.length === 0 && justUnloadedSuccess) {
       setIsLoading(false)
 
       setTimeout(() => {
         navigate('/success')
       }, 500)
     } else {
-      const defaultList = inventories.map(item => ({
+      const defaultInventoryListReadyToUnload = inventoriesInCar.map(item => ({
         inventoryID: item.inventoryID,
         quantity: item.quantity,
         selected: true
       }))
-      setSelectedList(defaultList)
+      setInventoryListReadyToUnload(defaultInventoryListReadyToUnload)
       setIsLoading(false)
     }
-  }, [inventories, navigate])
+  }, [inventoriesInCar, navigate])
 
   const handleQuantityChange = (inventoryID: string, newQuantity: number) => {
-    setSelectedList(prev =>
+    setInventoryListReadyToUnload(prev =>
       prev.map(item =>
         item.inventoryID === inventoryID
           ? { ...item, quantity: newQuantity }
@@ -51,7 +51,7 @@ const InProcessTaskPage = () => {
   }
 
   const handleSelectionChange = (inventoryID: string) => {
-    setSelectedList(prev =>
+    setInventoryListReadyToUnload(prev =>
       prev.map(item =>
         item.inventoryID === inventoryID
           ? {
@@ -85,8 +85,8 @@ const InProcessTaskPage = () => {
             taskID=''
             totalQuantity={2}
             statusPicked={true}
-            inventories={inventories}
-            selectedList={selectedList}
+            inventories={inventoriesInCar}
+            selectedList={inventoryListReadyToUnload}
             onQuantityChange={handleQuantityChange}
             onSelectionChange={handleSelectionChange}
           />
@@ -98,7 +98,7 @@ const InProcessTaskPage = () => {
               color='primary'
               fullWidth
               onClick={() => {
-                const selectedToUnload = selectedList
+                const selectedToUnload = inventoryListReadyToUnload
                   .filter(item => item.selected)
                   .map(({ inventoryID, quantity }) => ({
                     inventoryID,
