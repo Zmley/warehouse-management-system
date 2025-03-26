@@ -50,7 +50,6 @@ export const unloadProductByWoker = async (
   }
 }
 
-// src/controllers/task.controller.ts
 export const unloadProductByTask = async (
   req: Request,
   res: Response,
@@ -71,10 +70,6 @@ export const unloadProductByTask = async (
         binCode
       }
     })
-
-    if (!destinationBin) {
-      throw new AppError(404, `❌ Bin with code "${binCode}" not found`)
-    }
 
     if (destinationBin.binID !== destinationBinID) {
       throw new AppError(
