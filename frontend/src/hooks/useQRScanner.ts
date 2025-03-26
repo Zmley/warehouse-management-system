@@ -40,8 +40,6 @@ const useQRScanner = (onScanSuccess?: (binCode: string) => void) => {
   }, [])
 
   const startScanning = async () => {
-    await stopScanning()
-    await new Promise(resolve => setTimeout(resolve, 100))
     setIsScanning(true)
 
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -62,7 +60,8 @@ const useQRScanner = (onScanSuccess?: (binCode: string) => void) => {
             videoRef.current,
             async result => {
               if (result.data) {
-                // stopScanning()
+                // Stop scanning to prevent multiple scans
+                stopScanning()
 
                 const binCode = result.data.trim()
                 if (binCode) {
