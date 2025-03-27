@@ -13,10 +13,9 @@ const PendingTaskList: React.FC = () => {
   const handleAcceptTask = async (task: Task) => {
     try {
       const res = await acceptTask(task.taskID)
-      if (res && res.success !== false) {
+      if (res && res.task) {
         const currentTask = await fetchInProcessTask()
         if (currentTask) {
-          console.log('✅ Task accepted and fetched:', currentTask)
           navigate('/task-detail')
         } else {
           console.warn('⚠️ No in-process task found after accept')
