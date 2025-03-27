@@ -58,9 +58,19 @@ const PendingTaskList: React.FC = () => {
                   <Typography variant='caption' color='text.secondary'>
                     Source Bin
                   </Typography>
-                  <Typography fontWeight='bold'>
-                    {task.sourceBinCode?.join(', ') || '--'}
-                  </Typography>
+                  <Box>
+                    {task.sourceBinCode?.length ? (
+                      task.sourceBinCode.map((code, index) => (
+                        <Typography key={index} fontWeight='bold' fontSize={14}>
+                          {code}
+                        </Typography>
+                      ))
+                    ) : (
+                      <Typography fontWeight='bold' fontSize={14}>
+                        --
+                      </Typography>
+                    )}
+                  </Box>
                 </Grid>
 
                 <Grid item xs={4}>
