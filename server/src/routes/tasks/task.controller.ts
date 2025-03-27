@@ -4,7 +4,8 @@ import {
   acceptTaskService,
   createTaskAsPicker,
   getPendingTasksService,
-  getInProcessTaskWithBinCodes
+  getInProcessTaskWithBinCodes,
+  cancelTaskByID
 } from '../tasks/task.service'
 import AppError from '../../utils/appError'
 
@@ -117,4 +118,26 @@ export const getCurrentInProcessTask = async (
     next(error)
   }
 }
-// Compare this snippet from task.controller.ts:
+
+export const cancelTaskByTaskID = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { taskID } = req.body
+
+    if (!taskID) {
+      return res.status(400).json({ message: '❌ taskID is required' })
+    }
+
+    const task = await cancelTaskByID(taskID)
+
+    res.status(200).json({
+      message: `Task "${task.taskID}" cancelled successfully`,
+      task
+    })
+  } catch (error) {
+    next(error)
+  }
+}

@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom'
 import { Box, Typography, Button, Grid, Card, Chip } from '@mui/material'
 import { QrCode } from 'lucide-react'
 import { usePendingTaskContext } from '../../contexts/pendingTask'
+import { useTask } from '../../hooks/useTask'
 
 const TaskDetailPage: React.FC = () => {
   const navigate = useNavigate()
   const { inProcessTask, fetchInProcessTask } = usePendingTaskContext()
   const [loading, setLoading] = useState(true)
+  const { cancelCurrentTask } = useTask()
 
   const [task, setTask] = useState(inProcessTask)
 
@@ -151,6 +153,14 @@ const TaskDetailPage: React.FC = () => {
           color='error'
           fullWidth
           sx={{ mt: 2, borderRadius: 3, textTransform: 'none' }}
+          onClick={async () => {
+            if (task?.taskID) {
+              try {
+                await cancelCurrentTask(task.taskID)
+                navigate('/')
+              } catch (err) {}
+            }
+          }}
         >
           Cancel ❌
         </Button>

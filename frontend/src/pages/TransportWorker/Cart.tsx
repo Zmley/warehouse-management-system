@@ -4,18 +4,20 @@ import {
   Card,
   CardContent,
   Container,
+  Grid,
   Typography
 } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCartContext } from '../../contexts/cart'
 import InventoryListCard from '../../components/InventoryListCard'
-import { usePendingTaskContext } from '../../contexts/pendingTask' //
+import { usePendingTaskContext } from '../../contexts/pendingTask'
+import { useBinCodeContext } from '../../contexts/binCode'
 
 const Cart = () => {
-  const { inProcessTask, fetchInProcessTask } = usePendingTaskContext() // 👈 加这行
-
   const navigate = useNavigate()
+  const { inProcessTask, fetchInProcessTask } = usePendingTaskContext()
+  const { setDestinationBinCode } = useBinCodeContext()
   const { inventoryListInCar, setSelectedForUnload, justUnloadedSuccess } =
     useCartContext()
 
@@ -24,41 +26,53 @@ const Cart = () => {
   >([])
 
   const [isLoading, setIsLoading] = useState(true)
+
   useEffect(() => {
-    if (!inProcessTask) {
-      fetchInProcessTask()
+    const prepareCart = async () => {
+      if (!inProcessTask) {
+        await fetchInProcessTask()
+      }
     }
+
+    prepareCart()
+  }, [])
+
+  useEffect(() => {
+    if (inProcessTask?.destinationBinCode?.length) {
+      setDestinationBinCode(inProcessTask.destinationBinCode[0] || null)
+    }
+
     if (inventoryListInCar.length === 0 && justUnloadedSuccess) {
       setIsLoading(false)
       setTimeout(() => {
         navigate('/success')
       }, 500)
     } else {
-      let defaultInventoryListReadyToUnload
+      let defaultList
 
       if (inProcessTask) {
         if (inProcessTask.productCode === 'ALL') {
-          defaultInventoryListReadyToUnload = inventoryListInCar.map(item => ({
+          defaultList = inventoryListInCar.map(item => ({
             inventoryID: item.inventoryID,
             quantity: item.quantity,
             selected: true
           }))
         } else {
-          defaultInventoryListReadyToUnload = inventoryListInCar.map(item => ({
+          defaultList = inventoryListInCar.map(item => ({
             inventoryID: item.inventoryID,
             quantity: item.quantity,
             selected: item.productCode === inProcessTask.productCode
           }))
         }
       } else {
-        defaultInventoryListReadyToUnload = inventoryListInCar.map(item => ({
+        defaultList = inventoryListInCar.map(item => ({
           inventoryID: item.inventoryID,
           quantity: item.quantity,
           selected: true
         }))
       }
 
-      setInventoryListReadyToUnload(defaultInventoryListReadyToUnload)
+      setInventoryListReadyToUnload(defaultList)
       setIsLoading(false)
     }
   }, [inventoryListInCar, navigate, inProcessTask])
@@ -105,7 +119,7 @@ const Cart = () => {
       >
         <CardContent>
           <InventoryListCard
-            taskID=''
+            taskID={inProcessTask?.taskID || ''}
             statusPicked={true}
             inventories={inventoryListInCar}
             selectedList={inventoryListReadyToUnload}
@@ -113,7 +127,6 @@ const Cart = () => {
             onSelectionChange={handleSelectionChange}
           />
 
-          {/* Go to Scan Page */}
           <Box sx={{ mt: 3 }}>
             <Button
               variant='contained'
@@ -128,7 +141,6 @@ const Cart = () => {
                   }))
 
                 setSelectedForUnload(selectedToUnload)
-
                 navigate('/scan-qr')
               }}
               sx={{ borderRadius: '12px', py: 1.2 }}

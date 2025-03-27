@@ -308,3 +308,21 @@ export const getInProcessTaskWithBinCodes = async (
     accepterID: task.accepterID
   }
 }
+
+export const cancelTaskByID = async (taskID: string) => {
+  const task = await Task.findByPk(taskID)
+
+  if (!task) {
+    throw new AppError(404, '❌ Task not found')
+  }
+
+  if (task.status !== 'IN_PROCESS') {
+    throw new AppError(400, '❌ Only tasks in progress can be cancelled')
+  }
+
+  task.status = 'PENDING'
+  task.accepterID = null
+  await task.save()
+
+  return task
+}

@@ -51,7 +51,24 @@ export const unloadProductByWoker = async (
 ): Promise<void> => {
   try {
     const { binCode, unloadProductList } = req.body
-    const { warehouseID } = res.locals
+    const { warehouseID, accountID } = res.locals
+    let task = null
+    try {
+      task = await getInProcessTaskWithBinCodes(accountID, warehouseID)
+    } catch (err) {
+      console.warn('⚠️ No active task, proceeding with normal unload...')
+    }
+    if (task && task.destinationBinCode?.length > 0) {
+      const allowedBinCodes = task.destinationBinCode
+
+      if (!allowedBinCodes.includes(binCode)) {
+        return void res.status(400).json({
+          message: `❌ You can only unload to your assigned destination bin(s): ${allowedBinCodes.join(
+            ', '
+          )}`
+        })
+      }
+    }
 
     const result = await unloadProductListToBinByWoker(
       binCode,
@@ -59,8 +76,12 @@ export const unloadProductByWoker = async (
       warehouseID
     )
 
-    res.status(200).json({
-      message: `✅ ${result} Product(s) successfully unloaded into bin "${binCode}"`,
+    if (task) {
+      await completeTask(task.taskID)
+    }
+
+    return void res.status(200).json({
+      message: `${result} product(s) successfully unloaded into bin "${binCode}"`,
       updatedProducts: result
     })
   } catch (error) {

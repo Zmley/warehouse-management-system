@@ -22,23 +22,23 @@ const PendingTaskList: React.FC = () => {
         const currentTask = await fetchInProcessTask()
 
         if (currentTask) {
-          setDestinationBinCode(currentTask.destinationBinCode?.[0] || null)
+          // setDestinationBinCode(currentTask.destinationBinCode?.[0] || null)
 
-          if (currentTask.productCode === 'ALL') {
-            const allItems = inventoryListInCar.map(item => ({
-              inventoryID: item.inventoryID,
-              quantity: item.quantity
-            }))
-            setSelectedForUnload(allItems)
-          } else {
-            const matchedItems = inventoryListInCar
-              .filter(item => item.productCode === currentTask.productCode)
-              .map(item => ({
-                inventoryID: item.inventoryID,
-                quantity: item.quantity
-              }))
-            setSelectedForUnload(matchedItems)
-          }
+          // if (currentTask.productCode === 'ALL') {
+          //   const allItems = inventoryListInCar.map(item => ({
+          //     inventoryID: item.inventoryID,
+          //     quantity: item.quantity
+          //   }))
+          //   setSelectedForUnload(allItems)
+          // } else {
+          //   const matchedItems = inventoryListInCar
+          //     .filter(item => item.productCode === currentTask.productCode)
+          //     .map(item => ({
+          //       inventoryID: item.inventoryID,
+          //       quantity: item.quantity
+          //     }))
+          //   setSelectedForUnload(matchedItems)
+          // }
 
           navigate('/task-detail')
         } else {
