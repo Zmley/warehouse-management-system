@@ -31,3 +31,26 @@ export const getBinByBinID = async (binID: string) => {
     throw new AppError(500, '❌ Failed to fetch bin')
   }
 }
+
+export const getBinByBinCode = async (binCode: string, warehouseID: string) => {
+  try {
+    const bin = await Bin.findOne({
+      where: {
+        binCode: binCode,
+        warehouseID
+      }
+    })
+
+    if (!bin) {
+      throw new AppError(
+        404,
+        `❌ No bin found with code: ${binCode} in this warehouse`
+      )
+    }
+
+    return bin
+  } catch (error) {
+    console.error('❌ Error fetching bin by code and warehouse:', error)
+    throw new AppError(500, '❌ Failed to fetch bin by code and warehouse')
+  }
+}

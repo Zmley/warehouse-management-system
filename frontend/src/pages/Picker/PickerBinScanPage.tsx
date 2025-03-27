@@ -1,14 +1,25 @@
+// src/pages/Picker/PickerBinScanPage.tsx
+
 import React, { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Container, Typography, Button, Box } from '@mui/material'
 import usePickBinScanner from '../../hooks/usePickBinScanner'
+import { getBinByBinCode } from '../../api/binApi'
 
 const PickerBinScanPage = () => {
   const navigate = useNavigate()
 
-  const handleBinScanned = (binCode: string) => {
-    console.log('✅ Bin Scanned:', binCode)
-    navigate('/create-task', { state: { binCode } })
+  const handleBinScanned = async (binCode: string) => {
+    console.log('📦 Bin Scanned:', binCode)
+
+    try {
+      const bin = await getBinByBinCode(binCode)
+
+      navigate('/create-task', { state: { bin } })
+    } catch (err) {
+      console.error('❌ Failed to fetch bin info:', err)
+      alert('❌ Bin not found or error occurred')
+    }
   }
 
   const { videoRef, startScanning, stopScanning } =
@@ -23,15 +34,13 @@ const PickerBinScanPage = () => {
         streamRef.current = s
         startScanning()
       })
-      .catch(err => {
+      .catch(() => {
         alert('Please enable camera permissions to use scanning.')
       })
 
     return () => {
       stopScanning()
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop())
-      }
+      streamRef.current?.getTracks().forEach(track => track.stop())
     }
   }, [])
 
