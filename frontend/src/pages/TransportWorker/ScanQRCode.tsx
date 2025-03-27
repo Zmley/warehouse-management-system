@@ -2,8 +2,10 @@ import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Container, Typography, Button, Box } from '@mui/material'
 import useQRScanner from '../../hooks/useQRScanner'
+import { usePendingTaskContext } from '../../contexts/pendingTask'
 
 const ScanTaskPage = () => {
+  const { inProcessTask } = usePendingTaskContext()
   const navigate = useNavigate()
   const { videoRef, startScanning, stopScanning } =
     useQRScanner(handleScanSuccess)
@@ -88,23 +90,17 @@ const ScanTaskPage = () => {
         color='error'
         fullWidth
         sx={{ marginTop: 3, fontSize: '14px', borderRadius: '10px' }}
-        onClick={() => {
-          stopButtonRef.current?.click()
-          window.location.href = '/'
+        onClick={async () => {
+          await stopScanning()
+
+          if (inProcessTask) {
+            navigate('/task-detail')
+          } else {
+            navigate('/')
+          }
         }}
       >
         ❌ Cancel
-      </Button>
-
-      <Button
-        ref={stopButtonRef}
-        onClick={async () => {
-          console.log('🎯 Hidden stop button triggered')
-          await stopScanning()
-        }}
-        style={{ display: 'none' }}
-      >
-        Hidden Stop
       </Button>
     </Container>
   )
