@@ -5,6 +5,7 @@ import { Box, Typography } from '@mui/material'
 import { useAuth } from '../hooks/useAuth'
 import TopBar from '../components/Topbar'
 import BottomBar from '../components/Bottombar'
+import PendingTaskList from '../components/PendingTaskCard'
 
 const Dashboard: React.FC = () => {
   const { userProfile } = useAuth()
@@ -59,6 +60,8 @@ const Dashboard: React.FC = () => {
           Dashboard Content Goes Here
         </Typography>
       </Box>
+
+      {isTransportWorker && <PendingTaskList />}
 
       {isTransportWorker && <BottomBar />}
     </Box>

@@ -9,9 +9,9 @@ import {
   Snackbar,
   Alert
 } from '@mui/material'
-import { InventoryItem } from '../../types/inventory'
-import { useBinCodeContext } from '../../contexts/binCode'
-import { sanitizeQuantityInput } from '../../utils/inputHelpers'
+import { InventoryItem } from '../types/inventory'
+import { useBinCodeContext } from '../contexts/binCode'
+import { sanitizeQuantityInput } from '../utils/inputHelpers'
 
 interface Props {
   taskID: string

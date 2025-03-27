@@ -5,15 +5,19 @@ import { CartProvider } from './contexts/cart'
 import { BinCodeProvider } from './contexts/binCode'
 import PublicRoute from './routes/PublicRoute'
 
+import { PendingTaskProvider } from './contexts/pendingTask'
+
 const App: React.FC = () => {
   return (
     <Router>
       <AuthProvider>
-        <BinCodeProvider>
-          <CartProvider>
-            <PublicRoute />
-          </CartProvider>
-        </BinCodeProvider>
+        <PendingTaskProvider>
+          <BinCodeProvider>
+            <CartProvider>
+              <PublicRoute />
+            </CartProvider>
+          </BinCodeProvider>
+        </PendingTaskProvider>
       </AuthProvider>
     </Router>
   )

@@ -9,7 +9,7 @@ import {
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCartContext } from '../../contexts/cart'
-import InventoryListCard from './InventoryListCard'
+import InventoryListCard from '../../components/InventoryListCard'
 
 const Cart = () => {
   const navigate = useNavigate()
