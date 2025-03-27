@@ -1,4 +1,3 @@
-// ✅ src/contexts/PendingTaskContext.tsx
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { Task } from '../types/task'
 import { getPendingTasks, getCurrentInProcessTask } from '../api/taskApi'
@@ -69,5 +68,3 @@ export const PendingTaskProvider: React.FC<{ children: React.ReactNode }> = ({
     </PendingTaskContext.Provider>
   )
 }
-
-// ✅ src/components/PendingTaskList.tsx

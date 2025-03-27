@@ -4,8 +4,12 @@ import { usePendingTaskContext } from '../contexts/pendingTask'
 import { useNavigate } from 'react-router-dom'
 import { acceptTask } from '../api/taskApi'
 import { Task } from '../types/task'
+import { useBinCodeContext } from '../contexts/binCode'
+import { useCartContext } from '../contexts/cart'
 
 const PendingTaskList: React.FC = () => {
+  const { setDestinationBinCode } = useBinCodeContext()
+  const { setSelectedForUnload, inventoryListInCar } = useCartContext()
   const { pendingTasks, setInProcessTask, fetchInProcessTask } =
     usePendingTaskContext()
   const navigate = useNavigate()
@@ -13,15 +17,35 @@ const PendingTaskList: React.FC = () => {
   const handleAcceptTask = async (task: Task) => {
     try {
       const res = await acceptTask(task.taskID)
+
       if (res && res.task) {
         const currentTask = await fetchInProcessTask()
+
         if (currentTask) {
+          setDestinationBinCode(currentTask.destinationBinCode?.[0] || null)
+
+          if (currentTask.productCode === 'ALL') {
+            const allItems = inventoryListInCar.map(item => ({
+              inventoryID: item.inventoryID,
+              quantity: item.quantity
+            }))
+            setSelectedForUnload(allItems)
+          } else {
+            const matchedItems = inventoryListInCar
+              .filter(item => item.productCode === currentTask.productCode)
+              .map(item => ({
+                inventoryID: item.inventoryID,
+                quantity: item.quantity
+              }))
+            setSelectedForUnload(matchedItems)
+          }
+
           navigate('/task-detail')
         } else {
-          console.warn('⚠️ No in-process task found after accept')
+          console.warn('⚠️ No in-process task returned after accepting.')
         }
       } else {
-        console.error('❌ Accept task API returned failure')
+        console.warn('⚠️ Task accept API did not return expected task.')
       }
     } catch (error) {
       console.error('❌ Failed to accept task:', error)

@@ -10,8 +10,11 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCartContext } from '../../contexts/cart'
 import InventoryListCard from '../../components/InventoryListCard'
+import { usePendingTaskContext } from '../../contexts/pendingTask' //
 
 const Cart = () => {
+  const { inProcessTask, fetchInProcessTask } = usePendingTaskContext() // 👈 加这行
+
   const navigate = useNavigate()
   const { inventoryListInCar, setSelectedForUnload, justUnloadedSuccess } =
     useCartContext()
@@ -21,26 +24,44 @@ const Cart = () => {
   >([])
 
   const [isLoading, setIsLoading] = useState(true)
-
   useEffect(() => {
+    if (!inProcessTask) {
+      fetchInProcessTask()
+    }
     if (inventoryListInCar.length === 0 && justUnloadedSuccess) {
       setIsLoading(false)
-
       setTimeout(() => {
         navigate('/success')
       }, 500)
     } else {
-      const defaultInventoryListReadyToUnload = inventoryListInCar.map(
-        item => ({
+      let defaultInventoryListReadyToUnload
+
+      if (inProcessTask) {
+        if (inProcessTask.productCode === 'ALL') {
+          defaultInventoryListReadyToUnload = inventoryListInCar.map(item => ({
+            inventoryID: item.inventoryID,
+            quantity: item.quantity,
+            selected: true
+          }))
+        } else {
+          defaultInventoryListReadyToUnload = inventoryListInCar.map(item => ({
+            inventoryID: item.inventoryID,
+            quantity: item.quantity,
+            selected: item.productCode === inProcessTask.productCode
+          }))
+        }
+      } else {
+        defaultInventoryListReadyToUnload = inventoryListInCar.map(item => ({
           inventoryID: item.inventoryID,
           quantity: item.quantity,
           selected: true
-        })
-      )
+        }))
+      }
+
       setInventoryListReadyToUnload(defaultInventoryListReadyToUnload)
       setIsLoading(false)
     }
-  }, [inventoryListInCar, navigate])
+  }, [inventoryListInCar, navigate, inProcessTask])
 
   const handleQuantityChange = (inventoryID: string, newQuantity: number) => {
     setInventoryListReadyToUnload(prev =>
