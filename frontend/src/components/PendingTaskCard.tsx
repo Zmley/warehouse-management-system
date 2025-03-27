@@ -49,7 +49,7 @@ const PendingTaskList: React.FC = () => {
             }}
           >
             <CardContent>
-              <Typography fontWeight='bold' fontSize={16} mb={2}>
+              <Typography fontWeight='bold' fontSize={13} mb={2}>
                 Task ID # {task.taskID}
               </Typography>
 
@@ -61,12 +61,12 @@ const PendingTaskList: React.FC = () => {
                   <Box>
                     {task.sourceBinCode?.length ? (
                       task.sourceBinCode.map((code, index) => (
-                        <Typography key={index} fontWeight='bold' fontSize={14}>
+                        <Typography key={index} fontWeight='bold' fontSize={16}>
                           {code}
                         </Typography>
                       ))
                     ) : (
-                      <Typography fontWeight='bold' fontSize={14}>
+                      <Typography fontWeight='bold' fontSize={16}>
                         --
                       </Typography>
                     )}
@@ -75,7 +75,7 @@ const PendingTaskList: React.FC = () => {
 
                 <Grid item xs={4}>
                   <Typography variant='caption' color='text.secondary'>
-                    Product Code
+                    Product
                   </Typography>
                   <Typography fontWeight='bold'>{task.productCode}</Typography>
                 </Grid>
