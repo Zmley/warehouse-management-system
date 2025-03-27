@@ -19,22 +19,29 @@ export const loadProduct = async (
     const { cartID, warehouseID, accountID } = res.locals
     const { binCode } = req.body
 
+    let isAllowed = true
+
     try {
       const task = await getInProcessTaskWithBinCodes(accountID, warehouseID)
 
       const sourceBinCode: string[] = task.sourceBinCode || []
 
       if (!sourceBinCode.includes(binCode)) {
+        isAllowed = false
         throw new AppError(
           400,
           `❌ This bin (${binCode}) is not allowed for the current task.`
         )
       }
     } catch (err: any) {
-      if (err.status !== 404) {
+      if (err instanceof AppError && err.httpCode === 404) {
+        console.log('⚠️ No active task, continuing with normal load.')
+      } else {
         return next(err)
       }
     }
+
+    if (!isAllowed) return
 
     const result = await loadProductByBinCode(binCode, cartID, warehouseID)
 
