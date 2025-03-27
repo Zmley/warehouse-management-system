@@ -4,7 +4,8 @@ import React from 'react'
 import { Box, Typography } from '@mui/material'
 import { useAuth } from '../hooks/useAuth'
 import TopBar from '../components/Topbar'
-import BottomBar from '../components/Bottombar'
+import WokerBottombar from '../components/WokerBottombar'
+import PickerBottombar from '../components/PickerBottombar'
 import PendingTaskList from '../components/PendingTaskCard'
 
 const Dashboard: React.FC = () => {
@@ -63,7 +64,9 @@ const Dashboard: React.FC = () => {
 
       {isTransportWorker && <PendingTaskList />}
 
-      {isTransportWorker && <BottomBar />}
+      {isPicker && <PickerBottombar />}
+
+      {isTransportWorker && <WokerBottombar />}
     </Box>
   )
 }

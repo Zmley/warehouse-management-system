@@ -4,12 +4,15 @@ import { useNavigate } from 'react-router-dom'
 import { loadToCart, unloadFromCart } from '../api/cartApi'
 import { useCartContext } from '../contexts/cart'
 import { useBinCodeContext } from '../contexts/binCode'
+import { usePendingTaskContext } from '../contexts/pendingTask'
 
 const useQRScanner = (onScanSuccess?: (binCode: string) => void) => {
   const navigate = useNavigate()
   const [isScanning, setIsScanning] = useState(false)
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const scannerRef = useRef<QrScanner | null>(null)
+
+  const { fetchInProcessTask } = usePendingTaskContext()
 
   const { setDestinationBinCode, fetchBinCodes } = useBinCodeContext()
 
@@ -91,6 +94,7 @@ const useQRScanner = (onScanSuccess?: (binCode: string) => void) => {
                       }
 
                       await getMyCart()
+                      await fetchInProcessTask()
 
                       onScanSuccess?.(binCode)
                       stopScanning()

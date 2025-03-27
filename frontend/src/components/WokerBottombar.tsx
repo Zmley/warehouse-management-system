@@ -3,7 +3,7 @@ import React from 'react'
 import { BottomNavigation, BottomNavigationAction } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 
-const BottomBar: React.FC = () => {
+const WokerBottomBar: React.FC = () => {
   const navigate = useNavigate()
 
   return (
@@ -46,4 +46,4 @@ const BottomBar: React.FC = () => {
   )
 }
 
-export default BottomBar
+export default WokerBottomBar
