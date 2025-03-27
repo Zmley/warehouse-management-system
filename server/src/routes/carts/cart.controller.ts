@@ -8,6 +8,7 @@ import { getBinByBinID } from '../bins/bin.service'
 import { getCurrentInProcessTask, completeTask } from '../tasks/task.service'
 import AppError from 'utils/appError'
 import Bin from '../bins/bin.model'
+import { getInProcessTaskWithBinCodes } from '../tasks/task.service'
 
 export const loadProduct = async (
   req: Request,
@@ -15,8 +16,25 @@ export const loadProduct = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { cartID, warehouseID } = res.locals
+    const { cartID, warehouseID, accountID } = res.locals
     const { binCode } = req.body
+
+    try {
+      const task = await getInProcessTaskWithBinCodes(accountID, warehouseID)
+
+      const sourceBinCode: string[] = task.sourceBinCode || []
+
+      if (!sourceBinCode.includes(binCode)) {
+        throw new AppError(
+          400,
+          `❌ This bin (${binCode}) is not allowed for the current task.`
+        )
+      }
+    } catch (err: any) {
+      if (err.status !== 404) {
+        return next(err)
+      }
+    }
 
     const result = await loadProductByBinCode(binCode, cartID, warehouseID)
 
