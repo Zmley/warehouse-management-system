@@ -29,53 +29,53 @@ const Cart = () => {
 
   useEffect(() => {
     const prepareCart = async () => {
-      if (!inProcessTask) {
+      if (inventoryListInCar.length > 0 && !inProcessTask) {
         await fetchInProcessTask()
       }
     }
-
     prepareCart()
-  }, [])
+  }, [inventoryListInCar])
 
   useEffect(() => {
-    if (inProcessTask?.destinationBinCode?.length) {
-      setDestinationBinCode(inProcessTask.destinationBinCode[0] || null)
-    }
-
     if (inventoryListInCar.length === 0 && justUnloadedSuccess) {
       setIsLoading(false)
       setTimeout(() => {
         navigate('/success')
       }, 500)
-    } else {
-      let defaultList
+      return
+    }
 
-      if (inProcessTask) {
-        if (inProcessTask.productCode === 'ALL') {
-          defaultList = inventoryListInCar.map(item => ({
-            inventoryID: item.inventoryID,
-            quantity: item.quantity,
-            selected: true
-          }))
-        } else {
-          defaultList = inventoryListInCar.map(item => ({
-            inventoryID: item.inventoryID,
-            quantity: item.quantity,
-            selected: item.productCode === inProcessTask.productCode
-          }))
-        }
-      } else {
+    let defaultList
+
+    if (inProcessTask) {
+      if (inProcessTask.productCode === 'ALL') {
         defaultList = inventoryListInCar.map(item => ({
           inventoryID: item.inventoryID,
           quantity: item.quantity,
           selected: true
         }))
+      } else {
+        defaultList = inventoryListInCar.map(item => ({
+          inventoryID: item.inventoryID,
+          quantity: item.quantity,
+          selected: item.productCode === inProcessTask.productCode
+        }))
       }
 
-      setInventoryListReadyToUnload(defaultList)
-      setIsLoading(false)
+      if (inProcessTask.destinationBinCode?.length) {
+        setDestinationBinCode(inProcessTask.destinationBinCode[0])
+      }
+    } else {
+      defaultList = inventoryListInCar.map(item => ({
+        inventoryID: item.inventoryID,
+        quantity: item.quantity,
+        selected: true
+      }))
     }
-  }, [inventoryListInCar, navigate, inProcessTask])
+
+    setInventoryListReadyToUnload(defaultList)
+    setIsLoading(false)
+  }, [inventoryListInCar, inProcessTask, justUnloadedSuccess])
 
   const handleQuantityChange = (inventoryID: string, newQuantity: number) => {
     setInventoryListReadyToUnload(prev =>

@@ -1,51 +1,31 @@
 import React from 'react'
-import { Box, Typography, Card, CardContent, Button, Grid } from '@mui/material'
+import {
+  Box,
+  Typography,
+  Card,
+  CardContent,
+  Button,
+  Grid,
+  Divider
+} from '@mui/material'
 import { usePendingTaskContext } from '../contexts/pendingTask'
 import { useNavigate } from 'react-router-dom'
-import { acceptTask } from '../api/taskApi'
+import { acceptTask as acceptTaskAPI } from '../api/taskApi'
 import { Task } from '../types/task'
-import { useBinCodeContext } from '../contexts/binCode'
-import { useCartContext } from '../contexts/cart'
 
 const PendingTaskList: React.FC = () => {
-  const { setDestinationBinCode } = useBinCodeContext()
-  const { setSelectedForUnload, inventoryListInCar } = useCartContext()
-  const { pendingTasks, setInProcessTask, fetchInProcessTask } =
-    usePendingTaskContext()
+  const { pendingTasks, fetchInProcessTask } = usePendingTaskContext()
   const navigate = useNavigate()
 
-  const handleAcceptTask = async (task: Task) => {
+  const acceptTask = async (task: Task) => {
     try {
-      const res = await acceptTask(task.taskID)
+      const res = await acceptTaskAPI(task.taskID)
 
-      if (res && res.task) {
-        const currentTask = await fetchInProcessTask()
-
-        if (currentTask) {
-          // setDestinationBinCode(currentTask.destinationBinCode?.[0] || null)
-
-          // if (currentTask.productCode === 'ALL') {
-          //   const allItems = inventoryListInCar.map(item => ({
-          //     inventoryID: item.inventoryID,
-          //     quantity: item.quantity
-          //   }))
-          //   setSelectedForUnload(allItems)
-          // } else {
-          //   const matchedItems = inventoryListInCar
-          //     .filter(item => item.productCode === currentTask.productCode)
-          //     .map(item => ({
-          //       inventoryID: item.inventoryID,
-          //       quantity: item.quantity
-          //     }))
-          //   setSelectedForUnload(matchedItems)
-          // }
-
-          navigate('/task-detail')
-        } else {
-          console.warn('⚠️ No in-process task returned after accepting.')
-        }
+      if (res?.task) {
+        await fetchInProcessTask()
+        navigate('/task-detail')
       } else {
-        console.warn('⚠️ Task accept API did not return expected task.')
+        console.warn('⚠️ Task accept API did not return a task.')
       }
     } catch (error) {
       console.error('❌ Failed to accept task:', error)
@@ -62,40 +42,77 @@ const PendingTaskList: React.FC = () => {
             key={task.taskID}
             variant='outlined'
             sx={{
-              mb: 2,
-              borderRadius: 3,
-              backgroundColor: '#f1f6fa',
-              boxShadow: '2px 2px 6px rgba(0,0,0,0.05)'
+              mb: 3,
+              borderRadius: 4,
+              backgroundColor: '#f5faff',
+              boxShadow: '0 4px 10px rgba(0, 0, 0, 0.06)'
             }}
           >
             <CardContent>
-              <Typography fontWeight='bold' fontSize={14} mb={1}>
+              <Typography fontWeight='bold' fontSize={16} mb={2}>
                 Task ID # {task.taskID}
               </Typography>
 
-              <Grid container spacing={2} alignItems='center' mb={1}>
+              <Grid container spacing={2}>
                 <Grid item xs={4}>
-                  <Typography variant='caption'>Source Bin</Typography>
-                  <Typography fontWeight='bold' fontSize={20}>
+                  <Typography variant='caption' color='text.secondary'>
+                    Source Bin
+                  </Typography>
+                  <Typography fontWeight='bold'>
                     {task.sourceBinCode?.join(', ') || '--'}
                   </Typography>
                 </Grid>
 
                 <Grid item xs={4}>
-                  <Typography variant='caption'>Product Code</Typography>
-                  <Typography fontWeight='bold' fontSize={20}>
-                    {task.productCode}
+                  <Typography variant='caption' color='text.secondary'>
+                    Product Code
                   </Typography>
+                  <Typography fontWeight='bold'>{task.productCode}</Typography>
                 </Grid>
 
-                <Grid item xs={4} display='flex' justifyContent='flex-end'>
-                  <Button onClick={() => handleAcceptTask(task)}>Accept</Button>
+                <Grid item xs={4}>
+                  <Typography variant='caption' color='text.secondary'>
+                    Target Bin
+                  </Typography>
+                  <Typography fontWeight='bold'>
+                    {task.destinationBinCode?.join(', ') || '--'}
+                  </Typography>
                 </Grid>
               </Grid>
 
-              <Typography variant='caption' color='text.secondary'>
-                Create Date {new Date(task.createdAt).toLocaleString()}
-              </Typography>
+              <Divider sx={{ my: 2 }} />
+
+              <Box
+                display='flex'
+                justifyContent='space-between'
+                alignItems='center'
+              >
+                <Typography variant='caption' color='text.secondary'>
+                  Create Date: {new Date(task.createdAt).toLocaleString()}
+                </Typography>
+
+                <Button
+                  variant='contained'
+                  onClick={() => acceptTask(task)}
+                  sx={{
+                    backgroundColor: '#2563eb',
+                    color: 'white',
+                    fontWeight: 600,
+                    px: 1.5,
+                    py: 0.8,
+                    textTransform: 'uppercase',
+                    borderRadius: 1.5,
+                    fontSize: 11,
+                    minWidth: '72px',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
+                    '&:hover': {
+                      backgroundColor: '#1e50c2'
+                    }
+                  }}
+                >
+                  Accept
+                </Button>
+              </Box>
             </CardContent>
           </Card>
         ))

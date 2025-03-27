@@ -1,5 +1,5 @@
 import { usePendingTaskContext } from '../contexts/pendingTask'
-import { cancelTask } from '../api/taskApi'
+import { cancelTask, acceptTask } from '../api/taskApi'
 
 export const useTask = () => {
   const { refreshPendingTasks } = usePendingTaskContext()
