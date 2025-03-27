@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Box, Typography, Button, Grid, Card, Chip } from '@mui/material'
 import { QrCode } from 'lucide-react'
@@ -6,7 +6,37 @@ import { usePendingTaskContext } from '../../contexts/pendingTask'
 
 const TaskDetailPage: React.FC = () => {
   const navigate = useNavigate()
-  const { inProcessTask: task } = usePendingTaskContext()
+  const { inProcessTask, fetchInProcessTask } = usePendingTaskContext()
+  const [loading, setLoading] = useState(true)
+
+  const [task, setTask] = useState(inProcessTask)
+
+  useEffect(() => {
+    const loadTask = async () => {
+      if (!inProcessTask) {
+        const latestTask = await fetchInProcessTask()
+        setTask(latestTask)
+      } else {
+        setTask(inProcessTask)
+      }
+      setLoading(false)
+    }
+
+    loadTask()
+  }, [])
+
+  if (loading) {
+    return (
+      <Box
+        display='flex'
+        justifyContent='center'
+        alignItems='center'
+        height='100vh'
+      >
+        <Typography>Loading...</Typography>
+      </Box>
+    )
+  }
 
   if (!task) {
     return (
@@ -56,7 +86,7 @@ const TaskDetailPage: React.FC = () => {
               {task.sourceBinCode?.join('/')}
             </Typography>
           </Grid>
-          <Grid item></Grid>
+          <Grid item />
           <Grid item>
             <Typography variant='caption'>Target Bin</Typography>
             <Typography fontWeight='bold' fontSize={20}>
