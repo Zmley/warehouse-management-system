@@ -2,6 +2,7 @@ import Task from './task.model'
 import Inventory from '../inventory/inventory.model'
 import Bin from '../bins/bin.model'
 import AppError from '../../utils/appError'
+import { getBinCodesByProductCodeAndWarehouse } from '../bins/bin.service'
 
 export const hasActiveTask = async (accountID: string): Promise<boolean> => {
   try {
@@ -149,39 +150,6 @@ export const completeTask = async (taskID: string) => {
 /////////////////////////////////////
 
 /////////////////////////////////////////
-
-export const getBinCodesByProductCodeAndWarehouse = async (
-  productCode: string,
-  warehouseID: string
-): Promise<string[]> => {
-  try {
-    const inventories = await Bin.findAll({
-      where: {
-        warehouseID,
-        type: 'INVENTORY'
-      },
-      include: [
-        {
-          model: Inventory,
-          where: { productCode },
-          attributes: []
-        }
-      ],
-      attributes: ['binCode']
-    })
-
-    if (!inventories.length) {
-      throw new Error('No bins found for the given productCode and warehouse')
-    }
-
-    const binCodes = inventories.map(bin => bin.binCode)
-
-    return binCodes
-  } catch (error) {
-    console.error('Error fetching binCodes:', error)
-    throw new Error('Failed to fetch binCodes')
-  }
-}
 
 export const getBinCodeByBinID = async (
   binID: string

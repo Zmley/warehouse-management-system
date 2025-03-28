@@ -1,5 +1,3 @@
-// src/pages/Picker/CreateTaskPage.tsx
-
 import React, { useState, useEffect } from 'react'
 import {
   Box,
@@ -7,13 +5,13 @@ import {
   Container,
   Typography,
   Card,
-  CardContent,
   TextField,
   Autocomplete
 } from '@mui/material'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { createPickerTask } from '../../api/taskApi'
 import { fetchAllProducts } from '../../api/productApi'
+import { fetchMatchingBinCodes } from '../../api/binApi'
 import { Bin } from '../../types/bin'
 
 const CreateTaskPage = () => {
@@ -23,32 +21,51 @@ const CreateTaskPage = () => {
 
   const [productCode, setProductCode] = useState('')
   const [productOptions, setProductOptions] = useState<string[]>([])
+  const [sourceBins, setSourceBins] = useState<string[]>([])
+  const [sourceError, setSourceError] = useState(false)
 
   useEffect(() => {
     const loadProducts = async () => {
       try {
         const response = await fetchAllProducts()
-        const codes = response.productCodes // 👈 确保后端返回的 key 是 productCodes
+        const codes = response.productCodes
         setProductOptions(codes)
       } catch (err) {
         console.error('❌ Failed to load products', err)
       }
     }
-
     loadProducts()
   }, [])
 
+  useEffect(() => {
+    const getSources = async () => {
+      if (productCode) {
+        try {
+          const response = await fetchMatchingBinCodes(productCode)
+          setSourceBins(response)
+          setSourceError(response.length === 0)
+        } catch (err) {
+          console.error('❌ Failed to fetch source bins:', err)
+          setSourceBins([])
+          setSourceError(true)
+        }
+      } else {
+        setSourceBins([])
+        setSourceError(false)
+      }
+    }
+    getSources()
+  }, [productCode])
+
   const handleSubmit = async () => {
-    if (!productCode || !bin?.binCode) {
-      alert('Please select product')
+    if (!productCode || !bin?.binCode || sourceError) {
+      alert('Please select a valid product and ensure bins are available.')
       return
     }
 
     try {
-      const task = await createPickerTask(bin.binCode, productCode)
-      console.log('✅ Created Task:', task)
-      alert('✅ Task created successfully!')
-      navigate('/')
+      await createPickerTask(bin.binCode, productCode)
+      navigate('/success')
     } catch (err) {
       console.error('❌ Error creating task:', err)
       alert('❌ Failed to create task')
@@ -84,6 +101,22 @@ const CreateTaskPage = () => {
           display='flex'
           justifyContent='space-between'
           alignItems='center'
+          mb={1}
+        >
+          <Typography fontWeight='bold'>Source Bin</Typography>
+          <Typography fontWeight='bold' fontSize='1.2rem'>
+            {sourceError
+              ? 'No matching bins'
+              : sourceBins.length > 0
+              ? sourceBins.join('/')
+              : '-'}
+          </Typography>
+        </Box>
+
+        <Box
+          display='flex'
+          justifyContent='space-between'
+          alignItems='center'
           mb={3}
         >
           <Typography fontWeight='bold'>Target Bin</Typography>
@@ -107,6 +140,7 @@ const CreateTaskPage = () => {
           variant='contained'
           color='primary'
           fullWidth
+          disabled={!productCode || sourceError}
           onClick={handleSubmit}
           sx={{
             borderRadius: '12px',
