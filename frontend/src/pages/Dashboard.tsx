@@ -16,20 +16,29 @@ const Dashboard: React.FC = () => {
   const isAdmin = userProfile.role === 'ADMIN'
 
   const [showCreatedTasks, setShowCreatedTasks] = useState(false)
-  const [createdTasks, setCreatedTasks] = useState<Task[]>([])
+  const [showArchivedTasks, setShowArchivedTasks] = useState(false)
+  const [allTasks, setAllTasks] = useState<Task[]>([])
 
   const handleTaskListClick = async () => {
     try {
       const response = await getPickerCreatedTasks()
-      setCreatedTasks(response)
+      setAllTasks(response)
       setShowCreatedTasks(true)
+      setShowArchivedTasks(false)
     } catch (error) {
       console.error('Failed to fetch created tasks', error)
     }
   }
 
-  const handleArchivedClick = () => {
-    setShowCreatedTasks(false)
+  const handleArchivedClick = async () => {
+    try {
+      const response = await getPickerCreatedTasks()
+      setAllTasks(response)
+      setShowCreatedTasks(false)
+      setShowArchivedTasks(true)
+    } catch (error) {
+      console.error('Failed to fetch archived tasks', error)
+    }
   }
 
   const handleRefresh = async () => {
@@ -55,14 +64,23 @@ const Dashboard: React.FC = () => {
 
         {isPicker && showCreatedTasks && (
           <PickerCreatedTaskList
-            createdTasks={createdTasks}
+            createdTasks={allTasks.filter(task => task.status === 'PENDING')}
             onRefresh={handleRefresh}
+            status='PENDING'
           />
         )}
 
-        {isPicker && !showCreatedTasks && (
+        {isPicker && showArchivedTasks && (
+          <PickerCreatedTaskList
+            createdTasks={allTasks.filter(task => task.status === 'COMPLETED')}
+            onRefresh={handleRefresh}
+            status='COMPLETED'
+          />
+        )}
+
+        {isPicker && !showCreatedTasks && !showArchivedTasks && (
           <Typography color='text.secondary' mt={4} textAlign='center'>
-            Click "Task List" to view your tasks
+            Click "Task List" or "Archived Task" to view your tasks
           </Typography>
         )}
       </Box>
@@ -70,7 +88,7 @@ const Dashboard: React.FC = () => {
       {isPicker && (
         <PickerBottombar
           onTaskListClick={handleTaskListClick}
-          // onArchivedClick={handleArchivedClick}
+          onArchivedClick={handleArchivedClick}
         />
       )}
 

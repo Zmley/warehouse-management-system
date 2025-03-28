@@ -14,11 +14,13 @@ import { cancelPickerTask } from '../../api/taskApi'
 interface Props {
   createdTasks: Task[]
   onRefresh: () => void
+  status: 'PENDING' | 'COMPLETED'
 }
 
 const PickerCreatedTaskList: React.FC<Props> = ({
   createdTasks,
-  onRefresh
+  onRefresh,
+  status
 }) => {
   const handleCancel = async (taskID: string) => {
     try {
@@ -33,7 +35,9 @@ const PickerCreatedTaskList: React.FC<Props> = ({
   return (
     <Box p={2}>
       {createdTasks.length === 0 ? (
-        <Typography color='text.secondary'>No created tasks found.</Typography>
+        <Typography color='text.secondary'>
+          No {status.toLowerCase()} tasks found.
+        </Typography>
       ) : (
         createdTasks.map(task => (
           <Card
@@ -97,22 +101,24 @@ const PickerCreatedTaskList: React.FC<Props> = ({
                   Create Date: {new Date(task.createdAt).toLocaleString()}
                 </Typography>
 
-                <Button
-                  variant='outlined'
-                  color='error'
-                  onClick={() => handleCancel(task.taskID)}
-                  sx={{
-                    fontWeight: 600,
-                    px: 1.5,
-                    py: 0.8,
-                    textTransform: 'uppercase',
-                    borderRadius: 1.5,
-                    fontSize: 11,
-                    minWidth: '72px'
-                  }}
-                >
-                  Cancel
-                </Button>
+                {status === 'PENDING' && (
+                  <Button
+                    variant='outlined'
+                    color='error'
+                    onClick={() => handleCancel(task.taskID)}
+                    sx={{
+                      fontWeight: 600,
+                      px: 1.5,
+                      py: 0.8,
+                      textTransform: 'uppercase',
+                      borderRadius: 1.5,
+                      fontSize: 11,
+                      minWidth: '72px'
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                )}
               </Box>
             </CardContent>
           </Card>

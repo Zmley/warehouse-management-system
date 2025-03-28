@@ -10,10 +10,12 @@ import ArchiveIcon from '@mui/icons-material/Archive'
 
 interface PickerBottomBarProps {
   onTaskListClick?: () => void
+  onArchivedClick?: () => void
 }
 
 const PickerBottomBar: React.FC<PickerBottomBarProps> = ({
-  onTaskListClick
+  onTaskListClick,
+  onArchivedClick
 }) => {
   const navigate = useNavigate()
 
@@ -47,7 +49,7 @@ const PickerBottomBar: React.FC<PickerBottomBarProps> = ({
       <BottomNavigationAction
         label='Archived Task'
         icon={<ArchiveIcon />}
-        onClick={() => navigate('/archived-tasks')}
+        onClick={onArchivedClick || (() => navigate('/archived-tasks'))}
         sx={{ minWidth: '33.33%' }}
       />
     </BottomNavigation>

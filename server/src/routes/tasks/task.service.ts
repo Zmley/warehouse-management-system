@@ -318,10 +318,10 @@ export const getPickerCreatedTasksService = async (
 ) => {
   const tasks = await Task.findAll({
     where: {
-      creatorID: accountID,
-      status: {
-        [Op.in]: ['PENDING']
-      }
+      creatorID: accountID
+      // status: {
+      //   [Op.in]: ['PENDING']
+      // }
     }
   })
 
