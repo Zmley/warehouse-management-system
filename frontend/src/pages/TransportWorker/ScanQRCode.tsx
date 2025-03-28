@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Container, Typography, Button, Box } from '@mui/material'
 import useQRScanner from '../../hooks/useQRScanner'
+import { useCartContext } from '../../contexts/cart'
 
 const ScanTaskPage = () => {
   const navigate = useNavigate()
@@ -10,6 +11,8 @@ const ScanTaskPage = () => {
 
   const stopButtonRef = useRef<HTMLButtonElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
+
+  const { hasProductInCar, getMyCart } = useCartContext()
 
   useEffect(() => {
     navigator.mediaDevices
@@ -40,9 +43,13 @@ const ScanTaskPage = () => {
 
   async function handleScanSuccess(binID: string) {
     console.log(`Scanned new bin ID: ${binID}`)
-    setTimeout(() => {
-      navigate('/in-process-task')
-    })
+
+    await getMyCart()
+    if (!hasProductInCar) {
+      setTimeout(() => {
+        navigate('/in-process-task')
+      }, 500)
+    }
   }
 
   return (

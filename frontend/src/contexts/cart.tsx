@@ -18,6 +18,7 @@ interface CartContextType {
   getMyCart: () => Promise<void>
   justUnloadedSuccess: boolean
   setJustUnloadedSuccess: (value: boolean) => void
+  setHasProductInCar: (hasProduct: boolean) => void
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
@@ -39,10 +40,14 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   >([])
   const [justUnloadedSuccess, setJustUnloadedSuccess] = useState(false)
 
+  const [hasProductInCar, setHasProductInCar] = useState<boolean>(false)
+
   const getMyCart = async () => {
     try {
       const response = await getInventoriesByCart()
       const list = response.inventories || []
+
+      setHasProductInCar(response.hasProductInCar)
 
       setInventoryListInCar(list)
     } catch (error) {
@@ -57,6 +62,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   return (
     <CartContext.Provider
       value={{
+        setHasProductInCar,
         inventoryListInCar,
         hasProductInCar: inventoryListInCar.length > 0,
         selectedInventoriesToUnload,

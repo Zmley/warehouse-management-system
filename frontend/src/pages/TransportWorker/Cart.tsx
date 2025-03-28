@@ -10,10 +10,11 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCartContext } from '../../contexts/cart'
 import InventoryListCard from './InventoryListCard'
+import { getMyCartCode } from '../../api/cartApi'
 
 const Cart = () => {
   const navigate = useNavigate()
-  const { inventoryListInCar, setSelectedForUnload, justUnloadedSuccess } =
+  const { inventoryListInCar, setSelectedForUnload, getMyCart } =
     useCartContext()
 
   const [inventoryListReadyToUnload, setInventoryListReadyToUnload] = useState<
@@ -23,12 +24,8 @@ const Cart = () => {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    if (inventoryListInCar.length === 0 && justUnloadedSuccess) {
+    if (inventoryListInCar.length === 0) {
       setIsLoading(false)
-
-      setTimeout(() => {
-        navigate('/success')
-      }, 500)
     } else {
       const defaultInventoryListReadyToUnload = inventoryListInCar.map(
         item => ({
@@ -40,7 +37,7 @@ const Cart = () => {
       setInventoryListReadyToUnload(defaultInventoryListReadyToUnload)
       setIsLoading(false)
     }
-  }, [inventoryListInCar, navigate])
+  }, [inventoryListInCar])
 
   const handleQuantityChange = (inventoryID: string, newQuantity: number) => {
     setInventoryListReadyToUnload(prev =>

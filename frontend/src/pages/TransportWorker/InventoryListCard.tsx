@@ -67,14 +67,6 @@ const InventoryListCard: React.FC<Props> = ({
         <Box display='flex' justifyContent='space-between' mt={1}>
           <Box>
             <Typography variant='caption' fontWeight='bold'>
-              Source Bin
-            </Typography>
-            <Typography fontSize={18} fontWeight='bold'>
-              {sourceBinCode ?? '--'}
-            </Typography>
-          </Box>
-          <Box>
-            <Typography variant='caption' fontWeight='bold'>
               Target Bin
             </Typography>
             <Typography fontSize={18} fontWeight='bold'>
