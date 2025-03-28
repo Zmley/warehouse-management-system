@@ -119,6 +119,16 @@ const PickerCreatedTaskList: React.FC<Props> = ({
                     Cancel
                   </Button>
                 )}
+
+                {status === 'COMPLETED' && (
+                  <Typography
+                    fontWeight='bold'
+                    fontSize={12}
+                    color='success.main'
+                  >
+                    Completed
+                  </Typography>
+                )}
               </Box>
             </CardContent>
           </Card>

@@ -1,25 +1,23 @@
-// 📁 src/pages/common/TaskSuccessPage.tsx
 import React, { useEffect, useState } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
-import { Snackbar, Alert, Box, Typography } from '@mui/material'
+import { useNavigate } from 'react-router-dom'
+import { Box, Typography, Paper, Grow } from '@mui/material'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import { useBinCodeContext } from '../../contexts/binCode'
 import { useAuth } from '../../hooks/useAuth'
 
 const TaskSuccessPage: React.FC = () => {
   const navigate = useNavigate()
-  const location = useLocation()
-  const [open, setOpen] = useState(true)
   const { setDestinationBinCode } = useBinCodeContext()
   const { userProfile } = useAuth()
 
   const role = userProfile?.role
+  const [checked, setChecked] = useState(false)
 
   useEffect(() => {
     setDestinationBinCode(null)
+    setChecked(true)
 
     const timer = setTimeout(() => {
-      setOpen(false)
       navigate('/')
     }, 3000)
 
@@ -27,48 +25,47 @@ const TaskSuccessPage: React.FC = () => {
   }, [navigate, setDestinationBinCode])
 
   const getMessageByRole = () => {
-    if (role === 'PICKER') return '✅ Task has been created'
-    if (role === 'TRANSPORT_WORKER') return '✅ Offload succeeded'
-    return '✅ Success'
+    if (role === 'PICKER') return 'Task has been created!'
+    if (role === 'TRANSPORT_WORKER') return 'Offload completed successfully!'
+    return 'Operation completed!'
   }
 
   return (
     <Box
       sx={{
-        position: 'fixed',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        zIndex: 9999
+        height: '100vh',
+        background: 'linear-gradient(to right, #a1c4fd, #c2e9fb)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
       }}
     >
-      <Snackbar
-        open={open}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-        onClose={() => setOpen(false)}
-      >
-        <Alert
-          onClose={() => setOpen(false)}
-          severity='success'
+      <Grow in={checked} timeout={600}>
+        <Paper
+          elevation={6}
           sx={{
-            width: 'auto',
-            borderRadius: 3,
-            backgroundColor: '#f0f6fb',
+            padding: '40px 50px',
+            borderRadius: '20px',
             textAlign: 'center',
-            padding: '10px 20px',
-            fontWeight: 'bold',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            boxShadow: 4
+            backgroundColor: 'white',
+            boxShadow: '0px 8px 24px rgba(0,0,0,0.1)'
           }}
         >
           <CheckCircleIcon
-            sx={{ fontSize: 20, marginRight: 1, color: '#2f7abf' }}
+            sx={{
+              fontSize: 60,
+              color: '#4caf50',
+              mb: 2
+            }}
           />
-          <Typography variant='body1'>{getMessageByRole()}</Typography>
-        </Alert>
-      </Snackbar>
+          <Typography variant='h4' fontWeight='bold' color='primary'>
+            Success!
+          </Typography>
+          <Typography variant='body1' mt={2} fontSize={18}>
+            {getMessageByRole()}
+          </Typography>
+        </Paper>
+      </Grow>
     </Box>
   )
 }

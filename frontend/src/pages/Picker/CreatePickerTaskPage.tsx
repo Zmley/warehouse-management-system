@@ -6,7 +6,8 @@ import {
   Typography,
   Card,
   TextField,
-  Autocomplete
+  Autocomplete,
+  Paper
 } from '@mui/material'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { createPickerTask } from '../../api/taskApi'
@@ -28,8 +29,7 @@ const CreateTaskPage = () => {
     const loadProducts = async () => {
       try {
         const response = await fetchAllProducts()
-        const codes = response.productCodes
-        setProductOptions(codes)
+        setProductOptions(response.productCodes)
       } catch (err) {
         console.error('❌ Failed to load products', err)
       }
@@ -73,101 +73,132 @@ const CreateTaskPage = () => {
   }
 
   return (
-    <Container maxWidth='sm'>
-      <Typography
-        variant='h5'
-        fontWeight='bold'
-        mt={3}
-        mb={2}
-        sx={{ textDecoration: 'underline' }}
-      >
-        Create A Task
-      </Typography>
-
-      <Card
-        variant='outlined'
-        sx={{
-          borderRadius: 4,
-          p: 3,
-          backgroundColor: '#f1f5f9',
-          textAlign: 'center'
-        }}
-      >
-        <Typography mb={2} fontWeight='medium'>
-          You are about to create a task
-        </Typography>
-
-        <Box
-          display='flex'
-          justifyContent='space-between'
-          alignItems='center'
-          mb={1}
-        >
-          <Typography fontWeight='bold'>Source Bin</Typography>
-          <Typography fontWeight='bold' fontSize='1.2rem'>
-            {sourceError
-              ? 'No matching bins'
-              : sourceBins.length > 0
-              ? sourceBins.join('/')
-              : '-'}
-          </Typography>
-        </Box>
-
-        <Box
-          display='flex'
-          justifyContent='space-between'
-          alignItems='center'
-          mb={3}
-        >
-          <Typography fontWeight='bold'>Target Bin</Typography>
-          <Typography fontWeight='bold' fontSize='1.2rem'>
-            {bin?.binCode}
-          </Typography>
-        </Box>
-
-        <Autocomplete
-          options={productOptions}
-          value={productCode}
-          onChange={(_, newValue) => setProductCode(newValue || '')}
-          renderInput={params => (
-            <TextField {...params} label='Product Code' variant='outlined' />
-          )}
-          sx={{ mb: 3 }}
-          freeSolo
-        />
-
-        <Button
-          variant='contained'
-          color='primary'
-          fullWidth
-          disabled={!productCode || sourceError}
-          onClick={handleSubmit}
+    <Box
+      sx={{
+        minHeight: '100vh',
+        background: 'linear-gradient(to right, #e0f7fa, #f1f8e9)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        py: 4
+      }}
+    >
+      <Container maxWidth='sm'>
+        <Card
+          elevation={6}
           sx={{
-            borderRadius: '12px',
-            textTransform: 'none',
-            fontWeight: 'bold',
-            mb: 1
+            p: 4,
+            borderRadius: 5,
+            backgroundColor: 'white',
+            boxShadow: '0 10px 20px rgba(0,0,0,0.08)'
           }}
         >
-          Create Task
-        </Button>
+          <Typography
+            variant='h5'
+            fontWeight='bold'
+            gutterBottom
+            align='center'
+          >
+            Create A New Task
+          </Typography>
 
-        <Button
-          variant='outlined'
-          color='error'
-          fullWidth
-          onClick={() => navigate('/')}
-          sx={{
-            borderWidth: 2,
-            borderRadius: '12px',
-            textTransform: 'none',
-            fontWeight: 'bold'
-          }}
-        >
-          Cancel ⭕
-        </Button>
-      </Card>
-    </Container>
+          {/* Source Bin Display */}
+          <Box
+            display='flex'
+            justifyContent='space-between'
+            alignItems='center'
+            my={2}
+          >
+            <Typography fontWeight='bold'>Source Bin</Typography>
+            <Paper
+              variant='outlined'
+              sx={{
+                px: 2,
+                py: 0.5,
+                backgroundColor: sourceError ? '#ffcdd2' : '#e3f2fd',
+                borderRadius: 2
+              }}
+            >
+              <Typography fontWeight='bold'>
+                {sourceError
+                  ? 'No matching bins'
+                  : sourceBins.length
+                  ? sourceBins.join(', ')
+                  : '-'}
+              </Typography>
+            </Paper>
+          </Box>
+
+          {/* Target Bin Display */}
+          <Box
+            display='flex'
+            justifyContent='space-between'
+            alignItems='center'
+            my={2}
+          >
+            <Typography fontWeight='bold'>Target Bin</Typography>
+            <Paper
+              variant='outlined'
+              sx={{
+                px: 2,
+                py: 0.5,
+                backgroundColor: '#fff3e0',
+                borderRadius: 2
+              }}
+            >
+              <Typography fontWeight='bold'>{bin?.binCode || '-'}</Typography>
+            </Paper>
+          </Box>
+
+          {/* Product Autocomplete */}
+          <Autocomplete
+            options={productOptions}
+            value={productCode}
+            onChange={(_, newValue) => setProductCode(newValue || '')}
+            renderInput={params => (
+              <TextField {...params} label='Product Code' variant='outlined' />
+            )}
+            freeSolo
+            sx={{ mb: 3, mt: 2 }}
+          />
+
+          {/* Submit Button */}
+          <Button
+            variant='contained'
+            color='primary'
+            fullWidth
+            disabled={!productCode || sourceError}
+            onClick={handleSubmit}
+            sx={{
+              borderRadius: '12px',
+              textTransform: 'none',
+              fontWeight: 'bold',
+              py: 1,
+              mb: 2
+            }}
+          >
+            Create Task
+          </Button>
+
+          {/* Cancel Button */}
+          <Button
+            variant='outlined'
+            color='error'
+            fullWidth
+            onClick={() => navigate('/')}
+            sx={{
+              borderWidth: 2,
+              borderRadius: '12px',
+              textTransform: 'none',
+              fontWeight: 'bold',
+              py: 1
+            }}
+          >
+            ❌ Cancel
+          </Button>
+        </Card>
+      </Container>
+    </Box>
   )
 }
 
