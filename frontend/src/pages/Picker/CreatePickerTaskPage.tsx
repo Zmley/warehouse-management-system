@@ -1,6 +1,6 @@
 // src/pages/Picker/CreateTaskPage.tsx
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Box,
   Button,
@@ -8,13 +8,12 @@ import {
   Typography,
   Card,
   CardContent,
-  Select,
-  MenuItem,
-  InputLabel,
-  FormControl
+  TextField,
+  Autocomplete
 } from '@mui/material'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { createPickerTask } from '../../api/taskApi'
+import { fetchAllProducts } from '../../api/productApi'
 import { Bin } from '../../types/bin'
 
 const CreateTaskPage = () => {
@@ -23,6 +22,21 @@ const CreateTaskPage = () => {
   const bin: Bin = location.state?.bin
 
   const [productCode, setProductCode] = useState('')
+  const [productOptions, setProductOptions] = useState<string[]>([])
+
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const response = await fetchAllProducts()
+        const codes = response.productCodes // 👈 确保后端返回的 key 是 productCodes
+        setProductOptions(codes)
+      } catch (err) {
+        console.error('❌ Failed to load products', err)
+      }
+    }
+
+    loadProducts()
+  }, [])
 
   const handleSubmit = async () => {
     if (!productCode || !bin?.binCode) {
@@ -72,25 +86,37 @@ const CreateTaskPage = () => {
           alignItems='center'
           mb={3}
         >
-          <Typography fontWeight='bold'></Typography>
-          <Typography fontWeight='bold'>
-            Target Bin{' '}
-            <span style={{ fontSize: '1.2rem' }}>{bin?.binCode}</span>
+          <Typography fontWeight='bold'>Target Bin</Typography>
+          <Typography fontWeight='bold' fontSize='1.2rem'>
+            {bin?.binCode}
           </Typography>
         </Box>
 
-        <FormControl fullWidth sx={{ mb: 3 }}>
-          <InputLabel>Product</InputLabel>
-          <Select
-            value={productCode}
-            label='Product'
-            onChange={e => setProductCode(e.target.value)}
-          >
-            <MenuItem value='p001'>p001</MenuItem>
-            <MenuItem value='p002'>p002</MenuItem>
-            <MenuItem value='p003'>p003</MenuItem>
-          </Select>
-        </FormControl>
+        <Autocomplete
+          options={productOptions}
+          value={productCode}
+          onChange={(_, newValue) => setProductCode(newValue || '')}
+          renderInput={params => (
+            <TextField {...params} label='Product Code' variant='outlined' />
+          )}
+          sx={{ mb: 3 }}
+          freeSolo
+        />
+
+        <Button
+          variant='contained'
+          color='primary'
+          fullWidth
+          onClick={handleSubmit}
+          sx={{
+            borderRadius: '12px',
+            textTransform: 'none',
+            fontWeight: 'bold',
+            mb: 1
+          }}
+        >
+          Create Task
+        </Button>
 
         <Button
           variant='outlined'
@@ -101,8 +127,7 @@ const CreateTaskPage = () => {
             borderWidth: 2,
             borderRadius: '12px',
             textTransform: 'none',
-            fontWeight: 'bold',
-            mb: 1
+            fontWeight: 'bold'
           }}
         >
           Cancel ⭕
