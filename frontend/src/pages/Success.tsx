@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Box, Typography, Paper, Grow } from '@mui/material'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
-import { useBinCodeContext } from '../../contexts/binCode'
-import { useAuth } from '../../hooks/useAuth'
+import { useBinCodeContext } from '../contexts/binCode'
+import { useAuth } from '../hooks/useAuth'
 
 const TaskSuccessPage: React.FC = () => {
   const navigate = useNavigate()
