@@ -92,7 +92,7 @@ const useQRScanner = (onScanSuccess?: (binCode: string) => void) => {
                         await getMyCart()
 
                         const ifEmpty = response.data.hasProductInCar
-                        if (!ifEmpty) {
+                        if (hasProductInCar) {
                           setTimeout(() => {
                             navigate('/success')
                           }, 500)

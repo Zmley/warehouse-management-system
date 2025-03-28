@@ -64,7 +64,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       value={{
         setHasProductInCar,
         inventoryListInCar,
-        hasProductInCar: inventoryListInCar.length > 0,
+        hasProductInCar,
         selectedInventoriesToUnload,
         setSelectedForUnload,
         getMyCart,
