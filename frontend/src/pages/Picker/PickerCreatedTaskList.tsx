@@ -8,8 +8,8 @@ import {
   Grid,
   Divider
 } from '@mui/material'
-import { Task } from '../types/task'
-import { cancelPickerTask } from '../api/taskApi'
+import { Task } from '../../types/task'
+import { cancelPickerTask } from '../../api/taskApi'
 
 interface Props {
   createdTasks: Task[]

@@ -1,91 +1,79 @@
 import React, { useEffect, useState } from 'react'
 import { Box, Typography } from '@mui/material'
-import { useAuth } from '../hooks/useAuth'
 import TopBar from '../components/Topbar'
 import WokerBottombar from '../components/WokerBottombar'
-import PickerBottombar from '../components/PickerBottombar'
+import PickerBottombar from './Picker/PickerBottombar'
 import PendingTaskList from '../components/PendingTaskCard'
-import PickerCreatedTaskList from '../components/PickerCreatedTaskList'
+import PickerCreatedTaskList from './Picker/PickerCreatedTaskList'
+import { useAuth } from '../hooks/useAuth'
 import { getPickerCreatedTasks } from '../api/taskApi'
 import { Task } from '../types/task'
 
 const Dashboard: React.FC = () => {
   const { userProfile } = useAuth()
-
-  const isTransportWorker = userProfile.role === 'TRANSPORT_WORKER'
   const isPicker = userProfile.role === 'PICKER'
+  const isTransportWorker = userProfile.role === 'TRANSPORT_WORKER'
   const isAdmin = userProfile.role === 'ADMIN'
 
+  const [showCreatedTasks, setShowCreatedTasks] = useState(false)
   const [createdTasks, setCreatedTasks] = useState<Task[]>([])
 
-  const fetchCreatedTasks = async () => {
+  const handleTaskListClick = async () => {
     try {
-      const res = await getPickerCreatedTasks()
-      setCreatedTasks(res)
+      const response = await getPickerCreatedTasks()
+      setCreatedTasks(response)
+      setShowCreatedTasks(true)
     } catch (error) {
-      console.error('❌ Failed to load created tasks:', error)
+      console.error('Failed to fetch created tasks', error)
     }
   }
 
-  useEffect(() => {
-    if (isPicker) {
-      fetchCreatedTasks()
-    }
-  }, [isPicker])
+  const handleArchivedClick = () => {
+    setShowCreatedTasks(false)
+  }
+
+  const handleRefresh = async () => {
+    await handleTaskListClick()
+  }
 
   if (isAdmin) {
     return (
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          height: '100vh',
-          backgroundColor: '#F7F9FC'
-        }}
-      >
-        <Typography
-          variant='h6'
-          sx={{ fontWeight: 'bold', textAlign: 'center', my: 2 }}
-        >
-          Hello Admin, {userProfile.firstName} {userProfile.lastName}!
+      <Box sx={{ p: 4 }}>
+        <Typography variant='h6'>
+          Hello Admin, {userProfile.firstName}!
         </Typography>
       </Box>
     )
   }
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100vh',
-        backgroundColor: '#F7F9FC'
-      }}
-    >
-      {/* TopBar Component */}
+    <Box sx={{ height: '100vh', backgroundColor: '#F7F9FC' }}>
       <TopBar userName={`${userProfile.firstName} ${userProfile.lastName}`} />
 
-      {/* Main Content */}
-      <Box
-        sx={{
-          flex: 1,
-          overflowY: 'auto',
-          px: 2,
-          pb: 10 // padding bottom for bottom bar spacing
-        }}
-      >
+      <Box sx={{ flex: 1, p: 2, pb: 8 }}>
         {isTransportWorker && <PendingTaskList />}
 
-        {isPicker && (
+        {isPicker && showCreatedTasks && (
           <PickerCreatedTaskList
-            createdTasks={Array.isArray(createdTasks) ? createdTasks : []}
-            onRefresh={fetchCreatedTasks}
+            createdTasks={createdTasks}
+            onRefresh={handleRefresh}
           />
+        )}
+
+        {isPicker && !showCreatedTasks && (
+          <Typography color='text.secondary' mt={4} textAlign='center'>
+            Click "Task List" to view your tasks
+          </Typography>
         )}
       </Box>
 
-      {/* Bottom Bars */}
-      {isPicker && <PickerBottombar />}
+      {isPicker && (
+        <PickerBottombar
+          onTaskListClick={handleTaskListClick}
+          // onArchivedClick={handleArchivedClick}
+        />
+      )}
+
       {isTransportWorker && <WokerBottombar />}
     </Box>
   )
