@@ -32,3 +32,13 @@ export const createPickerTask = async (
   })
   return response.data.task
 }
+
+export const getPickerCreatedTasks = async (): Promise<Task[]> => {
+  const response = await apiClient.get('/task/pickerCreatedTasks')
+  return response.data.tasks
+}
+
+export const cancelPickerTask = async (taskID: string): Promise<Task> => {
+  const response = await apiClient.post('/task/cancelPickerTask', { taskID })
+  return response.data.task
+}

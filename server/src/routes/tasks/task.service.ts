@@ -3,6 +3,7 @@ import Inventory from '../inventory/inventory.model'
 import Bin from '../bins/bin.model'
 import AppError from '../../utils/appError'
 import { getBinCodesByProductCodeAndWarehouse } from '../bins/bin.service'
+import { Op } from 'sequelize'
 
 export const hasActiveTask = async (accountID: string): Promise<boolean> => {
   try {
@@ -304,6 +305,41 @@ export const cancelTaskByID = async (taskID: string) => {
 
   task.status = 'PENDING'
   task.accepterID = null
+  await task.save()
+
+  return task
+}
+
+///////////////////////////////////////
+
+export const getPickerCreatedTasksService = async (accountID: string) => {
+  const tasks = await Task.findAll({
+    where: {
+      creatorID: accountID,
+      status: {
+        [Op.in]: ['PENDING', 'IN_PROCESS']
+      }
+    }
+  })
+  return tasks
+}
+
+export const cancelPickerTaskService = async (
+  accountID: string,
+  taskID: string
+) => {
+  const task = await Task.findOne({
+    where: {
+      taskID,
+      creatorID: accountID
+    }
+  })
+
+  if (!task) {
+    throw new AppError(404, 'Task not found or not owned by picker')
+  }
+
+  task.status = 'CANCEL'
   await task.save()
 
   return task

@@ -5,7 +5,9 @@ import {
   createAsPicker,
   getPendingTask,
   getCurrentInProcessTask,
-  cancelTaskByTaskID
+  cancelTaskByTaskID,
+  getPickerCreatedTasks,
+  cancelPickerTask
 } from './task.controller'
 import transportWorkerOnly from '../../middlewares/transportWorker.middleware'
 import pickerOnly from '../../middlewares/picker.middleware'
@@ -24,5 +26,9 @@ router.get('/pending', transportWorkerOnly, getPendingTask)
 router.get('/inprocessTask', transportWorkerOnly, getCurrentInProcessTask)
 
 router.post('/cancelTask', transportWorkerOnly, cancelTaskByTaskID)
+
+router.get('/pickerCreatedTasks', pickerOnly, getPickerCreatedTasks)
+
+router.post('/cancelPickerTask', pickerOnly, cancelPickerTask)
 
 export default router

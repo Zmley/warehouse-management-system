@@ -5,7 +5,9 @@ import {
   createTaskAsPicker,
   getPendingTasksService,
   getInProcessTaskWithBinCodes,
-  cancelTaskByID
+  cancelTaskByID,
+  getPickerCreatedTasksService,
+  cancelPickerTaskService
 } from '../tasks/task.service'
 import AppError from '../../utils/appError'
 
@@ -137,6 +139,37 @@ export const cancelTaskByTaskID = async (
       message: `Task "${task.taskID}" cancelled successfully`,
       task
     })
+  } catch (error) {
+    next(error)
+  }
+}
+
+/////////////////////////////////////////////////////
+
+export const getPickerCreatedTasks = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { accountID } = res.locals
+    const tasks = await getPickerCreatedTasksService(accountID)
+    res.status(200).json({ tasks })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const cancelPickerTask = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { taskID } = req.body
+    const { accountID } = res.locals
+    const task = await cancelPickerTaskService(accountID, taskID)
+    res.status(200).json({ message: 'Task cancelled', task })
   } catch (error) {
     next(error)
   }
