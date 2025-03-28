@@ -9,7 +9,7 @@ import {
   Divider
 } from '@mui/material'
 import { Task } from '../types/task'
-import { cancelTask } from '../api/taskApi'
+import { cancelPickerTask } from '../api/taskApi'
 
 interface Props {
   createdTasks: Task[]
@@ -22,7 +22,7 @@ const PickerCreatedTaskList: React.FC<Props> = ({
 }) => {
   const handleCancel = async (taskID: string) => {
     try {
-      await cancelTask(taskID)
+      await cancelPickerTask(taskID)
       onRefresh()
     } catch (err) {
       console.error('❌ Failed to cancel task:', err)

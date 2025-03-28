@@ -152,8 +152,8 @@ export const getPickerCreatedTasks = async (
   next: NextFunction
 ) => {
   try {
-    const { accountID } = res.locals
-    const tasks = await getPickerCreatedTasksService(accountID)
+    const { accountID, warehouseID } = res.locals
+    const tasks = await getPickerCreatedTasksService(accountID, warehouseID)
     res.status(200).json({ tasks })
   } catch (error) {
     next(error)

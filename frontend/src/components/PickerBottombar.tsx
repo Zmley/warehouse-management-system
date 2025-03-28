@@ -8,7 +8,13 @@ import AssignmentIcon from '@mui/icons-material/Assignment'
 import AddCircleIcon from '@mui/icons-material/AddCircle'
 import ArchiveIcon from '@mui/icons-material/Archive'
 
-const PickerBottomBar: React.FC = () => {
+interface PickerBottomBarProps {
+  onTaskListClick?: () => void
+}
+
+const PickerBottomBar: React.FC<PickerBottomBarProps> = ({
+  onTaskListClick
+}) => {
   const navigate = useNavigate()
 
   return (
@@ -27,7 +33,7 @@ const PickerBottomBar: React.FC = () => {
       <BottomNavigationAction
         label='Task List'
         icon={<AssignmentIcon />}
-        onClick={() => navigate('/task-list')}
+        onClick={onTaskListClick || (() => navigate('/task-list'))}
         sx={{ minWidth: '33.33%' }}
       />
 

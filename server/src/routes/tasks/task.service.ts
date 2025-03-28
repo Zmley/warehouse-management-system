@@ -312,16 +312,49 @@ export const cancelTaskByID = async (taskID: string) => {
 
 ///////////////////////////////////////
 
-export const getPickerCreatedTasksService = async (accountID: string) => {
+export const getPickerCreatedTasksService = async (
+  accountID: string,
+  warehouseID: string
+) => {
   const tasks = await Task.findAll({
     where: {
       creatorID: accountID,
       status: {
-        [Op.in]: ['PENDING', 'IN_PROCESS']
+        [Op.in]: ['PENDING']
       }
     }
   })
-  return tasks
+
+  const tasksWithBinCodes = await Promise.all(
+    tasks.map(async task => {
+      let sourceBinCode: string[] = []
+      let destinationBinCode: string[] = []
+
+      if (task.sourceBinID) {
+        const code = await getBinCodeByBinID(task.sourceBinID)
+        if (code) sourceBinCode = [code]
+      } else {
+        const codes = await getBinCodesByProductCodeAndWarehouse(
+          task.productCode,
+          warehouseID
+        )
+        sourceBinCode = codes
+      }
+
+      if (task.destinationBinID) {
+        const code = await getBinCodeByBinID(task.destinationBinID)
+        if (code) destinationBinCode = [code]
+      }
+
+      return {
+        ...task.toJSON(),
+        sourceBinCode,
+        destinationBinCode
+      }
+    })
+  )
+
+  return tasksWithBinCodes
 }
 
 export const cancelPickerTaskService = async (
