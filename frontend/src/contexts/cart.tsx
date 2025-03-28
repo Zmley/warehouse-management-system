@@ -19,6 +19,8 @@ interface CartContextType {
   justUnloadedSuccess: boolean
   setJustUnloadedSuccess: (value: boolean) => void
   setHasProductInCar: (hasProduct: boolean) => void
+  destinationBinCode: string | null
+  setDestinationBinCode: (code: string | null) => void
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
@@ -41,6 +43,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [justUnloadedSuccess, setJustUnloadedSuccess] = useState(false)
 
   const [hasProductInCar, setHasProductInCar] = useState<boolean>(false)
+
+  const [destinationBinCode, setDestinationBinCode] = useState<string | null>(
+    null
+  )
 
   const getMyCart = async () => {
     try {
@@ -69,7 +75,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         setSelectedForUnload,
         getMyCart,
         justUnloadedSuccess,
-        setJustUnloadedSuccess
+        setJustUnloadedSuccess,
+        destinationBinCode,
+        setDestinationBinCode
       }}
     >
       {children}

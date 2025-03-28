@@ -2,12 +2,12 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Snackbar, Alert, Box, Typography } from '@mui/material'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
-import { useBinCodeContext } from '../../contexts/binCode'
+import { useCartContext } from '../../contexts/cart'
 
 const UnloadSuccess: React.FC = () => {
   const navigate = useNavigate()
   const [open, setOpen] = useState(true)
-  const { setDestinationBinCode } = useBinCodeContext()
+  const { setDestinationBinCode } = useCartContext()
 
   useEffect(() => {
     setDestinationBinCode(null)

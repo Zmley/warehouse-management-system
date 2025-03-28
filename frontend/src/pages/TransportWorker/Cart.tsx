@@ -10,7 +10,6 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCartContext } from '../../contexts/cart'
 import InventoryListCard from './InventoryListCard'
-import { getMyCartCode } from '../../api/cartApi'
 
 const Cart = () => {
   const navigate = useNavigate()
@@ -21,22 +20,13 @@ const Cart = () => {
     { inventoryID: string; quantity: number; selected: boolean }[]
   >([])
 
-  const [isLoading, setIsLoading] = useState(true)
-
   useEffect(() => {
-    if (inventoryListInCar.length === 0) {
-      setIsLoading(false)
-    } else {
-      const defaultInventoryListReadyToUnload = inventoryListInCar.map(
-        item => ({
-          inventoryID: item.inventoryID,
-          quantity: item.quantity,
-          selected: true
-        })
-      )
-      setInventoryListReadyToUnload(defaultInventoryListReadyToUnload)
-      setIsLoading(false)
-    }
+    const defaultInventoryListReadyToUnload = inventoryListInCar.map(item => ({
+      inventoryID: item.inventoryID,
+      quantity: item.quantity,
+      selected: true
+    }))
+    setInventoryListReadyToUnload(defaultInventoryListReadyToUnload)
   }, [inventoryListInCar])
 
   const handleQuantityChange = (inventoryID: string, newQuantity: number) => {
@@ -62,9 +52,9 @@ const Cart = () => {
     )
   }
 
-  if (isLoading) {
-    return <div>Loading...</div>
-  }
+  // if (isLoading) {
+  //   return <div>Loading...</div>
+  // }
 
   return (
     <Container maxWidth='sm'>
