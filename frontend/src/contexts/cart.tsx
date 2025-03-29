@@ -47,8 +47,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       const response = await getInventoriesInCart()
       const list = response.inventories || []
 
-      // const isCartEmpty = (list.length > 0 )
-
       setInventoriesInCar(list)
     } catch (error) {
       console.error('❌ Failed to fetch cart:', error)
