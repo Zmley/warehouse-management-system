@@ -13,7 +13,7 @@ const UnloadSuccess: React.FC = () => {
     const timer = setTimeout(() => {
       setOpen(false)
       navigate('/')
-    }, 1000)
+    }, 2000) // Increased time for better UX
 
     return () => clearTimeout(timer)
   }, [navigate, setDestinationBinCode])
@@ -32,27 +32,40 @@ const UnloadSuccess: React.FC = () => {
         open={open}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         onClose={() => setOpen(false)}
+        autoHideDuration={2000}
+        sx={{
+          transition: 'all 0.3s ease-in-out'
+        }}
       >
         <Alert
           onClose={() => setOpen(false)}
           severity='success'
           sx={{
             width: 'auto',
-            borderRadius: 3,
-            backgroundColor: '#f0f6fb',
+            borderRadius: 2,
+            backgroundColor: '#e7f6fb',
+            color: '#1e76a3',
             textAlign: 'center',
-            padding: '10px 20px',
-            fontWeight: 'bold',
+            padding: '12px 20px',
+            fontWeight: 600,
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            boxShadow: 4
+            boxShadow: 5,
+            fontSize: '16px',
+            gap: 1
           }}
         >
           <CheckCircleIcon
-            sx={{ fontSize: 20, marginRight: 1, color: '#2f7abf' }}
+            sx={{
+              fontSize: 24,
+              color: '#1e76a3',
+              marginRight: 1
+            }}
           />
-          <Typography variant='body1'>Offload succeeded</Typography>
+          <Typography variant='body1' sx={{ fontSize: '16px' }}>
+            Offload succeeded
+          </Typography>
         </Alert>
       </Snackbar>
     </Box>
