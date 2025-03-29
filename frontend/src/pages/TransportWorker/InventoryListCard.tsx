@@ -4,7 +4,6 @@ import {
   TextField,
   Checkbox,
   Typography,
-  Chip,
   Divider,
   Snackbar,
   Alert
