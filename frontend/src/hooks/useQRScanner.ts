@@ -7,7 +7,7 @@ const useQRScanner = (onScanSuccess?: (binCode: string) => void) => {
   const [isScanning, setIsScanning] = useState(false)
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const scannerRef = useRef<QrScanner | null>(null)
-  const { isCartEmpty: isCarEmpty } = useCartContext()
+  const { isCartEmpty } = useCartContext()
 
   const { loadCart, unloadCart } = useCart()
 
@@ -38,7 +38,7 @@ const useQRScanner = (onScanSuccess?: (binCode: string) => void) => {
                 const binCode = result.data.trim()
                 if (binCode) {
                   try {
-                    if (isCarEmpty) {
+                    if (isCartEmpty) {
                       loadCart(binCode)
                     } else {
                       unloadCart(binCode)
