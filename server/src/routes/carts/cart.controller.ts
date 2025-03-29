@@ -1,8 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
-import {
-  loadProductByBinCode as loadByBinCode,
-  unloadProductListToBinByWoker as unloadByBinCode
-} from './cart.service'
+import { loadByBinCode, unloadByBinCode } from './cart.service'
 
 export const load = async (
   req: Request,
