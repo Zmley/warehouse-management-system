@@ -72,7 +72,7 @@ const Cart = () => {
       >
         <CardContent>
           <InventoryListCard
-            taskID=''
+            taskType='Woker Sefl Perfomance'
             inventories={inventoryListInCar}
             selectedList={inventoryListReadyToUnload}
             onQuantityChange={handleQuantityChange}

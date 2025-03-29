@@ -13,7 +13,7 @@ import { useCartContext } from '../../contexts/cart'
 import { sanitizeQuantityInput } from '../../utils/inputHelpers'
 
 interface Props {
-  taskID: string
+  taskType: string
   inventories: InventoryItem[]
   selectedList: {
     inventoryID: string
@@ -25,7 +25,7 @@ interface Props {
 }
 
 const InventoryListCard: React.FC<Props> = ({
-  taskID,
+  taskType,
   inventories,
   selectedList,
   onQuantityChange,
@@ -59,7 +59,7 @@ const InventoryListCard: React.FC<Props> = ({
           mb: 2
         }}
       >
-        <Typography fontWeight='bold'>Task ID # {taskID}</Typography>
+        <Typography fontWeight='bold'>Task Type # {taskType}</Typography>
 
         <Box display='flex' justifyContent='space-between' mt={1}>
           <Box>
@@ -67,7 +67,7 @@ const InventoryListCard: React.FC<Props> = ({
               Target Bin
             </Typography>
             <Typography fontSize={18} fontWeight='bold'>
-              {destinationBinCode ?? '--'}
+              {destinationBinCode ?? 'TBD'}
             </Typography>
           </Box>
         </Box>
