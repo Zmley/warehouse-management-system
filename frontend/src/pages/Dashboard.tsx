@@ -4,7 +4,6 @@ import TopBar from '../components/Topbar'
 import WokerBottombar from '../components/Bottombar'
 import PendingTaskList from '../components/PendingTaskCard'
 import { useAuth } from '../hooks/useAuth'
-import { getPickerCreatedTasks } from '../api/taskApi'
 import { Task } from '../types/task'
 
 const Dashboard: React.FC = () => {
@@ -16,32 +15,6 @@ const Dashboard: React.FC = () => {
   const [showCreatedTasks, setShowCreatedTasks] = useState(false)
   const [showArchivedTasks, setShowArchivedTasks] = useState(false)
   const [allTasks, setAllTasks] = useState<Task[]>([])
-
-  const handleTaskListClick = async () => {
-    try {
-      const response = await getPickerCreatedTasks()
-      setAllTasks(response)
-      setShowCreatedTasks(true)
-      setShowArchivedTasks(false)
-    } catch (error) {
-      console.error('Failed to fetch created tasks', error)
-    }
-  }
-
-  const handleArchivedClick = async () => {
-    try {
-      const response = await getPickerCreatedTasks()
-      setAllTasks(response)
-      setShowCreatedTasks(false)
-      setShowArchivedTasks(true)
-    } catch (error) {
-      console.error('Failed to fetch archived tasks', error)
-    }
-  }
-
-  const handleRefresh = async () => {
-    await handleTaskListClick()
-  }
 
   if (isAdmin) {
     return (
