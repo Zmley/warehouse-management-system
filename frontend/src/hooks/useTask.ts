@@ -6,7 +6,7 @@ import { acceptTask as acceptTaskAPI, cancelTask } from '../api/taskApi'
 export const useTask = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const { fetchInProcessTask, refreshPendingTasks } = usePendingTaskContext()
+  const { fetchMyTask, refreshPendingTasks } = usePendingTaskContext()
   const navigate = useNavigate()
 
   // Task Accept Logic
@@ -16,7 +16,7 @@ export const useTask = () => {
     try {
       const res = await acceptTaskAPI(taskID)
       if (res?.task) {
-        await fetchInProcessTask()
+        await fetchMyTask()
         navigate('/task-detail')
       } else {
         setError('⚠️ Task accept API did not return a task.')

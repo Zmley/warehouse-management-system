@@ -5,9 +5,9 @@ import { getPendingTasks, getCurrentInProcessTask } from '../api/taskApi'
 export type PendingTaskContextType = {
   pendingTasks: Task[]
   refreshPendingTasks: () => void
-  inProcessTask: Task | null
-  setInProcessTask: (task: Task) => void
-  fetchInProcessTask: () => Promise<Task | null>
+  myTask: Task | null
+  setMyTask: (task: Task) => void
+  fetchMyTask: () => Promise<Task | null>
 }
 
 const PendingTaskContext = createContext<PendingTaskContextType | undefined>(
@@ -28,7 +28,7 @@ export const PendingTaskProvider: React.FC<{ children: React.ReactNode }> = ({
   children
 }) => {
   const [pendingTasks, setPendingTasks] = useState<Task[]>([])
-  const [inProcessTask, setInProcessTask] = useState<Task | null>(null)
+  const [myTask, setMyTask] = useState<Task | null>(null)
 
   const refreshPendingTasks = async () => {
     try {
@@ -39,10 +39,10 @@ export const PendingTaskProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }
 
-  const fetchInProcessTask = async (): Promise<Task | null> => {
+  const fetchMyTask = async (): Promise<Task | null> => {
     try {
       const task = await getCurrentInProcessTask()
-      setInProcessTask(task)
+      setMyTask(task)
       return task
     } catch (error) {
       console.error('❌ Failed to fetch in-process task:', error)
@@ -59,9 +59,9 @@ export const PendingTaskProvider: React.FC<{ children: React.ReactNode }> = ({
       value={{
         pendingTasks,
         refreshPendingTasks,
-        inProcessTask,
-        setInProcessTask,
-        fetchInProcessTask
+        myTask,
+        setMyTask,
+        fetchMyTask
       }}
     >
       {children}

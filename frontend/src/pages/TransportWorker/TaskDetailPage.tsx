@@ -7,10 +7,10 @@ import { useTask } from '../../hooks/useTask'
 
 const TaskDetailPage: React.FC = () => {
   const navigate = useNavigate()
-  const { inProcessTask, fetchInProcessTask } = usePendingTaskContext()
+  const { myTask, fetchMyTask } = usePendingTaskContext()
   const { cancelCurrentTask } = useTask()
 
-  const task = inProcessTask
+  const task = myTask
 
   if (!task) {
     return (
