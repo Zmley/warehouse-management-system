@@ -9,7 +9,8 @@ export const useCart = () => {
     isCartEmpty: isCarEmpty,
     selectedToUnload: selectedInventoriesToUnload,
     getMyCart,
-    setDestinationBinCode
+    setDestinationBinCode,
+    isCartEmpty
   } = useCartContext()
 
   const loadCart = async (binCode: string) => {
@@ -38,7 +39,7 @@ export const useCart = () => {
       )
       if (response?.success) {
         await getMyCart()
-        if (!response.data.isCarEmpty) {
+        if (isCartEmpty) {
           setTimeout(() => {
             navigate('/success')
           }, 500)
