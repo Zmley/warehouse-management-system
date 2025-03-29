@@ -16,6 +16,7 @@ export const useCart = () => {
     try {
       const response = await loadToCart(binCode)
       await getMyCart()
+      setDestinationBinCode(null)
 
       if (response?.success) {
         setTimeout(() => {
