@@ -52,7 +52,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
       setInventoryListInCar(list)
 
-      setHasProductInCar(response.hasProductInCar)
+      setHasProductInCar(list.length > 0)
     } catch (error) {
       console.error('❌ Failed to fetch cart:', error)
     }
