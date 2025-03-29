@@ -6,6 +6,8 @@ import UnloadSuccess from '../pages/TransportWorker/Success'
 import { useContext, useEffect } from 'react'
 import { AuthContext } from '../contexts/auth'
 import Dashboard from '../pages/Dashboard'
+import TaskDetailPage from '../pages/TransportWorker/TaskDetailPage'
+
 import { useCartContext } from '../contexts/cart'
 
 const PrivateRoutes: React.FC = () => {
@@ -36,6 +38,8 @@ const PrivateRoutes: React.FC = () => {
       <Route path='/scan-qr' element={<ScanTask />} />
       <Route path='/in-process-task' element={<Cart />} />
       <Route path='/success' element={<UnloadSuccess />} />
+
+      <Route path='/task-detail' element={<TaskDetailPage />} />
     </Routes>
   )
 }

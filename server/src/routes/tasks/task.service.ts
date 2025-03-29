@@ -3,6 +3,8 @@ import Inventory from '../inventory/inventory.model'
 import Bin from '../bins/bin.model'
 import AppError from '../../utils/appError'
 
+import { getBinCodesByProductCodeAndWarehouse } from '../bins/bin.service'
+
 export const hasActiveTask = async (accountID: string): Promise<boolean> => {
   try {
     const activeTask = await Task.findOne({
@@ -131,3 +133,166 @@ export const completeTask = async (taskID: string) => {
 
   return task
 }
+
+//////////////////////////////////////
+
+/////////////////////////////////////////
+
+export const getBinCodeByBinID = async (
+  binID: string
+): Promise<string | null> => {
+  try {
+    const bin = await Bin.findOne({
+      where: { binID },
+      attributes: ['binCode']
+    })
+
+    if (!bin) {
+      return null
+    }
+
+    return bin.binCode
+  } catch (error) {
+    console.error('❌ Error fetching binCode:', error)
+    throw new Error('Failed to fetch binCode')
+  }
+}
+
+export const getPendingTasksService = async (warehouseID: string) => {
+  const tasks = await Task.findAll({
+    where: { status: 'PENDING' }
+  })
+
+  if (!tasks.length) {
+    throw new AppError(404, '❌ No pending tasks found')
+  }
+
+  const tasksWithBinCodes = await Promise.all(
+    tasks.map(async task => {
+      let sourceBinCode: string[] = []
+      let destinationBinCode: string[] = []
+
+      if (task.sourceBinID) {
+        const binCode = await getBinCodeByBinID(task.sourceBinID)
+        if (binCode) {
+          sourceBinCode = [binCode]
+        }
+      } else {
+        const binCodes = await getBinCodesByProductCodeAndWarehouse(
+          task.productCode,
+          warehouseID
+        )
+        sourceBinCode = binCodes
+      }
+
+      if (task.destinationBinID) {
+        const binCode = await getBinCodeByBinID(task.destinationBinID)
+        if (binCode) {
+          destinationBinCode = [binCode]
+        }
+      }
+
+      return {
+        taskID: task.taskID,
+        productCode: task.productCode,
+        sourceBinID: task.sourceBinID,
+        sourceBinCode,
+        destinationBinID: task.destinationBinID,
+        destinationBinCode,
+        createdAt: task.createdAt
+      }
+    })
+  )
+
+  return tasksWithBinCodes
+}
+
+export const getInProcessTaskByID = async (accountID: string) => {
+  const task = await Task.findOne({
+    where: {
+      accepterID: accountID,
+      status: 'IN_PROCESS'
+    }
+  })
+
+  if (!task) {
+    throw new AppError(404, '❌ No in-process task found for this account')
+  }
+
+  return task
+}
+
+////////////////////////////////////
+
+export const getInProcessTaskWithBinCodes = async (
+  accountID: string,
+  warehouseID: string
+) => {
+  const task = await Task.findOne({
+    where: {
+      accepterID: accountID,
+      status: 'IN_PROCESS'
+    }
+  })
+
+  if (!task) {
+    throw new AppError(404, '❌ No in-process task found for this account')
+  }
+
+  let sourceBinCode: string[] = []
+  let destinationBinCode: string[] = []
+
+  if (task.sourceBinID) {
+    const binCode = await getBinCodeByBinID(task.sourceBinID)
+    if (binCode) {
+      sourceBinCode = [binCode]
+    }
+  } else {
+    const binCodes = await getBinCodesByProductCodeAndWarehouse(
+      task.productCode,
+      warehouseID
+    )
+    sourceBinCode = binCodes
+  }
+
+  if (task.destinationBinID) {
+    const binCode = await getBinCodeByBinID(task.destinationBinID)
+    if (binCode) {
+      destinationBinCode = [binCode]
+    }
+  }
+
+  return {
+    taskID: task.taskID,
+    productCode: task.productCode,
+    sourceBinID: task.sourceBinID,
+    sourceBinCode,
+    destinationBinID: task.destinationBinID,
+    destinationBinCode,
+    createdAt: task.createdAt,
+    updatedAt: task.updatedAt,
+    status: task.status,
+    creatorID: task.creatorID,
+    accepterID: task.accepterID
+  }
+}
+
+export const cancelTaskByID = async (taskID: string) => {
+  const task = await Task.findByPk(taskID)
+
+  if (!task) {
+    throw new AppError(404, '❌ Task not found')
+  }
+
+  if (task.status !== 'IN_PROCESS') {
+    throw new AppError(400, '❌ Only tasks in progress can be cancelled')
+  }
+
+  task.status = 'PENDING'
+  task.accepterID = null
+  await task.save()
+
+  return task
+}
+
+///////////////////////////////////////

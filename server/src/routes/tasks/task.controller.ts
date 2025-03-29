@@ -2,9 +2,11 @@ import { Request, Response, NextFunction } from 'express'
 import {
   createTaskAsAdmin,
   acceptTaskService,
-  createTaskAsPicker
+  createTaskAsPicker,
+  getPendingTasksService,
+  cancelTaskByID,
+  getInProcessTaskWithBinCodes
 } from '../tasks/task.service'
-import AppError from '../../utils/appError'
 
 export const createAsAdmin = async (
   req: Request,
@@ -75,3 +77,70 @@ export const createAsPicker = async (
     next(error)
   }
 }
+
+/////////////////////////////
+
+///////////////////////////////////////////////////////////woker task
+
+export const getPendingTask = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const warehouseID = res.locals.warehouseID
+
+    const tasksWithBinCodes = await getPendingTasksService(warehouseID)
+
+    res.status(200).json({
+      message: 'Successfully fetched all pending tasks for Picker',
+      tasks: tasksWithBinCodes
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const getCurrentInProcessTask = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { accountID, warehouseID } = res.locals
+
+    const task = await getInProcessTaskWithBinCodes(accountID, warehouseID)
+
+    res.status(200).json({
+      message: 'Successfully fetched current in-process task',
+      task: task
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const cancelTaskByTaskID = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { taskID } = req.body
+
+    if (!taskID) {
+      return res.status(400).json({ message: '❌ taskID is required' })
+    }
+
+    const task = await cancelTaskByID(taskID)
+
+    res.status(200).json({
+      message: `Task "${task.taskID}" cancelled successfully`,
+      task
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+/////////////////////////////////////////////////////
