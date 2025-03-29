@@ -16,8 +16,6 @@ interface CartContextType {
     list: { inventoryID: string; quantity: number }[]
   ) => void
   getMyCart: () => Promise<void>
-  destinationBinCode: string | null
-  setDestinationBinCode: (code: string | null) => void
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
@@ -64,9 +62,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         inventoriesInCar,
         isCartEmpty,
         selectedToUnload,
-        setSelectedToUnload,
-        destinationBinCode,
-        setDestinationBinCode
+        setSelectedToUnload
       }}
     >
       {children}
