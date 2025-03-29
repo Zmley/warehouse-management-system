@@ -10,34 +10,19 @@ import {
 } from '@mui/material'
 import { usePendingTaskContext } from '../contexts/pendingTask'
 import { useNavigate } from 'react-router-dom'
-import { acceptTask as acceptTaskAPI } from '../api/taskApi'
+import { useAcceptTask } from '../hooks/useTask' // 引入 useAcceptTask Hook
 import { Task } from '../types/task'
 
 const PendingTaskList: React.FC = () => {
-  const { pendingTasks, fetchInProcessTask } = usePendingTaskContext()
-  const navigate = useNavigate()
-
-  const acceptTask = async (task: Task) => {
-    try {
-      const res = await acceptTaskAPI(task.taskID)
-
-      if (res?.task) {
-        await fetchInProcessTask()
-        navigate('/task-detail')
-      } else {
-        console.warn('⚠️ Task accept API did not return a task.')
-      }
-    } catch (error) {
-      console.error('❌ Failed to accept task:', error)
-    }
-  }
+  const { pendingTasks } = usePendingTaskContext()
+  const { acceptTask, loading, error } = useAcceptTask() // 使用 Hook
 
   return (
     <Box p={2}>
       {pendingTasks.length === 0 ? (
         <Typography color='text.secondary'>No pending tasks found.</Typography>
       ) : (
-        pendingTasks.map(task => (
+        pendingTasks.map((task: Task) => (
           <Card
             key={task.taskID}
             variant='outlined'
@@ -103,7 +88,7 @@ const PendingTaskList: React.FC = () => {
 
                 <Button
                   variant='contained'
-                  onClick={() => acceptTask(task)}
+                  onClick={() => acceptTask(task.taskID)}
                   sx={{
                     backgroundColor: '#2563eb',
                     color: 'white',
@@ -119,10 +104,16 @@ const PendingTaskList: React.FC = () => {
                       backgroundColor: '#1e50c2'
                     }
                   }}
+                  disabled={loading}
                 >
-                  Accept
+                  {loading ? 'Loading...' : 'Accept'}
                 </Button>
               </Box>
+              {error && (
+                <Typography color='error' mt={2}>
+                  {error}
+                </Typography>
+              )}
             </CardContent>
           </Card>
         ))
