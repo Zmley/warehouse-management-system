@@ -1,17 +1,12 @@
 import apiClient from './axiosClient.ts'
 import { InventoryItem } from '../types/inventory.js'
-import { resolve } from 'path'
+import { unloadInventory } from '../types/unloadInventory.js'
 
 export const getInventoriesInCart = async (): Promise<{
   inventories: InventoryItem[]
 }> => {
   const response = await apiClient.get('inventory/getInventoriesInCart')
   return response.data
-}
-
-interface ProductItem {
-  inventoryID: string
-  quantity: number
 }
 
 export const loadToCart = async (binCode: string) => {
@@ -24,7 +19,7 @@ export const loadToCart = async (binCode: string) => {
 
 export const unloadFromCart = async (
   binCode: string,
-  unloadProductList: ProductItem[]
+  unloadProductList: unloadInventory[]
 ) => {
   const response = await apiClient.post('cart/unload', {
     binCode,
