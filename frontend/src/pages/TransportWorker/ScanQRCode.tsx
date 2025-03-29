@@ -13,8 +13,7 @@ const ScanTaskPage = () => {
     console.log(`Scanned bin code: ${binCode}`)
   }
 
-  const { videoRef, startScanning, stopScanning } =
-    useQRScanner(handleScanSuccess)
+  const { videoRef, startScanning } = useQRScanner(handleScanSuccess)
 
   const [hasStarted, setHasStarted] = useState(false)
 
@@ -74,17 +73,6 @@ const ScanTaskPage = () => {
         }}
       >
         ❌ Cancel
-      </Button>
-
-      <Button
-        ref={stopButtonRef}
-        onClick={async () => {
-          console.log('🎯 Hidden stop button triggered')
-          await stopScanning() // Stop scanning
-        }}
-        style={{ display: 'none' }}
-      >
-        Hidden Stop
       </Button>
     </Container>
   )

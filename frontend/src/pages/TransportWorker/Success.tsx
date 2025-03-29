@@ -10,8 +10,6 @@ const UnloadSuccess: React.FC = () => {
   const { setDestinationBinCode } = useCartContext()
 
   useEffect(() => {
-    setDestinationBinCode(null)
-
     const timer = setTimeout(() => {
       setOpen(false)
       navigate('/')
