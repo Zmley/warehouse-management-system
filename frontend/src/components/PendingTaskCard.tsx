@@ -10,12 +10,12 @@ import {
 } from '@mui/material'
 import { usePendingTaskContext } from '../contexts/pendingTask'
 import { useNavigate } from 'react-router-dom'
-import { useAcceptTask } from '../hooks/useTask' // 引入 useAcceptTask Hook
+import { useTask } from '../hooks/useTask'
 import { Task } from '../types/task'
 
 const PendingTaskList: React.FC = () => {
   const { pendingTasks } = usePendingTaskContext()
-  const { acceptTask, loading, error } = useAcceptTask() // 使用 Hook
+  const { acceptTask, loading, error } = useTask()
 
   return (
     <Box p={2}>

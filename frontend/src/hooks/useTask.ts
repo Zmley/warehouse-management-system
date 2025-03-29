@@ -1,16 +1,15 @@
-import { usePendingTaskContext } from '../contexts/pendingTask'
-import { cancelTask, acceptTask } from '../api/taskApi'
-
 import { useState } from 'react'
-import { acceptTask as acceptTaskAPI } from '../api/taskApi'
 import { useNavigate } from 'react-router-dom'
+import { usePendingTaskContext } from '../contexts/pendingTask'
+import { acceptTask as acceptTaskAPI, cancelTask } from '../api/taskApi'
 
-export const useAcceptTask = () => {
+export const useTask = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const { fetchInProcessTask } = usePendingTaskContext()
+  const { fetchInProcessTask, refreshPendingTasks } = usePendingTaskContext()
   const navigate = useNavigate()
 
+  // Task Accept Logic
   const acceptTask = async (taskID: string) => {
     setLoading(true)
     setError(null)
@@ -30,16 +29,7 @@ export const useAcceptTask = () => {
     }
   }
 
-  return {
-    acceptTask,
-    loading,
-    error
-  }
-}
-
-export const useTask = () => {
-  const { refreshPendingTasks } = usePendingTaskContext()
-
+  // Task Cancel Logic
   const cancelCurrentTask = async (taskID: string) => {
     try {
       await cancelTask(taskID)
@@ -52,6 +42,9 @@ export const useTask = () => {
   }
 
   return {
-    cancelCurrentTask
+    acceptTask,
+    cancelCurrentTask,
+    loading,
+    error
   }
 }

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Box, Typography, Button, Grid, Card, Chip } from '@mui/material'
 import { QrCode } from 'lucide-react'
 import { usePendingTaskContext } from '../../contexts/pendingTask'
+
 import { useTask } from '../../hooks/useTask'
 
 const TaskDetailPage: React.FC = () => {
