@@ -4,6 +4,6 @@ import transportWorkerOnly from '../../middlewares/transportWorker.middleware'
 
 const router = express.Router()
 
-router.get('/getInventoriesInCart', transportWorkerOnly, getInventoriesByCart)
+router.get('/inventoriesInCart', transportWorkerOnly, getInventoriesByCart)
 
 export default router
