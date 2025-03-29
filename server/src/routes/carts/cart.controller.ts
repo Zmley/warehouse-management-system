@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import {
   loadProductByBinCode as loadByBinCode,
-  unloadProductListToBinByWoker as unloadToBinByWoker
+  unloadProductListToBinByWoker as unloadByBinCode
 } from './cart.service'
 
 export const load = async (
@@ -30,7 +30,7 @@ export const unload = async (
     const { binCode, unloadProductList } = req.body
     const { warehouseID } = res.locals
 
-    const result = await unloadToBinByWoker(
+    const result = await unloadByBinCode(
       binCode,
       unloadProductList,
       warehouseID
