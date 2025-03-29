@@ -18,3 +18,16 @@ export const getDefaultProduct = async (binID: string): Promise<string> => {
     throw new AppError(500, '❌ Failed to fetch picker product')
   }
 }
+
+export const getBinByBinID = async (binID: string) => {
+  try {
+    const bin = await Bin.findOne({
+      where: { binID }
+    })
+
+    return bin
+  } catch (error) {
+    console.error('❌ Error fetching bin:', error)
+    throw new AppError(500, '❌ Failed to fetch bin')
+  }
+}
