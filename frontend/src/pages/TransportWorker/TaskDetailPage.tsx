@@ -1,46 +1,19 @@
-import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { useState } from 'react'
 import { Box, Typography, Button, Grid, Card, Chip } from '@mui/material'
 import { QrCode } from 'lucide-react'
 import { usePendingTaskContext } from '../../contexts/pendingTask'
-
+import { useNavigate } from 'react-router-dom'
 import { useTask } from '../../hooks/useTask'
 
 const TaskDetailPage: React.FC = () => {
   const navigate = useNavigate()
   const { inProcessTask, fetchInProcessTask } = usePendingTaskContext()
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const { cancelCurrentTask } = useTask()
 
-  const [task, setTask] = useState(inProcessTask)
+  const task = inProcessTask
 
-  useEffect(() => {
-    const loadTask = async () => {
-      if (!inProcessTask) {
-        const latestTask = await fetchInProcessTask()
-        setTask(latestTask)
-      } else {
-        setTask(inProcessTask)
-      }
-      setLoading(false)
-    }
-
-    loadTask()
-  }, [])
-
-  if (loading) {
-    return (
-      <Box
-        display='flex'
-        justifyContent='center'
-        alignItems='center'
-        height='100vh'
-      >
-        <Typography>Loading...</Typography>
-      </Box>
-    )
-  }
-
+  // Loading state, we can remove the need for useEffect to fetch the task
   if (!task) {
     return (
       <Box
