@@ -37,7 +37,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     { inventoryID: string; quantity: number }[]
   >([])
 
-  const [isCarEmpty, setIsCarEmpty] = useState<boolean>(false)
+  const [isCartEmpty, setIsCartEmpty] = useState<boolean>(false)
 
   const [destinationBinCode, setDestinationBinCode] = useState<string | null>(
     null
@@ -50,7 +50,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
       setInventoriesInCar(list)
 
-      setIsCarEmpty(list.length > 0)
+      setIsCartEmpty(list.length > 0)
     } catch (error) {
       console.error('❌ Failed to fetch cart:', error)
     }
@@ -65,8 +65,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       value={{
         getMyCart,
         inventoriesInCar,
-        isCartEmpty: isCarEmpty,
-        setIsCartEmpty: setIsCarEmpty,
+        isCartEmpty,
+        setIsCartEmpty,
         selectedToUnload,
         setSelectedToUnload,
         destinationBinCode,
