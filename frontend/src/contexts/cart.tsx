@@ -9,9 +9,9 @@ import { getInventoriesInCart } from '../api/cartApi'
 import { InventoryItem } from '../types/inventory'
 
 interface CartContextType {
-  inventoryListInCar: InventoryItem[]
-  hasProductInCar: boolean
-  setHasProductInCar: (hasProduct: boolean) => void
+  inventoriesInCar: InventoryItem[]
+  isCarEmpty: boolean
+  setIsCarEmpty: (hasProduct: boolean) => void
   selectedToUnload: { inventoryID: string; quantity: number }[]
   setSelectedToUnload: (
     list: { inventoryID: string; quantity: number }[]
@@ -32,14 +32,14 @@ export const useCartContext = (): CartContextType => {
 }
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
-  const [inventoryListInCar, setInventoryListInCar] = useState<InventoryItem[]>(
+  const [inventoriesInCar, setInventoryListInCar] = useState<InventoryItem[]>(
     []
   )
-  const [selectedInventoriesToUnload, setSelectedForUnload] = useState<
+  const [selectedToUnload, setSelectedToUnload] = useState<
     { inventoryID: string; quantity: number }[]
   >([])
 
-  const [hasProductInCar, setHasProductInCar] = useState<boolean>(false)
+  const [isCarEmpty, setIsCarEmpty] = useState<boolean>(false)
 
   const [destinationBinCode, setDestinationBinCode] = useState<string | null>(
     null
@@ -52,7 +52,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
       setInventoryListInCar(list)
 
-      setHasProductInCar(list.length > 0)
+      setIsCarEmpty(list.length > 0)
     } catch (error) {
       console.error('❌ Failed to fetch cart:', error)
     }
@@ -65,11 +65,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   return (
     <CartContext.Provider
       value={{
-        setHasProductInCar,
-        inventoryListInCar,
-        hasProductInCar,
-        selectedToUnload: selectedInventoriesToUnload,
-        setSelectedToUnload: setSelectedForUnload,
+        setIsCarEmpty,
+        inventoriesInCar,
+        isCarEmpty,
+        selectedToUnload,
+        setSelectedToUnload,
         getMyCart,
         destinationBinCode,
         setDestinationBinCode

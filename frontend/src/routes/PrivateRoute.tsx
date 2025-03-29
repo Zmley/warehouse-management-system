@@ -15,19 +15,19 @@ const PrivateRoutes: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const { hasProductInCar } = useCartContext()
+  const { isCarEmpty } = useCartContext()
   const navigate = useNavigate()
   const location = useLocation()
 
   useEffect(() => {
     if (
-      hasProductInCar &&
+      isCarEmpty &&
       location.pathname !== '/in-process-task' &&
       location.pathname !== '/scan-qr'
     ) {
       navigate('/in-process-task')
     }
-  }, [hasProductInCar, location.pathname, navigate])
+  }, [isCarEmpty, location.pathname, navigate])
 
   return (
     <Routes>

@@ -6,7 +6,7 @@ export const useCart = () => {
   const navigate = useNavigate()
 
   const {
-    hasProductInCar,
+    isCarEmpty,
     selectedToUnload: selectedInventoriesToUnload,
     getMyCart,
     setDestinationBinCode
@@ -38,7 +38,7 @@ export const useCart = () => {
       )
       if (response?.success) {
         await getMyCart()
-        if (!response.data.hasProductInCar) {
+        if (!response.data.isCarEmpty) {
           setTimeout(() => {
             navigate('/success')
           }, 500)
@@ -54,5 +54,5 @@ export const useCart = () => {
     }
   }
 
-  return { loadCart, unloadCart, hasProductInCar, getMyCart }
+  return { loadCart, unloadCart, isCarEmpty, getMyCart }
 }
