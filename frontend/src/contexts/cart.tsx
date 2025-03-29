@@ -16,8 +16,6 @@ interface CartContextType {
     list: { inventoryID: string; quantity: number }[]
   ) => void
   getMyCart: () => Promise<void>
-  justUnloadedSuccess: boolean
-  setJustUnloadedSuccess: (value: boolean) => void
   setHasProductInCar: (hasProduct: boolean) => void
   destinationBinCode: string | null
   setDestinationBinCode: (code: string | null) => void
@@ -40,7 +38,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [selectedInventoriesToUnload, setSelectedForUnload] = useState<
     { inventoryID: string; quantity: number }[]
   >([])
-  const [justUnloadedSuccess, setJustUnloadedSuccess] = useState(false)
 
   const [hasProductInCar, setHasProductInCar] = useState<boolean>(false)
 
@@ -74,8 +71,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         selectedInventoriesToUnload,
         setSelectedForUnload,
         getMyCart,
-        justUnloadedSuccess,
-        setJustUnloadedSuccess,
         destinationBinCode,
         setDestinationBinCode
       }}
