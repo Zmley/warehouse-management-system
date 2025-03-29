@@ -10,8 +10,8 @@ import { InventoryItem } from '../types/inventory'
 
 interface CartContextType {
   inventoriesInCar: InventoryItem[]
-  isCarEmpty: boolean
-  setIsCarEmpty: (hasProduct: boolean) => void
+  isCartEmpty: boolean
+  setIsCartEmpty: (hasProduct: boolean) => void
   selectedToUnload: { inventoryID: string; quantity: number }[]
   setSelectedToUnload: (
     list: { inventoryID: string; quantity: number }[]
@@ -65,8 +65,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       value={{
         getMyCart,
         inventoriesInCar,
-        isCarEmpty,
-        setIsCarEmpty,
+        isCartEmpty: isCarEmpty,
+        setIsCartEmpty: setIsCarEmpty,
         selectedToUnload,
         setSelectedToUnload,
         destinationBinCode,

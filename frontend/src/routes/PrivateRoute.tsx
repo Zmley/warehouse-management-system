@@ -15,7 +15,7 @@ const PrivateRoutes: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const { isCarEmpty } = useCartContext()
+  const { isCartEmpty: isCarEmpty } = useCartContext()
   const navigate = useNavigate()
   const location = useLocation()
 

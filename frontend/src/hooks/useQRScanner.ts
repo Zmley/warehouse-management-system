@@ -7,7 +7,7 @@ const useQRScanner = (onScanSuccess?: (binCode: string) => void) => {
   const [isScanning, setIsScanning] = useState(false)
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const scannerRef = useRef<QrScanner | null>(null)
-  const { isCarEmpty } = useCartContext()
+  const { isCartEmpty: isCarEmpty } = useCartContext()
 
   const { loadCart, unloadCart } = useCart()
 

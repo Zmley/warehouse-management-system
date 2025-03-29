@@ -6,7 +6,7 @@ export const useCart = () => {
   const navigate = useNavigate()
 
   const {
-    isCarEmpty,
+    isCartEmpty: isCarEmpty,
     selectedToUnload: selectedInventoriesToUnload,
     getMyCart,
     setDestinationBinCode
