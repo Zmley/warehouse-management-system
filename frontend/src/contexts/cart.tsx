@@ -50,9 +50,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       const response = await getInventoriesByCart()
       const list = response.inventories || []
 
-      setHasProductInCar(response.hasProductInCar)
-
       setInventoryListInCar(list)
+
+      setHasProductInCar(response.hasProductInCar)
     } catch (error) {
       console.error('❌ Failed to fetch cart:', error)
     }

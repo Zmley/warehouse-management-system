@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Snackbar, Alert, Box, Typography } from '@mui/material'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
@@ -9,14 +9,14 @@ const UnloadSuccess: React.FC = () => {
   const [open, setOpen] = useState(true)
   const { setDestinationBinCode } = useCartContext()
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setOpen(false)
-      navigate('/')
-    }, 2000) // Increased time for better UX
+  const handleClose = () => {
+    setOpen(false)
+    navigate('/') // Navigate to home or another page when closed
+  }
 
-    return () => clearTimeout(timer)
-  }, [navigate, setDestinationBinCode])
+  setTimeout(() => {
+    handleClose()
+  }, 2000)
 
   return (
     <Box
@@ -31,14 +31,14 @@ const UnloadSuccess: React.FC = () => {
       <Snackbar
         open={open}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-        onClose={() => setOpen(false)}
+        onClose={handleClose}
         autoHideDuration={2000}
         sx={{
           transition: 'all 0.3s ease-in-out'
         }}
       >
         <Alert
-          onClose={() => setOpen(false)}
+          onClose={handleClose}
           severity='success'
           sx={{
             width: 'auto',
