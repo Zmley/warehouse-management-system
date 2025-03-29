@@ -9,7 +9,7 @@ import { getCurrentInProcessTask, completeTask } from '../tasks/task.service'
 import AppError from 'utils/appError'
 import Bin from '../bins/bin.model'
 
-export const loadProduct = async (
+export const load = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -26,7 +26,7 @@ export const loadProduct = async (
   }
 }
 
-export const unloadProductByWoker = async (
+export const unloadByWoker = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -51,7 +51,7 @@ export const unloadProductByWoker = async (
   }
 }
 
-export const unloadProductByTask = async (
+export const unloadByTask = async (
   req: Request,
   res: Response,
   next: NextFunction
