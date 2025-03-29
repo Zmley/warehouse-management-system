@@ -71,7 +71,6 @@ const Cart = () => {
         <CardContent>
           <InventoryListCard
             taskID=''
-            // statusPicked={false}
             inventories={inventoryListInCar}
             selectedList={inventoryListReadyToUnload}
             onQuantityChange={handleQuantityChange}
