@@ -11,12 +11,12 @@ import { InventoryItem } from '../types/inventory'
 interface CartContextType {
   inventoryListInCar: InventoryItem[]
   hasProductInCar: boolean
-  selectedInventoriesToUnload: { inventoryID: string; quantity: number }[]
-  setSelectedForUnload: (
+  setHasProductInCar: (hasProduct: boolean) => void
+  selectedToUnload: { inventoryID: string; quantity: number }[]
+  setSelectedToUnload: (
     list: { inventoryID: string; quantity: number }[]
   ) => void
   getMyCart: () => Promise<void>
-  setHasProductInCar: (hasProduct: boolean) => void
   destinationBinCode: string | null
   setDestinationBinCode: (code: string | null) => void
 }
@@ -68,8 +68,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         setHasProductInCar,
         inventoryListInCar,
         hasProductInCar,
-        selectedInventoriesToUnload,
-        setSelectedForUnload,
+        selectedToUnload: selectedInventoriesToUnload,
+        setSelectedToUnload: setSelectedForUnload,
         getMyCart,
         destinationBinCode,
         setDestinationBinCode

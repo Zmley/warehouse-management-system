@@ -15,7 +15,6 @@ import { sanitizeQuantityInput } from '../../utils/inputHelpers'
 
 interface Props {
   taskID: string
-  statusPicked: boolean
   inventories: InventoryItem[]
   selectedList: {
     inventoryID: string
@@ -28,7 +27,6 @@ interface Props {
 
 const InventoryListCard: React.FC<Props> = ({
   taskID,
-  statusPicked,
   inventories,
   selectedList,
   onQuantityChange,
@@ -37,7 +35,7 @@ const InventoryListCard: React.FC<Props> = ({
   const [errorOpen, setErrorOpen] = React.useState(false)
   const [errorMessage, setErrorMessage] = React.useState('')
 
-  const { setDestinationBinCode, destinationBinCode } = useCartContext()
+  const { destinationBinCode } = useCartContext()
 
   const handleInputChange = (inventoryID: string, value: string) => {
     const numericValue = sanitizeQuantityInput(value)
@@ -73,21 +71,6 @@ const InventoryListCard: React.FC<Props> = ({
               {destinationBinCode ?? '--'}
             </Typography>
           </Box>
-        </Box>
-
-        <Box display='flex' justifyContent='space-between' mt={2}>
-          <Chip
-            label='● Task Picked'
-            color={statusPicked ? 'success' : 'default'}
-            variant={statusPicked ? 'filled' : 'outlined'}
-            sx={{ borderRadius: '16px' }}
-          />
-          <Chip
-            label='● Task Delivered'
-            color='default'
-            variant='outlined'
-            sx={{ borderRadius: '16px' }}
-          />
         </Box>
       </Box>
 

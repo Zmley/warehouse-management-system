@@ -32,9 +32,9 @@ const ScanTaskPage = () => {
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
-        backgroundColor: '#f5f5f5', // Light background color
-        borderRadius: '15px', // Rounded container for a modern feel
-        boxShadow: 3 // Adding shadow for depth
+        backgroundColor: '#f5f5f5',
+        borderRadius: '15px',
+        boxShadow: 3
       }}
     >
       <Box
@@ -42,10 +42,10 @@ const ScanTaskPage = () => {
           width: '100%',
           maxWidth: '400px',
           height: '250px',
-          borderRadius: '12px', // Rounded corners for the video container
+          borderRadius: '12px',
           overflow: 'hidden',
           mx: 'auto',
-          border: '5px solid #1976d2' // Bold border color for contrast
+          border: '5px solid #1976d2'
         }}
       >
         <video
