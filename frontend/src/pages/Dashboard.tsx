@@ -12,10 +12,6 @@ const Dashboard: React.FC = () => {
   const isTransportWorker = userProfile.role === 'TRANSPORT_WORKER'
   const isAdmin = userProfile.role === 'ADMIN'
 
-  const [showCreatedTasks, setShowCreatedTasks] = useState(false)
-  const [showArchivedTasks, setShowArchivedTasks] = useState(false)
-  const [allTasks, setAllTasks] = useState<Task[]>([])
-
   if (isAdmin) {
     return (
       <Box sx={{ p: 4 }}>
@@ -32,12 +28,6 @@ const Dashboard: React.FC = () => {
 
       <Box sx={{ flex: 1, p: 2, pb: 8 }}>
         {isTransportWorker && <PendingTaskList />}
-
-        {isPicker && !showCreatedTasks && !showArchivedTasks && (
-          <Typography color='text.secondary' mt={4} textAlign='center'>
-            Click "Task List" or "Archived Task" to view your tasks
-          </Typography>
-        )}
       </Box>
 
       {isTransportWorker && <WokerBottombar />}
