@@ -8,12 +8,10 @@ import { useTask } from '../../hooks/useTask'
 const TaskDetailPage: React.FC = () => {
   const navigate = useNavigate()
   const { inProcessTask, fetchInProcessTask } = usePendingTaskContext()
-  const [loading, setLoading] = useState(false)
   const { cancelCurrentTask } = useTask()
 
   const task = inProcessTask
 
-  // Loading state, we can remove the need for useEffect to fetch the task
   if (!task) {
     return (
       <Box
