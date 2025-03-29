@@ -34,10 +34,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     { inventoryID: string; quantity: number }[]
   >([])
 
-  const [destinationBinCode, setDestinationBinCode] = useState<string | null>(
-    null
-  )
-
   const isCartEmpty = inventoriesInCar.length === 0
 
   const getMyCart = async () => {
