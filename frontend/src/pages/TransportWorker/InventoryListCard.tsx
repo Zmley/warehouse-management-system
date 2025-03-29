@@ -34,8 +34,6 @@ const InventoryListCard: React.FC<Props> = ({
   const [errorOpen, setErrorOpen] = React.useState(false)
   const [errorMessage, setErrorMessage] = React.useState('')
 
-  const { destinationBinCode } = useCartContext()
-
   const handleInputChange = (inventoryID: string, value: string) => {
     const numericValue = sanitizeQuantityInput(value)
 
@@ -60,17 +58,6 @@ const InventoryListCard: React.FC<Props> = ({
         }}
       >
         <Typography fontWeight='bold'>Task Type # {taskType}</Typography>
-
-        <Box display='flex' justifyContent='space-between' mt={1}>
-          <Box>
-            <Typography variant='caption' fontWeight='bold'>
-              Target Bin
-            </Typography>
-            <Typography fontSize={18} fontWeight='bold'>
-              {destinationBinCode ?? 'TBD'}
-            </Typography>
-          </Box>
-        </Box>
       </Box>
 
       <Divider sx={{ mb: 2 }} />

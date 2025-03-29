@@ -5,14 +5,12 @@ import { useNavigate } from 'react-router-dom'
 export const useCart = () => {
   const navigate = useNavigate()
 
-  const { selectedToUnload, getMyCart, setDestinationBinCode, isCartEmpty } =
-    useCartContext()
+  const { selectedToUnload, getMyCart, isCartEmpty } = useCartContext()
 
   const loadCart = async (binCode: string) => {
     try {
       const response = await loadToCart(binCode)
       await getMyCart()
-      setDestinationBinCode(null)
 
       if (response?.success) {
         setTimeout(() => {
@@ -26,8 +24,6 @@ export const useCart = () => {
 
   const unloadCart = async (binCode: string) => {
     try {
-      setDestinationBinCode(binCode)
-
       const response = await unloadFromCart(binCode, selectedToUnload)
       if (response?.success) {
         await getMyCart()
@@ -36,7 +32,6 @@ export const useCart = () => {
             navigate('/success')
           }, 500)
         } else {
-          setDestinationBinCode(binCode)
           setTimeout(() => {
             navigate('/in-process-task')
           }, 500)

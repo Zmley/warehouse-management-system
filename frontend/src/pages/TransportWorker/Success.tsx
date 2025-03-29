@@ -7,7 +7,6 @@ import { useCartContext } from '../../contexts/cart'
 const UnloadSuccess: React.FC = () => {
   const navigate = useNavigate()
   const [open, setOpen] = useState(true)
-  const { setDestinationBinCode } = useCartContext()
 
   const handleClose = () => {
     setOpen(false)
