@@ -20,7 +20,7 @@ export const loadProduct = async (
 
     const result = await loadProductByBinCode(binCode, cartID, warehouseID)
 
-    res.status(result.status).json({ message: result.message })
+    res.status(result.status).json({ success: true, message: result.message })
   } catch (error) {
     next(error)
   }
@@ -41,10 +41,13 @@ export const unloadProductByWoker = async (
       warehouseID
     )
 
-    res.status(200).json({
-      message: `✅ ${result} Product(s) successfully unloaded into bin "${binCode}"`,
-      updatedProducts: result
-    })
+    res
+      .status(200)
+      .json({
+        success: true,
+        message: `✅ ${result} Product(s) successfully unloaded into bin "${binCode}"`,
+        updatedProducts: result
+      })
   } catch (error) {
     next(error)
   }
