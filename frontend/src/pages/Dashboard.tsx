@@ -2,9 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Box, Typography } from '@mui/material'
 import TopBar from '../components/Topbar'
 import WokerBottombar from '../components/Bottombar'
-// import PickerBottombar from './Picker/PickerBottombar'
 import PendingTaskList from '../components/PendingTaskCard'
-// import PickerCreatedTaskList from './Picker/PickerCreatedTaskList'
 import { useAuth } from '../hooks/useAuth'
 import { getPickerCreatedTasks } from '../api/taskApi'
 import { Task } from '../types/task'
@@ -62,35 +60,12 @@ const Dashboard: React.FC = () => {
       <Box sx={{ flex: 1, p: 2, pb: 8 }}>
         {isTransportWorker && <PendingTaskList />}
 
-        {/* {isPicker && showCreatedTasks && (
-          <PickerCreatedTaskList
-            createdTasks={allTasks.filter(task => task.status === 'PENDING')}
-            onRefresh={handleRefresh}
-            status='PENDING'
-          />
-        )}
-
-        {isPicker && showArchivedTasks && (
-          <PickerCreatedTaskList
-            createdTasks={allTasks.filter(task => task.status === 'COMPLETED')}
-            onRefresh={handleRefresh}
-            status='COMPLETED'
-          />
-        )} */}
-
         {isPicker && !showCreatedTasks && !showArchivedTasks && (
           <Typography color='text.secondary' mt={4} textAlign='center'>
             Click "Task List" or "Archived Task" to view your tasks
           </Typography>
         )}
       </Box>
-
-      {/* {isPicker && (
-        <PickerBottombar
-          onTaskListClick={handleTaskListClick}
-          onArchivedClick={handleArchivedClick}
-        />
-      )} */}
 
       {isTransportWorker && <WokerBottombar />}
     </Box>
