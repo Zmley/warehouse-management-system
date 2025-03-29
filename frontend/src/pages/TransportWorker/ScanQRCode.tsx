@@ -1,56 +1,29 @@
-import { useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { Container, Typography, Button, Box } from '@mui/material'
+import { useNavigate } from 'react-router-dom'
 import useQRScanner from '../../hooks/useQRScanner'
-import { useCartContext } from '../../contexts/cart'
+import { useEffect, useRef, useState } from 'react'
 
 const ScanTaskPage = () => {
   const navigate = useNavigate()
+  const stopButtonRef = useRef<HTMLButtonElement>(null)
+
+  // const { hasProductInCar, getMyCart } = useCart()
+
+  const handleScanSuccess = async (binCode: string) => {
+    console.log(`Scanned bin code: ${binCode}`)
+  }
+
   const { videoRef, startScanning, stopScanning } =
     useQRScanner(handleScanSuccess)
 
-  const stopButtonRef = useRef<HTMLButtonElement>(null)
-  const streamRef = useRef<MediaStream | null>(null)
-
-  const { hasProductInCar, getMyCart } = useCartContext()
+  const [hasStarted, setHasStarted] = useState(false)
 
   useEffect(() => {
-    navigator.mediaDevices
-      .getUserMedia({ video: true })
-      .then(s => {
-        streamRef.current = s
-        console.log('Camera permission granted')
-        startScanning()
-      })
-      .catch(err => {
-        console.warn('⚠️ Camera permission denied:', err)
-        alert('Please enable camera permissions to use scanning.')
-      })
-
-    return () => {
-      console.log('🧹 Cleanup triggered')
-      stopButtonRef.current?.click()
-
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => {
-          track.stop()
-          console.log(`🛑 Track ${track.kind} manually stopped`)
-        })
-        streamRef.current = null
-      }
+    if (!hasStarted) {
+      startScanning()
+      setHasStarted(true)
     }
-  }, [])
-
-  async function handleScanSuccess(binID: string) {
-    console.log(`Scanned new bin ID: ${binID}`)
-
-    await getMyCart()
-    if (!hasProductInCar) {
-      setTimeout(() => {
-        navigate('/in-process-task')
-      }, 500)
-    }
-  }
+  }, [hasStarted, startScanning])
 
   return (
     <Container
@@ -87,7 +60,7 @@ const ScanTaskPage = () => {
         variant='body1'
         sx={{ marginTop: 2, fontSize: '14px', color: '#666' }}
       >
-        1 Scan the QRcode to process the task
+        1 Scan the QR code to process the task
       </Typography>
 
       <Button
@@ -97,7 +70,7 @@ const ScanTaskPage = () => {
         sx={{ marginTop: 3, fontSize: '14px', borderRadius: '10px' }}
         onClick={() => {
           stopButtonRef.current?.click()
-          window.location.href = '/'
+          window.location.href = '/' // Navigate to home or another page when canceled
         }}
       >
         ❌ Cancel
@@ -107,7 +80,7 @@ const ScanTaskPage = () => {
         ref={stopButtonRef}
         onClick={async () => {
           console.log('🎯 Hidden stop button triggered')
-          await stopScanning()
+          await stopScanning() // Stop scanning
         }}
         style={{ display: 'none' }}
       >

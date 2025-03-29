@@ -6,28 +6,30 @@ import {
   Container,
   Typography
 } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCartContext } from '../../contexts/cart'
 import InventoryListCard from './InventoryListCard'
 
 const Cart = () => {
   const navigate = useNavigate()
-  const { inventoryListInCar, setSelectedForUnload, getMyCart } =
-    useCartContext()
+  const { inventoryListInCar, setSelectedForUnload } = useCartContext()
 
   const [inventoryListReadyToUnload, setInventoryListReadyToUnload] = useState<
     { inventoryID: string; quantity: number; selected: boolean }[]
   >([])
 
-  useEffect(() => {
+  if (
+    inventoryListInCar.length > 0 &&
+    inventoryListReadyToUnload.length === 0
+  ) {
     const defaultInventoryListReadyToUnload = inventoryListInCar.map(item => ({
       inventoryID: item.inventoryID,
       quantity: item.quantity,
       selected: true
     }))
     setInventoryListReadyToUnload(defaultInventoryListReadyToUnload)
-  }, [inventoryListInCar])
+  }
 
   const handleQuantityChange = (inventoryID: string, newQuantity: number) => {
     setInventoryListReadyToUnload(prev =>
@@ -51,10 +53,6 @@ const Cart = () => {
       )
     )
   }
-
-  // if (isLoading) {
-  //   return <div>Loading...</div>
-  // }
 
   return (
     <Container maxWidth='sm'>
