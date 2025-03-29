@@ -41,13 +41,11 @@ export const unloadProductByWoker = async (
       warehouseID
     )
 
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: `✅ ${result} Product(s) successfully unloaded into bin "${binCode}"`,
-        updatedProducts: result
-      })
+    res.status(200).json({
+      success: true,
+      message: `✅ ${result} Product(s) successfully unloaded into bin "${binCode}"`,
+      updatedProducts: result
+    })
   } catch (error) {
     next(error)
   }
