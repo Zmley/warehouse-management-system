@@ -32,9 +32,7 @@ export const useCartContext = (): CartContextType => {
 }
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
-  const [inventoriesInCar, setInventoryListInCar] = useState<InventoryItem[]>(
-    []
-  )
+  const [inventoriesInCar, setInventoriesInCar] = useState<InventoryItem[]>([])
   const [selectedToUnload, setSelectedToUnload] = useState<
     { inventoryID: string; quantity: number }[]
   >([])
@@ -50,7 +48,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       const response = await getInventoriesInCart()
       const list = response.inventories || []
 
-      setInventoryListInCar(list)
+      setInventoriesInCar(list)
 
       setIsCarEmpty(list.length > 0)
     } catch (error) {
@@ -65,12 +63,12 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   return (
     <CartContext.Provider
       value={{
-        setIsCarEmpty,
+        getMyCart,
         inventoriesInCar,
         isCarEmpty,
+        setIsCarEmpty,
         selectedToUnload,
         setSelectedToUnload,
-        getMyCart,
         destinationBinCode,
         setDestinationBinCode
       }}
