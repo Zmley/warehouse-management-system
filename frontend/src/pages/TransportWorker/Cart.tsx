@@ -13,10 +13,7 @@ import InventoryListCard from './InventoryListCard'
 
 const Cart = () => {
   const navigate = useNavigate()
-  const {
-    inventoriesInCar: inventoriesInCar,
-    setSelectedToUnload: setSelectedToUnload
-  } = useCartContext()
+  const { inventoriesInCar, setSelectedToUnload } = useCartContext()
 
   const [inventoryListReadyToUnload, setInventoryListReadyToUnload] = useState<
     { inventoryID: string; quantity: number; selected: boolean }[]
