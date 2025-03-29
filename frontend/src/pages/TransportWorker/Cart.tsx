@@ -14,19 +14,16 @@ import InventoryListCard from './InventoryListCard'
 const Cart = () => {
   const navigate = useNavigate()
   const {
-    inventoriesInCar: inventoryListInCar,
-    setSelectedToUnload: setSelectedForUnload
+    inventoriesInCar: inventoriesInCar,
+    setSelectedToUnload: setSelectedToUnload
   } = useCartContext()
 
   const [inventoryListReadyToUnload, setInventoryListReadyToUnload] = useState<
     { inventoryID: string; quantity: number; selected: boolean }[]
   >([])
 
-  if (
-    inventoryListInCar.length > 0 &&
-    inventoryListReadyToUnload.length === 0
-  ) {
-    const defaultInventoryListReadyToUnload = inventoryListInCar.map(item => ({
+  if (inventoriesInCar.length > 0 && inventoryListReadyToUnload.length === 0) {
+    const defaultInventoryListReadyToUnload = inventoriesInCar.map(item => ({
       inventoryID: item.inventoryID,
       quantity: item.quantity,
       selected: true
@@ -73,7 +70,7 @@ const Cart = () => {
         <CardContent>
           <InventoryListCard
             taskType='Woker Sefl Perfomance'
-            inventories={inventoryListInCar}
+            inventories={inventoriesInCar}
             selectedList={inventoryListReadyToUnload}
             onQuantityChange={handleQuantityChange}
             onSelectionChange={handleSelectionChange}
@@ -93,7 +90,7 @@ const Cart = () => {
                     quantity
                   }))
 
-                setSelectedForUnload(selectedToUnload)
+                setSelectedToUnload(selectedToUnload)
 
                 navigate('/scan-qr')
               }}
