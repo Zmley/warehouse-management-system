@@ -8,21 +8,16 @@ export const useCart = () => {
   const {
     hasProductInCar,
     selectedInventoriesToUnload,
-    setJustUnloadedSuccess,
     getMyCart,
-    setHasProductInCar,
     setDestinationBinCode
   } = useCartContext()
 
   const loadCart = async (binCode: string) => {
     try {
       const response = await loadToCart(binCode)
-      if (response?.success) {
-        setHasProductInCar(true)
-        setDestinationBinCode(binCode)
-        setJustUnloadedSuccess(true)
-        await getMyCart()
+      await getMyCart()
 
+      if (response?.success) {
         setTimeout(() => {
           navigate('/in-process-task')
         }, 500)
@@ -34,22 +29,22 @@ export const useCart = () => {
 
   const unloadCart = async (binCode: string) => {
     try {
+      setDestinationBinCode(binCode)
+
       const response = await unloadFromCart(
         binCode,
         selectedInventoriesToUnload
       )
       if (response?.success) {
-        setJustUnloadedSuccess(true)
         await getMyCart()
         if (!response.data.hasProductInCar) {
           navigate('/success')
         } else {
+          setDestinationBinCode(binCode)
           setTimeout(() => {
             navigate('/in-process-task')
           }, 500)
         }
-
-        setDestinationBinCode(binCode)
       }
     } catch (error) {
       console.error('❌ Failed to unload from cart:', error)
