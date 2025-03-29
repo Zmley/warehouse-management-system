@@ -6,7 +6,8 @@ import { acceptTask as acceptTaskAPI, cancelTask } from '../api/taskApi'
 export const useTask = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const { fetchMyTask, refreshPendingTasks } = usePendingTaskContext()
+  const { fetchMyTask, fetchPendingTasks: refreshPendingTasks } =
+    usePendingTaskContext()
   const navigate = useNavigate()
 
   // Task Accept Logic

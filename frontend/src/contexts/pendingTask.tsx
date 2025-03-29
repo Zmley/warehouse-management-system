@@ -4,7 +4,7 @@ import { getPendingTasks, getCurrentInProcessTask } from '../api/taskApi'
 
 export type PendingTaskContextType = {
   pendingTasks: Task[]
-  refreshPendingTasks: () => void
+  fetchPendingTasks: () => void
   myTask: Task | null
   setMyTask: (task: Task) => void
   fetchMyTask: () => Promise<Task | null>
@@ -30,7 +30,7 @@ export const PendingTaskProvider: React.FC<{ children: React.ReactNode }> = ({
   const [pendingTasks, setPendingTasks] = useState<Task[]>([])
   const [myTask, setMyTask] = useState<Task | null>(null)
 
-  const refreshPendingTasks = async () => {
+  const fetchPendingTasks = async () => {
     try {
       const tasks = await getPendingTasks()
       setPendingTasks(tasks)
@@ -51,14 +51,14 @@ export const PendingTaskProvider: React.FC<{ children: React.ReactNode }> = ({
   }
 
   useEffect(() => {
-    refreshPendingTasks()
+    fetchPendingTasks()
   }, [])
 
   return (
     <PendingTaskContext.Provider
       value={{
         pendingTasks,
-        refreshPendingTasks,
+        fetchPendingTasks,
         myTask,
         setMyTask,
         fetchMyTask
