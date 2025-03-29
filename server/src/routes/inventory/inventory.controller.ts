@@ -12,7 +12,6 @@ export const getInventoriesByCart = async (
     const result = await getInventoriesByCartId(cartID)
 
     res.status(200).json({
-      hasProductInCar: result.hasProduct,
       inventories: result.inventories
     })
   } catch (error) {
