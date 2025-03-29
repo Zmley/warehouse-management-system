@@ -6,6 +6,7 @@ import PrivateRoute from './PrivateRoute'
 
 const PublicRoute: React.FC = () => {
   const { isAuthenticated } = useContext(AuthContext)!
+
   return (
     <Routes>
       <Route
