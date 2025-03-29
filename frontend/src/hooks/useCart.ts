@@ -31,7 +31,7 @@ export const useCart = () => {
       const response = await unloadFromCart(binCode, selectedToUnload)
       if (response?.success) {
         await getMyCart()
-        if (isCartEmpty) {
+        if (!isCartEmpty) {
           setTimeout(() => {
             navigate('/success')
           }, 500)

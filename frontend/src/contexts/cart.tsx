@@ -11,7 +11,6 @@ import { InventoryItem } from '../types/inventory'
 interface CartContextType {
   inventoriesInCar: InventoryItem[]
   isCartEmpty: boolean
-  setIsCartEmpty: (hasProduct: boolean) => void
   selectedToUnload: { inventoryID: string; quantity: number }[]
   setSelectedToUnload: (
     list: { inventoryID: string; quantity: number }[]
@@ -37,20 +36,20 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     { inventoryID: string; quantity: number }[]
   >([])
 
-  const [isCartEmpty, setIsCartEmpty] = useState<boolean>(false)
-
   const [destinationBinCode, setDestinationBinCode] = useState<string | null>(
     null
   )
+
+  const isCartEmpty = inventoriesInCar.length === 0
 
   const getMyCart = async () => {
     try {
       const response = await getInventoriesInCart()
       const list = response.inventories || []
 
-      setInventoriesInCar(list)
+      // const isCartEmpty = (list.length > 0 )
 
-      setIsCartEmpty(list.length > 0)
+      setInventoriesInCar(list)
     } catch (error) {
       console.error('❌ Failed to fetch cart:', error)
     }
@@ -66,7 +65,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         getMyCart,
         inventoriesInCar,
         isCartEmpty,
-        setIsCartEmpty,
         selectedToUnload,
         setSelectedToUnload,
         destinationBinCode,

@@ -38,7 +38,7 @@ const useQRScanner = (onScanSuccess?: (binCode: string) => void) => {
                 const binCode = result.data.trim()
                 if (binCode) {
                   try {
-                    if (!isCarEmpty) {
+                    if (isCarEmpty) {
                       loadCart(binCode)
                     } else {
                       unloadCart(binCode)
