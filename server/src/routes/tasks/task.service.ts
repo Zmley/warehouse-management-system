@@ -136,8 +136,6 @@ export const completeTask = async (taskID: string) => {
 
 //////////////////////////////////////
 
-/////////////////////////////////////////
-
 export const getBinCodeByBinID = async (
   binID: string
 ): Promise<string | null> => {
@@ -158,7 +156,7 @@ export const getBinCodeByBinID = async (
   }
 }
 
-export const getPendingTasksService = async (warehouseID: string) => {
+export const getPendingTasksByWarehouseID = async (warehouseID: string) => {
   const tasks = await Task.findAll({
     where: { status: 'PENDING' }
   })
@@ -224,7 +222,7 @@ export const getInProcessTaskByID = async (accountID: string) => {
 
 ////////////////////////////////////
 
-export const getInProcessTaskWithBinCodes = async (
+export const getUserInprocessTask = async (
   accountID: string,
   warehouseID: string
 ) => {

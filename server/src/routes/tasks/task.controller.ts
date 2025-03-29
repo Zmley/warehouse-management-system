@@ -3,9 +3,9 @@ import {
   createTaskAsAdmin,
   acceptTaskService,
   createTaskAsPicker,
-  getPendingTasksService,
+  getPendingTasksByWarehouseID,
   cancelTaskByID,
-  getInProcessTaskWithBinCodes
+  getUserInprocessTask
 } from '../tasks/task.service'
 
 export const createAsAdmin = async (
@@ -78,11 +78,9 @@ export const createAsPicker = async (
   }
 }
 
-/////////////////////////////
-
 ///////////////////////////////////////////////////////////woker task
 
-export const getPendingTask = async (
+export const getPendingTasks = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -90,7 +88,7 @@ export const getPendingTask = async (
   try {
     const warehouseID = res.locals.warehouseID
 
-    const tasksWithBinCodes = await getPendingTasksService(warehouseID)
+    const tasksWithBinCodes = await getPendingTasksByWarehouseID(warehouseID)
 
     res.status(200).json({
       message: 'Successfully fetched all pending tasks for Picker',
@@ -101,7 +99,7 @@ export const getPendingTask = async (
   }
 }
 
-export const getCurrentInProcessTask = async (
+export const getInProcessTask = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -109,7 +107,7 @@ export const getCurrentInProcessTask = async (
   try {
     const { accountID, warehouseID } = res.locals
 
-    const task = await getInProcessTaskWithBinCodes(accountID, warehouseID)
+    const task = await getUserInprocessTask(accountID, warehouseID)
 
     res.status(200).json({
       message: 'Successfully fetched current in-process task',
@@ -120,7 +118,7 @@ export const getCurrentInProcessTask = async (
   }
 }
 
-export const cancelTaskByTaskID = async (
+export const cancelTask = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -142,5 +140,3 @@ export const cancelTaskByTaskID = async (
     next(error)
   }
 }
-
-/////////////////////////////////////////////////////
