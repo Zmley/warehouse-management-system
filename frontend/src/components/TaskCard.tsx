@@ -13,15 +13,15 @@ import { useTask } from '../hooks/useTask'
 import { Task } from '../types/task'
 
 const TaskList: React.FC = () => {
-  const { tasks: Tasks } = useTaskContext()
+  const { tasks } = useTaskContext()
   const { acceptTask, loading, error } = useTask()
 
   return (
     <Box p={2}>
-      {Tasks.length === 0 ? (
+      {tasks.length === 0 ? (
         <Typography color='text.secondary'>No pending tasks found.</Typography>
       ) : (
-        Tasks.map((task: Task) => (
+        tasks.map((task: Task) => (
           <Card
             key={task.taskID}
             variant='outlined'
