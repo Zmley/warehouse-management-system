@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTaskContext } from '../contexts/task'
 import {
   acceptTask as acceptTaskAPI,
-  cancelTask as cancealTaskAPI
+  cancelTask as cancelTaskAPI
 } from '../api/taskApi'
 
 export const useTask = () => {
@@ -33,9 +33,9 @@ export const useTask = () => {
 
   const cancelMyTask = async (taskID: string) => {
     try {
-      await cancealTaskAPI(taskID)
+      await cancelTaskAPI(taskID) // Updated to use the new route
       await fetchTasks()
-      console.log('Task cancelled and  tasks refreshed')
+      console.log('Task cancelled and tasks refreshed')
     } catch (error) {
       console.error('❌ Failed to cancel task:', error)
       throw error

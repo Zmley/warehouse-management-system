@@ -6,17 +6,17 @@ export const getTasks = async (): Promise<Task[]> => {
   return response.data.tasks
 }
 
-export const acceptTask = async (taskID: string) => {
-  const response = await apiClient.post('/task/acceptTask', { taskID })
-  return response.data
-}
-
 export const getMyTask = async (): Promise<Task> => {
-  const response = await apiClient.get('/task/myTask')
+  const response = await apiClient.get('/task/my')
   return response.data.task
 }
 
+export const acceptTask = async (taskID: string) => {
+  const response = await apiClient.post(`/task/${taskID}/accept`)
+  return response.data
+}
+
 export const cancelTask = async (taskID: string) => {
-  const response = await apiClient.post('/task/cancelTask', { taskID })
+  const response = await apiClient.post(`/task/${taskID}/cancel`)
   return response.data
 }

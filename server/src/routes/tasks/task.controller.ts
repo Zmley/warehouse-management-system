@@ -40,7 +40,7 @@ export const acceptTask = async (
 ): Promise<void> => {
   try {
     const accountID = res.locals.accountID
-    const { taskID } = req.body
+    const { taskID } = req.params
 
     const task = await acceptTaskService(accountID, taskID)
 
@@ -120,13 +120,9 @@ export const cancelTask = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
-    const { taskID } = req.body
-
-    if (!taskID) {
-      return res.status(400).json({ message: '❌ taskID is required' })
-    }
+    const { taskID } = req.params
 
     const task = await cancelTaskByID(taskID)
 

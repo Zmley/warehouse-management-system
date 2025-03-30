@@ -17,12 +17,12 @@ router.post('/createAsAdmin', adminOnly, createAsAdmin)
 
 router.post('/createAsPicker', pickerOnly, createAsPicker)
 
-router.post('/acceptTask', transportWorkerOnly, acceptTask)
-
 router.get('/tasks', transportWorkerOnly, getTasks)
 
-router.get('/myTask', transportWorkerOnly, getMyTask)
+router.get('/my', transportWorkerOnly, getMyTask)
 
-router.post('/cancelTask', transportWorkerOnly, cancelTask)
+router.post('/:taskID/accept', transportWorkerOnly, acceptTask)
+
+router.post('/:taskID/cancel', transportWorkerOnly, cancelTask)
 
 export default router
