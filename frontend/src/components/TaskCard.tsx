@@ -58,8 +58,8 @@ const TaskList: React.FC = () => {
                     Source Bin
                   </Typography>
                   <Box>
-                    {task.sourceBinCode?.length ? (
-                      task.sourceBinCode.map((code, index) => (
+                    {task.sourceBinCodes?.length ? (
+                      task.sourceBinCodes.map((code, index) => (
                         <Typography key={index} fontWeight='bold' fontSize={16}>
                           {code}
                         </Typography>
@@ -84,7 +84,7 @@ const TaskList: React.FC = () => {
                     Target Bin
                   </Typography>
                   <Typography fontWeight='bold'>
-                    {task.destinationBinCode?.join(', ') || '--'}
+                    {task.destinationBinCode || '--'}
                   </Typography>
                 </Grid>
               </Grid>

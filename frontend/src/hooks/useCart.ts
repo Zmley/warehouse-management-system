@@ -14,7 +14,7 @@ export const useCart = () => {
 
       if (response?.success) {
         setTimeout(() => {
-          navigate('/in-process-task')
+          navigate('/my-task')
         }, 500)
       }
     } catch (error) {
@@ -33,7 +33,7 @@ export const useCart = () => {
           }, 500)
         } else {
           setTimeout(() => {
-            navigate('/in-process-task')
+            navigate('/my-task')
           }, 500)
         }
       }

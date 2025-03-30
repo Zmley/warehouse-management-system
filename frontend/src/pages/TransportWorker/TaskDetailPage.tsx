@@ -54,14 +54,21 @@ const TaskDetailPage: React.FC = () => {
           <Grid item>
             <Typography variant='caption'>Source Bin</Typography>
             <Typography fontWeight='bold' fontSize={20}>
-              {myTask.sourceBinCode?.join('/')}
+              {myTask.sourceBins?.length
+                ? myTask.sourceBins.map((sourceBin: any, index: number) => (
+                    <span key={index}>
+                      {sourceBin.Bin?.binCode || '--'}
+                      {index < myTask.sourceBins.length - 1 && ' / '}
+                    </span>
+                  ))
+                : '--'}
             </Typography>
           </Grid>
           <Grid item />
           <Grid item>
             <Typography variant='caption'>Target Bin</Typography>
             <Typography fontWeight='bold' fontSize={20}>
-              {myTask.destinationBinCode?.join('/')}
+              {myTask.destinationBinCode}
             </Typography>
           </Grid>
         </Grid>

@@ -165,20 +165,20 @@ export const getTasksByWarehouseID = async (warehouseID: string) => {
 
   const tasksWithBinCodes = await Promise.all(
     tasks.map(async task => {
-      let sourceBinCode: string[] = []
+      let sourceBinCodes: string[] = []
       let destinationBinCode: string[] = []
 
       if (task.sourceBinID) {
         const binCode = await getBinCodeByBinID(task.sourceBinID)
         if (binCode) {
-          sourceBinCode = [binCode]
+          sourceBinCodes = [binCode]
         }
       } else {
         const binCodes = await getMatchBinCodesByProductCode(
           task.productCode,
           warehouseID
         )
-        sourceBinCode = binCodes
+        sourceBinCodes = binCodes
       }
 
       if (task.destinationBinID) {
@@ -192,7 +192,7 @@ export const getTasksByWarehouseID = async (warehouseID: string) => {
         taskID: task.taskID,
         productCode: task.productCode,
         sourceBinID: task.sourceBinID,
-        sourceBinCode,
+        sourceBinCodes,
         destinationBinID: task.destinationBinID,
         destinationBinCode,
         createdAt: task.createdAt
@@ -202,55 +202,45 @@ export const getTasksByWarehouseID = async (warehouseID: string) => {
 
   return tasksWithBinCodes
 }
+//////////////////////////////
 
-export const getMyTaskById = async (accountID: string, warehouseID: string) => {
-  const task = await Task.findOne({
+export const getTaskByAccountID = async (
+  accountID: string,
+  warehouseID: string
+) => {
+  const myCurrentTask = await Task.findOne({
     where: {
       accepterID: accountID,
       status: 'IN_PROCESS'
     }
   })
 
-  if (!task) {
-    throw new AppError(404, '❌ No in-process task found for this account')
+  const sourceBins = await Inventory.findAll({
+    where: { productCode: myCurrentTask.productCode },
+    include: [
+      {
+        model: Bin,
+        where: {
+          warehouseID,
+          type: 'INVENTORY'
+        },
+        attributes: ['binID', 'binCode']
+      }
+    ]
+  })
+
+  if (sourceBins.length === 0) {
+    throw new AppError(404, 'No bins have this product in this warehouse')
   }
 
-  let sourceBinCode: string[] = []
-  let destinationBinCode: string[] = []
+  const destinationBin = await Bin.findOne({
+    where: { binID: myCurrentTask.destinationBinID },
+    attributes: ['binCode']
+  })
 
-  if (task.sourceBinID) {
-    const binCode = await getBinCodeByBinID(task.sourceBinID)
-    if (binCode) {
-      sourceBinCode = [binCode]
-    }
-  } else {
-    const binCodes = await getMatchBinCodesByProductCode(
-      task.productCode,
-      warehouseID
-    )
-    sourceBinCode = binCodes
-  }
+  const destinationBinCode = destinationBin.binCode
 
-  if (task.destinationBinID) {
-    const binCode = await getBinCodeByBinID(task.destinationBinID)
-    if (binCode) {
-      destinationBinCode = [binCode]
-    }
-  }
-
-  return {
-    taskID: task.taskID,
-    productCode: task.productCode,
-    sourceBinID: task.sourceBinID,
-    sourceBinCode,
-    destinationBinID: task.destinationBinID,
-    destinationBinCode,
-    createdAt: task.createdAt,
-    updatedAt: task.updatedAt,
-    status: task.status,
-    creatorID: task.creatorID,
-    accepterID: task.accepterID
-  }
+  return { ...myCurrentTask.toJSON(), sourceBins, destinationBinCode }
 }
 
 export const cancelTaskByID = async (taskID: string) => {

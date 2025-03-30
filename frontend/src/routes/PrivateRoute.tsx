@@ -24,10 +24,10 @@ const PrivateRoutes: React.FC = () => {
   useEffect(() => {
     if (
       !isCartEmpty &&
-      location.pathname !== '/in-process-task' &&
+      location.pathname !== '/my-task' &&
       location.pathname !== '/scan-qr'
     ) {
-      navigate('/in-process-task')
+      navigate('/my-task')
     }
   }, [isCartEmpty, location.pathname, navigate])
 
@@ -36,7 +36,7 @@ const PrivateRoutes: React.FC = () => {
       <Route path='/' element={<Dashboard />} />
       <Route path='/profile' element={<Profile />} />
       <Route path='/scan-qr' element={<ScanTask />} />
-      <Route path='/in-process-task' element={<Cart />} />
+      <Route path='/my-task' element={<Cart />} />
       <Route path='/success' element={<UnloadSuccess />} />
 
       <Route path='/task-detail' element={<TaskDetailPage />} />

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { Task } from '../types/task'
 import { getTasks, getMyTask } from '../api/taskApi'
+import { useLocation } from 'react-router-dom'
 
 export type TaskContextType = {
   tasks: Task[]
@@ -25,6 +26,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [tasks, setTasks] = useState<Task[]>([])
   const [myTask, setMyTask] = useState<Task | null>(null)
+  const location = useLocation()
 
   const fetchTasks = async () => {
     try {
@@ -47,9 +49,17 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
   }
 
   useEffect(() => {
-    fetchTasks()
-    fetchMyTask()
-  }, [])
+    if (location.pathname === '/') {
+      fetchTasks()
+    }
+
+    if (
+      location.pathname === '/task-detail' ||
+      location.pathname === '/my-task'
+    ) {
+      fetchMyTask()
+    }
+  }, [location.pathname])
 
   return (
     <TaskContext.Provider

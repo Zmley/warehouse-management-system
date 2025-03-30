@@ -5,7 +5,7 @@ import {
   createTaskAsPicker,
   getTasksByWarehouseID,
   cancelTaskByID,
-  getMyTaskById
+  getTaskByAccountID
 } from '../tasks/task.service'
 
 export const createAsAdmin = async (
@@ -105,7 +105,7 @@ export const getMyTask = async (
   try {
     const { accountID, warehouseID } = res.locals
 
-    const task = await getMyTaskById(accountID, warehouseID)
+    const task = await getTaskByAccountID(accountID, warehouseID)
 
     res.status(200).json({
       message: 'Successfully fetched current in-process task',

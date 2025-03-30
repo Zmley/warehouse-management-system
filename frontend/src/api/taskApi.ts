@@ -2,7 +2,7 @@ import apiClient from './axiosClient.ts'
 import { Task } from '../types/task.js'
 
 export const getTasks = async (): Promise<Task[]> => {
-  const response = await apiClient.get('/task/tasks')
+  const response = await apiClient.get('/task/all')
   return response.data.tasks
 }
 
