@@ -48,6 +48,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     fetchTasks()
+    fetchMyTask()
   }, [])
 
   return (
