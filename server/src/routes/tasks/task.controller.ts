@@ -78,9 +78,7 @@ export const createAsPicker = async (
   }
 }
 
-///////////////////////////////////////////////////////////woker task
-
-export const getPendingTasks = async (
+export const getTasks = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -99,7 +97,7 @@ export const getPendingTasks = async (
   }
 }
 
-export const getInProcessTask = async (
+export const getMyTask = async (
   req: Request,
   res: Response,
   next: NextFunction

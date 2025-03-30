@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 import { Task } from '../types/task'
 import { getTasks, getMyTask } from '../api/taskApi'
 
-export type PendingTaskContextType = {
+export type TaskContextType = {
   tasks: Task[]
   fetchTasks: () => void
   myTask: Task | null
@@ -10,19 +10,17 @@ export type PendingTaskContextType = {
   fetchMyTask: () => Promise<Task | null>
 }
 
-const TaskContext = createContext<PendingTaskContextType | undefined>(undefined)
+const TaskContext = createContext<TaskContextType | undefined>(undefined)
 
-export const useTaskContext = (): PendingTaskContextType => {
+export const useTaskContext = (): TaskContextType => {
   const context = useContext(TaskContext)
   if (!context) {
-    throw new Error(
-      'usePendingTaskContext must be used within PendingTaskProvider'
-    )
+    throw new Error('useTaskContext must be used within TaskProvider')
   }
   return context
 }
 
-export const PendingTaskProvider: React.FC<{ children: React.ReactNode }> = ({
+export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
   children
 }) => {
   const [tasks, setTasks] = useState<Task[]>([])
@@ -33,7 +31,7 @@ export const PendingTaskProvider: React.FC<{ children: React.ReactNode }> = ({
       const tasks = await getTasks()
       setTasks(tasks)
     } catch (error) {
-      console.error('Failed to fetch pending tasks:', error)
+      console.error('Failed to fetch tasks:', error)
     }
   }
 

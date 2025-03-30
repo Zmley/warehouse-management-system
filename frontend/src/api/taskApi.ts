@@ -3,7 +3,7 @@ import apiClient from './axiosClient.ts'
 import { Task } from '../types/task.js'
 
 export const getTasks = async (): Promise<Task[]> => {
-  const response = await apiClient.get('/task/pending')
+  const response = await apiClient.get('/task/tasks')
   return response.data.tasks
 }
 
@@ -13,7 +13,7 @@ export const acceptTask = async (taskID: string) => {
 }
 
 export const getMyTask = async (): Promise<Task> => {
-  const response = await apiClient.get('/task/inprocessTask')
+  const response = await apiClient.get('/task/myTask')
   return response.data.task
 }
 

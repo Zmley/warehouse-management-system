@@ -2,18 +2,18 @@ import React from 'react'
 import { BrowserRouter as Router } from 'react-router-dom'
 import { AuthProvider } from './contexts/auth'
 import { CartProvider } from './contexts/cart'
-import { PendingTaskProvider } from './contexts/task'
+import { TaskProvider } from './contexts/task'
 import PublicRoute from './routes/PublicRoute'
 
 const App: React.FC = () => {
   return (
     <Router>
       <AuthProvider>
-        <PendingTaskProvider>
+        <TaskProvider>
           <CartProvider>
             <PublicRoute />
           </CartProvider>
-        </PendingTaskProvider>
+        </TaskProvider>
       </AuthProvider>
     </Router>
   )

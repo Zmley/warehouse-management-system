@@ -3,8 +3,8 @@ import {
   createAsAdmin,
   acceptTask,
   createAsPicker,
-  getPendingTasks,
-  getInProcessTask,
+  getTasks,
+  getMyTask,
   cancelTask
 } from './task.controller'
 import transportWorkerOnly from '../../middlewares/transportWorker.middleware'
@@ -19,9 +19,9 @@ router.post('/createAsPicker', pickerOnly, createAsPicker)
 
 router.post('/acceptTask', transportWorkerOnly, acceptTask)
 
-router.get('/pending', transportWorkerOnly, getPendingTasks)
+router.get('/tasks', transportWorkerOnly, getTasks)
 
-router.get('/inprocessTask', transportWorkerOnly, getInProcessTask)
+router.get('/myTask', transportWorkerOnly, getMyTask)
 
 router.post('/cancelTask', transportWorkerOnly, cancelTask)
 
