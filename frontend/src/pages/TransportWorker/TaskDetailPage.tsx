@@ -7,7 +7,7 @@ import { useTask } from '../../hooks/useTask'
 const TaskDetailPage: React.FC = () => {
   const navigate = useNavigate()
   const { myTask } = useTaskContext()
-  const { cancelCurrentTask } = useTask()
+  const { cancelMyTask } = useTask()
 
   if (!myTask) {
     return (
@@ -125,7 +125,7 @@ const TaskDetailPage: React.FC = () => {
           onClick={async () => {
             if (myTask?.taskID) {
               try {
-                await cancelCurrentTask(myTask.taskID)
+                await cancelMyTask(myTask.taskID)
                 navigate('/')
               } catch (err) {}
             }

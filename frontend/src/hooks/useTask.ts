@@ -31,7 +31,7 @@ export const useTask = () => {
     }
   }
 
-  const cancelCurrentTask = async (taskID: string) => {
+  const cancelMyTask = async (taskID: string) => {
     try {
       await cancealTaskAPI(taskID)
       await fetchTasks()
@@ -44,7 +44,7 @@ export const useTask = () => {
 
   return {
     acceptTask,
-    cancelCurrentTask,
+    cancelMyTask,
     loading,
     error
   }
