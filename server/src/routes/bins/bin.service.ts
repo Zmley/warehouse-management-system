@@ -39,27 +39,3 @@ export const getBinCodesByProductCode = async (
     throw new AppError(500, 'Failed to fetch binCodes')
   }
 }
-
-export const getBinByBinID = async (binID: string): Promise<Bin> => {
-  try {
-    const bin = await Bin.findOne({
-      where: { binID }
-    })
-
-    if (!bin) {
-      throw new AppError(404, `No bin found with binID: ${binID}`)
-    }
-
-    return bin
-  } catch (error) {
-    console.error('Error fetching bin by binID:', error)
-
-    // 如果是自定义的错误，则直接抛出
-    if (error instanceof AppError) {
-      throw error
-    }
-
-    // 否则抛出一个通用的错误
-    throw new AppError(500, 'Failed to fetch bin by binID')
-  }
-}

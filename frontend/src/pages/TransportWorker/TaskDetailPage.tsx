@@ -18,7 +18,7 @@ const TaskDetailPage: React.FC = () => {
         height='100vh'
       >
         <Typography variant='h6' color='error'>
-          Task not found
+          loading
         </Typography>
       </Box>
     )

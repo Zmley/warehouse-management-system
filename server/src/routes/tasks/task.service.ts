@@ -202,7 +202,6 @@ export const getTasksByWarehouseID = async (warehouseID: string) => {
 
   return tasksWithBinCodes
 }
-//////////////////////////////
 
 export const getTaskByAccountID = async (
   accountID: string,
