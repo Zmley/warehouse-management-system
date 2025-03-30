@@ -2,7 +2,7 @@ import Bin from './bin.model'
 import AppError from '../../utils/appError'
 import Inventory from 'routes/inventory/inventory.model'
 
-export const getMatchBinCodesByProductCode = async (
+export const getBinCodesByProductCode = async (
   productCode: string,
   warehouseID: string
 ): Promise<string[]> => {

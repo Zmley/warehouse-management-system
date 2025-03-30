@@ -3,7 +3,7 @@ import Inventory from '../inventory/inventory.model'
 import Bin from '../bins/bin.model'
 import AppError from '../../utils/appError'
 
-import { getMatchBinCodesByProductCode } from '../bins/bin.service'
+import { getBinCodesByProductCode } from '../bins/bin.service'
 
 export const hasActiveTask = async (accountID: string): Promise<boolean> => {
   try {
@@ -174,7 +174,7 @@ export const getTasksByWarehouseID = async (warehouseID: string) => {
           sourceBinCodes = [binCode]
         }
       } else {
-        const binCodes = await getMatchBinCodesByProductCode(
+        const binCodes = await getBinCodesByProductCode(
           task.productCode,
           warehouseID
         )
