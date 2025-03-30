@@ -34,10 +34,8 @@ export const getMatchBinCodesByProductCode = async (
   } catch (error) {
     console.error('Error fetching binCodes:', error)
     if (error instanceof AppError) {
-      // If it's already an AppError, rethrow it
       throw error
     }
-    // If it's any other error, wrap it in an AppError
     throw new AppError(500, 'Failed to fetch binCodes')
   }
 }
