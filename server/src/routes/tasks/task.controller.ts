@@ -3,7 +3,7 @@ import {
   createTaskAsAdmin,
   acceptTaskService,
   createTaskAsPicker,
-  getPendingTasksByWarehouseID,
+  getTasksByWarehouseID,
   cancelTaskByID,
   getUserInprocessTask
 } from '../tasks/task.service'
@@ -88,7 +88,7 @@ export const getPendingTasks = async (
   try {
     const warehouseID = res.locals.warehouseID
 
-    const tasksWithBinCodes = await getPendingTasksByWarehouseID(warehouseID)
+    const tasksWithBinCodes = await getTasksByWarehouseID(warehouseID)
 
     res.status(200).json({
       message: 'Successfully fetched all pending tasks for Picker',

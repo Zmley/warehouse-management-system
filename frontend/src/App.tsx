@@ -2,7 +2,7 @@ import React from 'react'
 import { BrowserRouter as Router } from 'react-router-dom'
 import { AuthProvider } from './contexts/auth'
 import { CartProvider } from './contexts/cart'
-import { PendingTaskProvider } from './contexts/pendingTask'
+import { PendingTaskProvider } from './contexts/task'
 import PublicRoute from './routes/PublicRoute'
 
 const App: React.FC = () => {

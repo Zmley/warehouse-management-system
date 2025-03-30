@@ -1,21 +1,19 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { Task } from '../types/task'
-import { getPendingTasks, getCurrentInProcessTask } from '../api/taskApi'
+import { getTasks, getMyTask } from '../api/taskApi'
 
 export type PendingTaskContextType = {
-  pendingTasks: Task[]
-  fetchPendingTasks: () => void
+  tasks: Task[]
+  fetchTasks: () => void
   myTask: Task | null
   setMyTask: (task: Task) => void
   fetchMyTask: () => Promise<Task | null>
 }
 
-const PendingTaskContext = createContext<PendingTaskContextType | undefined>(
-  undefined
-)
+const TaskContext = createContext<PendingTaskContextType | undefined>(undefined)
 
-export const usePendingTaskContext = (): PendingTaskContextType => {
-  const context = useContext(PendingTaskContext)
+export const useTaskContext = (): PendingTaskContextType => {
+  const context = useContext(TaskContext)
   if (!context) {
     throw new Error(
       'usePendingTaskContext must be used within PendingTaskProvider'
@@ -27,13 +25,13 @@ export const usePendingTaskContext = (): PendingTaskContextType => {
 export const PendingTaskProvider: React.FC<{ children: React.ReactNode }> = ({
   children
 }) => {
-  const [pendingTasks, setPendingTasks] = useState<Task[]>([])
+  const [tasks, setTasks] = useState<Task[]>([])
   const [myTask, setMyTask] = useState<Task | null>(null)
 
-  const fetchPendingTasks = async () => {
+  const fetchTasks = async () => {
     try {
-      const tasks = await getPendingTasks()
-      setPendingTasks(tasks)
+      const tasks = await getTasks()
+      setTasks(tasks)
     } catch (error) {
       console.error('Failed to fetch pending tasks:', error)
     }
@@ -41,7 +39,7 @@ export const PendingTaskProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const fetchMyTask = async (): Promise<Task | null> => {
     try {
-      const task = await getCurrentInProcessTask()
+      const task = await getMyTask()
       setMyTask(task)
       return task
     } catch (error) {
@@ -51,20 +49,20 @@ export const PendingTaskProvider: React.FC<{ children: React.ReactNode }> = ({
   }
 
   useEffect(() => {
-    fetchPendingTasks()
+    fetchTasks()
   }, [])
 
   return (
-    <PendingTaskContext.Provider
+    <TaskContext.Provider
       value={{
-        pendingTasks,
-        fetchPendingTasks,
+        tasks,
+        fetchTasks,
         myTask,
         setMyTask,
         fetchMyTask
       }}
     >
       {children}
-    </PendingTaskContext.Provider>
+    </TaskContext.Provider>
   )
 }

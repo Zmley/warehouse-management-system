@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Box, Typography } from '@mui/material'
 import TopBar from '../components/Topbar'
 import WokerBottombar from '../components/Bottombar'
-import PendingTaskList from '../components/PendingTaskCard'
+import TaskList from '../components/TaskCard'
 import { useAuth } from '../hooks/useAuth'
 import { Task } from '../types/task'
 
@@ -27,7 +27,7 @@ const Dashboard: React.FC = () => {
       <TopBar userName={`${userProfile.firstName} ${userProfile.lastName}`} />
 
       <Box sx={{ flex: 1, p: 2, pb: 8 }}>
-        {isTransportWorker && <PendingTaskList />}
+        {isTransportWorker && <TaskList />}
       </Box>
 
       {isTransportWorker && <WokerBottombar />}

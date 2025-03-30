@@ -1,18 +1,15 @@
-import React, { useState } from 'react'
 import { Box, Typography, Button, Grid, Card, Chip } from '@mui/material'
 import { QrCode } from 'lucide-react'
-import { usePendingTaskContext } from '../../contexts/pendingTask'
+import { useTaskContext } from '../../contexts/task'
 import { useNavigate } from 'react-router-dom'
 import { useTask } from '../../hooks/useTask'
 
 const TaskDetailPage: React.FC = () => {
   const navigate = useNavigate()
-  const { myTask, fetchMyTask } = usePendingTaskContext()
+  const { myTask } = useTaskContext()
   const { cancelCurrentTask } = useTask()
 
-  const task = myTask
-
-  if (!task) {
+  if (!myTask) {
     return (
       <Box
         display='flex'
@@ -45,7 +42,7 @@ const TaskDetailPage: React.FC = () => {
         }}
       >
         <Typography fontWeight='bold' fontSize={14} mb={2}>
-          Task ID # {task.taskID}
+          Task ID # {myTask.taskID}
         </Typography>
 
         <Grid
@@ -57,14 +54,14 @@ const TaskDetailPage: React.FC = () => {
           <Grid item>
             <Typography variant='caption'>Source Bin</Typography>
             <Typography fontWeight='bold' fontSize={20}>
-              {task.sourceBinCode?.join('/')}
+              {myTask.sourceBinCode?.join('/')}
             </Typography>
           </Grid>
           <Grid item />
           <Grid item>
             <Typography variant='caption'>Target Bin</Typography>
             <Typography fontWeight='bold' fontSize={20}>
-              {task.destinationBinCode?.join('/')}
+              {myTask.destinationBinCode?.join('/')}
             </Typography>
           </Grid>
         </Grid>
@@ -126,9 +123,9 @@ const TaskDetailPage: React.FC = () => {
           fullWidth
           sx={{ mt: 2, borderRadius: 3, textTransform: 'none' }}
           onClick={async () => {
-            if (task?.taskID) {
+            if (myTask?.taskID) {
               try {
-                await cancelCurrentTask(task.taskID)
+                await cancelCurrentTask(myTask.taskID)
                 navigate('/')
               } catch (err) {}
             }
@@ -144,7 +141,7 @@ const TaskDetailPage: React.FC = () => {
           display='block'
           textAlign='center'
         >
-          Create Date {new Date(task.createdAt).toLocaleString()}
+          Create Date {new Date(myTask.createdAt).toLocaleString()}
         </Typography>
       </Card>
     </Box>

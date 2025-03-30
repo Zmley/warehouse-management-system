@@ -8,21 +8,20 @@ import {
   Grid,
   Divider
 } from '@mui/material'
-import { usePendingTaskContext } from '../contexts/pendingTask'
-import { useNavigate } from 'react-router-dom'
+import { useTaskContext } from '../contexts/task'
 import { useTask } from '../hooks/useTask'
 import { Task } from '../types/task'
 
-const PendingTaskList: React.FC = () => {
-  const { pendingTasks } = usePendingTaskContext()
+const TaskList: React.FC = () => {
+  const { tasks: Tasks } = useTaskContext()
   const { acceptTask, loading, error } = useTask()
 
   return (
     <Box p={2}>
-      {pendingTasks.length === 0 ? (
+      {Tasks.length === 0 ? (
         <Typography color='text.secondary'>No pending tasks found.</Typography>
       ) : (
-        pendingTasks.map((task: Task) => (
+        Tasks.map((task: Task) => (
           <Card
             key={task.taskID}
             variant='outlined'
@@ -122,4 +121,4 @@ const PendingTaskList: React.FC = () => {
   )
 }
 
-export default PendingTaskList
+export default TaskList

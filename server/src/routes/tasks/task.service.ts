@@ -3,7 +3,7 @@ import Inventory from '../inventory/inventory.model'
 import Bin from '../bins/bin.model'
 import AppError from '../../utils/appError'
 
-import { getBinCodesByProductCodeAndWarehouse } from '../bins/bin.service'
+import { getMatchBinCodesByProductCode } from '../bins/bin.service'
 
 export const hasActiveTask = async (accountID: string): Promise<boolean> => {
   try {
@@ -156,7 +156,7 @@ export const getBinCodeByBinID = async (
   }
 }
 
-export const getPendingTasksByWarehouseID = async (warehouseID: string) => {
+export const getTasksByWarehouseID = async (warehouseID: string) => {
   const tasks = await Task.findAll({
     where: { status: 'PENDING' }
   })
@@ -176,7 +176,7 @@ export const getPendingTasksByWarehouseID = async (warehouseID: string) => {
           sourceBinCode = [binCode]
         }
       } else {
-        const binCodes = await getBinCodesByProductCodeAndWarehouse(
+        const binCodes = await getMatchBinCodesByProductCode(
           task.productCode,
           warehouseID
         )
@@ -246,7 +246,7 @@ export const getUserInprocessTask = async (
       sourceBinCode = [binCode]
     }
   } else {
-    const binCodes = await getBinCodesByProductCodeAndWarehouse(
+    const binCodes = await getMatchBinCodesByProductCode(
       task.productCode,
       warehouseID
     )
