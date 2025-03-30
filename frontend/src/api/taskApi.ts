@@ -1,4 +1,3 @@
-// src/api/taskApi.ts
 import apiClient from './axiosClient.ts'
 import { Task } from '../types/task.js'
 
