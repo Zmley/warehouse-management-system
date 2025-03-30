@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
   Box,
   Typography,
@@ -14,7 +14,22 @@ import { Task } from '../types/task'
 
 const TaskList: React.FC = () => {
   const { tasks } = useTaskContext()
-  const { acceptTask, loading, error } = useTask()
+  const { acceptTask } = useTask()
+
+  const [loadingTasks, setLoadingTasks] = useState<{
+    [taskID: string]: boolean
+  }>({})
+
+  const handleAccept = async (taskID: string) => {
+    setLoadingTasks(prev => ({ ...prev, [taskID]: true }))
+    try {
+      await acceptTask(taskID)
+    } catch (error) {
+      console.error('Error accepting task:', error)
+    } finally {
+      setLoadingTasks(prev => ({ ...prev, [taskID]: false }))
+    }
+  }
 
   return (
     <Box p={2}>
@@ -87,7 +102,7 @@ const TaskList: React.FC = () => {
 
                 <Button
                   variant='contained'
-                  onClick={() => acceptTask(task.taskID)}
+                  onClick={() => handleAccept(task.taskID)}
                   sx={{
                     backgroundColor: '#2563eb',
                     color: 'white',
@@ -103,16 +118,11 @@ const TaskList: React.FC = () => {
                       backgroundColor: '#1e50c2'
                     }
                   }}
-                  disabled={loading}
+                  disabled={loadingTasks[task.taskID]}
                 >
-                  {loading ? 'Loading...' : 'Accept'}
+                  {loadingTasks[task.taskID] ? 'Loading...' : 'Accept'}
                 </Button>
               </Box>
-              {error && (
-                <Typography color='error' mt={2}>
-                  {error}
-                </Typography>
-              )}
             </CardContent>
           </Card>
         ))

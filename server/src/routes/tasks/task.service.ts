@@ -203,25 +203,7 @@ export const getTasksByWarehouseID = async (warehouseID: string) => {
   return tasksWithBinCodes
 }
 
-export const getInProcessTaskByID = async (accountID: string) => {
-  const task = await Task.findOne({
-    where: {
-      accepterID: accountID,
-      status: 'IN_PROCESS'
-    }
-  })
-
-  if (!task) {
-    throw new AppError(404, '❌ No in-process task found for this account')
-  }
-
-  return task
-}
-
-export const getUserInprocessTask = async (
-  accountID: string,
-  warehouseID: string
-) => {
+export const getMyTaskById = async (accountID: string, warehouseID: string) => {
   const task = await Task.findOne({
     where: {
       accepterID: accountID,
