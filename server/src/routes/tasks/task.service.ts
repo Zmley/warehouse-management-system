@@ -134,8 +134,6 @@ export const completeTask = async (taskID: string) => {
   return task
 }
 
-//////////////////////////////////////
-
 export const getBinCodeByBinID = async (
   binID: string
 ): Promise<string | null> => {
@@ -220,8 +218,6 @@ export const getInProcessTaskByID = async (accountID: string) => {
   return task
 }
 
-////////////////////////////////////
-
 export const getUserInprocessTask = async (
   accountID: string,
   warehouseID: string
@@ -292,5 +288,3 @@ export const cancelTaskByID = async (taskID: string) => {
 
   return task
 }
-
-///////////////////////////////////////
