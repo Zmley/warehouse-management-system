@@ -2,6 +2,7 @@ import Task from './task.model'
 import Inventory from '../inventory/inventory.model'
 import Bin from '../bins/bin.model'
 import AppError from '../../utils/appError'
+import { getBinCodesByProductCode } from '../bins/bin.service'
 
 interface TaskWithJoin extends Task {
   destinationBin?: Bin
@@ -267,3 +268,122 @@ export const cancelTaskByID = async (taskID: string) => {
 
   return task
 }
+
+//////////////////////////////////////////////////////////
+
+///////////////////////////////////////
+
+export const getTasksByAccountID = async (
+  accountID: string,
+  warehouseID: string
+) => {
+  const createdTasks = (await Task.findAll({
+    where: {
+      creatorID: accountID
+    },
+    include: [
+      {
+        model: Bin,
+        as: 'destinationBin',
+        attributes: ['binID', 'binCode'],
+        required: false,
+        where: { warehouseID }
+      },
+      {
+        model: Inventory,
+        as: 'inventories',
+        required: false,
+        include: [
+          {
+            model: Bin,
+            attributes: ['binID', 'binCode'],
+            where: {
+              warehouseID,
+              type: 'INVENTORY'
+            }
+          }
+        ]
+      }
+    ]
+  })) as unknown as TaskWithJoin[]
+
+  if (!createdTasks.length) {
+    throw new AppError(404, '❌ No tasks created by you were found')
+  }
+
+  return createdTasks.map(task => {
+    const sourceBins = task.inventories || []
+
+    return {
+      ...task.toJSON(),
+      sourceBins,
+      destinationBinCode: task.destinationBin?.binCode || '--'
+    }
+  })
+}
+
+export const cancelPickerTaskService = async (
+  accountID: string,
+  taskID: string
+) => {
+  const task = await Task.findOne({
+    where: {
+      taskID,
+      creatorID: accountID
+    }
+  })
+
+  if (!task) {
+    throw new AppError(404, 'Task not found or not owned by picker')
+  }
+
+  task.status = 'CANCEL'
+  await task.save()
+
+  return task
+}
+
+// export const getTasksByAccountID = async (
+//   accountID: string,
+//   warehouseID: string
+// ) => {
+//   const tasks = await Task.findAll({
+//     where: {
+//       creatorID: accountID
+//       // status: {
+//       //   [Op.in]: ['PENDING']
+//       // }
+//     }
+//   })
+
+//   const tasksWithBinCodes = await Promise.all(
+//     tasks.map(async task => {
+//       let sourceBinCode: string[] = []
+//       let destinationBinCode: string[] = []
+
+//       if (task.sourceBinID) {
+//         const code = await getBinCodeByBinID(task.sourceBinID)
+//         if (code) sourceBinCode = [code]
+//       } else {
+//         const codes = await getBinCodesByProductCode(
+//           task.productCode,
+//           warehouseID
+//         )
+//         sourceBinCode = codes
+//       }
+
+//       if (task.destinationBinID) {
+//         const code = await getBinCodeByBinID(task.destinationBinID)
+//         if (code) destinationBinCode = [code]
+//       }
+
+//       return {
+//         ...task.toJSON(),
+//         sourceBinCode,
+//         destinationBinCode
+//       }
+//     })
+//   )
+
+//   return tasksWithBinCodes
+// }

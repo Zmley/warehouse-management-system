@@ -7,6 +7,8 @@ import { useContext, useEffect } from 'react'
 import { AuthContext } from '../contexts/auth'
 import Dashboard from '../pages/Dashboard'
 import TaskDetailPage from '../pages/TransportWorker/TaskDetailPage'
+import PickerScanPage from '../pages/Picker/ScanBin'
+import CreateTaskPage from '../pages/Picker/CreateTask'
 
 import { useCartContext } from '../contexts/cart'
 
@@ -40,6 +42,9 @@ const PrivateRoutes: React.FC = () => {
       <Route path='/success' element={<UnloadSuccess />} />
 
       <Route path='/task-detail' element={<TaskDetailPage />} />
+
+      <Route path='/picker-scan-bin' element={<PickerScanPage />} />
+      <Route path='/create-task' element={<CreateTaskPage />} />
     </Routes>
   )
 }
