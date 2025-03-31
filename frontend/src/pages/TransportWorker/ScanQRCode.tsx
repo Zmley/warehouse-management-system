@@ -1,19 +1,20 @@
-import { Container, Typography, Button, Box } from '@mui/material'
+import { Container, Typography, Button, Box, Fade } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import useQRScanner from '../../hooks/useQRScanner'
 import { useEffect, useRef, useState } from 'react'
+import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner'
+import CancelIcon from '@mui/icons-material/Cancel'
 
 const ScanTaskPage = () => {
   const navigate = useNavigate()
   const stopButtonRef = useRef<HTMLButtonElement>(null)
+  const [hasStarted, setHasStarted] = useState(false)
 
   const handleScanSuccess = async (binCode: string) => {
     console.log(`Scanned bin code: ${binCode}`)
   }
 
   const { videoRef, startScanning } = useQRScanner(handleScanSuccess)
-
-  const [hasStarted, setHasStarted] = useState(false)
 
   useEffect(() => {
     if (!hasStarted) {
@@ -23,87 +24,103 @@ const ScanTaskPage = () => {
   }, [hasStarted, startScanning])
 
   return (
-    <Container
-      maxWidth='sm'
+    <Box
       sx={{
-        textAlign: 'center',
-        padding: '20px',
         height: '100vh',
+        width: '100%',
+        background: 'linear-gradient(135deg, #e3f2fd, #bbdefb)',
         display: 'flex',
-        flexDirection: 'column',
         justifyContent: 'center',
-        backgroundColor: '#f5f5f5',
-        borderRadius: '15px',
-        boxShadow: 3
+        alignItems: 'center'
       }}
     >
-      <Box
-        sx={{
-          width: '100%',
-          maxWidth: '400px',
-          height: '250px',
-          borderRadius: '12px',
-          overflow: 'hidden',
-          mx: 'auto',
-          border: '5px solid #1976d2'
-        }}
-      >
-        <video
-          ref={videoRef}
-          style={{
-            width: '100%',
-            height: '100%',
-            borderRadius: '12px' // Match video container border radius
-          }}
-          autoPlay
-          playsInline
-        />
-      </Box>
-
-      <Typography
-        variant='h5'
-        sx={{
-          marginTop: 3,
-          fontWeight: 'bold',
-          color: '#333' // Dark text for better readability
-        }}
-      >
-        Scan the QR code to process the task
-      </Typography>
-
-      <Typography
-        variant='body1'
-        sx={{
-          marginTop: 2,
-          fontSize: '14px',
-          color: '#777' // Lighter gray color for secondary text
-        }}
-      >
-        Please scan the QR code to continue.
-      </Typography>
-
-      <Box sx={{ mt: 4 }}>
-        <Button
-          variant='contained'
-          color='error'
-          fullWidth
+      <Fade in timeout={800}>
+        <Container
+          maxWidth='sm'
           sx={{
-            fontSize: '16px',
-            borderRadius: '12px',
-            py: 1.5,
-            '&:hover': {
-              backgroundColor: '#d32f2f' // Darker red on hover for the cancel button
-            }
-          }}
-          onClick={() => {
-            stopButtonRef.current?.click()
-            window.location.href = '/' // Navigate to home or another page when canceled
+            textAlign: 'center',
+            backgroundColor: 'rgba(255,255,255,0.8)',
+            backdropFilter: 'blur(12px)',
+            borderRadius: '20px',
+            p: 4,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.15)'
           }}
         >
-          ❌ Cancel
-        </Button>
-      </Box>
-    </Container>
+          <Box
+            sx={{
+              width: '100%',
+              maxWidth: '400px',
+              height: '260px',
+              borderRadius: '16px',
+              overflow: 'hidden',
+              mx: 'auto',
+              border: '5px solid #1976d2',
+              boxShadow: '0 4px 20px rgba(25, 118, 210, 0.3)'
+            }}
+          >
+            <video
+              ref={videoRef}
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover'
+              }}
+              autoPlay
+              playsInline
+            />
+          </Box>
+
+          <Typography
+            variant='h5'
+            sx={{
+              mt: 3,
+              fontWeight: 700,
+              color: '#1e3a8a'
+            }}
+          >
+            <QrCodeScannerIcon sx={{ mr: 1, fontSize: 30 }} />
+            Start Scanning
+          </Typography>
+
+          <Typography
+            variant='body1'
+            sx={{
+              mt: 1,
+              color: '#555',
+              fontSize: '15px'
+            }}
+          >
+            Position the QR code inside the frame to begin processing your task.
+          </Typography>
+
+          <Box sx={{ mt: 4 }}>
+            <Button
+              variant='contained'
+              color='error'
+              startIcon={<CancelIcon />}
+              sx={{
+                fontSize: '15px',
+                borderRadius: '12px',
+                px: 4,
+                py: 1.4,
+                boxShadow: '0 4px 14px rgba(211,47,47,0.3)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  backgroundColor: '#c62828',
+                  boxShadow: '0 6px 20px rgba(211,47,47,0.4)'
+                }
+              }}
+              onClick={() => {
+                stopButtonRef.current?.click()
+                navigate('/')
+              }}
+            >
+              Cancel
+            </Button>
+          </Box>
+        </Container>
+      </Fade>
+    </Box>
   )
 }
 
