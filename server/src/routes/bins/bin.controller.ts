@@ -10,7 +10,7 @@ export const getBinByCode = async (
   try {
     const { warehouseID } = res.locals
 
-    const { binCode } = req.body
+    const { binCode } = req.params
 
     const bin = await getBinByBinCode(binCode, warehouseID)
 
@@ -29,7 +29,7 @@ export const getMatchBinCodesByProductCode = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { productCode } = req.body
+    const { productCode } = req.params
     const { warehouseID } = res.locals
 
     const binCodes = await getBinCodesByProductCode(productCode, warehouseID)

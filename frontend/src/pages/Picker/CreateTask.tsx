@@ -12,7 +12,7 @@ import {
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useCreatePickerTask } from '../../hooks/usePickerTask'
 import { fetchAllProducts } from '../../api/productApi'
-import { fetchMatchingBinCodes } from '../../api/binApi'
+import { getBinCodesByProductCode } from '../../api/binApi'
 import { Bin } from '../../types/bin'
 
 const CreateTaskPage = () => {
@@ -43,7 +43,7 @@ const CreateTaskPage = () => {
     const getSources = async () => {
       if (productCode) {
         try {
-          const response = await fetchMatchingBinCodes(productCode)
+          const response = await getBinCodesByProductCode(productCode)
           setSourceBins(response)
           setSourceError(response.length === 0)
         } catch (err) {

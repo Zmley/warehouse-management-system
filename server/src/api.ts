@@ -15,8 +15,8 @@ router.use(accountRoutes)
 router.use(authenticateToken, currentAccount)
 router.use('/cart', cart)
 router.use('/tasks', task)
-router.use('/inventory', inventory)
-router.use('/bin', bin)
-router.use('/product', product)
+router.use('/inventories', inventory)
+router.use('/bins', bin)
+router.use('/products', product)
 
 export default router
