@@ -9,6 +9,8 @@ export class Bin extends Model {
   public defaultProductCodes!: string | null
 
   public Bin?: Bin
+  public readonly sourceBin?: Bin
+  public readonly destinationBin?: Bin
 }
 
 Bin.init(

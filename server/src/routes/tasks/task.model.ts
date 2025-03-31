@@ -13,6 +13,9 @@ export class Task extends Model {
   public status!: 'PENDING' | 'IN_PROCESS' | 'COMPLETED' | 'CANCEL'
   public createdAt!: Date
   public updatedAt!: Date | null
+
+  public readonly sourceBin?: Bin
+  public readonly destinationBin?: Bin
 }
 
 Task.init(
@@ -78,6 +81,12 @@ Task.belongsTo(Bin, {
   foreignKey: 'destinationBinID',
   as: 'destinationBin',
   targetKey: 'binID'
+})
+
+Task.hasMany(Inventory, {
+  foreignKey: 'productCode',
+  sourceKey: 'productCode',
+  as: 'inventories'
 })
 
 export default Task
