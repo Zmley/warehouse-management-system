@@ -47,6 +47,14 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }
 
+  const location = useLocation()
+
+  useEffect(() => {
+    if (location.pathname === '/my-task') {
+      fetchMyTask()
+    }
+  }, [location.pathname])
+
   return (
     <TaskContext.Provider
       value={{

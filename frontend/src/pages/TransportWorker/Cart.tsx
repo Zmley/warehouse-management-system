@@ -10,10 +10,14 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCartContext } from '../../contexts/cart'
 import InventoryListCard from './InventoryListCard'
+import TaskInstruction from '../../components/TaskInstruction'
+import { useTaskContext } from '../../contexts/task'
 
 const Cart = () => {
   const navigate = useNavigate()
   const { inventoriesInCar, setSelectedToUnload } = useCartContext()
+
+  const { myTask, fetchMyTask } = useTaskContext()
 
   const [inventoryListReadyToUnload, setInventoryListReadyToUnload] = useState<
     { inventoryID: string; quantity: number; selected: boolean }[]
@@ -53,6 +57,7 @@ const Cart = () => {
 
   return (
     <Container maxWidth='sm'>
+      {myTask && <TaskInstruction />}
       <Typography
         variant='h6'
         sx={{ fontWeight: 'bold', textAlign: 'center', my: 2 }}
