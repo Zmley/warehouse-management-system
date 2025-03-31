@@ -18,16 +18,16 @@ export interface Inventory {
 export interface Task {
   taskID: string
   sourceBinID: string | null
-  sourceBins: string[] | Inventory[] // ✅ 加了兼容性处理
-  sourceBinCodes?: string[] // 可选字段，仍然保留
+  sourceBins: string[] | Inventory[]
+  sourceBinCodes?: string[]
   destinationBinID: string | null
   destinationBinCode: string | null
-  destinationBin?: Bin // ✅ 如果你用到了 destinationBin.binCode
+  destinationBin?: Bin
   status: 'PENDING' | 'IN_PROCESS' | 'COMPLETED' | 'CANCELLED' | 'CANCEL'
   creatorID: string
   accepterID: string | null
   createdAt: string
   updatedAt: string
   productCode: string
-  inventories?: Inventory[] // 如果任务详情页也有这个字段
+  inventories?: Inventory[]
 }
