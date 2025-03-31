@@ -77,28 +77,3 @@ export const unload = async (
     next(error)
   }
 }
-
-// export const unload = async (
-//   req: Request,
-//   res: Response,
-//   next: NextFunction
-// ): Promise<void> => {
-//   try {
-//     const { binCode, unloadProductList } = req.body
-//     const { warehouseID } = res.locals
-
-//     const result = await unloadByBinCode(
-//       binCode,
-//       unloadProductList,
-//       warehouseID
-//     )
-
-//     res.status(200).json({
-//       success: true,
-//       message: `✅ ${result} Product(s) successfully unloaded into bin "${binCode}"`,
-//       updatedProducts: result
-//     })
-//   } catch (error) {
-//     next(error)
-//   }
-// }

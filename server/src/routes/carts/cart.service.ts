@@ -2,25 +2,6 @@ import Inventory from '../inventory/inventory.model'
 import Bin from '../bins/bin.model'
 import AppError from '../../utils/appError'
 
-export const getInvetoriesOnCartByProductCode = async (
-  cartID: string,
-  productCode: string
-) => {
-  const inventories = await Inventory.findAll({
-    where: {
-      binID: cartID,
-      ...(productCode !== 'ALL' && { productCode })
-    },
-    attributes: ['inventoryID', 'quantity']
-  })
-
-  if (!inventories.length) {
-    throw new AppError(404, '❌ No matching inventory found in the cart')
-  }
-
-  return inventories
-}
-
 const moveInventoriesToBin = async (
   inventories: { inventoryID: string; quantity: number }[],
   binCode: string
@@ -79,41 +60,6 @@ const moveInventoriesToBin = async (
   await Promise.all(updatedInventories)
 
   return updatedItemCount
-}
-
-export const unloadProductToBin = async ({
-  cartID,
-  productCode,
-  binCode,
-  warehouseID
-}: {
-  cartID: string
-  productCode: string
-  binCode: string
-  warehouseID: string
-}) => {
-  const inventories = await getInvetoriesOnCartByProductCode(
-    cartID,
-    productCode
-  )
-
-  const targetBin = await Bin.findOne({
-    where: {
-      warehouseID,
-      binCode
-    }
-  })
-
-  if (!targetBin) {
-    throw new AppError(
-      404,
-      `❌ Bin "${binCode}" not found in current warehouse`
-    )
-  }
-
-  const result = await moveInventoriesToBin(inventories, targetBin.binID)
-
-  return result
 }
 
 export const loadByBinCode = async (

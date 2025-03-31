@@ -124,21 +124,6 @@ export const createTaskAsPicker = async (
   return { ...task.toJSON(), sourceBins }
 }
 
-export const getCurrentInProcessTask = async (accountID: string) => {
-  const task = await Task.findOne({
-    where: {
-      accepterID: accountID,
-      status: 'IN_PROCESS'
-    }
-  })
-
-  if (!task) {
-    throw new AppError(404, '❌ No in-process task found for this account')
-  }
-
-  return task
-}
-
 export const completeTask = async (taskID: string) => {
   const task = await Task.findByPk(taskID)
 
@@ -150,26 +135,6 @@ export const completeTask = async (taskID: string) => {
   await task.save()
 
   return task
-}
-
-export const getBinCodeByBinID = async (
-  binID: string
-): Promise<string | null> => {
-  try {
-    const bin = await Bin.findOne({
-      where: { binID },
-      attributes: ['binCode']
-    })
-
-    if (!bin) {
-      return null
-    }
-
-    return bin.binCode
-  } catch (error) {
-    console.error('❌ Error fetching binCode:', error)
-    throw new Error('Failed to fetch binCode')
-  }
 }
 
 export const getTasksByWarehouseID = async (warehouseID: string) => {
@@ -286,10 +251,6 @@ export const cancelTaskByID = async (taskID: string) => {
   return task
 }
 
-//////////////////////////////////////////////////////////
-
-///////////////////////////////////////
-
 export const getTasksByAccountID = async (
   accountID: string,
   warehouseID: string
@@ -359,48 +320,3 @@ export const cancelPickerTaskService = async (
 
   return task
 }
-
-// export const getTasksByAccountID = async (
-//   accountID: string,
-//   warehouseID: string
-// ) => {
-//   const tasks = await Task.findAll({
-//     where: {
-//       creatorID: accountID
-//       // status: {
-//       //   [Op.in]: ['PENDING']
-//       // }
-//     }
-//   })
-
-//   const tasksWithBinCodes = await Promise.all(
-//     tasks.map(async task => {
-//       let sourceBinCode: string[] = []
-//       let destinationBinCode: string[] = []
-
-//       if (task.sourceBinID) {
-//         const code = await getBinCodeByBinID(task.sourceBinID)
-//         if (code) sourceBinCode = [code]
-//       } else {
-//         const codes = await getBinCodesByProductCode(
-//           task.productCode,
-//           warehouseID
-//         )
-//         sourceBinCode = codes
-//       }
-
-//       if (task.destinationBinID) {
-//         const code = await getBinCodeByBinID(task.destinationBinID)
-//         if (code) destinationBinCode = [code]
-//       }
-
-//       return {
-//         ...task.toJSON(),
-//         sourceBinCode,
-//         destinationBinCode
-//       }
-//     })
-//   )
-
-//   return tasksWithBinCodes
-// }

@@ -112,8 +112,6 @@ export const cancelTask = async (
   }
 }
 
-///////////////////////////////////////////////
-
 export const createAsPicker = async (
   req: Request,
   res: Response,

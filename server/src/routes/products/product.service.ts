@@ -1,4 +1,3 @@
-// 📁 src/routes/products/product.service.ts
 import { Product } from './product.model'
 
 export const getAllProductCodesService = async (): Promise<string[]> => {
