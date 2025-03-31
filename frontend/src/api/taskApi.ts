@@ -20,7 +20,6 @@ export const cancelTask = async (taskID: string) => {
   const response = await apiClient.post(`/tasks/${taskID}/cancel`)
   return response.data
 }
-////////////////////////////
 
 export const createPickerTask = async (
   binCode: string,
@@ -33,12 +32,12 @@ export const createPickerTask = async (
   return response.data.task
 }
 
-export const getPickerCreatedTasks = async (): Promise<Task[]> => {
+export const getPickerTasks = async (): Promise<Task[]> => {
   const response = await apiClient.get('/tasks/pickerCreatedTasks')
   return response.data.tasks
 }
 
 export const cancelPickerTask = async (taskID: string): Promise<Task> => {
-  const response = await apiClient.delete(`/tasks/${taskID}/cancel`)
+  const response = await apiClient.post(`/tasks/${taskID}/cancelPicker`)
   return response.data.task
 }

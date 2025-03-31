@@ -6,7 +6,7 @@ import PickerBottombar from './Picker/Bottombar'
 import PendingTaskList from '../components/TaskCard'
 import PickerCreatedTaskList from './Picker/TaskListCard'
 import { useAuth } from '../hooks/useAuth'
-import { getPickerCreatedTasks } from '../api/taskApi'
+import { getPickerTasks } from '../api/taskApi'
 import { Task } from '../types/task'
 import { useNavigate } from 'react-router-dom'
 import { useTaskContext } from '../contexts/task'
@@ -38,7 +38,7 @@ const Dashboard: React.FC = () => {
 
   const handleTaskListClick = async () => {
     try {
-      const response = await getPickerCreatedTasks()
+      const response = await getPickerTasks()
       setAllTasks(response)
       setShowCreatedTasks(true)
       setShowArchivedTasks(false)
@@ -49,7 +49,7 @@ const Dashboard: React.FC = () => {
 
   const handleArchivedClick = async () => {
     try {
-      const response = await getPickerCreatedTasks()
+      const response = await getPickerTasks()
       setAllTasks(response)
       setShowCreatedTasks(false)
       setShowArchivedTasks(true)

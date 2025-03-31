@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import {
   createPickerTask,
-  getPickerCreatedTasks,
+  getPickerTasks,
   cancelPickerTask
 } from '../api/taskApi'
 import { Task } from '../types/task'
@@ -39,7 +39,7 @@ export const usePickerCreatedTasks = () => {
     setLoading(true)
     setError(null)
     try {
-      const tasks = await getPickerCreatedTasks()
+      const tasks = await getPickerTasks()
       setTasks(tasks)
     } catch (err) {
       setError('Failed to fetch tasks')
