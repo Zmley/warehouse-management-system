@@ -17,7 +17,7 @@ router.post('/createAsAdmin', adminOnly, createAsAdmin)
 
 router.post('/createAsPicker', pickerOnly, createAsPicker)
 
-router.get('/all', transportWorkerOnly, getTasks)
+router.get('/', transportWorkerOnly, getTasks)
 
 router.get('/my', transportWorkerOnly, getMyTask)
 

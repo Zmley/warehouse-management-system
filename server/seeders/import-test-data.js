@@ -26,7 +26,7 @@ module.exports = {
           binCode: `bin-${b}`,
           warehouseID: warehouse.warehouseID,
           type: 'INVENTORY',
-          defaultProductID: null,
+          defaultProductCodes: null,
           createdAt: new Date(),
           updatedAt: new Date()
         })
@@ -36,7 +36,7 @@ module.exports = {
         binCode: `cart-bin-${warehouse.warehouseCode}`,
         warehouseID: warehouse.warehouseID,
         type: 'CART',
-        defaultProductID: null,
+        defaultProductCodes: null,
         createdAt: new Date(),
         updatedAt: new Date()
       })
@@ -51,7 +51,7 @@ module.exports = {
       for (let p = 1; p <= 3; p++) {
         inventory.push({
           binID: bin.binID,
-          productID: `p00${p}`,
+          productCode: `p00${p}`,
           quantity: Math.floor(Math.random() * 100) + 1,
           createdAt: new Date(),
           updatedAt: new Date()

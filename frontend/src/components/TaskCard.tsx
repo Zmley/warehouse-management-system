@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   Box,
   Typography,
@@ -13,7 +13,7 @@ import { useTask } from '../hooks/useTask'
 import { Task } from '../types/task'
 
 const TaskList: React.FC = () => {
-  const { tasks } = useTaskContext()
+  const { tasks, fetchTasks } = useTaskContext()
   const { acceptTask } = useTask()
 
   const [loadingTasks, setLoadingTasks] = useState<{
@@ -30,6 +30,11 @@ const TaskList: React.FC = () => {
       setLoadingTasks(prev => ({ ...prev, [taskID]: false }))
     }
   }
+
+  useEffect(() => {
+    fetchTasks()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <Box p={2}>

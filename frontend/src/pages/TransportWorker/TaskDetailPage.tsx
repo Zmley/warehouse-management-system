@@ -3,12 +3,17 @@ import { QrCode } from 'lucide-react'
 import { useTaskContext } from '../../contexts/task'
 import { useNavigate } from 'react-router-dom'
 import { useTask } from '../../hooks/useTask'
+import { useEffect } from 'react'
 
 const TaskDetailPage: React.FC = () => {
   const navigate = useNavigate()
-  const { myTask } = useTaskContext()
+  const { myTask, fetchMyTask } = useTaskContext()
   const { cancelMyTask } = useTask()
 
+  useEffect(() => {
+    fetchMyTask()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   if (!myTask) {
     return (
       <Box

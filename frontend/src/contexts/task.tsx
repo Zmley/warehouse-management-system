@@ -26,7 +26,6 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [tasks, setTasks] = useState<Task[]>([])
   const [myTask, setMyTask] = useState<Task | null>(null)
-  const location = useLocation()
 
   const fetchTasks = async () => {
     try {
@@ -47,19 +46,6 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
       return null
     }
   }
-
-  useEffect(() => {
-    if (location.pathname === '/') {
-      fetchTasks()
-    }
-
-    if (
-      location.pathname === '/task-detail' ||
-      location.pathname === '/my-task'
-    ) {
-      fetchMyTask()
-    }
-  }, [location.pathname])
 
   return (
     <TaskContext.Provider

@@ -67,7 +67,6 @@ Task.hasMany(Inventory, {
   foreignKey: 'productCode',
   sourceKey: 'productCode'
 })
-//////////////
 
 Task.belongsTo(Bin, {
   foreignKey: 'sourceBinID',

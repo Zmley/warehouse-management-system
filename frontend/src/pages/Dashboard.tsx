@@ -4,7 +4,6 @@ import TopBar from '../components/Topbar'
 import WokerBottombar from '../components/Bottombar'
 import TaskList from '../components/TaskCard'
 import { useAuth } from '../hooks/useAuth'
-import { Task } from '../types/task'
 
 const Dashboard: React.FC = () => {
   const { userProfile } = useAuth()
