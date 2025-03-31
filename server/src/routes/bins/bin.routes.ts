@@ -4,8 +4,8 @@ import pickerOnly from '../../middlewares/picker.middleware'
 
 const router = express.Router()
 
-router.post('/getBin', getBinByCode)
+router.post('/', getBinByCode)
 
-router.post('/matchBinCode', pickerOnly, getMatchBinCodesByProductCode)
+router.post('/code', pickerOnly, getMatchBinCodesByProductCode)
 
 export default router
