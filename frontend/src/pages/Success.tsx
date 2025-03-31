@@ -1,20 +1,28 @@
-import React, { useState } from 'react'
+import React, { useState, useContext, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Snackbar, Alert, Box, Typography } from '@mui/material'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
+import { AuthContext } from '../contexts/auth'
 
-const UnloadSuccess: React.FC = () => {
+const TaskSuccessPage: React.FC = () => {
   const navigate = useNavigate()
   const [open, setOpen] = useState(true)
+  const authContext = useContext(AuthContext)
+
+  const role = authContext?.userProfile.role
 
   const handleClose = () => {
     setOpen(false)
-    navigate('/') // Navigate to home or another page when closed
+    navigate('/')
   }
 
-  setTimeout(() => {
-    handleClose()
-  }, 2000)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      handleClose()
+    }, 2000)
+
+    return () => clearTimeout(timer)
+  }, [])
 
   return (
     <Box
@@ -31,9 +39,6 @@ const UnloadSuccess: React.FC = () => {
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         onClose={handleClose}
         autoHideDuration={2000}
-        sx={{
-          transition: 'all 0.3s ease-in-out'
-        }}
       >
         <Alert
           onClose={handleClose}
@@ -55,14 +60,12 @@ const UnloadSuccess: React.FC = () => {
           }}
         >
           <CheckCircleIcon
-            sx={{
-              fontSize: 24,
-              color: '#1e76a3',
-              marginRight: 1
-            }}
+            sx={{ fontSize: 24, color: '#1e76a3', marginRight: 1 }}
           />
           <Typography variant='body1' sx={{ fontSize: '16px' }}>
-            Offload succeeded
+            {role === 'PICKER'
+              ? 'Created Pick up task successfully!'
+              : 'Offload succeeded!'}
           </Typography>
         </Alert>
       </Snackbar>
@@ -70,4 +73,4 @@ const UnloadSuccess: React.FC = () => {
   )
 }
 
-export default UnloadSuccess
+export default TaskSuccessPage
