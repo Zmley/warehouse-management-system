@@ -3,8 +3,6 @@ import Inventory from '../inventory/inventory.model'
 import Bin from '../bins/bin.model'
 import AppError from '../../utils/appError'
 
-import { getBinCodesByProductCode } from '../bins/bin.service'
-
 export const hasActiveTask = async (accountID: string): Promise<boolean> => {
   try {
     const activeTask = await Task.findOne({
@@ -155,52 +153,46 @@ export const getBinCodeByBinID = async (
 }
 
 export const getTasksByWarehouseID = async (warehouseID: string) => {
-  const tasks = await Task.findAll({
+  const pendingTasks = await Task.findAll({
     where: { status: 'PENDING' }
   })
 
-  if (!tasks.length) {
+  if (pendingTasks.length === 0) {
     throw new AppError(404, '❌ No pending tasks found')
   }
 
-  const tasksWithBinCodes = await Promise.all(
-    tasks.map(async task => {
-      let sourceBinCodes: string[] = []
-      let destinationBinCode: string[] = []
+  const tasksWithDetails = await Promise.all(
+    pendingTasks.map(async task => {
+      const sourceBins = await Inventory.findAll({
+        where: { productCode: task.productCode },
+        include: [
+          {
+            model: Bin,
+            where: {
+              warehouseID,
+              type: 'INVENTORY'
+            },
+            attributes: ['binID', 'binCode']
+          }
+        ]
+      })
 
-      if (task.sourceBinID) {
-        const binCode = await getBinCodeByBinID(task.sourceBinID)
-        if (binCode) {
-          sourceBinCodes = [binCode]
-        }
-      } else {
-        const binCodes = await getBinCodesByProductCode(
-          task.productCode,
-          warehouseID
-        )
-        sourceBinCodes = binCodes
-      }
+      const destinationBin = await Bin.findOne({
+        where: { binID: task.destinationBinID },
+        attributes: ['binCode']
+      })
 
-      if (task.destinationBinID) {
-        const binCode = await getBinCodeByBinID(task.destinationBinID)
-        if (binCode) {
-          destinationBinCode = [binCode]
-        }
-      }
+      const destinationBinCode = destinationBin?.binCode || '--'
 
       return {
-        taskID: task.taskID,
-        productCode: task.productCode,
-        sourceBinID: task.sourceBinID,
-        sourceBinCodes,
-        destinationBinID: task.destinationBinID,
-        destinationBinCode,
-        createdAt: task.createdAt
+        ...task.toJSON(),
+        sourceBins,
+        destinationBinCode
       }
     })
   )
 
-  return tasksWithBinCodes
+  return tasksWithDetails
 }
 
 export const getTaskByAccountID = async (

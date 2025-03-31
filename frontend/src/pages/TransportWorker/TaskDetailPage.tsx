@@ -60,12 +60,9 @@ const TaskDetailPage: React.FC = () => {
             <Typography variant='caption'>Source Bin</Typography>
             <Typography fontWeight='bold' fontSize={20}>
               {myTask.sourceBins?.length
-                ? myTask.sourceBins.map((sourceBin: any, index: number) => (
-                    <span key={index}>
-                      {sourceBin.Bin?.binCode || '--'}
-                      {index < myTask.sourceBins.length - 1 && ' / '}
-                    </span>
-                  ))
+                ? myTask.sourceBins
+                    .map((sourceBin: any) => sourceBin.Bin?.binCode || '--')
+                    .join(' / ')
                 : '--'}
             </Typography>
           </Grid>
