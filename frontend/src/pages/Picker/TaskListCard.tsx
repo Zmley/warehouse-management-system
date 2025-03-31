@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
   Box,
   Typography,
@@ -9,7 +9,7 @@ import {
   Divider
 } from '@mui/material'
 import { Task } from '../../types/task'
-import { cancelPickerTask } from '../../api/taskApi'
+import { useCancelPickerTask } from '../../hooks/usePickerTask'
 
 interface Props {
   createdTasks: Task[]
@@ -22,14 +22,18 @@ const PickerCreatedTaskList: React.FC<Props> = ({
   onRefresh,
   status
 }) => {
+  const { cancelTask } = useCancelPickerTask()
+  const [loadingTaskID, setLoadingTaskID] = useState<string | null>(null)
+
   const handleCancel = async (taskID: string) => {
-    try {
-      await cancelPickerTask(taskID)
+    setLoadingTaskID(taskID)
+    const result = await cancelTask(taskID)
+    if (result) {
       onRefresh()
-    } catch (err) {
-      console.error('❌ Failed to cancel task:', err)
+    } else {
       alert('❌ Failed to cancel task')
     }
+    setLoadingTaskID(null)
   }
 
   return (
@@ -115,6 +119,7 @@ const PickerCreatedTaskList: React.FC<Props> = ({
                     variant='outlined'
                     color='error'
                     onClick={() => handleCancel(task.taskID)}
+                    disabled={loadingTaskID === task.taskID}
                     sx={{
                       fontWeight: 600,
                       px: 1.5,
@@ -125,7 +130,7 @@ const PickerCreatedTaskList: React.FC<Props> = ({
                       minWidth: '72px'
                     }}
                   >
-                    Cancel
+                    {loadingTaskID === task.taskID ? 'Cancelling...' : 'Cancel'}
                   </Button>
                 )}
 
