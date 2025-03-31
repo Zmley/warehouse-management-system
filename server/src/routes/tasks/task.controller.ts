@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import {
   createTaskAsAdmin,
-  acceptTaskService,
+  acceptTaskByTaskID,
   createTaskAsPicker,
   getTasksByWarehouseID,
   cancelTaskByID,
@@ -44,7 +44,7 @@ export const acceptTask = async (
     const accountID = res.locals.accountID
     const { taskID } = req.params
 
-    const task = await acceptTaskService(accountID, taskID)
+    const task = await acceptTaskByTaskID(accountID, taskID)
 
     res.status(200).json({
       message: `Task accepted successfully and is now in progress`,

@@ -44,7 +44,7 @@ export const createTaskAsAdmin = async (
   return task
 }
 
-export const acceptTaskService = async (accountID: string, taskID: string) => {
+export const acceptTaskByTaskID = async (accountID: string, taskID: string) => {
   const isActive = await hasActiveTask(accountID)
   if (isActive) {
     throw new AppError(409, 'You already have an active task in progress.')
