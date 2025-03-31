@@ -10,7 +10,7 @@ import {
   Paper,
   useTheme
 } from '@mui/material'
-import usePickBinScanner from '../../hooks/usePickBinScanner'
+import usePickBinScanner from '../../hooks/usePickerScanner'
 import { getBinByBinCode } from '../../api/binApi'
 
 const PickerBinScanPage = () => {
