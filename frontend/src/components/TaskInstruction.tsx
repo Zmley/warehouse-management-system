@@ -1,43 +1,70 @@
-// src/components/TaskInstruction.tsx
 import React from 'react'
-import { Card, CardContent, Typography, Box } from '@mui/material'
+import {
+  Card,
+  CardContent,
+  Typography,
+  Box,
+  Chip,
+  Divider
+} from '@mui/material'
+import AssignmentIcon from '@mui/icons-material/Assignment'
 import { useTaskContext } from '../contexts/task'
 
 const TaskInstruction: React.FC = () => {
   const { myTask } = useTaskContext()
 
-  if (myTask === null) return null
+  if (!myTask) return null
 
   return (
-    <Card
-      variant='outlined'
-      sx={{
-        mb: 3,
-        borderRadius: 3,
-        backgroundColor: '#e0f7fa',
-        boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
-      }}
-    >
-      <CardContent>
-        <Typography fontWeight='bold' fontSize={16} mb={1}>
-          Current Task Instruction
-        </Typography>
+    <Box sx={{ mt: 8, mx: 2 }}>
+      <Typography
+        variant='h5'
+        fontWeight='bold'
+        gutterBottom
+        sx={{ textAlign: 'center', mb: 3 }}
+      >
+        My Current Task
+      </Typography>
 
-        <Box display='flex' flexDirection='column' gap={1}>
-          <Typography fontSize={14}>
-            <strong>Task ID:</strong> {myTask.taskID}
-          </Typography>
-          <Typography fontSize={14}>
-            <strong>Product Code:</strong> {myTask.productCode}
-          </Typography>
+      <Card
+        variant='outlined'
+        sx={{
+          borderRadius: 3,
+          backgroundColor: '#e3f2fd',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+        }}
+      >
+        <CardContent>
+          <Box display='flex' alignItems='center' mb={2}>
+            <AssignmentIcon sx={{ color: '#1565c0', mr: 1 }} />
+            <Typography variant='h6' fontWeight='bold'>
+              Current Task Instruction
+            </Typography>
+            <Chip
+              label='In Task'
+              size='small'
+              color='success'
+              sx={{ ml: 2, fontWeight: 500 }}
+            />
+          </Box>
 
-          <Typography fontSize={14}>
-            <strong>Destination Bin:</strong>{' '}
-            {myTask.destinationBinCode || '--'}
-          </Typography>
-        </Box>
-      </CardContent>
-    </Card>
+          <Divider sx={{ mb: 2 }} />
+
+          <Box display='flex' flexDirection='column' gap={1}>
+            <Typography fontSize={15}>
+              <strong>Task ID:</strong> {myTask.taskID}
+            </Typography>
+            <Typography fontSize={15}>
+              <strong>Product Code:</strong> {myTask.productCode}
+            </Typography>
+            <Typography fontSize={15}>
+              <strong>Destination Bin:</strong>{' '}
+              {myTask.destinationBinCode || '--'}
+            </Typography>
+          </Box>
+        </CardContent>
+      </Card>
+    </Box>
   )
 }
 

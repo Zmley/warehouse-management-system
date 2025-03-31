@@ -1,75 +1,78 @@
 import React, { useState, useContext, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Snackbar, Alert, Box, Typography } from '@mui/material'
+import {
+  Box,
+  Typography,
+  Card,
+  CardContent,
+  CircularProgress,
+  Fade
+} from '@mui/material'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import { AuthContext } from '../contexts/auth'
 
 const TaskSuccessPage: React.FC = () => {
   const navigate = useNavigate()
-  const [open, setOpen] = useState(true)
-  const authContext = useContext(AuthContext)
+  const { userProfile } = useContext(AuthContext)!
+  const [visible, setVisible] = useState(true)
 
-  const role = authContext?.userProfile.role
+  const role = userProfile?.role
 
   const handleClose = () => {
-    setOpen(false)
+    setVisible(false)
     navigate('/')
   }
 
   useEffect(() => {
     const timer = setTimeout(() => {
       handleClose()
-    }, 2000)
-
+    }, 500)
     return () => clearTimeout(timer)
   }, [])
 
   return (
-    <Box
-      sx={{
-        position: 'fixed',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        zIndex: 9999
-      }}
-    >
-      <Snackbar
-        open={open}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-        onClose={handleClose}
-        autoHideDuration={2000}
+    <Fade in={visible}>
+      <Box
+        sx={{
+          height: '100vh',
+          background: 'linear-gradient(to bottom right, #e3f2fd, #ffffff)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          p: 3
+        }}
       >
-        <Alert
-          onClose={handleClose}
-          severity='success'
+        <Card
+          elevation={8}
           sx={{
-            width: 'auto',
-            borderRadius: 2,
-            backgroundColor: '#e7f6fb',
-            color: '#1e76a3',
+            borderRadius: 4,
+            padding: 4,
+            maxWidth: 420,
+            width: '100%',
             textAlign: 'center',
-            padding: '12px 20px',
-            fontWeight: 600,
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            boxShadow: 5,
-            fontSize: '16px',
-            gap: 1
+            backgroundColor: '#ffffff',
+            boxShadow: '0 8px 30px rgba(0, 0, 0, 0.1)'
           }}
         >
-          <CheckCircleIcon
-            sx={{ fontSize: 24, color: '#1e76a3', marginRight: 1 }}
-          />
-          <Typography variant='body1' sx={{ fontSize: '16px' }}>
-            {role === 'PICKER'
-              ? 'Created Pick up task successfully!'
-              : 'Offload succeeded!'}
-          </Typography>
-        </Alert>
-      </Snackbar>
-    </Box>
+          <CardContent>
+            <CheckCircleIcon sx={{ fontSize: 64, color: '#2e7d32', mb: 2 }} />
+            <Typography variant='h5' fontWeight='bold' gutterBottom>
+              {role === 'PICKER'
+                ? 'Pick-up Task Created!'
+                : 'Offload Completed!'}
+            </Typography>
+            <Typography variant='body1' color='text.secondary' sx={{ mb: 2 }}>
+              Everything went smoothly. You’ll be redirected shortly.
+            </Typography>
+            <CircularProgress
+              size={24}
+              thickness={4}
+              sx={{ color: '#2e7d32', mt: 2 }}
+            />
+          </CardContent>
+        </Card>
+      </Box>
+    </Fade>
   )
 }
 

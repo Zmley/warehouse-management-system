@@ -103,6 +103,12 @@ const Dashboard: React.FC = () => {
           onArchivedClick={handleArchivedClick}
         />
       )}
+
+      {isTransportWorker && !showCreatedTasks && !showArchivedTasks && (
+        <Typography color='text.secondary' mt={4} textAlign='center'>
+          Click "To do List" or "Create Task" to view your tasks
+        </Typography>
+      )}
       {isTransportWorker && (
         <WokerBottombar
           onTaskListClick={handleWorkerTaskClick}

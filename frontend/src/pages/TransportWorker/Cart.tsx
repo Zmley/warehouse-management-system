@@ -58,6 +58,7 @@ const Cart = () => {
   return (
     <Container maxWidth='sm'>
       {myTask && <TaskInstruction />}
+
       <Typography
         variant='h6'
         sx={{ fontWeight: 'bold', textAlign: 'center', my: 2 }}
