@@ -12,7 +12,7 @@ router.use(healthCheck)
 router.use(accountRoutes)
 router.use(authenticateToken, currentAccount)
 router.use('/cart', cart)
-router.use('/task', task)
+router.use('/tasks', task)
 router.use('/inventory', inventory)
 
 export default router
