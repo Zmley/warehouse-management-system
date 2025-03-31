@@ -4,11 +4,7 @@ import config from 'config/config'
 import logger from 'utils/logger'
 import errorHandler from 'utils/errorHandler'
 
-import { setupAssociations } from './models/associations'
-
 const { port } = config
-
-setupAssociations()
 
 const server: Server = app.listen(port, (): void => {
   logger.info(`Aapplication listens on PORT: ${port}`)
