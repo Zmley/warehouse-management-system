@@ -53,6 +53,10 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
     if (location.pathname === '/my-task') {
       fetchMyTask()
     }
+
+    if (location.pathname === '/') {
+      fetchTasks()
+    }
   }, [location.pathname])
 
   return (

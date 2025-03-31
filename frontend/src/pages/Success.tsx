@@ -20,7 +20,7 @@ const TaskSuccessPage: React.FC = () => {
 
   const handleClose = () => {
     setVisible(false)
-    navigate('/')
+    window.location.href = '/'
   }
 
   useEffect(() => {

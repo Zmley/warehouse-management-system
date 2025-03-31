@@ -9,12 +9,15 @@ import { useAuth } from '../hooks/useAuth'
 import { getPickerCreatedTasks } from '../api/taskApi'
 import { Task } from '../types/task'
 import { useNavigate } from 'react-router-dom'
+import { useTaskContext } from '../contexts/task'
 
 const Dashboard: React.FC = () => {
   const { userProfile } = useAuth()
   const isPicker = userProfile.role === 'PICKER'
   const isTransportWorker = userProfile.role === 'TRANSPORT_WORKER'
   const isAdmin = userProfile.role === 'ADMIN'
+
+  const { fetchTasks } = useTaskContext()
 
   const [showCreatedTasks, setShowCreatedTasks] = useState(false)
   const [showArchivedTasks, setShowArchivedTasks] = useState(false)
