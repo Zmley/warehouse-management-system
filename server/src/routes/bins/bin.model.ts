@@ -7,6 +7,10 @@ export class Bin extends Model {
   public binCode!: string
   public type!: 'PICK_UP' | 'INVENTORY' | 'CART'
   public defaultProductCodes!: string | null
+
+  public Bin?: Bin
+  public readonly sourceBin?: Bin
+  public readonly destinationBin?: Bin
 }
 
 Bin.init(

@@ -116,7 +116,7 @@ export const unloadProductToBin = async ({
   return result
 }
 
-export const loadProductByBinCode = async (
+export const loadByBinCode = async (
   binCode: string,
   cartID: string,
   warehouseID: string
@@ -158,7 +158,7 @@ export const loadProductByBinCode = async (
   }
 }
 
-export const unloadProductListToBinByWoker = async (
+export const unloadByBinCode = async (
   binCode: string,
   unloadProductList: { inventoryID: string; quantity: number }[],
   warehouseID: string

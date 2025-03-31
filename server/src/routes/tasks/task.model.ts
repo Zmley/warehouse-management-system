@@ -1,16 +1,21 @@
 import { DataTypes, Model } from 'sequelize'
 import { sequelize } from 'config/db'
 import Inventory from '../inventory/inventory.model'
+import Bin from '../bins/bin.model'
 
 export class Task extends Model {
   public taskID!: string
   public sourceBinID!: string
   public destinationBinID!: string
   public accepterID!: string
+  public creatorID!: string
   public productCode!: string
   public status!: 'PENDING' | 'IN_PROCESS' | 'COMPLETED' | 'CANCEL'
   public createdAt!: Date
   public updatedAt!: Date | null
+
+  public readonly sourceBin?: Bin
+  public readonly destinationBin?: Bin
 }
 
 Task.init(
@@ -64,6 +69,24 @@ Task.init(
 Task.hasMany(Inventory, {
   foreignKey: 'productCode',
   sourceKey: 'productCode'
+})
+
+Task.belongsTo(Bin, {
+  foreignKey: 'sourceBinID',
+  as: 'sourceBin',
+  targetKey: 'binID'
+})
+
+Task.belongsTo(Bin, {
+  foreignKey: 'destinationBinID',
+  as: 'destinationBin',
+  targetKey: 'binID'
+})
+
+Task.hasMany(Inventory, {
+  foreignKey: 'productCode',
+  sourceKey: 'productCode',
+  as: 'inventories'
 })
 
 export default Task

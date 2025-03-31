@@ -1,66 +1,35 @@
-// 📁 src/pages/Dashboard.tsx
-
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Box, Typography } from '@mui/material'
-import { useAuth } from '../hooks/useAuth'
 import TopBar from '../components/Topbar'
-import BottomBar from '../components/Bottombar'
+import WokerBottombar from '../components/Bottombar'
+import TaskList from '../components/TaskCard'
+import { useAuth } from '../hooks/useAuth'
 
 const Dashboard: React.FC = () => {
   const { userProfile } = useAuth()
-
-  const isTransportWorker = userProfile.role === 'TRANSPORT_WORKER'
   const isPicker = userProfile.role === 'PICKER'
+  const isTransportWorker = userProfile.role === 'TRANSPORT_WORKER'
   const isAdmin = userProfile.role === 'ADMIN'
 
   if (isAdmin) {
     return (
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          height: '100vh',
-          backgroundColor: '#F7F9FC'
-        }}
-      >
-        <Typography
-          variant='h6'
-          sx={{ fontWeight: 'bold', textAlign: 'center', my: 2 }}
-        >
-          Hello Admin, {userProfile.firstName} {userProfile.lastName}!
+      <Box sx={{ p: 4 }}>
+        <Typography variant='h6'>
+          Hello Admin, {userProfile.firstName}!
         </Typography>
       </Box>
     )
   }
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100vh',
-        backgroundColor: '#F7F9FC'
-      }}
-    >
-      {/* TopBar Component */}
+    <Box sx={{ height: '100vh', backgroundColor: '#F7F9FC' }}>
       <TopBar userName={`${userProfile.firstName} ${userProfile.lastName}`} />
 
-      {/* Page content */}
-      <Box
-        sx={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center'
-        }}
-      >
-        <Typography variant='h6' sx={{ fontWeight: 'bold' }}>
-          Dashboard Content Goes Here
-        </Typography>
+      <Box sx={{ flex: 1, p: 2, pb: 8 }}>
+        {isTransportWorker && <TaskList />}
       </Box>
 
-      {isTransportWorker && <BottomBar />}
+      {isTransportWorker && <WokerBottombar />}
     </Box>
   )
 }
