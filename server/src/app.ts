@@ -2,6 +2,7 @@ import express, { Application } from 'express'
 
 import httpContext from 'express-http-context'
 
+import { setupAssociations } from './models/associations'
 import cors from 'cors'
 import httpLogger from 'utils/httpLogger'
 import errorHandling from 'middlewares/errorHandling.middleware'
@@ -18,6 +19,8 @@ const corsOptions = {
   credentials: true, // This allows session cookies to be sent back and forth
   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 }
+
+setupAssociations()
 
 app.use(cors(corsOptions))
 app.use(httpContext.middleware)

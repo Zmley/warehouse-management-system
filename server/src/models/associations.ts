@@ -6,9 +6,4 @@ export const setupAssociations = () => {
     foreignKey: 'binID',
     sourceKey: 'binID'
   })
-
-  Inventory.belongsTo(Bin, {
-    foreignKey: 'binID',
-    targetKey: 'binID'
-  })
 }
