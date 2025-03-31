@@ -159,7 +159,7 @@ export const getBinCodeByBinID = async (
 }
 
 export const getTasksByWarehouseID = async (warehouseID: string) => {
-  const pendingTasks = (await Task.findAll({
+  const pendingTasks = await Task.findAll({
     where: { status: 'PENDING' },
     include: [
       {
@@ -180,6 +180,7 @@ export const getTasksByWarehouseID = async (warehouseID: string) => {
         model: Inventory,
         as: 'inventories',
         required: false,
+        where: {},
         include: [
           {
             model: Bin,
@@ -192,25 +193,25 @@ export const getTasksByWarehouseID = async (warehouseID: string) => {
         ]
       }
     ]
-  })) as unknown as TaskWithJoin[]
+  })
 
   if (!pendingTasks.length) {
     throw new AppError(404, '❌ No pending tasks found')
   }
 
   return pendingTasks.map(task => {
-    let sourceBins: (Inventory & { Bin?: Bin })[] = []
+    let sourceBins: any[] = []
 
-    if (task.sourceBin) {
-      sourceBins = [{ Bin: task.sourceBin } as Inventory & { Bin?: Bin }]
-    } else if (task.inventories?.length > 0) {
-      sourceBins = task.inventories
+    if ((task as any).sourceBin) {
+      sourceBins = [{ Bin: (task as any).sourceBin }]
+    } else if ((task as any).inventories?.length > 0) {
+      sourceBins = (task as any).inventories
     }
 
     return {
       ...task.toJSON(),
       sourceBins,
-      destinationBinCode: task.destinationBin?.binCode || '--'
+      destinationBinCode: (task as any).destinationBin?.binCode || '--'
     }
   })
 }
@@ -219,62 +220,35 @@ export const getTaskByAccountID = async (
   accountID: string,
   warehouseID: string
 ) => {
-  const task = (await Task.findOne({
+  const myCurrentTask = await Task.findOne({
     where: {
       accepterID: accountID,
       status: 'IN_PROCESS'
-    },
+    }
+  })
+
+  const sourceBins = await Inventory.findAll({
+    where: { productCode: myCurrentTask.productCode },
     include: [
       {
         model: Bin,
-        as: 'destinationBin',
-        attributes: ['binID', 'binCode'],
-        where: { warehouseID },
-        required: false
-      },
-      {
-        model: Bin,
-        as: 'sourceBin',
-        attributes: ['binID', 'binCode'],
-        required: false
-      },
-      {
-        model: Inventory,
-        as: 'inventories',
-        required: false,
-        include: [
-          {
-            model: Bin,
-            attributes: ['binID', 'binCode'],
-            where: {
-              warehouseID,
-              type: 'INVENTORY'
-            }
-          }
-        ]
+        where: {
+          warehouseID,
+          type: 'INVENTORY'
+        },
+        attributes: ['binID', 'binCode']
       }
     ]
-  })) as unknown as TaskWithJoin
+  })
 
-  if (!task) {
-    throw new AppError(404, '❌ No in-process task found')
-  }
+  const destinationBin = await Bin.findOne({
+    where: { binID: myCurrentTask.destinationBinID },
+    attributes: ['binCode']
+  })
 
-  let sourceBins: (Inventory & { Bin?: Bin })[] = []
+  const destinationBinCode = destinationBin.binCode
 
-  if (task.sourceBinID && task.sourceBin) {
-    sourceBins = [{ Bin: task.sourceBin } as Inventory & { Bin?: Bin }]
-  } else if (task.inventories?.length > 0) {
-    sourceBins = task.inventories
-  } else {
-    throw new AppError(404, 'No source bins found for this task')
-  }
-
-  return {
-    ...task.toJSON(),
-    sourceBins,
-    destinationBinCode: task.destinationBin?.binCode || '--'
-  }
+  return { ...myCurrentTask.toJSON(), sourceBins, destinationBinCode }
 }
 
 export const cancelTaskByID = async (taskID: string) => {
