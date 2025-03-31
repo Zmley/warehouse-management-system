@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Snackbar, Alert, Box, Typography } from '@mui/material'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
-import { useCartContext } from '../../contexts/cart'
 
 const UnloadSuccess: React.FC = () => {
   const navigate = useNavigate()

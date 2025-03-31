@@ -120,11 +120,11 @@ export const createAsPicker = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { binID, productCode } = req.body
+    const { binCode, productCode } = req.body
     const { accountID, warehouseID } = res.locals
 
     const task = await createTaskAsPicker(
-      binID,
+      binCode,
       accountID,
       warehouseID,
       productCode

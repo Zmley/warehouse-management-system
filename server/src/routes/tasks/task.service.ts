@@ -73,11 +73,26 @@ export const checkBinAvailability = async (sourceBinID: string) => {
 }
 
 export const createTaskAsPicker = async (
-  binID: string,
+  binCode: string,
   accountID: string,
   warehouseID: string,
   productCode: string
 ) => {
+  const destinationBin = await Bin.findOne({
+    where: {
+      binCode: binCode,
+      warehouseID,
+      type: 'PICK_UP'
+    }
+  })
+
+  if (!destinationBin) {
+    throw new AppError(
+      404,
+      `❌ No bin found with code "${binCode}" in this warehouse`
+    )
+  }
+
   const inventories = await Inventory.findAll({
     where: { productCode },
     include: [
@@ -87,22 +102,21 @@ export const createTaskAsPicker = async (
           warehouseID,
           type: 'INVENTORY'
         },
-        attributes: ['binID']
+        attributes: ['binCode']
       }
     ]
   })
 
   if (inventories.length === 0) {
-    throw new AppError(404, 'No bins have this product in this warehouse')
+    throw new AppError(404, '❌ No bins have this product in this warehouse')
   }
 
-  //extract each binID from inventories
   const sourceBins = inventories.map(inv => ({
-    binID: inv.binID
+    binCode: (inv as { Bin?: { binCode?: string } }).Bin?.binCode || 'UNKNOWN'
   }))
 
   const task = await Task.create({
-    destinationBinID: binID,
+    destinationBinID: destinationBin.binID,
     creatorID: accountID,
     productCode,
     status: 'PENDING'
