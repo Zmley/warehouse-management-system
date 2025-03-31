@@ -10,7 +10,7 @@ import {
 } from '@mui/material'
 import { Task } from '../../types/task'
 import { cancelPickerTask } from '../../api/taskApi'
-import { bin } from '../../types/bin'
+// import { Bin } from '../../types/bin'
 
 interface Props {
   createdTasks: Task[]
@@ -62,10 +62,18 @@ const PickerCreatedTaskList: React.FC<Props> = ({
                     Source Bin
                   </Typography>
                   <Box>
-                    {task.sourceBins?.length > 0 ? (
+                    {Array.isArray(task.sourceBins) &&
+                    task.sourceBins.length > 0 ? (
                       task.sourceBins.map((item, idx) => (
-                        <Typography key={idx} fontWeight='bold' fontSize={16}>
-                          {item.Bin?.binCode || '--'}
+                        <Typography
+                          key={idx}
+                          fontWeight='bold'
+                          fontSize={16}
+                          component='span'
+                        >
+                          {typeof item === 'string'
+                            ? item
+                            : item.Bin?.binCode || '--'}
                           {idx < task.sourceBins.length - 1 && ' / '}
                         </Typography>
                       ))
