@@ -1,6 +1,6 @@
 import apiClient from './axiosClient.ts'
 
-export const fetchAllProducts = async (): Promise<{
+export const getProducts = async (): Promise<{
   productCodes: string[]
 }> => {
   const response = await apiClient.get('/products/')

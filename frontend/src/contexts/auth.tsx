@@ -1,6 +1,6 @@
 import React, { createContext, useState } from 'react'
 import { areTokensValid } from '../utils/Storages'
-import { fetchUserProfile } from '../api/authApi'
+import { getUserProfile } from '../api/authApi'
 
 interface UserProfile {
   firstName: string
@@ -33,7 +33,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   )
 
   const getMe = async () => {
-    const account = await fetchUserProfile()
+    const account = await getUserProfile()
     setUserProfile(account)
   }
   return (

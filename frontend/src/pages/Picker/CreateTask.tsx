@@ -11,7 +11,7 @@ import {
 } from '@mui/material'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useCreatePickerTask } from '../../hooks/usePickerTask'
-import { fetchAllProducts } from '../../api/productApi'
+import { getProducts } from '../../api/productApi'
 import { getBinCodesByProductCode } from '../../api/binApi'
 import { Bin } from '../../types/bin'
 
@@ -30,7 +30,7 @@ const CreateTaskPage = () => {
   useEffect(() => {
     const loadProducts = async () => {
       try {
-        const response = await fetchAllProducts()
+        const response = await getProducts()
         setProductOptions(response.productCodes)
       } catch (err) {
         console.error('❌ Failed to load products', err)
