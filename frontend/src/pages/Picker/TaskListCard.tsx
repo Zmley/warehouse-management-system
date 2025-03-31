@@ -10,7 +10,6 @@ import {
 } from '@mui/material'
 import { Task } from '../../types/task'
 import { cancelPickerTask } from '../../api/taskApi'
-// import { Bin } from '../../types/bin'
 
 interface Props {
   createdTasks: Task[]

@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import { Box, Typography } from '@mui/material'
 import TopBar from '../components/Topbar'
-import WokerBottombar from '../components/Bottombar'
+import WokerBottombar from './TransportWorker/Bottombar'
 import PickerBottombar from './Picker/Bottombar'
 import PendingTaskList from '../components/TaskCard'
 import PickerCreatedTaskList from './Picker/TaskListCard'
 import { useAuth } from '../hooks/useAuth'
 import { getPickerCreatedTasks } from '../api/taskApi'
 import { Task } from '../types/task'
+import { useNavigate } from 'react-router-dom'
 
 const Dashboard: React.FC = () => {
   const { userProfile } = useAuth()
@@ -18,6 +19,19 @@ const Dashboard: React.FC = () => {
   const [showCreatedTasks, setShowCreatedTasks] = useState(false)
   const [showArchivedTasks, setShowArchivedTasks] = useState(false)
   const [allTasks, setAllTasks] = useState<Task[]>([])
+  const [showTodoList, setShowTodoList] = useState(false)
+
+  const navigate = useNavigate()
+
+  const handleCreatWokerTask = () => {
+    navigate('/scan-qr')
+  }
+
+  const handleWorkerTaskClick = () => {
+    setShowCreatedTasks(false)
+    setShowArchivedTasks(false)
+    setShowTodoList(true)
+  }
 
   const handleTaskListClick = async () => {
     try {
@@ -58,9 +72,8 @@ const Dashboard: React.FC = () => {
   return (
     <Box sx={{ height: '100vh', backgroundColor: '#F7F9FC' }}>
       <TopBar userName={`${userProfile.firstName} ${userProfile.lastName}`} />
-
       <Box sx={{ flex: 1, p: 2, pb: 8 }}>
-        {isTransportWorker && <PendingTaskList />}
+        {isTransportWorker && showTodoList && <PendingTaskList />}
 
         {isPicker && showCreatedTasks && (
           <PickerCreatedTaskList
@@ -84,15 +97,18 @@ const Dashboard: React.FC = () => {
           </Typography>
         )}
       </Box>
-
       {isPicker && (
         <PickerBottombar
           onTaskListClick={handleTaskListClick}
           onArchivedClick={handleArchivedClick}
         />
       )}
-
-      {isTransportWorker && <WokerBottombar />}
+      {isTransportWorker && (
+        <WokerBottombar
+          onTaskListClick={handleWorkerTaskClick}
+          onCreateTaskClick={handleCreatWokerTask}
+        />
+      )}
     </Box>
   )
 }
