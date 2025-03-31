@@ -159,7 +159,7 @@ export const getBinCodeByBinID = async (
 }
 
 export const getTasksByWarehouseID = async (warehouseID: string) => {
-  const pendingTasks = await Task.findAll({
+  const pendingTasks = (await Task.findAll({
     where: { status: 'PENDING' },
     include: [
       {
@@ -193,25 +193,24 @@ export const getTasksByWarehouseID = async (warehouseID: string) => {
         ]
       }
     ]
-  })
+  })) as unknown as TaskWithJoin[]
 
   if (!pendingTasks.length) {
     throw new AppError(404, '❌ No pending tasks found')
   }
-
   return pendingTasks.map(task => {
-    let sourceBins: any[] = []
+    let sourceBins: (Inventory & { Bin?: Bin })[] = []
 
-    if ((task as any).sourceBin) {
-      sourceBins = [{ Bin: (task as any).sourceBin }]
-    } else if ((task as any).inventories?.length > 0) {
-      sourceBins = (task as any).inventories
+    if (task.sourceBin) {
+      sourceBins = [{ Bin: task.sourceBin } as Inventory & { Bin?: Bin }]
+    } else if (task.inventories?.length > 0) {
+      sourceBins = task.inventories
     }
 
     return {
       ...task.toJSON(),
       sourceBins,
-      destinationBinCode: (task as any).destinationBin?.binCode || '--'
+      destinationBinCode: task.destinationBin?.binCode || '--'
     }
   })
 }
