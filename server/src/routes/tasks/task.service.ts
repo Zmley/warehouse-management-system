@@ -2,7 +2,6 @@ import Task from './task.model'
 import Inventory from '../inventory/inventory.model'
 import Bin from '../bins/bin.model'
 import AppError from '../../utils/appError'
-import { getBinCodesByProductCode } from '../bins/bin.service'
 
 interface TaskWithJoin extends Task {
   destinationBin?: Bin
@@ -240,6 +239,10 @@ export const getTaskByAccountID = async (
       status: 'IN_PROCESS'
     }
   })
+
+  if (!myCurrentTask) {
+    return null
+  }
 
   const sourceBins = await Inventory.findAll({
     where: { productCode: myCurrentTask.productCode },
