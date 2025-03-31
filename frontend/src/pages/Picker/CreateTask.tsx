@@ -10,7 +10,7 @@ import {
   Paper
 } from '@mui/material'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { createPickerTask } from '../../api/taskApi'
+import { useCreatePickerTask } from '../../hooks/usePickerTask'
 import { fetchAllProducts } from '../../api/productApi'
 import { fetchMatchingBinCodes } from '../../api/binApi'
 import { Bin } from '../../types/bin'
@@ -24,6 +24,8 @@ const CreateTaskPage = () => {
   const [productOptions, setProductOptions] = useState<string[]>([])
   const [sourceBins, setSourceBins] = useState<string[]>([])
   const [sourceError, setSourceError] = useState(false)
+
+  const { createTask, loading, error } = useCreatePickerTask()
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -63,12 +65,11 @@ const CreateTaskPage = () => {
       return
     }
 
-    try {
-      await createPickerTask(bin.binCode, productCode)
+    await createTask(bin.binCode, productCode) // 调用 hook 中的函数来处理任务创建
+    if (!error) {
       navigate('/success')
-    } catch (err) {
-      console.error('❌ Error creating task:', err)
-      alert('❌ Failed to create task')
+    } else {
+      alert(error)
     }
   }
 
@@ -167,7 +168,7 @@ const CreateTaskPage = () => {
             variant='contained'
             color='primary'
             fullWidth
-            disabled={!productCode || sourceError}
+            disabled={!productCode || sourceError || loading}
             onClick={handleSubmit}
             sx={{
               borderRadius: '12px',
@@ -177,7 +178,7 @@ const CreateTaskPage = () => {
               mb: 2
             }}
           >
-            Create Task
+            {loading ? 'Creating Task...' : 'Create Task'}
           </Button>
 
           {/* Cancel Button */}

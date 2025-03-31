@@ -29,6 +29,6 @@ router.post('/cancelTask', transportWorkerOnly, cancelTaskByTaskID)
 
 router.get('/pickerCreatedTasks', pickerOnly, getPickerCreatedTasks)
 
-router.post('/cancelPickerTask', pickerOnly, cancelPickerTask)
-
+//
+router.delete('/:taskID/cancel', pickerOnly, cancelPickerTask)
 export default router

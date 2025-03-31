@@ -39,6 +39,6 @@ export const getPickerCreatedTasks = async (): Promise<Task[]> => {
 }
 
 export const cancelPickerTask = async (taskID: string): Promise<Task> => {
-  const response = await apiClient.post('/task/cancelPickerTask', { taskID })
+  const response = await apiClient.delete(`/task/${taskID}/cancel`)
   return response.data.task
 }

@@ -8,8 +8,8 @@ import { AuthContext } from '../contexts/auth'
 import Dashboard from '../pages/Dashboard'
 import { useCartContext } from '../contexts/cart'
 import TaskDetailPage from '../pages/TransportWorker/TaskDetailPage'
-import PickerScanPage from '../pages/Picker/PickerBinScanPage'
-import CreateTaskPage from '../pages/Picker/CreatePickerTaskPage'
+import PickerScanPage from '../pages/Picker/ScanBin'
+import CreateTaskPage from '../pages/Picker/CreateTask'
 
 const PrivateRoutes: React.FC = () => {
   const { getMe } = useContext(AuthContext)!

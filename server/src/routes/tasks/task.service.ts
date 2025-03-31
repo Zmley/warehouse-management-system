@@ -2,8 +2,7 @@ import Task from './task.model'
 import Inventory from '../inventory/inventory.model'
 import Bin from '../bins/bin.model'
 import AppError from '../../utils/appError'
-import { getBinCodesByProductCodeAndWarehouse } from '../bins/bin.service'
-import { Op } from 'sequelize'
+import { getBinCodesByProductCode } from '../bins/bin.service'
 
 export const hasActiveTask = async (accountID: string): Promise<boolean> => {
   try {
@@ -107,7 +106,7 @@ export const createTaskAsPicker = async (
   }
 
   const sourceBins = inventories.map(inv => ({
-    binCode: (inv as any).Bin?.binCode || 'UNKNOWN'
+    binCode: (inv as { Bin?: { binCode?: string } }).Bin?.binCode || 'UNKNOWN'
   }))
 
   const task = await Task.create({
@@ -192,7 +191,7 @@ export const getPendingTasksService = async (warehouseID: string) => {
           sourceBinCode = [binCode]
         }
       } else {
-        const binCodes = await getBinCodesByProductCodeAndWarehouse(
+        const binCodes = await getBinCodesByProductCode(
           task.productCode,
           warehouseID
         )
@@ -263,7 +262,7 @@ export const getInProcessTaskWithBinCodes = async (
       sourceBinCode = [binCode]
     }
   } else {
-    const binCodes = await getBinCodesByProductCodeAndWarehouse(
+    const binCodes = await getBinCodesByProductCode(
       task.productCode,
       warehouseID
     )
@@ -334,7 +333,7 @@ export const getPickerCreatedTasksService = async (
         const code = await getBinCodeByBinID(task.sourceBinID)
         if (code) sourceBinCode = [code]
       } else {
-        const codes = await getBinCodesByProductCodeAndWarehouse(
+        const codes = await getBinCodesByProductCode(
           task.productCode,
           warehouseID
         )

@@ -9,7 +9,6 @@ import {
   getPickerCreatedTasksService,
   cancelPickerTaskService
 } from '../tasks/task.service'
-import AppError from '../../utils/appError'
 
 export const createAsAdmin = async (
   req: Request,
@@ -159,18 +158,18 @@ export const getPickerCreatedTasks = async (
     next(error)
   }
 }
-
+//////////////
 export const cancelPickerTask = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const { taskID } = req.body
-    const { accountID } = res.locals
-    const task = await cancelPickerTaskService(accountID, taskID)
-    res.status(200).json({ message: 'Task cancelled', task })
+    const { taskID } = req.params // 从路径参数获取 taskID
+    const { accountID } = res.locals // 从当前用户的 accountID 获取数据
+    const task = await cancelPickerTaskService(accountID, taskID) // 取消任务
+    res.status(200).json({ message: 'Task cancelled', task }) // 返回成功消息和任务信息
   } catch (error) {
-    next(error)
+    next(error) // 处理错误
   }
 }

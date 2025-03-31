@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import { getBinByBinCode } from './bin.service'
-import { getBinCodesByProductCodeAndWarehouse } from '../bins/bin.service'
+import { getBinCodesByProductCode } from '../bins/bin.service'
 
 export const getBinByCode = async (
   req: Request,
@@ -32,10 +32,7 @@ export const getMatchBinCodesByProductCode = async (
     const { productCode } = req.body
     const { warehouseID } = res.locals
 
-    const binCodes = await getBinCodesByProductCodeAndWarehouse(
-      productCode,
-      warehouseID
-    )
+    const binCodes = await getBinCodesByProductCode(productCode, warehouseID)
 
     res.status(200).json({
       message: 'Bin codes fetched successfully',
