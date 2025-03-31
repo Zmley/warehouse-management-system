@@ -65,7 +65,7 @@ const CreateTaskPage = () => {
       return
     }
 
-    await createTask(bin.binCode, productCode) // 调用 hook 中的函数来处理任务创建
+    await createTask(bin.binCode, productCode)
     if (!error) {
       navigate('/success')
     } else {
