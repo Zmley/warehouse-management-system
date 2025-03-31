@@ -7,7 +7,7 @@ import {
   cancelTaskByID,
   getTaskByAccountID,
   getTasksByAccountID,
-  cancelPickerTaskService
+  cancelPickerTaskByAccountID
 } from '../tasks/task.service'
 
 export const createAsAdmin = async (
@@ -145,7 +145,7 @@ export const cancelPickerTask = async (
   try {
     const { taskID } = req.params
     const { accountID } = res.locals
-    const task = await cancelPickerTaskService(accountID, taskID)
+    const task = await cancelPickerTaskByAccountID(accountID, taskID)
     res.status(200).json({ message: 'Task cancelled', task })
   } catch (error) {
     next(error)

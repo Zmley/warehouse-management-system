@@ -300,7 +300,7 @@ export const getTasksByAccountID = async (
   })
 }
 
-export const cancelPickerTaskService = async (
+export const cancelPickerTaskByAccountID = async (
   accountID: string,
   taskID: string
 ) => {
