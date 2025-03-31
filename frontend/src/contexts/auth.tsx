@@ -1,12 +1,14 @@
 import React, { createContext, useState } from 'react'
 import { areTokensValid } from '../utils/Storages'
 import { getUserProfile } from '../api/authApi'
+import { Task } from '../types/task'
 
 interface UserProfile {
   firstName: string
   lastName: string
   email: string
   role: string
+  currentTask?: Task
 }
 
 interface AuthContextType {

@@ -2,20 +2,12 @@
 
 import React, { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import {
-  Container,
-  Typography,
-  Button,
-  Box,
-  Paper,
-  useTheme
-} from '@mui/material'
+import { Typography, Button, Box, Paper } from '@mui/material'
 import usePickBinScanner from '../../hooks/usePickerScanner'
 import { getBinByBinCode } from '../../api/binApi'
 
 const PickerBinScanPage = () => {
   const navigate = useNavigate()
-  const theme = useTheme()
 
   const handleBinScanned = async (binCode: string) => {
     console.log('📦 Bin Scanned:', binCode)
@@ -49,6 +41,7 @@ const PickerBinScanPage = () => {
       stopScanning()
       streamRef.current?.getTracks().forEach(track => track.stop())
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (

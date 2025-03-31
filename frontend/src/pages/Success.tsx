@@ -1,5 +1,4 @@
 import React, { useState, useContext, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 import {
   Box,
   Typography,
@@ -12,7 +11,6 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import { AuthContext } from '../contexts/auth'
 
 const TaskSuccessPage: React.FC = () => {
-  const navigate = useNavigate()
   const { userProfile } = useContext(AuthContext)!
   const [visible, setVisible] = useState(true)
 

@@ -16,6 +16,7 @@ interface CartContextType {
     list: { inventoryID: string; quantity: number }[]
   ) => void
   getMyCart: () => Promise<void>
+  setInventoriesInCar: (list: InventoryItem[]) => void
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
@@ -28,7 +29,11 @@ export const useCartContext = (): CartContextType => {
   return context
 }
 
-export const CartProvider = ({ children }: { children: ReactNode }) => {
+export const TransportWorkCartProvider = ({
+  children
+}: {
+  children: ReactNode
+}) => {
   const [inventoriesInCar, setInventoriesInCar] = useState<InventoryItem[]>([])
   const [selectedToUnload, setSelectedToUnload] = useState<
     { inventoryID: string; quantity: number }[]
@@ -58,7 +63,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         inventoriesInCar,
         isCartEmpty,
         selectedToUnload,
-        setSelectedToUnload
+        setSelectedToUnload,
+        setInventoriesInCar
       }}
     >
       {children}

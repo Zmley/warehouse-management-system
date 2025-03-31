@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner'
 import CancelIcon from '@mui/icons-material/Cancel'
 
-const ScanTaskPage = () => {
+const ScanQRCode = () => {
   const navigate = useNavigate()
   const stopButtonRef = useRef<HTMLButtonElement>(null)
   const [hasStarted, setHasStarted] = useState(false)
@@ -22,7 +22,6 @@ const ScanTaskPage = () => {
       setHasStarted(true)
     }
   }, [hasStarted, startScanning])
-
   return (
     <Box
       sx={{
@@ -112,7 +111,7 @@ const ScanTaskPage = () => {
               }}
               onClick={() => {
                 stopButtonRef.current?.click()
-                navigate('/')
+                navigate(-1)
               }}
             >
               Cancel
@@ -124,4 +123,4 @@ const ScanTaskPage = () => {
   )
 }
 
-export default ScanTaskPage
+export default ScanQRCode

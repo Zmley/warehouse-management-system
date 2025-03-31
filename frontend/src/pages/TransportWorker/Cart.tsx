@@ -6,7 +6,7 @@ import {
   Container,
   Typography
 } from '@mui/material'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCartContext } from '../../contexts/cart'
 import InventoryListCard from './InventoryListCard'
@@ -54,7 +54,10 @@ const Cart = () => {
       )
     )
   }
-
+  useEffect(() => {
+    fetchMyTask()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   return (
     <Container maxWidth='sm'>
       {myTask && <TaskInstruction />}
@@ -95,7 +98,7 @@ const Cart = () => {
 
                 setSelectedToUnload(selectedToUnload)
 
-                navigate('/scan-qr')
+                navigate('scan-qr')
               }}
               sx={{ borderRadius: '12px', py: 1.2 }}
             >

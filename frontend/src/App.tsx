@@ -1,7 +1,6 @@
 import React from 'react'
 import { BrowserRouter as Router } from 'react-router-dom'
 import { AuthProvider } from './contexts/auth'
-import { CartProvider } from './contexts/cart'
 import { TaskProvider } from './contexts/task'
 import PublicRoute from './routes/PublicRoute'
 
@@ -10,9 +9,7 @@ const App: React.FC = () => {
     <Router>
       <AuthProvider>
         <TaskProvider>
-          <CartProvider>
-            <PublicRoute />
-          </CartProvider>
+          <PublicRoute />
         </TaskProvider>
       </AuthProvider>
     </Router>

@@ -31,8 +31,9 @@ export const useAuth = () => {
 
   const handleLogout = () => {
     clearTokens()
-    setIsAuthenticated(false)
     navigate('/')
+
+    setIsAuthenticated(false)
   }
 
   return { handleLogin, handleLogout, isAuthenticated, error, userProfile }

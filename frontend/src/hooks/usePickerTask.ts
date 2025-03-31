@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import {
   createPickerTask,
   getPickerTasks,
@@ -6,9 +6,23 @@ import {
 } from '../api/taskApi'
 import { Task } from '../types/task'
 
-export const useCreatePickerTask = () => {
+export const usePickerTasks = () => {
+  const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const fetchTasks = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const tasks = await getPickerTasks()
+      setTasks(tasks)
+    } catch (err) {
+      setError('Failed to fetch tasks')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const createTask = async (
     binCode: string,
@@ -27,32 +41,7 @@ export const useCreatePickerTask = () => {
     }
   }
 
-  return { createTask, loading, error }
-}
-
-export const usePickerCreatedTasks = () => {
-  const [tasks, setTasks] = useState<Task[]>([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  const fetchTasks = async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      const tasks = await getPickerTasks()
-      setTasks(tasks)
-    } catch (err) {
-      setError('Failed to fetch tasks')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchTasks()
-  }, [])
-
-  return { tasks, loading, error }
+  return { createTask, loading, error, tasks, fetchTasks }
 }
 
 export const useCancelPickerTask = () => {

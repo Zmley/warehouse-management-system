@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { getAccessToken } from '../utils/Storages'
+import { clearTokens, getAccessToken } from '../utils/Storages'
 
 const API_BASE_URL = `${
   process.env.SERVER_API_BASE_URL || 'http://localhost:5001'
@@ -12,15 +12,23 @@ const apiClient = axios.create({
   }
 })
 
-apiClient.interceptors.request.use(
-  config => {
-    const token = getAccessToken()
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
+apiClient.interceptors.response.use(
+  response => response,
+  error => {
+    if (error.response?.status === 401) {
+      clearTokens()
+      window.location.href = '/'
     }
-    return config
-  },
-  error => Promise.reject(error)
+    return Promise.reject(error)
+  }
 )
+
+apiClient.interceptors.request.use(config => {
+  const token = getAccessToken()
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
 
 export default apiClient

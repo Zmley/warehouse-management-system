@@ -286,7 +286,7 @@ module.exports = {
     })
   },
 
-  down: async (queryInterface, Sequelize) => {
+  down: async queryInterface => {
     await queryInterface.dropTable('task')
     await queryInterface.dropTable('inventory')
     await queryInterface.dropTable('bin')

@@ -5,6 +5,10 @@ export interface Bin {
   binCode: string
 }
 
+export enum TaskCategoryEnum {
+  PENDING = 'PENDING',
+  COMPLETED = 'COMPLETED'
+}
 export interface Inventory {
   inventoryID: string
   binID: string

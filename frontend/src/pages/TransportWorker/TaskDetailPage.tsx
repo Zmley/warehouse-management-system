@@ -114,7 +114,7 @@ const TaskDetailPage: React.FC = () => {
         <Button
           variant='contained'
           fullWidth
-          onClick={() => navigate('/scan-qr')}
+          onClick={() => navigate('/my-task/scan-qr')}
           sx={{
             py: 2,
             backgroundColor: '#2563eb',

@@ -5,7 +5,13 @@ import { useNavigate } from 'react-router-dom'
 export const useCart = () => {
   const navigate = useNavigate()
 
-  const { selectedToUnload, getMyCart, isCartEmpty } = useCartContext()
+  const {
+    selectedToUnload,
+    getMyCart,
+    isCartEmpty,
+    setInventoriesInCar,
+    inventoriesInCar
+  } = useCartContext()
 
   const loadCart = async (binCode: string) => {
     try {
@@ -26,8 +32,14 @@ export const useCart = () => {
     try {
       const response = await unloadFromCart(binCode, selectedToUnload)
       if (response?.success) {
-        await getMyCart()
-        if (!isCartEmpty) {
+        const inventoriesLeftInCart = inventoriesInCar.filter(
+          item =>
+            !selectedToUnload.some(
+              selected => selected.inventoryID === item.inventoryID
+            )
+        )
+        setInventoriesInCar(inventoriesLeftInCart)
+        if (inventoriesLeftInCart.length === 0) {
           setTimeout(() => {
             navigate('/success')
           }, 500)

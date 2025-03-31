@@ -10,7 +10,7 @@ import {
   Paper
 } from '@mui/material'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { useCreatePickerTask } from '../../hooks/usePickerTask'
+import { usePickerTasks } from '../../hooks/usePickerTask'
 import { getProducts } from '../../api/productApi'
 import { getBinCodesByProductCode } from '../../api/binApi'
 import { Bin } from '../../types/bin'
@@ -25,7 +25,7 @@ const CreateTaskPage = () => {
   const [sourceBins, setSourceBins] = useState<string[]>([])
   const [sourceError, setSourceError] = useState(false)
 
-  const { createTask, loading, error } = useCreatePickerTask()
+  const { createTask, loading, error } = usePickerTasks()
 
   useEffect(() => {
     const loadProducts = async () => {

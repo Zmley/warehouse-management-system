@@ -12,7 +12,6 @@ const currentAccount = async (
     const { payload } = res.locals
 
     const accountID = payload.sub
-
     if (!accountID) {
       throw new AppError(
         httpStatus.UNAUTHORIZED,
@@ -21,9 +20,8 @@ const currentAccount = async (
     }
 
     const account = await Account.findOne({ where: { accountID } })
-
     if (!account) {
-      res
+      return res
         .status(httpStatus.UNAUTHORIZED)
         .json({ error: '❌ Unauthorized: Account not found' })
     }
