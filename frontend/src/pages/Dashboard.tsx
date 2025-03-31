@@ -8,6 +8,7 @@ import PickerCreatedTaskList from './Picker/TaskListCard'
 import { useAuth } from '../hooks/useAuth'
 import { getPickerCreatedTasks } from '../api/taskApi'
 import { Task } from '../types/task'
+import AdminDashboard from './admin/AdminDashboard'
 
 const Dashboard: React.FC = () => {
   const { userProfile } = useAuth()
@@ -46,15 +47,8 @@ const Dashboard: React.FC = () => {
   }
 
   if (isAdmin) {
-    return (
-      <Box sx={{ p: 4 }}>
-        <Typography variant='h6'>
-          Hello Admin, {userProfile.firstName}!
-        </Typography>
-      </Box>
-    )
+    return <AdminDashboard />
   }
-
   return (
     <Box sx={{ height: '100vh', backgroundColor: '#F7F9FC' }}>
       <TopBar userName={`${userProfile.firstName} ${userProfile.lastName}`} />

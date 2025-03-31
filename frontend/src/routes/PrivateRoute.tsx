@@ -8,8 +8,14 @@ import { AuthContext } from '../contexts/auth'
 import Dashboard from '../pages/Dashboard'
 import { useCartContext } from '../contexts/cart'
 import TaskDetailPage from '../pages/TransportWorker/TaskDetailPage'
+<<<<<<< Updated upstream
 import PickerScanPage from '../pages/Picker/ScanBin'
 import CreateTaskPage from '../pages/Picker/CreateTask'
+=======
+import PickerScanPage from '../pages/Picker/PickerBinScanPage'
+import CreateTaskPage from '../pages/Picker/CreatePickerTaskPage'
+import AdminDashboard from '../pages/admin/AdminDashboard'
+>>>>>>> Stashed changes
 
 const PrivateRoutes: React.FC = () => {
   const { getMe } = useContext(AuthContext)!
@@ -42,6 +48,8 @@ const PrivateRoutes: React.FC = () => {
       <Route path='/task-detail' element={<TaskDetailPage />} />
       <Route path='/picker-scan-bin' element={<PickerScanPage />} />
       <Route path='/create-task' element={<CreateTaskPage />} />
+      <Route path='/admin' element={<AdminDashboard />} />{' '}
+      {/* Admin Dashboard route */}
     </Routes>
   )
 }
