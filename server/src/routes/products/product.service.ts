@@ -1,6 +1,6 @@
 import { Product } from './product.model'
 
-export const getAllProductCodesService = async (): Promise<string[]> => {
+export const getProductCodes = async (): Promise<string[]> => {
   const products = await Product.findAll({
     attributes: ['productCode'],
     raw: true
