@@ -1,5 +1,3 @@
-// src/api/productApi.ts
-
 import apiClient from './axiosClient.ts'
 
 export const fetchAllProducts = async (): Promise<{
