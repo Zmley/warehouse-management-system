@@ -15,6 +15,9 @@ import CreateTaskPage from '../pages/Picker/CreateTask'
 import PickerScanPage from '../pages/Picker/PickerBinScanPage'
 import CreateTaskPage from '../pages/Picker/CreatePickerTaskPage'
 import AdminDashboard from '../pages/admin/AdminDashboard'
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 const PrivateRoutes: React.FC = () => {
