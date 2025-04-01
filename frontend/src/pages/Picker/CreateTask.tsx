@@ -15,7 +15,7 @@ import { useProducts } from '../../hooks/useProduct'
 import { useBin } from '../../hooks/useBin'
 import { Bin } from '../../types/bin'
 
-const CreateTaskPage = () => {
+const CreateTask = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const bin: Bin = location.state?.bin
@@ -192,4 +192,4 @@ const CreateTaskPage = () => {
   )
 }
 
-export default CreateTaskPage
+export default CreateTask

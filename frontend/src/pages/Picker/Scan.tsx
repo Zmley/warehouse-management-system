@@ -4,7 +4,7 @@ import { Typography, Button, Box, Paper } from '@mui/material'
 import useQRScanner from '../../hooks/useQRScanner'
 import { getBinByBinCode } from '../../api/binApi'
 
-const PickerBinScanPage = () => {
+const Scan = () => {
   const navigate = useNavigate()
 
   const handleBinScanned = async (binCode: string) => {
@@ -111,4 +111,4 @@ const PickerBinScanPage = () => {
   )
 }
 
-export default PickerBinScanPage
+export default Scan

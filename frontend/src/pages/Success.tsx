@@ -10,7 +10,7 @@ import {
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import { AuthContext } from '../contexts/auth'
 
-const TaskSuccessPage: React.FC = () => {
+const Success: React.FC = () => {
   const { userProfile } = useContext(AuthContext)!
   const [visible, setVisible] = useState(true)
 
@@ -74,4 +74,4 @@ const TaskSuccessPage: React.FC = () => {
   )
 }
 
-export default TaskSuccessPage
+export default Success

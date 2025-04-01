@@ -11,7 +11,7 @@ interface PickerBottomBarProps {
   onArchivedClick?: () => void
 }
 
-const PickerBottomBar: React.FC<PickerBottomBarProps> = ({
+const Bottombar: React.FC<PickerBottomBarProps> = ({
   onTaskListClick,
   onArchivedClick
 }) => {
@@ -54,4 +54,4 @@ const PickerBottomBar: React.FC<PickerBottomBarProps> = ({
   )
 }
 
-export default PickerBottomBar
+export default Bottombar

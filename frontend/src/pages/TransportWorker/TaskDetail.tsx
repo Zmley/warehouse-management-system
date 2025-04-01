@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTask } from '../../hooks/useTask'
 import { useEffect } from 'react'
 
-const TaskDetailPage: React.FC = () => {
+const TaskDetail: React.FC = () => {
   const navigate = useNavigate()
   const { myTask, fetchMyTask } = useTaskContext()
   const { cancelMyTask } = useTask()
@@ -157,4 +157,4 @@ const TaskDetailPage: React.FC = () => {
   )
 }
 
-export default TaskDetailPage
+export default TaskDetail

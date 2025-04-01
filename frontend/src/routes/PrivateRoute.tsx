@@ -6,7 +6,7 @@ import UnloadSuccess from '../pages/Success'
 import { useContext, useEffect } from 'react'
 import { AuthContext } from '../contexts/auth'
 import Dashboard from '../pages/Dashboard'
-import TaskDetailPage from '../pages/TransportWorker/TaskDetailPage'
+import TaskDetailPage from '../pages/TransportWorker/TaskDetail'
 import PickerScanPage from '../pages/Picker/Scan'
 import CreateTaskPage from '../pages/Picker/CreateTask'
 

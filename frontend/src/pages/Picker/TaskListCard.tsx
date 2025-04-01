@@ -15,7 +15,7 @@ interface Props {
   status: TaskCategoryEnum
 }
 
-const PickerCreatedTaskList: React.FC<Props> = ({ status }) => {
+const TaskListCard: React.FC<Props> = ({ status }) => {
   const { cancelTask } = usePickerTasks()
   const { tasks, fetchTasks } = usePickerTasks()
 
@@ -158,4 +158,4 @@ const PickerCreatedTaskList: React.FC<Props> = ({ status }) => {
   )
 }
 
-export default PickerCreatedTaskList
+export default TaskListCard

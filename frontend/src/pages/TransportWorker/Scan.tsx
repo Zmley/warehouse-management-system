@@ -8,7 +8,7 @@ import useQRScanner from '../../hooks/useQRScanner'
 import { useCartContext } from '../../contexts/cart'
 import { useCart } from '../../hooks/useCart'
 
-const ScanQRCode = () => {
+const Scan = () => {
   const navigate = useNavigate()
   const stopButtonRef = useRef<HTMLButtonElement>(null)
   const [hasStarted, setHasStarted] = useState(false)
@@ -149,4 +149,4 @@ const ScanQRCode = () => {
   )
 }
 
-export default ScanQRCode
+export default Scan
