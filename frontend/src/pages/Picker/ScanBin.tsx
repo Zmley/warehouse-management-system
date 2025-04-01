@@ -1,5 +1,3 @@
-// src/pages/Picker/PickerBinScanPage.tsx
-
 import React, { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Typography, Button, Box, Paper } from '@mui/material'
@@ -83,7 +81,6 @@ const PickerBinScanPage = () => {
           autoPlay
           playsInline
         />
-        {/* 扫描框效果 */}
         <Box
           sx={{
             position: 'absolute',
