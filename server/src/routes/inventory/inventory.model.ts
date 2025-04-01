@@ -7,8 +7,6 @@ export class Inventory extends Model {
   public binID!: string
   public productCode!: string
   public quantity!: number
-  public createdAt!: Date
-  public updatedAt!: Date | null
 }
 
 Inventory.init(
@@ -31,14 +29,6 @@ Inventory.init(
       type: DataTypes.INTEGER,
       allowNull: false,
       defaultValue: 0
-    },
-    createdAt: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW
-    },
-    updatedAt: {
-      type: DataTypes.DATE,
-      allowNull: true
     }
   },
   {

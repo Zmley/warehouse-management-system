@@ -11,8 +11,6 @@ export class Task extends Model {
   public creatorID!: string
   public productCode!: string
   public status!: 'PENDING' | 'IN_PROCESS' | 'COMPLETED' | 'CANCEL'
-  public createdAt!: Date
-  public updatedAt!: Date | null
 
   public readonly sourceBin?: Bin
   public readonly destinationBin?: Bin
@@ -49,14 +47,6 @@ Task.init(
     status: {
       type: DataTypes.ENUM('PENDING', 'IN_PROCESS', 'COMPLETED', 'CANCELED'),
       allowNull: false
-    },
-    createdAt: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW
-    },
-    updatedAt: {
-      type: DataTypes.DATE,
-      allowNull: true
     }
   },
   {
