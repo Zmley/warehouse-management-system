@@ -103,7 +103,6 @@ const CreateTaskPage = () => {
             Create A New Task
           </Typography>
 
-          {/* Source Bin Display */}
           <Box
             display='flex'
             justifyContent='space-between'
@@ -130,7 +129,6 @@ const CreateTaskPage = () => {
             </Paper>
           </Box>
 
-          {/* Target Bin Display */}
           <Box
             display='flex'
             justifyContent='space-between'
@@ -151,7 +149,6 @@ const CreateTaskPage = () => {
             </Paper>
           </Box>
 
-          {/* Product Autocomplete */}
           <Autocomplete
             options={productOptions}
             value={productCode}
@@ -163,7 +160,6 @@ const CreateTaskPage = () => {
             sx={{ mb: 3, mt: 2 }}
           />
 
-          {/* Submit Button */}
           <Button
             variant='contained'
             color='primary'
@@ -181,7 +177,6 @@ const CreateTaskPage = () => {
             {loading ? 'Creating Task...' : 'Create Task'}
           </Button>
 
-          {/* Cancel Button */}
           <Button
             variant='outlined'
             color='error'
