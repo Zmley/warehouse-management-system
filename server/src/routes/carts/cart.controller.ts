@@ -1,6 +1,13 @@
 import { Request, Response, NextFunction } from 'express'
 import { loadByBinCode, unloadByBinCode } from './cart.service'
-import { completeTask, getTaskByAccountID } from 'routes/tasks/task.service'
+import {
+  completeTask,
+  getTaskByAccountID,
+  hasActiveTask
+} from 'routes/tasks/task.service'
+import { getBinByBinCode } from 'routes/bins/bin.service'
+
+import { updateTaskSourceBin } from 'routes/tasks/task.service'
 
 export const load = async (
   req: Request,
@@ -8,12 +15,25 @@ export const load = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { cartID, warehouseID } = res.locals
+    const { cartID, warehouseID, accountID } = res.locals
     const { binCode } = req.body
 
     const result = await loadByBinCode(binCode, cartID, warehouseID)
 
-    res.status(result.status).json({ success: true, message: result.message })
+    const activeTask = await hasActiveTask(accountID)
+
+    if (activeTask && activeTask.status === 'IN_PROCESS') {
+      const bin = await getBinByBinCode(binCode, warehouseID)
+
+      if (bin?.binID) {
+        await updateTaskSourceBin(activeTask.taskID, bin.binID)
+      }
+    }
+
+    res.status(result.status).json({
+      success: true,
+      message: result.message
+    })
   } catch (error) {
     next(error)
   }
@@ -26,9 +46,9 @@ export const unload = async (
 ): Promise<void> => {
   try {
     const { binCode, unloadProductList } = req.body
-    const { warehouseID } = res.locals
+    const { warehouseID, accountID } = res.locals
 
-    const task = await getTaskByAccountID(res.locals.accountID, warehouseID)
+    const task = await getTaskByAccountID(accountID, warehouseID)
 
     if (task && task.status === 'IN_PROCESS') {
       if (task.destinationBinCode !== binCode) {

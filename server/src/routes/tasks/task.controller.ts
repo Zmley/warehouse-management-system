@@ -6,7 +6,7 @@ import {
   getTasksByWarehouseID,
   cancelTaskByID,
   getTaskByAccountID,
-  getTasksByAccountID,
+  // getTasksByAccountID,
   cancelPickerTaskByAccountID
 } from '../tasks/task.service'
 
@@ -61,9 +61,9 @@ export const getTasks = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const warehouseID = res.locals.warehouseID
+    const { warehouseID, role } = res.locals
 
-    const tasksWithBinCodes = await getTasksByWarehouseID(warehouseID)
+    const tasksWithBinCodes = await getTasksByWarehouseID(warehouseID, role)
 
     res.status(200).json({
       message: 'Successfully fetched all pending tasks for Picker',
@@ -158,8 +158,8 @@ export const getPickerCreatedTasks = async (
   next: NextFunction
 ) => {
   try {
-    const { accountID, warehouseID } = res.locals
-    const tasks = await getTasksByAccountID(accountID, warehouseID)
+    const { accountID, warehouseID, role } = res.locals
+    const tasks = await getTasksByWarehouseID(warehouseID, role, accountID)
     res.status(200).json({ tasks })
   } catch (error) {
     next(error)
