@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react'
 import { getProducts } from '../api/productApi'
 
-export const useProducts = () => {
+export const useProduct = () => {
   const [productCodes, setProductCodes] = useState<string[]>([])
 
   const loadProducts = useCallback(async () => {

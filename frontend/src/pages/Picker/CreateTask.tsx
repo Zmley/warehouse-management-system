@@ -11,7 +11,7 @@ import {
 } from '@mui/material'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { usePickerTasks } from '../../hooks/usePickerTask'
-import { useProducts } from '../../hooks/useProduct'
+import { useProduct } from '../../hooks/useProduct'
 import { useBin } from '../../hooks/useBin'
 import { Bin } from '../../types/bin'
 
@@ -24,7 +24,7 @@ const CreateTask = () => {
   const [sourceBins, setSourceBins] = useState<string[]>([])
   const [sourceError, setSourceError] = useState(false)
 
-  const { productCodes, loadProducts } = useProducts()
+  const { productCodes, loadProducts } = useProduct()
   const { createTask, loading, error } = usePickerTasks()
 
   const { fetchBinCodes } = useBin()
