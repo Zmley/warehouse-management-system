@@ -41,13 +41,6 @@ export const usePickerTasks = () => {
     }
   }
 
-  return { createTask, loading, error, tasks, fetchTasks }
-}
-
-export const useCancelPickerTask = () => {
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
   const cancelTask = async (taskID: string): Promise<Task | null> => {
     setLoading(true)
     setError(null)
@@ -62,5 +55,12 @@ export const useCancelPickerTask = () => {
     }
   }
 
-  return { cancelTask, loading, error }
+  return {
+    tasks,
+    loading,
+    error,
+    fetchTasks,
+    createTask,
+    cancelTask
+  }
 }

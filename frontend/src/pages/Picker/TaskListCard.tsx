@@ -8,7 +8,7 @@ import {
   Grid,
   Divider
 } from '@mui/material'
-import { useCancelPickerTask, usePickerTasks } from '../../hooks/usePickerTask'
+import { usePickerTasks } from '../../hooks/usePickerTask'
 import { TaskCategoryEnum } from '../../types/task'
 
 interface Props {
@@ -16,7 +16,7 @@ interface Props {
 }
 
 const PickerCreatedTaskList: React.FC<Props> = ({ status }) => {
-  const { cancelTask } = useCancelPickerTask()
+  const { cancelTask } = usePickerTasks()
   const { tasks, fetchTasks } = usePickerTasks()
 
   useEffect(() => {
