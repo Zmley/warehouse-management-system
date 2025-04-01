@@ -11,8 +11,8 @@ import {
 } from '@mui/material'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { usePickerTasks } from '../../hooks/usePickerTask'
-import { useProducts } from '../../hooks/useProducts'
-import { useBin } from '../../hooks/ useBinCodes'
+import { useProducts } from '../../hooks/useProduct'
+import { useBin } from '../../hooks/useBin'
 import { Bin } from '../../types/bin'
 
 const CreateTaskPage = () => {
