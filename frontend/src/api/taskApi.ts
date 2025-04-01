@@ -21,7 +21,7 @@ export const cancelTask = async (taskID: string) => {
   return response.data
 }
 
-export const createPickerTask = async (
+export const pickerTask = async (
   binCode: string,
   productCode: string
 ): Promise<Task> => {

@@ -1,9 +1,5 @@
 import { useState } from 'react'
-import {
-  createPickerTask,
-  getPickerTasks,
-  cancelPickerTask
-} from '../api/taskApi'
+import { pickerTask, getPickerTasks, cancelPickerTask } from '../api/taskApi'
 import { Task } from '../types/task'
 
 export const usePickerTasks = () => {
@@ -31,7 +27,7 @@ export const usePickerTasks = () => {
     setLoading(true)
     setError(null)
     try {
-      const task = await createPickerTask(binCode, productCode)
+      const task = await pickerTask(binCode, productCode)
       return task
     } catch (err) {
       setError('Failed to create task')
