@@ -1,5 +1,3 @@
-// src/types/task.ts
-
 export interface Bin {
   binID: string
   binCode: string

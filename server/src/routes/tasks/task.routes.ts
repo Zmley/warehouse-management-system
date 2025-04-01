@@ -27,10 +27,10 @@ router.post('/:taskID/accept', transportWorkerOnly, acceptTask)
 
 router.post('/:taskID/cancel', transportWorkerOnly, cancelTask)
 
-//picker part
-
 router.post('/', pickerOnly, createAsPicker)
+
 router.post('/:taskID/cancelPicker', pickerOnly, cancelPickerTask)
+
 router.get('/picker', pickerOnly, getPickerCreatedTasks)
 
 export default router

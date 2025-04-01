@@ -23,7 +23,7 @@ export const getBinByCode = async (
   }
 }
 
-export const getMatchBinCodesByProductCode = async (
+export const getBinCodes = async (
   req: Request,
   res: Response,
   next: NextFunction

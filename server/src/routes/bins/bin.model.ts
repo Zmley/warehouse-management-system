@@ -33,6 +33,14 @@ Bin.init(
     defaultProductCodes: {
       type: DataTypes.STRING,
       allowNull: true
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW
     }
   },
   {

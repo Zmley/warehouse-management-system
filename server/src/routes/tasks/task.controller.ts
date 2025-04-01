@@ -6,7 +6,6 @@ import {
   getTasksByWarehouseID,
   cancelTaskByID,
   getTaskByAccountID,
-  // getTasksByAccountID,
   cancelPickerTaskByAccountID
 } from '../tasks/task.service'
 

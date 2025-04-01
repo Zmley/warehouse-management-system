@@ -1,4 +1,3 @@
-// src/components/BottomBar.tsx
 import React from 'react'
 import { BottomNavigation, BottomNavigationAction } from '@mui/material'
 import ListAltIcon from '@mui/icons-material/ListAlt'

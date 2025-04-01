@@ -1,5 +1,3 @@
-// src/types/bin.ts
-
 export interface Bin {
   binID: string
   binCode: string

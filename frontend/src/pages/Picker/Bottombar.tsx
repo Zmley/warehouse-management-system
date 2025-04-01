@@ -1,9 +1,7 @@
-// src/components/PickerBottomBar.tsx
 import React from 'react'
 import { BottomNavigation, BottomNavigationAction } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 
-// MUI icons
 import AssignmentIcon from '@mui/icons-material/Assignment'
 import AddCircleIcon from '@mui/icons-material/AddCircle'
 import ArchiveIcon from '@mui/icons-material/Archive'
