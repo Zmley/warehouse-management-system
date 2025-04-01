@@ -12,7 +12,7 @@ import {
 import { useLocation, useNavigate } from 'react-router-dom'
 import { usePickerTasks } from '../../hooks/usePickerTask'
 import { useProducts } from '../../hooks/useProducts'
-import { getBinCodesByProductCode } from '../../api/binApi'
+import { useBin } from '../../hooks/ useBinCodes'
 import { Bin } from '../../types/bin'
 
 const CreateTaskPage = () => {
@@ -27,6 +27,8 @@ const CreateTaskPage = () => {
   const { productCodes, loadProducts } = useProducts()
   const { createTask, loading, error } = usePickerTasks()
 
+  const { fetchBinCodes } = useBin()
+
   useEffect(() => {
     loadProducts()
   }, [loadProducts])
@@ -35,7 +37,7 @@ const CreateTaskPage = () => {
     const getSources = async () => {
       if (productCode) {
         try {
-          const response = await getBinCodesByProductCode(productCode)
+          const response = await fetchBinCodes(productCode)
           setSourceBins(response)
           setSourceError(response.length === 0)
         } catch (err) {
@@ -49,7 +51,7 @@ const CreateTaskPage = () => {
       }
     }
     getSources()
-  }, [productCode])
+  }, [productCode, fetchBinCodes])
 
   const handleSubmit = async () => {
     if (!productCode || !bin?.binCode || sourceError) {
