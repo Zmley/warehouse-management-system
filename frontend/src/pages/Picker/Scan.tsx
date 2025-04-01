@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Typography, Button, Box, Paper } from '@mui/material'
-import usePickBinScanner from '../../hooks/usePickerScanner'
+import useQRScanner from '../../hooks/useQRScanner'
 import { getBinByBinCode } from '../../api/binApi'
 
 const PickerBinScanPage = () => {
@@ -20,7 +20,7 @@ const PickerBinScanPage = () => {
   }
 
   const { videoRef, startScanning, stopScanning } =
-    usePickBinScanner(handleBinScanned)
+    useQRScanner(handleBinScanned)
 
   const streamRef = useRef<MediaStream | null>(null)
 

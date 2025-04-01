@@ -1,27 +1,53 @@
 import { Container, Typography, Button, Box, Fade } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
-import useQRScanner from '../../hooks/useQRScanner'
 import { useEffect, useRef, useState } from 'react'
 import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner'
 import CancelIcon from '@mui/icons-material/Cancel'
+
+import useQRScanner from '../../hooks/useQRScanner'
+import { useCartContext } from '../../contexts/cart'
+import { useCart } from '../../hooks/useCart'
 
 const ScanQRCode = () => {
   const navigate = useNavigate()
   const stopButtonRef = useRef<HTMLButtonElement>(null)
   const [hasStarted, setHasStarted] = useState(false)
 
+  const { isCartEmpty } = useCartContext()
+  const { loadCart, unloadCart } = useCart()
+
   const handleScanSuccess = async (binCode: string) => {
     console.log(`Scanned bin code: ${binCode}`)
+
+    try {
+      if (isCartEmpty) {
+        await loadCart(binCode)
+      } else {
+        await unloadCart(binCode)
+      }
+
+      // navigate('/success')
+    } catch (err) {
+      console.error('❌ Error handling scan:', err)
+      alert('❌ Operation failed. Please try again.')
+    }
   }
 
-  const { videoRef, startScanning } = useQRScanner(handleScanSuccess)
+  const { videoRef, startScanning, stopScanning } =
+    useQRScanner(handleScanSuccess)
 
   useEffect(() => {
     if (!hasStarted) {
       startScanning()
       setHasStarted(true)
     }
-  }, [hasStarted, startScanning])
+
+    return () => {
+      stopScanning()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   return (
     <Box
       sx={{

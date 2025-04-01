@@ -57,7 +57,7 @@ const TaskSuccessPage: React.FC = () => {
             <Typography variant='h5' fontWeight='bold' gutterBottom>
               {role === 'PICKER'
                 ? 'Pick-up Task Created!'
-                : 'Offload Completed!'}
+                : 'Operation Completed!'}
             </Typography>
             <Typography variant='body1' color='text.secondary' sx={{ mb: 2 }}>
               Everything went smoothly. You’ll be redirected shortly.
