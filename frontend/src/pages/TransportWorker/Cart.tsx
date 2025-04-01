@@ -23,12 +23,29 @@ const Cart = () => {
     { inventoryID: string; quantity: number; selected: boolean }[]
   >([])
 
+  // if (inventoriesInCar.length > 0 && inventoryListReadyToUnload.length === 0) {
+  //   const defaultInventoryListReadyToUnload = inventoriesInCar.map(item => ({
+  //     inventoryID: item.inventoryID,
+  //     quantity: item.quantity,
+  //     selected: true
+  //   }))
+  //   setInventoryListReadyToUnload(defaultInventoryListReadyToUnload)
+  // }
+
   if (inventoriesInCar.length > 0 && inventoryListReadyToUnload.length === 0) {
-    const defaultInventoryListReadyToUnload = inventoriesInCar.map(item => ({
-      inventoryID: item.inventoryID,
-      quantity: item.quantity,
-      selected: true
-    }))
+    const defaultInventoryListReadyToUnload = inventoriesInCar.map(item => {
+      const shouldSelect =
+        myTask?.productCode === 'ALL' || !myTask?.productCode
+          ? true
+          : item.productCode === myTask.productCode
+
+      return {
+        inventoryID: item.inventoryID,
+        quantity: item.quantity,
+        selected: shouldSelect
+      }
+    })
+
     setInventoryListReadyToUnload(defaultInventoryListReadyToUnload)
   }
 
