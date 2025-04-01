@@ -1,6 +1,7 @@
 import { useCartContext } from '../contexts/cart'
 import { loadToCart, unloadFromCart } from '../api/cartApi'
 import { useNavigate } from 'react-router-dom'
+import { InventoryItem } from '../types/inventory'
 
 export const useCart = () => {
   const navigate = useNavigate()
@@ -32,13 +33,22 @@ export const useCart = () => {
     try {
       const response = await unloadFromCart(binCode, selectedToUnload)
       if (response?.success) {
-        const inventoriesLeftInCart = inventoriesInCar.filter(
-          item =>
-            !selectedToUnload.some(
-              selected => selected.inventoryID === item.inventoryID
+        const inventoriesLeftInCart = inventoriesInCar
+          .map(item => {
+            const selected = selectedToUnload.find(
+              s => s.inventoryID === item.inventoryID
             )
-        )
-        setInventoriesInCar(inventoriesLeftInCart)
+            if (selected) {
+              const remainingQty = item.quantity - Number(selected.quantity)
+              return remainingQty > 0
+                ? { ...item, quantity: remainingQty }
+                : null
+            }
+            return item
+          })
+          .filter(Boolean)
+
+        setInventoriesInCar(inventoriesLeftInCart as InventoryItem[])
         if (inventoriesLeftInCart.length === 0) {
           setTimeout(() => {
             navigate('/success')
