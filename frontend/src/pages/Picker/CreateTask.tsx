@@ -11,7 +11,7 @@ import {
 } from '@mui/material'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { usePickerTasks } from '../../hooks/usePickerTask'
-import { getProducts } from '../../api/productApi'
+import { useProducts } from '../../hooks/useProducts'
 import { getBinCodesByProductCode } from '../../api/binApi'
 import { Bin } from '../../types/bin'
 
@@ -21,23 +21,15 @@ const CreateTaskPage = () => {
   const bin: Bin = location.state?.bin
 
   const [productCode, setProductCode] = useState('')
-  const [productOptions, setProductOptions] = useState<string[]>([])
   const [sourceBins, setSourceBins] = useState<string[]>([])
   const [sourceError, setSourceError] = useState(false)
 
+  const { productCodes, loadProducts } = useProducts()
   const { createTask, loading, error } = usePickerTasks()
 
   useEffect(() => {
-    const loadProducts = async () => {
-      try {
-        const response = await getProducts()
-        setProductOptions(response.productCodes)
-      } catch (err) {
-        console.error('❌ Failed to load products', err)
-      }
-    }
     loadProducts()
-  }, [])
+  }, [loadProducts])
 
   useEffect(() => {
     const getSources = async () => {
@@ -150,7 +142,7 @@ const CreateTaskPage = () => {
           </Box>
 
           <Autocomplete
-            options={productOptions}
+            options={productCodes}
             value={productCode}
             onChange={(_, newValue) => setProductCode(newValue || '')}
             renderInput={params => (
