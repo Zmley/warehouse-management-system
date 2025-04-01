@@ -21,11 +21,11 @@ export const cancelTask = async (taskID: string) => {
   return response.data
 }
 
-export const pickerTask = async (
+export const createPickerTask = async (
   binCode: string,
   productCode: string
 ): Promise<Task> => {
-  const response = await apiClient.post('/tasks/create', {
+  const response = await apiClient.post('/tasks/', {
     binCode,
     productCode
   })

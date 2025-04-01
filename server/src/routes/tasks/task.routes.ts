@@ -29,7 +29,7 @@ router.post('/:taskID/cancel', transportWorkerOnly, cancelTask)
 
 //picker part
 
-router.post('/create', pickerOnly, createAsPicker)
+router.post('/', pickerOnly, createAsPicker)
 router.post('/:taskID/cancelPicker', pickerOnly, cancelPickerTask)
 router.get('/picker', pickerOnly, getPickerCreatedTasks)
 
