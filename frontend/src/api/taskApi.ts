@@ -17,7 +17,7 @@ export const acceptTask = async (taskID: string) => {
 }
 
 export const cancelTask = async (taskID: string) => {
-  const response = await apiClient.post(`/tasks/${taskID}/cancel`)
+  const response = await apiClient.delete(`/tasks/${taskID}/cancel`)
   return response.data
 }
 
@@ -38,6 +38,6 @@ export const getPickerTasks = async (): Promise<Task[]> => {
 }
 
 export const cancelPickerTask = async (taskID: string): Promise<Task> => {
-  const response = await apiClient.post(`/tasks/${taskID}/cancelPicker`)
+  const response = await apiClient.delete(`/tasks/${taskID}/cancelPicker`)
   return response.data.task
 }
