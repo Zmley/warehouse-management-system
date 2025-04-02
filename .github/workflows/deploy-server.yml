@@ -17,6 +17,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+
             cd /home/ubuntu
 
             # 如果项目已经存在就拉取，没有就 clone
@@ -40,4 +41,4 @@ jobs:
             yarn install
             yarn build
 
-            pm2 restart server || pm2 start dist/index.js --name server
+            pm2 restart server || pm2 start dist/server.js --name server
