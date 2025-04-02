@@ -6,25 +6,40 @@ import {
   Container,
   Typography
 } from '@mui/material'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCartContext } from '../../contexts/cart'
 import InventoryListCard from './InventoryListCard'
+import TaskInstruction from '../../components/TaskInstruction'
+import { useTaskContext } from '../../contexts/task'
 
 const Cart = () => {
   const navigate = useNavigate()
   const { inventoriesInCar, setSelectedToUnload } = useCartContext()
+
+  const { myTask, fetchMyTask } = useTaskContext()
 
   const [inventoryListReadyToUnload, setInventoryListReadyToUnload] = useState<
     { inventoryID: string; quantity: number; selected: boolean }[]
   >([])
 
   if (inventoriesInCar.length > 0 && inventoryListReadyToUnload.length === 0) {
-    const defaultInventoryListReadyToUnload = inventoriesInCar.map(item => ({
-      inventoryID: item.inventoryID,
-      quantity: item.quantity,
-      selected: true
-    }))
+    let defaultInventoryListReadyToUnload
+
+    if (!myTask || myTask.productCode === 'ALL') {
+      defaultInventoryListReadyToUnload = inventoriesInCar.map(item => ({
+        inventoryID: item.inventoryID,
+        quantity: item.quantity,
+        selected: true
+      }))
+    } else {
+      defaultInventoryListReadyToUnload = inventoriesInCar.map(item => ({
+        inventoryID: item.inventoryID,
+        quantity: item.quantity,
+        selected: item.productCode === myTask.productCode
+      }))
+    }
+
     setInventoryListReadyToUnload(defaultInventoryListReadyToUnload)
   }
 
@@ -50,9 +65,14 @@ const Cart = () => {
       )
     )
   }
-
+  useEffect(() => {
+    fetchMyTask()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   return (
     <Container maxWidth='sm'>
+      {myTask && <TaskInstruction />}
+
       <Typography
         variant='h6'
         sx={{ fontWeight: 'bold', textAlign: 'center', my: 2 }}
@@ -89,7 +109,7 @@ const Cart = () => {
 
                 setSelectedToUnload(selectedToUnload)
 
-                navigate('/scan-qr')
+                navigate('scan-qr')
               }}
               sx={{ borderRadius: '12px', py: 1.2 }}
             >

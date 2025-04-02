@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Typography, Button, TextField, Box, Alert } from '@mui/material'
 import { useAuth } from '../hooks/useAuth'
 
-const LoginPage: React.FC = () => {
+const Login: React.FC = () => {
   const { handleLogin, error } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -109,4 +109,4 @@ const LoginPage: React.FC = () => {
   )
 }
 
-export default LoginPage
+export default Login

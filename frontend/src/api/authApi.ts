@@ -5,7 +5,7 @@ export const loginUser = async (email: string, password: string) => {
   return response.data
 }
 
-export const fetchUserProfile = async () => {
+export const getUserProfile = async () => {
   const response = await apiClient.get('/me')
   return response.data || null
 }

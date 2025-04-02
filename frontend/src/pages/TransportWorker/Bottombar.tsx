@@ -1,11 +1,17 @@
-// src/components/BottomBar.tsx
 import React from 'react'
 import { BottomNavigation, BottomNavigationAction } from '@mui/material'
-import { useNavigate } from 'react-router-dom'
+import ListAltIcon from '@mui/icons-material/ListAlt'
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
 
-const BottomBar: React.FC = () => {
-  const navigate = useNavigate()
+interface BottomBarProps {
+  onTaskListClick: () => void
+  onCreateTaskClick: () => void
+}
 
+const BottomBar: React.FC<BottomBarProps> = ({
+  onTaskListClick,
+  onCreateTaskClick
+}) => {
   return (
     <BottomNavigation
       showLabels
@@ -20,26 +26,14 @@ const BottomBar: React.FC = () => {
     >
       <BottomNavigationAction
         label='Task List'
-        icon={
-          <img
-            src='/Vector-2.png'
-            alt='Task List'
-            style={{ width: 24, height: 24 }}
-          />
-        }
-        onClick={() => navigate('/task-list')}
+        icon={<ListAltIcon sx={{ fontSize: 24 }} />}
+        onClick={onTaskListClick}
         sx={{ minWidth: '50%' }}
       />
       <BottomNavigationAction
         label='Create new task'
-        icon={
-          <img
-            src='/Vector.png'
-            alt='Create new task'
-            style={{ width: 24, height: 24 }}
-          />
-        }
-        onClick={() => navigate('/scan-qr')}
+        icon={<AddCircleOutlineIcon sx={{ fontSize: 24 }} />}
+        onClick={onCreateTaskClick}
         sx={{ minWidth: '50%' }}
       />
     </BottomNavigation>

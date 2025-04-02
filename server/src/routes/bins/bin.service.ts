@@ -1,6 +1,29 @@
 import Bin from './bin.model'
-import AppError from '../../utils/appError'
 import Inventory from 'routes/inventory/inventory.model'
+import AppError from '../../utils/appError'
+
+export const getBinByBinCode = async (binCode: string, warehouseID: string) => {
+  try {
+    const bin = await Bin.findOne({
+      where: {
+        binCode: binCode,
+        warehouseID
+      }
+    })
+
+    if (!bin) {
+      throw new AppError(
+        404,
+        `❌ No bin found with code: ${binCode} in this warehouse`
+      )
+    }
+
+    return bin
+  } catch (error) {
+    console.error('❌ Error fetching bin by code and warehouse:', error)
+    throw new AppError(500, '❌ Failed to fetch bin by code and warehouse')
+  }
+}
 
 export const getBinCodesByProductCode = async (
   productCode: string,
@@ -23,19 +46,14 @@ export const getBinCodesByProductCode = async (
     })
 
     if (!inventories.length) {
-      throw new AppError(
-        404,
-        'No bins found for the given productCode and warehouse'
-      )
+      throw new Error('No bins found for the given productCode and warehouse')
     }
 
     const binCodes = inventories.map(bin => bin.binCode)
+
     return binCodes
   } catch (error) {
     console.error('Error fetching binCodes:', error)
-    if (error instanceof AppError) {
-      throw error
-    }
-    throw new AppError(500, 'Failed to fetch binCodes')
+    throw new Error('Failed to fetch binCodes')
   }
 }

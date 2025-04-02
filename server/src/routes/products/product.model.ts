@@ -1,34 +1,23 @@
 import { DataTypes, Model } from 'sequelize'
 import { sequelize } from 'config/db'
-import { Bin } from '../bins/bin.model'
 
-export class Inventory extends Model {
-  public inventoryID!: string
-  public binID!: string
+export class Product extends Model {
+  public productID!: string
   public productCode!: string
-  public quantity!: number
 }
 
-Inventory.init(
+Product.init(
   {
-    inventoryID: {
+    productID: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
       allowNull: false,
       primaryKey: true
     },
-    binID: {
-      type: DataTypes.UUID,
-      allowNull: false
-    },
     productCode: {
       type: DataTypes.STRING,
-      allowNull: false
-    },
-    quantity: {
-      type: DataTypes.INTEGER,
       allowNull: false,
-      defaultValue: 0
+      unique: true
     },
     createdAt: {
       type: DataTypes.DATE,
@@ -41,14 +30,9 @@ Inventory.init(
   },
   {
     sequelize,
-    tableName: 'inventory',
+    tableName: 'product',
     timestamps: true
   }
 )
 
-Inventory.belongsTo(Bin, {
-  foreignKey: 'binID',
-  targetKey: 'binID'
-})
-
-export default Inventory
+export default Product

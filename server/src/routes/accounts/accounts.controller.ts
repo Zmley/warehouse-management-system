@@ -1,5 +1,4 @@
 import { Request, Response } from 'express'
-import httpContext from 'express-http-context'
 
 import {
   InitiateAuthCommand,
@@ -11,6 +10,7 @@ import {
 import { getCognitoErrorMessage } from './accounts.service'
 import Account from './accounts.model'
 import env from 'config/config'
+import Task from 'routes/tasks/task.model'
 
 export const cognitoClient = new CognitoIdentityProviderClient({
   region: process.env.AWS_REGION!
@@ -34,8 +34,8 @@ export const loginUser = async (req: Request, res: Response) => {
       idToken: authResponse.AuthenticationResult?.IdToken,
       refreshToken: authResponse.AuthenticationResult?.RefreshToken
     })
-  } catch (error: any) {
-    res.status(401).json({ message: getCognitoErrorMessage(error) })
+  } catch (error) {
+    res.status(400).json({ message: getCognitoErrorMessage(error) })
   }
 }
 
@@ -88,7 +88,13 @@ export const getUserInfo = async (
   try {
     const account = res.locals.currentAccount
 
-    res.json(account)
+    const currentTask = await Task.findOne({
+      where: {
+        accepterID: account.accountID,
+        status: 'IN_PROCESS'
+      }
+    })
+    res.json({ ...account, currentTask })
   } catch (error) {
     console.error('❌ Error fetching user info:', error)
     res.status(500).json({ message: '❌ Internal Server Error' })

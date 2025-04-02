@@ -9,8 +9,6 @@ export class Account extends Model {
   public lastName!: string
   public cartID!: string | null
   public warehouseID!: string | null
-  public readonly createdAt!: Date
-  public readonly updatedAt!: Date
 }
 
 Account.init(

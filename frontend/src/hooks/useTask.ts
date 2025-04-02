@@ -33,7 +33,7 @@ export const useTask = () => {
 
   const cancelMyTask = async (taskID: string) => {
     try {
-      await cancelTaskAPI(taskID) // Updated to use the new route
+      await cancelTaskAPI(taskID)
       await fetchTasks()
       console.log('Task cancelled and tasks refreshed')
     } catch (error) {

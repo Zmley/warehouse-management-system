@@ -1,20 +1,15 @@
 import { useState, useRef, useEffect } from 'react'
 import QrScanner from 'qr-scanner'
-import { useCartContext } from '../contexts/cart'
-import { useCart } from '../hooks/useCart'
 
 const useQRScanner = (onScanSuccess?: (binCode: string) => void) => {
   const [isScanning, setIsScanning] = useState(false)
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const scannerRef = useRef<QrScanner | null>(null)
-  const { isCartEmpty } = useCartContext()
-
-  const { loadCart, unloadCart } = useCart()
 
   const startScanning = async () => {
     setIsScanning(true)
 
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    if (!navigator.mediaDevices?.getUserMedia) {
       alert('Camera not supported')
       return
     }
@@ -31,23 +26,17 @@ const useQRScanner = (onScanSuccess?: (binCode: string) => void) => {
           scannerRef.current = new QrScanner(
             videoRef.current,
             async result => {
-              if (result.data) {
-                // Stop scanning to prevent multiple scans
-                await stopScanning()
+              if (!result.data) return
 
-                const binCode = result.data.trim()
-                if (binCode) {
-                  try {
-                    if (isCartEmpty) {
-                      loadCart(binCode)
-                    } else {
-                      unloadCart(binCode)
-                    }
-                    onScanSuccess?.(binCode)
-                  } catch (err) {
-                    console.error(`❌ [QrScanner] API Error: ${err}`)
-                  }
-                }
+              await stopScanning()
+
+              const binCode = result.data.trim()
+              if (!binCode) return
+
+              try {
+                onScanSuccess?.(binCode)
+              } catch (err) {
+                console.error('❌ [QRScanner] onScanSuccess Error:', err)
               }
             },
             {
@@ -57,12 +46,10 @@ const useQRScanner = (onScanSuccess?: (binCode: string) => void) => {
           )
         }
 
-        if (scannerRef.current) {
-          await scannerRef.current.start()
-        }
+        await scannerRef.current.start()
       }
     } catch (error) {
-      console.error('❌ [startScanning] Failed to access camera:', error)
+      console.error('❌ Failed to access camera:', error)
     }
   }
 
@@ -73,13 +60,9 @@ const useQRScanner = (onScanSuccess?: (binCode: string) => void) => {
       scannerRef.current = null
     }
 
-    if (videoRef.current && videoRef.current.srcObject) {
-      const stream = videoRef.current.srcObject as MediaStream
-      stream.getTracks().forEach(track => {
-        track.stop()
-      })
-      videoRef.current.srcObject = null
-    }
+    const stream = videoRef.current?.srcObject as MediaStream
+    stream?.getTracks().forEach(track => track.stop())
+    if (videoRef.current) videoRef.current.srcObject = null
 
     setIsScanning(false)
   }

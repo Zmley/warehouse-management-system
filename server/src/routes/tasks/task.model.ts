@@ -56,7 +56,7 @@ Task.init(
     },
     updatedAt: {
       type: DataTypes.DATE,
-      allowNull: true
+      defaultValue: DataTypes.NOW
     }
   },
   {

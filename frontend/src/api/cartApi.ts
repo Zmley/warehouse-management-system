@@ -5,7 +5,7 @@ import { unloadInventory } from '../types/unloadInventory.js'
 export const getInventoriesInCart = async (): Promise<{
   inventories: InventoryItem[]
 }> => {
-  const response = await apiClient.get('inventory/inventoriesInCart')
+  const response = await apiClient.get('inventories/inventoriesInCart')
   return response.data
 }
 

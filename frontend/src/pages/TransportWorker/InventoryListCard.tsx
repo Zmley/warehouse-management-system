@@ -9,7 +9,6 @@ import {
   Alert
 } from '@mui/material'
 import { InventoryItem } from '../../types/inventory'
-import { useCartContext } from '../../contexts/cart'
 import { sanitizeQuantityInput } from '../../utils/inputHelpers'
 
 interface Props {

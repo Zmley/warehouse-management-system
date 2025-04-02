@@ -24,6 +24,7 @@ const TaskList: React.FC = () => {
     setLoadingTasks(prev => ({ ...prev, [taskID]: true }))
     try {
       await acceptTask(taskID)
+      await fetchTasks()
     } catch (error) {
       console.error('Error accepting task:', error)
     } finally {
