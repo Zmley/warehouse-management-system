@@ -17,7 +17,9 @@ const corsOptions = {
   origin: [
     'http://localhost:4100',
     'http://18.118.137.232:4100',
-    'http://18.118.137.232:3000'
+    'http://18.118.137.232:3000',
+    'https://18.118.137.232:4100',
+    'https://18.118.137.232:3000'
   ],
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // The methods you want to allow
   credentials: true, // This allows session cookies to be sent back and forth
