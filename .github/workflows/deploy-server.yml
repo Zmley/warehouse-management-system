@@ -17,8 +17,27 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd warehouse-management-system/server
-            git pull origin deployTest 
+            cd /home/ubuntu
+
+            # 如果项目已经存在就拉取，没有就 clone
+            if [ -d "warehouse-management-system" ]; then
+              cd warehouse-management-system
+              git pull origin deployTest
+            else
+              git clone https://github.com/Zmley/warehouse-management-system.git
+              cd warehouse-management-system
+              git checkout deployTest
+            fi
+
+            cd server
+
+            # 安装 Node.js、Yarn 和 PM2（如果没装）
+            curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+            sudo apt-get install -y nodejs
+            sudo npm install -g yarn pm2
+
+            # 安装依赖 & 启动服务
             yarn install
-            yarn build || echo "Skip if no build step"
+            yarn build
+
             pm2 restart server || pm2 start dist/index.js --name server
