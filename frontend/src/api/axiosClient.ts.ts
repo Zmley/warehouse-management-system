@@ -1,7 +1,9 @@
 import axios from 'axios'
 import { clearTokens, getAccessToken } from '../utils/Storages'
 
-const API_BASE_URL = `${process.env.REACT_APP_SERVER_API_BASE_URL}/api`
+const API_BASE_URL = `${
+  process.env.REACT_APP_SERVER_API_BASE_URL || 'http://18.118.137.232:5001'
+}/api`
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
