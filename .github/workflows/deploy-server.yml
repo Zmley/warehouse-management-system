@@ -1,0 +1,24 @@
+name: Deploy Backend to EC2
+
+on:
+  push:
+    branches:
+      - deployTest
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: SSH and deploy to EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd warehouse-management-system/server
+            git pull origin deployTest 
+            yarn install
+            yarn build || echo "Skip if no build step"
+            pm2 restart server || pm2 start dist/index.js --name server
