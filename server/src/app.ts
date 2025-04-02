@@ -14,7 +14,7 @@ import api from 'api'
 const app: Application = express()
 
 const corsOptions = {
-  origin: ['http://localhost:4100'],
+  origin: ['http://localhost:4100', 'http://18.118.137.232:4100'],
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // The methods you want to allow
   credentials: true, // This allows session cookies to be sent back and forth
   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
