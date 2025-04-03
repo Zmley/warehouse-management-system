@@ -26,12 +26,15 @@ export const authenticateToken = async (
   next: NextFunction
 ) => {
   const authHeader = req.headers['authorization']
+
+  console.log('test:       test if arrive header      check')
+
   if (!authHeader) {
     console.log('❌ No Authorization Header')
     return res.status(401).json({ message: '❌ Unauthorized: No Token' })
   }
 
-  console.log('test:              check')
+  console.log('test:       test if call        check')
 
   const token = authHeader.split(' ')[1]
   if (!token) {
