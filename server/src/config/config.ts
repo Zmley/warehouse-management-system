@@ -50,3 +50,5 @@ export default {
   cognitoUserPoolId: envVars.COGNITO_USER_POOL_ID,
   cognitoClientId: envVars.COGNITO_CLIENT_ID
 }
+
+//
