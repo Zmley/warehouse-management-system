@@ -1,0 +1,41 @@
+name: Deploy Backend to EC2
+
+on:
+  push:
+    branches:
+      - deployTest
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: SSH and deploy to EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+
+            cd /home/ubuntu
+
+            if [ -d "warehouse-management-system" ]; then
+              cd warehouse-management-system
+              git pull origin deployTest
+            else
+              git clone https://github.com/Zmley/warehouse-management-system.git
+              cd warehouse-management-system
+              git checkout deployTest
+            fi
+
+            cd server
+
+            curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+            sudo apt-get install -y nodejs
+            sudo npm install -g yarn pm2
+
+            yarn install
+            yarn build
+
+            pm2 restart server || pm2 start dist/server.js --name server
