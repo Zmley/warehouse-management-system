@@ -191,12 +191,7 @@ export const getTasksByWarehouseID = async (
   })) as unknown as TaskWithJoin[]
 
   if (!tasks.length) {
-    throw new AppError(
-      404,
-      role === 'PICKER'
-        ? '❌ No picker tasks found'
-        : '❌ No pending transport tasks found'
-    )
+    return []
   }
 
   return tasks.map(task => {
