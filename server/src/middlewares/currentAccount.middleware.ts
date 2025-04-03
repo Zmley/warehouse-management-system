@@ -13,7 +13,7 @@ const currentAccount = async (
     console.log('Incoming request to currentAccount middleware')
     console.log('Request payload:', res.locals.payload)
 
-    const { payload } = res.locals.payload
+    const { payload } = res.locals
 
     const accountID = payload.sub
     if (!accountID) {

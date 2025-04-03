@@ -1,11 +1,11 @@
 import { Server } from 'http'
 import app from 'app'
-import config from '../config/config'
+import config from './config/config'
 import logger from 'utils/logger'
 import errorHandler from 'utils/errorHandler'
 
 const { port } = config
-
+console.log(config)
 const server: Server = app.listen(port, '0.0.0.0', (): void => {
   logger.info(`Application listens on PORT: ${port}`)
 })
