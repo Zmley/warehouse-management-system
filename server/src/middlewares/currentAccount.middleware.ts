@@ -26,6 +26,12 @@ const currentAccount = async (
         .json({ error: '❌ Unauthorized: Account not found' })
     }
 
+    console.log('currentAccount:', res.locals.currentAccount)
+    console.log('accountID:', res.locals.accountID)
+    console.log('role:', res.locals.role)
+    console.log('cartID:', res.locals.cartID)
+    console.log('warehouseID:', res.locals.warehouseID)
+
     res.locals.currentAccount = account.dataValues
 
     res.locals.accountID = account.accountID
