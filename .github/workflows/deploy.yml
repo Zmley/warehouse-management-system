@@ -20,9 +20,8 @@ jobs:
       - name: Build project
         run: yarn build
         working-directory: frontend
-
         env:
-          REACT_APP_API: 'REACT_APP_SERVER_API_BASE_URL=https://api.qte-warehouse.zmley.com'
+          REACT_APP_SERVER_API_BASE_URL: 'https://api.qte-warehouse.zmley.com'
           PORT: '4001'
 
       - name: Deploy to S3
