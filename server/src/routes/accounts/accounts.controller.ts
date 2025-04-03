@@ -9,7 +9,7 @@ import {
 } from '@aws-sdk/client-cognito-identity-provider'
 import { getCognitoErrorMessage } from './accounts.service'
 import Account from './accounts.model'
-import env from 'config/config'
+import env from '../../../config/config'
 import Task from 'routes/tasks/task.model'
 
 export const cognitoClient = new CognitoIdentityProviderClient({

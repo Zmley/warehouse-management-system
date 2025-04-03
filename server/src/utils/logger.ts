@@ -2,7 +2,7 @@ import winston from 'winston'
 import RnR from 'runtime-node-refresh'
 import httpContext from 'express-http-context'
 
-import config from 'config/config'
+import config from '../../config/config'
 
 const errorStackFormat = winston.format(info => {
   if (info instanceof Error) {
