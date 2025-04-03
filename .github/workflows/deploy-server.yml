@@ -28,7 +28,7 @@ jobs:
             echo "Cloning the repository"
             git clone https://github.com/Zmley/warehouse-management-system.git
             cd warehouse-management-system
-            git checkout deployTest
+            git checkout deployTest2
 
             cd server
 
