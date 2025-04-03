@@ -94,7 +94,7 @@ export const getUserInfo = async (
         status: 'IN_PROCESS'
       }
     })
-    res.json({ ...account, currentTask })
+    res.json({ ...account, currentTask: currentTask || {} })
   } catch (error) {
     console.error('❌ Error fetching user info:', error)
     res.status(500).json({ message: '❌ Internal Server Error' })
