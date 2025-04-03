@@ -52,6 +52,8 @@ export const authenticateToken = async (
       return res.status(401).json({ message: '❌ Invalid token format' })
     }
 
+    console.log('test:       test if call        check1')
+
     const keys = await getJwks()
     console.log('🔑 JWKS Keys:', keys)
     const jwk = keys.find(key => key.kid === decoded.header.kid)
@@ -61,6 +63,8 @@ export const authenticateToken = async (
         .status(401)
         .json({ message: '❌ Invalid token: Key not found' })
     }
+
+    console.log('test:       test if call        check2')
 
     const pem = jwkToPem(jwk)
     console.log('🔐 PEM:', pem)
@@ -73,6 +77,7 @@ export const authenticateToken = async (
       return res
         .status(401)
         .json({ message: '❌ Invalid token: Missing user ID' })
+      console.log('test:       test if call        check3')
     }
 
     console.log('test:              check')
