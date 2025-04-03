@@ -21,13 +21,14 @@ jobs:
             cd /home/ubuntu
 
             if [ -d "warehouse-management-system" ]; then
-              cd warehouse-management-system
-              git pull origin deployTest
-            else
-              git clone https://github.com/Zmley/warehouse-management-system.git
-              cd warehouse-management-system
-              git checkout deployTest
+              echo "Deleting old project files"
+              rm -rf warehouse-management-system
             fi
+
+            echo "Cloning the repository"
+            git clone https://github.com/Zmley/warehouse-management-system.git
+            cd warehouse-management-system
+            git checkout deployTest
 
             cd server
 
@@ -36,6 +37,7 @@ jobs:
             sudo npm install -g yarn pm2
 
             yarn install
+
             yarn build
 
             pm2 restart server || pm2 start dist/server.js --name server
