@@ -15,7 +15,7 @@ const getJwks = async () => {
     const { data } = await axios.get(url)
     cachedJwks = data.keys
     lastFetchTime = now
-    console.log('✅ JWKS fetched:', cachedJwks) // Log JWKS fetched
+    console.log('✅ JWKS fetched:', cachedJwks)
   }
   return cachedJwks
 }
@@ -30,6 +30,8 @@ export const authenticateToken = async (
     console.log('❌ No Authorization Header')
     return res.status(401).json({ message: '❌ Unauthorized: No Token' })
   }
+
+  console.log('test:              check')
 
   const token = authHeader.split(' ')[1]
   if (!token) {
@@ -69,6 +71,8 @@ export const authenticateToken = async (
         .status(401)
         .json({ message: '❌ Invalid token: Missing user ID' })
     }
+
+    console.log('test:              check')
 
     res.locals.payload = payload
     console.log('✅ Token validated successfully')
