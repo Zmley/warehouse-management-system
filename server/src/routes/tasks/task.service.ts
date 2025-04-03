@@ -288,7 +288,7 @@ export const cancelPickerTaskByAccountID = async (
     throw new AppError(404, 'Task not found or not owned by picker')
   }
 
-  task.status = 'CANCEL'
+  task.status = 'CANCELED'
   await task.save()
 
   return task

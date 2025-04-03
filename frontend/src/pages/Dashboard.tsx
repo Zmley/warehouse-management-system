@@ -51,8 +51,10 @@ const Dashboard: React.FC = () => {
     )
   }
   if (isTransportWorker) {
-    if (userProfile.currentTask) {
+    if (userProfile.currentTask && userProfile.currentTask !== null) {
       navigate('/task-detail')
+    } else {
+      console.log('No current task available.')
     }
     return (
       <Box sx={{ height: '100vh', backgroundColor: '#F7F9FC' }}>
