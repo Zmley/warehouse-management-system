@@ -9,22 +9,32 @@ const currentAccount = async (
   next: NextFunction
 ) => {
   try {
+    // Log incoming request and payload
+    console.log('Incoming request to currentAccount middleware')
+    console.log('Request payload:', res.locals.payload)
+
     const { payload } = res.locals
 
     const accountID = payload.sub
     if (!accountID) {
+      console.error('❌ Missing user ID in payload')
       throw new AppError(
         httpStatus.UNAUTHORIZED,
         '❌ Unauthorized: Missing user ID'
       )
     }
 
+    console.log('Account ID extracted from payload:', accountID)
+
     const account = await Account.findOne({ where: { accountID } })
     if (!account) {
+      console.error(`❌ Account not found for accountID: ${accountID}`)
       return res
         .status(httpStatus.UNAUTHORIZED)
         .json({ error: '❌ Unauthorized: Account not found' })
     }
+
+    console.log('Account found:', account)
 
     res.locals.currentAccount = account.dataValues
 
@@ -39,8 +49,11 @@ const currentAccount = async (
     console.log('cartID:', res.locals.cartID)
     console.log('warehouseID:', res.locals.warehouseID)
 
+    // Move to next middleware
     next()
   } catch (error) {
+    // Log the error details
+    console.error('Error in currentAccount middleware:', error)
     res.status(httpStatus.UNAUTHORIZED).json({ error: error.message })
   }
 }
