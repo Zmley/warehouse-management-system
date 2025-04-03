@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import morgan from 'morgan'
 
-import config from '../../config/config'
+import config from '../config/config'
 import logger from 'utils/logger'
 
 morgan.token(
