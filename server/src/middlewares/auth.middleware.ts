@@ -67,10 +67,10 @@ export const authenticateToken = async (
     console.log('test:       test if call        check2')
 
     const pem = jwkToPem(jwk)
-    console.log('🔐 PEM:', pem)
+    console.log(' PEM:', pem)
 
     const payload = verify(token, pem, { algorithms: ['RS256'] }) as JwtPayload
-    console.log('✅ Verified Token Payload:', payload)
+    console.log(' Verified Token Payload:', payload)
 
     if (!payload.sub) {
       console.log('❌ Missing user ID in token')
