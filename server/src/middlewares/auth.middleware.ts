@@ -15,6 +15,7 @@ const getJwks = async () => {
     const { data } = await axios.get(url)
     cachedJwks = data.keys
     lastFetchTime = now
+    console.log('✅ JWKS fetched:', cachedJwks) // Log JWKS fetched
   }
   return cachedJwks
 }
@@ -25,36 +26,52 @@ export const authenticateToken = async (
   next: NextFunction
 ) => {
   const authHeader = req.headers['authorization']
-  if (!authHeader)
+  if (!authHeader) {
+    console.log('❌ No Authorization Header')
     return res.status(401).json({ message: '❌ Unauthorized: No Token' })
+  }
 
   const token = authHeader.split(' ')[1]
-  if (!token)
+  if (!token) {
+    console.log('❌ Invalid Token Format')
     return res
       .status(401)
       .json({ message: '❌ Unauthorized: Invalid Token Format' })
+  }
 
   try {
     const decoded = decode(token, { complete: true })
-    if (!decoded?.header?.kid)
+    console.log('🔑 Decoded Token:', decoded)
+    if (!decoded?.header?.kid) {
+      console.log('❌ Invalid token format, missing kid')
       return res.status(401).json({ message: '❌ Invalid token format' })
+    }
 
     const keys = await getJwks()
+    console.log('🔑 JWKS Keys:', keys)
     const jwk = keys.find(key => key.kid === decoded.header.kid)
-    if (!jwk)
+    if (!jwk) {
+      console.log('❌ Key not found for the token')
       return res
         .status(401)
         .json({ message: '❌ Invalid token: Key not found' })
+    }
 
     const pem = jwkToPem(jwk)
-    const payload = verify(token, pem, { algorithms: ['RS256'] }) as JwtPayload
+    console.log('🔐 PEM:', pem)
 
-    if (!payload.sub)
+    const payload = verify(token, pem, { algorithms: ['RS256'] }) as JwtPayload
+    console.log('✅ Verified Token Payload:', payload)
+
+    if (!payload.sub) {
+      console.log('❌ Missing user ID in token')
       return res
         .status(401)
         .json({ message: '❌ Invalid token: Missing user ID' })
+    }
 
     res.locals.payload = payload
+    console.log('✅ Token validated successfully')
 
     next()
   } catch (err) {

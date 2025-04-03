@@ -49,10 +49,8 @@ const currentAccount = async (
     console.log('cartID:', res.locals.cartID)
     console.log('warehouseID:', res.locals.warehouseID)
 
-    // Move to next middleware
     next()
   } catch (error) {
-    // Log the error details
     console.error('Error in currentAccount middleware:', error)
     res.status(httpStatus.UNAUTHORIZED).json({ error: error.message })
   }
