@@ -3,7 +3,7 @@ name: Deploy Backend to EC2
 on:
   push:
     branches:
-      - deployTest
+      - deployTest2
 
 jobs:
   deploy:
@@ -17,19 +17,23 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-
             cd /home/ubuntu
 
             if [ -d "warehouse-management-system" ]; then
               cd warehouse-management-system
-              git pull origin deployTest
+              git pull origin deployTest2
             else
               git clone https://github.com/Zmley/warehouse-management-system.git
               cd warehouse-management-system
-              git checkout deployTest
+              git checkout deployTest2
             fi
 
             cd server
+
+            echo "清理旧的文件"
+            rm -rf *
+
+            git pull origin deployTest2
 
             curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
             sudo apt-get install -y nodejs
