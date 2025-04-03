@@ -14,7 +14,12 @@ export const getAccountById = async (accountID: string) => {
   })
 }
 
-export const getCognitoErrorMessage = (error: any): string => {
+interface CognitoError {
+  name: string
+  message?: string
+}
+
+export const getCognitoErrorMessage = (error: CognitoError): string => {
   console.error('❌ Cognito Error:', error)
 
   switch (error.name) {
