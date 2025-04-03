@@ -17,6 +17,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+
             cd /home/ubuntu
 
             if [ -d "warehouse-management-system" ]; then
@@ -29,11 +30,6 @@ jobs:
             fi
 
             cd server
-
-            echo "清理旧的文件"
-            rm -rf *
-
-            git pull origin deployTest2
 
             curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
             sudo apt-get install -y nodejs
