@@ -17,7 +17,6 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-
             cd /home/ubuntu
 
             if [ -d "warehouse-management-system" ]; then
@@ -31,6 +30,8 @@ jobs:
             git checkout deployTest2
 
             cd server
+
+            working-directory: server
 
             curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
             sudo apt-get install -y nodejs
