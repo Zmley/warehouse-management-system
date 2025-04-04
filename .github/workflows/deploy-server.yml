@@ -25,13 +25,14 @@ jobs:
             fi
 
             echo "Cloning the repository"
-            git clone https://github.com/Zmley/warehouse-management-system.git
+            git clone --filter=blob:none --no-checkout https://github.com/Zmley/warehouse-management-system.git
             cd warehouse-management-system
             git checkout deployTest2
 
-            cd server
+            git sparse-checkout init --cone
+            git sparse-checkout set server
 
-            working-directory: server
+            cd server
 
             curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
             sudo apt-get install -y nodejs
