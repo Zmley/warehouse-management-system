@@ -51,7 +51,7 @@ const Dashboard: React.FC = () => {
     )
   }
   if (isTransportWorker) {
-    if (userProfile.currentTask) {
+    if (userProfile.currentTask && userProfile.currentTask !== null) {
       navigate('/task-detail')
     }
     return (

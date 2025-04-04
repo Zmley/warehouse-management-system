@@ -117,7 +117,12 @@ const CreateTask = () => {
                 {sourceError
                   ? 'No matching bins'
                   : sourceBins.length
-                  ? sourceBins.join(', ')
+                  ? sourceBins.map((bin, idx) => (
+                      <span key={idx}>
+                        {bin}
+                        {idx < sourceBins.length - 1 && <br />}
+                      </span>
+                    ))
                   : '-'}
               </Typography>
             </Paper>

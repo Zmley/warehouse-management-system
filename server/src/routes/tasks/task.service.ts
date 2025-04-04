@@ -191,12 +191,7 @@ export const getTasksByWarehouseID = async (
   })) as unknown as TaskWithJoin[]
 
   if (!tasks.length) {
-    throw new AppError(
-      404,
-      role === 'PICKER'
-        ? '❌ No picker tasks found'
-        : '❌ No pending transport tasks found'
-    )
+    return []
   }
 
   return tasks.map(task => {
@@ -288,7 +283,7 @@ export const cancelPickerTaskByAccountID = async (
     throw new AppError(404, 'Task not found or not owned by picker')
   }
 
-  task.status = 'CANCEL'
+  task.status = 'CANCELED'
   await task.save()
 
   return task

@@ -25,7 +25,7 @@ export interface Task {
   destinationBinID: string | null
   destinationBinCode: string | null
   destinationBin?: Bin
-  status: 'PENDING' | 'IN_PROCESS' | 'COMPLETED' | 'CANCELLED' | 'CANCEL'
+  status: 'PENDING' | 'IN_PROCESS' | 'COMPLETED' | 'CANCELLED'
   creatorID: string
   accepterID: string | null
   createdAt: string

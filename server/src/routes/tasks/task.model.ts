@@ -10,7 +10,7 @@ export class Task extends Model {
   public accepterID!: string
   public creatorID!: string
   public productCode!: string
-  public status!: 'PENDING' | 'IN_PROCESS' | 'COMPLETED' | 'CANCEL'
+  public status!: 'PENDING' | 'IN_PROCESS' | 'COMPLETED' | 'CANCELED'
   public createdAt!: Date
   public updatedAt!: Date | null
 
