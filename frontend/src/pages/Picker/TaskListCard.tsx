@@ -66,7 +66,7 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
                     <Typography variant='caption' color='text.secondary'>
                       Source Bin
                     </Typography>
-                    <Box>
+                    <Box display='flex' flexDirection='column'>
                       {Array.isArray(task.sourceBins) &&
                       task.sourceBins.length > 0 ? (
                         task.sourceBins.map((item, idx) => (
@@ -75,11 +75,11 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
                             fontWeight='bold'
                             fontSize={16}
                             component='span'
+                            style={{ marginBottom: 4 }}
                           >
                             {typeof item === 'string'
                               ? item
                               : item.Bin?.binCode || '--'}
-                            {idx < task.sourceBins.length - 1 && ' / '}
                           </Typography>
                         ))
                       ) : (

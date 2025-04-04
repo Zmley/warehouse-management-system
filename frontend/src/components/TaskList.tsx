@@ -63,12 +63,15 @@ const TaskList: React.FC = () => {
                   <Typography variant='caption' color='text.secondary'>
                     Source Bin
                   </Typography>
-                  <Box>
+                  <Box display='flex' flexDirection='column'>
                     <Typography fontWeight='bold' fontSize={16}>
                       {task.sourceBins?.length
-                        ? task.sourceBins
-                            .map((bin: any) => bin.Bin?.binCode || '--')
-                            .join(' / ')
+                        ? task.sourceBins.map((bin: any, idx: number) => (
+                            <span key={idx}>
+                              {bin.Bin?.binCode || '--'}
+                              {idx < task.sourceBins.length - 1 && <br />}{' '}
+                            </span>
+                          ))
                         : '--'}
                     </Typography>
                   </Box>
