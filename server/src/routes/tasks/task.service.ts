@@ -223,7 +223,7 @@ export const getTaskByAccountID = async (
   })
 
   if (!myCurrentTask) {
-    return null
+    return []
   }
 
   const sourceBins = await Inventory.findAll({
