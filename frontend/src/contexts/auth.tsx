@@ -40,7 +40,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setUserProfile(account)
     } catch (error: any) {
       const status = error?.response?.status
-
       if (status === 403) {
         setIsAuthenticated(false)
         clearTokens()
