@@ -1,22 +1,22 @@
-import express from "express";
+import express from 'express'
 import {
   getAllWarehousesHandler,
   getWarehouseByIdHandler,
   createWarehouseHandler,
   updateWarehouseHandler,
-  deleteWarehouseHandler,
-} from "./warehouse.controller";
+  deleteWarehouseHandler
+} from './warehouse.controller'
 
-const router = express.Router();
+const router = express.Router()
 
-router.get("/", getAllWarehousesHandler);
+router.get('/', getAllWarehousesHandler)
 
-router.get("/:warehouseID", getWarehouseByIdHandler);
+router.get('/:warehouseID', getWarehouseByIdHandler)
 
-router.post("/", createWarehouseHandler);
+router.post('/', createWarehouseHandler)
 
-router.put("/:warehouseID", updateWarehouseHandler);
+router.put('/:warehouseID', updateWarehouseHandler)
 
-router.delete("/:warehouseID", deleteWarehouseHandler);
+router.delete('/:warehouseID', deleteWarehouseHandler)
 
-export default router;
+export default router
