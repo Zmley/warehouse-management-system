@@ -11,7 +11,7 @@ export const getAllWarehousesHandler = async (req: Request, res: Response) => {
   try {
     const warehouses = await getAllWarehouses()
     res.status(200).json(warehouses)
-  } catch (error: any) {
+  } catch (error) {
     res.status(500).json({ message: error.message })
   }
 }
@@ -21,7 +21,7 @@ export const getWarehouseByIdHandler = async (req: Request, res: Response) => {
   try {
     const warehouse = await getWarehouseById(warehouseID)
     res.status(200).json(warehouse)
-  } catch (error: any) {
+  } catch (error) {
     res.status(500).json({ message: error.message })
   }
 }
@@ -31,7 +31,7 @@ export const createWarehouseHandler = async (req: Request, res: Response) => {
   try {
     const newWarehouse = await createWarehouse(warehouseCode)
     res.status(201).json(newWarehouse)
-  } catch (error: any) {
+  } catch (error) {
     res.status(500).json({ message: error.message })
   }
 }
@@ -42,7 +42,7 @@ export const updateWarehouseHandler = async (req: Request, res: Response) => {
   try {
     const updatedWarehouse = await updateWarehouse(warehouseID, warehouseCode)
     res.status(200).json(updatedWarehouse)
-  } catch (error: any) {
+  } catch (error) {
     res.status(500).json({ message: error.message })
   }
 }
@@ -52,7 +52,7 @@ export const deleteWarehouseHandler = async (req: Request, res: Response) => {
   try {
     const message = await deleteWarehouse(warehouseID)
     res.status(200).json({ message })
-  } catch (error: any) {
+  } catch (error) {
     res.status(500).json({ message: error.message })
   }
 }
