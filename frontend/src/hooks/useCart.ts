@@ -2,9 +2,11 @@ import { useCartContext } from '../contexts/cart'
 import { loadToCart, unloadFromCart } from '../api/cartApi'
 import { useNavigate } from 'react-router-dom'
 import { InventoryItem } from '../types/inventory'
+import { useState } from 'react'
 
 export const useCart = () => {
   const navigate = useNavigate()
+  const [error, setError] = useState<string | null>(null)
 
   const {
     selectedToUnload,
@@ -20,12 +22,19 @@ export const useCart = () => {
       await getMyCart()
 
       if (response?.success) {
+        setError(null)
         setTimeout(() => {
           navigate('/my-task')
         }, 500)
       }
-    } catch (error) {
-      console.error('❌ Failed to load to cart:', error)
+    } catch (err: any) {
+      console.error('❌ Failed to load to cart:', err)
+      const message =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err.message ||
+        '❌ Failed to load Product due to an internal error.'
+      setError(message)
     }
   }
 
@@ -33,6 +42,7 @@ export const useCart = () => {
     try {
       const response = await unloadFromCart(binCode, selectedToUnload)
       if (response?.success) {
+        setError(null) // 清空旧错误
         const inventoriesLeftInCart = inventoriesInCar
           .map(item => {
             const selected = selectedToUnload.find(
@@ -49,20 +59,20 @@ export const useCart = () => {
           .filter(Boolean)
 
         setInventoriesInCar(inventoriesLeftInCart as InventoryItem[])
-        if (inventoriesLeftInCart.length === 0) {
-          setTimeout(() => {
-            navigate('/success')
-          }, 500)
-        } else {
-          setTimeout(() => {
-            navigate('/my-task')
-          }, 500)
-        }
+        setTimeout(() => {
+          navigate(inventoriesLeftInCart.length === 0 ? '/success' : '/my-task')
+        }, 500)
       }
-    } catch (error) {
-      console.error('❌ Failed to unload from cart:', error)
+    } catch (err: any) {
+      console.error('❌ Failed to unload from cart:', err)
+      const message =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err.message ||
+        '❌ Failed to unload Product due to an internal error.'
+      setError(message)
     }
   }
 
-  return { loadCart, unloadCart, isCartEmpty, getMyCart }
+  return { loadCart, unloadCart, isCartEmpty, getMyCart, error }
 }

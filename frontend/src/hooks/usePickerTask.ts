@@ -11,6 +11,12 @@ export const usePickerTasks = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const extractErrorMessage = (err: any) =>
+    err?.response?.data?.message ||
+    err?.response?.data?.error ||
+    err.message ||
+    '❌ An unexpected error occurred.'
+
   const fetchTasks = async () => {
     setLoading(true)
     setError(null)
@@ -18,7 +24,7 @@ export const usePickerTasks = () => {
       const tasks = await getPickerTasks()
       setTasks(tasks)
     } catch (err) {
-      setError('Failed to fetch tasks')
+      setError(extractErrorMessage(err))
     } finally {
       setLoading(false)
     }
@@ -34,7 +40,7 @@ export const usePickerTasks = () => {
       const task = await createPickerTask(binCode, productCode)
       return task
     } catch (err) {
-      setError('Failed to create task')
+      setError(extractErrorMessage(err))
       return null
     } finally {
       setLoading(false)
@@ -48,7 +54,7 @@ export const usePickerTasks = () => {
       const task = await cancelPickerTask(taskID)
       return task
     } catch (err) {
-      setError('Failed to cancel task')
+      setError(extractErrorMessage(err))
       return null
     } finally {
       setLoading(false)
@@ -59,6 +65,7 @@ export const usePickerTasks = () => {
     tasks,
     loading,
     error,
+    setError,
     fetchTasks,
     createTask,
     cancelTask

@@ -14,7 +14,7 @@ const Scan = () => {
   const [hasStarted, setHasStarted] = useState(false)
 
   const { isCartEmpty } = useCartContext()
-  const { loadCart, unloadCart } = useCart()
+  const { loadCart, unloadCart, error } = useCart()
 
   const handleScanSuccess = async (binCode: string) => {
     console.log(`Scanned bin code: ${binCode}`)
@@ -25,11 +25,8 @@ const Scan = () => {
       } else {
         await unloadCart(binCode)
       }
-
-      // navigate('/success')
     } catch (err) {
-      console.error('❌ Error handling scan:', err)
-      alert('❌ Operation failed. Please try again.')
+      console.error('❌ Error during scan:', err)
     }
   }
 
@@ -117,6 +114,15 @@ const Scan = () => {
           >
             Position the QR code inside the frame to begin processing your task.
           </Typography>
+
+          {error && (
+            <Typography
+              variant='body2'
+              sx={{ mt: 2, color: 'error.main', fontWeight: 600 }}
+            >
+              {error}
+            </Typography>
+          )}
 
           <Box sx={{ mt: 4 }}>
             <Button

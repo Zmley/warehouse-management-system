@@ -3,19 +3,27 @@ import { useNavigate } from 'react-router-dom'
 import { Typography, Button, Box, Paper } from '@mui/material'
 import useQRScanner from '../../hooks/useQRScanner'
 import { getBinByBinCode } from '../../api/binApi'
+import { usePickerTasks } from '../../hooks/usePickerTask'
 
 const Scan = () => {
   const navigate = useNavigate()
+  const { error, setError } = usePickerTasks()
 
   const handleBinScanned = async (binCode: string) => {
     console.log('📦 Bin Scanned:', binCode)
+    setError(null)
 
     try {
       const bin = await getBinByBinCode(binCode)
       navigate('/create-task', { state: { bin } })
-    } catch (err) {
+    } catch (err: any) {
       console.error('❌ Failed to fetch bin info:', err)
-      alert('❌ Bin not found or error occurred')
+      const message =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err.message ||
+        '❌ Failed to fetch bin info.'
+      setError(message)
     }
   }
 
@@ -32,7 +40,7 @@ const Scan = () => {
         startScanning()
       })
       .catch(() => {
-        alert('Please enable camera permissions to use scanning.')
+        setError('Please enable camera permissions to use scanning.')
       })
 
     return () => {
@@ -94,6 +102,15 @@ const Scan = () => {
           }}
         />
       </Paper>
+
+      {error && (
+        <Typography
+          variant='body2'
+          sx={{ mt: 2, color: 'error.main', fontWeight: 600 }}
+        >
+          {error}
+        </Typography>
+      )}
 
       <Button
         variant='contained'

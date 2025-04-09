@@ -1,17 +1,12 @@
 import Inventory from '../inventory/inventory.model'
 import Bin from '../bins/bin.model'
 import AppError from '../../utils/appError'
+import Warehouse from 'routes/warehouses/warehouse.model'
 
 const moveInventoriesToBin = async (
   inventories: { inventoryID: string; quantity: number }[],
-  binCode: string
+  bin: Bin
 ) => {
-  const bin = await Bin.findOne({ where: { binCode } })
-
-  if (!bin) {
-    throw new AppError(404, `Bin with code ${binCode} not found`)
-  }
-
   const binID = bin.binID
 
   let updatedItemCount = 0
@@ -20,13 +15,6 @@ const moveInventoriesToBin = async (
     const inventory = await Inventory.findOne({
       where: { inventoryID: item.inventoryID }
     })
-
-    if (!inventory) {
-      throw new AppError(
-        404,
-        `❌ Inventory with ID ${item.inventoryID} not found`
-      )
-    }
 
     const targetInventory = await Inventory.findOne({
       where: { binID, productCode: inventory.productCode }
@@ -66,41 +54,33 @@ export const loadByBinCode = async (
   binCode: string,
   cartID: string,
   warehouseID: string
-): Promise<{ status: number; message: string }> => {
-  try {
-    const bin = await Bin.findOne({
-      where: {
-        binCode,
-        warehouseID
-      }
-    })
+): Promise<{ message: string }> => {
+  const warehouse = await Warehouse.findOne({ where: { warehouseID } })
 
-    if (!bin) {
-      throw new AppError(
-        404,
-        `❌ Bin with code "${binCode}" in warehouse "${warehouseID}" not found`
-      )
-    }
+  const warehouseCode = warehouse.warehouseCode
 
-    const updatedItems = await Inventory.update(
-      { binID: cartID },
-      { where: { binID: bin.binID } }
-    )
+  const bin = await Bin.findOne({
+    where: { binCode, warehouseID }
+  })
 
-    if (!updatedItems[0]) {
-      throw new AppError(404, '❌ No inventory updated for the given binCode')
-    }
-
-    return {
-      status: 200,
-      message: `✅ Items loaded from bin "${binCode}" to cart "${cartID}".`
-    }
-  } catch (error) {
-    console.error('❌ Error loading Product:', error)
+  if (!bin) {
     throw new AppError(
-      500,
-      '❌ Failed to load Product due to an internal error.'
+      404,
+      `❌ Bin with code "${binCode}" not found in warehouse "${warehouseCode}"`
     )
+  }
+
+  const [updatedCount] = await Inventory.update(
+    { binID: cartID },
+    { where: { binID: bin.binID } }
+  )
+
+  if (updatedCount === 0) {
+    throw new AppError(404, `❌ This bin "${binCode}" is empty.`)
+  }
+
+  return {
+    message: `✅ Items loaded from bin "${binCode}" to cart "${cartID}".`
   }
 }
 
@@ -108,24 +88,29 @@ export const unloadByBinCode = async (
   binCode: string,
   unloadProductList: { inventoryID: string; quantity: number }[],
   warehouseID: string
-): Promise<number> => {
-  try {
-    const bin = await Bin.findOne({ where: { binCode, warehouseID } })
+): Promise<{ message: string }> => {
+  const warehouse = await Warehouse.findOne({ where: { warehouseID } })
 
-    if (!bin) {
-      throw new AppError(
-        404,
-        `❌ Bin with code "${binCode}" not found in this warehouse.`
-      )
-    }
+  const warehouseCode = warehouse.warehouseCode
 
-    const result = await moveInventoriesToBin(unloadProductList, binCode)
-    return result
-  } catch (error) {
-    console.error('❌ Error in unloadProductListToBinByWoker:', error)
+  const bin = await Bin.findOne({
+    where: { binCode, warehouseID }
+  })
+
+  if (!bin) {
     throw new AppError(
-      500,
-      '❌ Failed to unload Product due to an internal error.'
+      404,
+      `❌ Bin with code "${binCode}" not found in warehouse "${warehouseCode}"`
     )
+  }
+
+  const updatedCount = await moveInventoriesToBin(unloadProductList, bin)
+
+  if (updatedCount === 0) {
+    throw new AppError(404, `❌ No inventory was moved to bin "${binCode}".`)
+  }
+
+  return {
+    message: `✅ ${updatedCount} product(s) successfully unloaded into bin "${binCode}".`
   }
 }
