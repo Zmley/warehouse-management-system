@@ -49,3 +49,31 @@ export const getBinCodesByProductCode = async (
     throw new Error('Failed to fetch binCodes')
   }
 }
+
+//admin
+
+export const getAllBinsInWarehouse = async (
+  warehouseID: string
+): Promise<{ binID: string; binCode: string }[]> => {
+  try {
+    const bins = await Bin.findAll({
+      where: {
+        warehouseID,
+        type: 'INVENTORY'
+      },
+      attributes: ['binID', 'binCode']
+    })
+
+    if (!bins.length) {
+      throw new Error('No bins found in the warehouse')
+    }
+
+    return bins.map(bin => ({
+      binID: bin.binID,
+      binCode: bin.binCode
+    }))
+  } catch (error) {
+    console.error('Error fetching bins:', error)
+    throw new Error('Failed to fetch bins')
+  }
+}

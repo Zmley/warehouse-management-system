@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
-import { getBinByBinCode } from './bin.service'
+import { getAllBinsInWarehouse, getBinByBinCode } from './bin.service'
 import { getBinCodesByProductCode } from '../bins/bin.service'
 
 export const getBinByCode = async (
@@ -37,6 +37,25 @@ export const getBinCodes = async (
     res.status(200).json({
       message: 'Bin codes fetched successfully',
       binCodes
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+//admin
+
+export const getBinsForWarehouse = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const warehouseID = res.locals.warehouseID
+    const bins = await getAllBinsInWarehouse(warehouseID)
+    res.status(200).json({
+      message: 'All bins fetched successfully',
+      bins
     })
   } catch (error) {
     next(error)
