@@ -8,6 +8,7 @@ import task from 'routes/tasks/task.routes'
 import inventory from 'routes/inventory/inventory.routes'
 import bin from 'routes/bins/bin.routes'
 import product from 'routes/products/product.routes'
+import warehouse from 'routes/warehouses/warehouse.router'
 
 const router: Router = Router()
 router.use(healthCheck)
@@ -18,5 +19,6 @@ router.use('/tasks', task)
 router.use('/inventories', inventory)
 router.use('/bins', bin)
 router.use('/products', product)
+router.use('/warehouses', warehouse)
 
 export default router

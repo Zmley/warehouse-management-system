@@ -15,8 +15,6 @@ import adminOnly from '../../middlewares/admin.middleware'
 
 const router = express.Router()
 
-router.post('/createAsAdmin', adminOnly, createAsAdmin)
-
 router.post('/createAsPicker', pickerOnly, createAsPicker)
 
 router.get('/', transportWorkerOnly, getTasks)
@@ -32,5 +30,10 @@ router.post('/', pickerOnly, createAsPicker)
 router.post('/:taskID/cancelPicker', pickerOnly, cancelPickerTask)
 
 router.get('/picker', pickerOnly, getPickerCreatedTasks)
+
+//admin part
+router.post('/createAsAdmin', adminOnly, createAsAdmin)
+router.post('/getTasks', adminOnly, getTasks)
+router.post('/cancelTask/:taskID', adminOnly, cancelTask)
 
 export default router
