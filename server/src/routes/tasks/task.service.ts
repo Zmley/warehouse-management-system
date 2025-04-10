@@ -351,3 +351,18 @@ export const getTasksByWarehouseIDAdmin = async (warehouseID: string) => {
     }
   })
 }
+
+export const cancelTaskByIDByAdmin = async (taskID: string) => {
+  const task = await Task.findOne({ where: { taskID } })
+
+  if (!task) {
+    throw new AppError(404, '❌ Task not found')
+  }
+
+  task.status = 'CANCELED'
+
+  task.accepterID = null
+  await task.save()
+
+  return task
+}

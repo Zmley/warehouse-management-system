@@ -7,7 +7,8 @@ import {
   cancelTaskByID,
   getTaskByAccountID,
   cancelPickerTaskByAccountID,
-  getTasksByWarehouseIDAdmin
+  getTasksByWarehouseIDAdmin,
+  cancelTaskByIDByAdmin
 } from '../tasks/task.service'
 import { getBinByBinCode } from 'routes/bins/bin.service'
 
@@ -181,6 +182,25 @@ export const getAllTasks = async (
     res.status(200).json({
       message: 'Successfully fetched all pending tasks for Picker',
       tasks: tasksWithBinCodes
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const cancelTaskByAdmin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { taskID } = req.params
+
+    const task = await cancelTaskByIDByAdmin(taskID)
+
+    res.status(200).json({
+      message: `Task "${task.taskID}" cancelled successfully`,
+      task
     })
   } catch (error) {
     next(error)
