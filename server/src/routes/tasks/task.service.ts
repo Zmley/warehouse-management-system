@@ -292,3 +292,62 @@ export const cancelPickerTaskByAccountID = async (
 export const updateTaskSourceBin = async (taskID: string, binID: string) => {
   await Task.update({ sourceBinID: binID }, { where: { taskID } })
 }
+
+////admin
+
+export const getTasksByWarehouseIDAdmin = async (warehouseID: string) => {
+  const includeClause = [
+    {
+      model: Bin,
+      as: 'destinationBin',
+      attributes: ['binID', 'binCode'],
+      required: false,
+      where: { warehouseID }
+    },
+    {
+      model: Bin,
+      as: 'sourceBin',
+      attributes: ['binID', 'binCode'],
+      required: false,
+      where: { warehouseID }
+    },
+    {
+      model: Inventory,
+      as: 'inventories',
+      required: false,
+      include: [
+        {
+          model: Bin,
+          attributes: ['binID', 'binCode'],
+          where: {
+            warehouseID,
+            type: 'INVENTORY'
+          }
+        }
+      ]
+    }
+  ]
+
+  const tasks = (await Task.findAll({
+    where: {},
+    include: includeClause
+  })) as unknown as TaskWithJoin[]
+
+  if (!tasks.length) return []
+
+  return tasks.map(task => {
+    let sourceBins: (Inventory & { Bin?: Bin })[] = []
+
+    if (task.sourceBin) {
+      sourceBins = [{ Bin: task.sourceBin } as Inventory & { Bin?: Bin }]
+    } else if (task.inventories?.length > 0) {
+      sourceBins = task.inventories
+    }
+
+    return {
+      ...task.toJSON(),
+      sourceBins,
+      destinationBinCode: task.destinationBin?.binCode || '--'
+    }
+  })
+}
