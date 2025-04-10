@@ -7,11 +7,18 @@
     "dialect": "postgres"
   },
   "test": {
-    "username": "root",
-    "password": null,
-    "database": "database_test",
-    "host": "127.0.0.1",
-    "dialect": "mysql"
+    "username": "fcs",
+    "password": "111111111Aa!",
+    "database": "warehouse_db",
+    "host": "warehosuedatabase.c36iiackagdd.us-east-2.rds.amazonaws.com",
+    "dialect": "postgres",
+    "port": 5432,
+    "dialectOptions": {
+      "ssl": {
+        "require": true,
+        "rejectUnauthorized": false
+      }
+    }
   },
   "production": {
     "username": "root",
