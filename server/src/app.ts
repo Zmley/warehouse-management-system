@@ -17,7 +17,8 @@ const corsOptions = {
   origin: [
     'http://localhost:4100',
     'https://d1fhrig6l377fl.cloudfront.net',
-    'http://warehouse-admin-frontend.s3-website.us-east-2.amazonaws.com/'
+    'http://warehouse-admin-frontend.s3-website.us-east-2.amazonaws.com/',
+    'https://d1oxjk4yrjml18.cloudfront.net'
   ],
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // The methods you want to allow
   credentials: true, // This allows session cookies to be sent back and forth
