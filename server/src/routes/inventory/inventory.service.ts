@@ -21,12 +21,13 @@ export const getInventoriesByCartId = async (
 
 //admin
 
-export const getAllInventories = async () => {
+export const getInventoriesByWarehouseID = async (warehouseID: string) => {
   const inventories = await Inventory.findAll({
     include: [
       {
         model: Bin,
-        attributes: ['binCode']
+        attributes: ['binCode'],
+        where: { warehouseID }
       }
     ]
   })

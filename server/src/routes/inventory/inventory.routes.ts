@@ -1,7 +1,7 @@
 import express from 'express'
 import {
   getInventoriesByCart,
-  getAllInventoriesController,
+  getInventories,
   deleteInventoryItemController,
   addInventoryItemController,
   updateInventoryItemController
@@ -15,7 +15,7 @@ router.get('/inventoriesInCart', transportWorkerOnly, getInventoriesByCart)
 
 //admin part
 
-router.get('/all', adminOnly, getAllInventoriesController)
+router.get('/', getInventories)
 
 router.delete('/:inventoryID', adminOnly, deleteInventoryItemController)
 

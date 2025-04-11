@@ -1,40 +1,35 @@
 import { Request, Response, NextFunction } from 'express'
-import {
-  createTaskAsAdmin,
-  acceptTaskByTaskID,
-  createTaskAsPicker,
-  getTasksByWarehouseID,
-  cancelTaskByID,
-  getTaskByAccountID,
-  cancelPickerTaskByAccountID,
-  getTasksByWarehouseIDAdmin,
-  cancelTaskByIDByAdmin
-} from '../tasks/task.service'
-import { getBinByBinCode } from 'routes/bins/bin.service'
-
-export const createAsAdmin = async (req: Request, res: Response) => {
+import * as taskService from '../tasks/task.service'
+import * as binService from 'routes/bins/bin.service'
+export const createAsAdmin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { sourceBinCode, destinationBinCode, productCode } = req.body
     const accountID = res.locals.currentAccount.accountID
     const warehouseID = res.locals.currentAccount.warehouseID
 
-    const sourceBin = await getBinByBinCode(sourceBinCode, warehouseID)
-    const destinationBin = await getBinByBinCode(
+    const sourceBin = await binService.getBinByBinCode(
+      sourceBinCode,
+      warehouseID
+    )
+    const destinationBin = await binService.getBinByBinCode(
       destinationBinCode,
       warehouseID
     )
 
-    const task = await createTaskAsAdmin(
+    const task = await taskService.createAsAdmin(
       sourceBin.binID,
       destinationBin.binID,
       productCode,
       accountID
     )
 
-    res.status(201).json(task)
+    res.status(200).json(task)
   } catch (error) {
-    console.error('❌ Error creating task as admin:', error)
-    res.status(500).json({ message: error.message })
+    next(error)
   }
 }
 
@@ -47,10 +42,10 @@ export const acceptTask = async (
     const accountID = res.locals.accountID
     const { taskID } = req.params
 
-    const task = await acceptTaskByTaskID(accountID, taskID)
+    const task = await taskService.acceptTaskByTaskID(accountID, taskID)
 
     res.status(200).json({
-      message: `Task accepted successfully and is now in progress`,
+      message: 'Task accepted successfully and is now in progress',
       task
     })
   } catch (error) {
@@ -66,7 +61,10 @@ export const getTasks = async (
   try {
     const { warehouseID, role } = res.locals
 
-    const tasksWithBinCodes = await getTasksByWarehouseID(warehouseID, role)
+    const tasksWithBinCodes = await taskService.getTasksByWarehouseID(
+      warehouseID,
+      role
+    )
 
     res.status(200).json({
       message: 'Successfully fetched all pending tasks for Picker',
@@ -85,26 +83,27 @@ export const getMyTask = async (
   try {
     const { accountID, warehouseID } = res.locals
 
-    const task = await getTaskByAccountID(accountID, warehouseID)
+    const task = await taskService.getTaskByAccountID(accountID, warehouseID)
 
     res.status(200).json({
       message: 'Successfully fetched current in-process task',
-      task: task
+      task
     })
   } catch (error) {
     next(error)
   }
 }
 
-export const cancelTask = async (
+export const cancelByWoker = async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
     const { taskID } = req.params
+    const { role, accountID } = res.locals
 
-    const task = await cancelTaskByID(taskID)
+    const task = await taskService.cancelBytaskID(taskID, accountID, role)
 
     res.status(200).json({
       message: `Task "${task.taskID}" cancelled successfully`,
@@ -124,7 +123,7 @@ export const createAsPicker = async (
     const { binCode, productCode } = req.body
     const { accountID, warehouseID } = res.locals
 
-    const task = await createTaskAsPicker(
+    const task = await taskService.createTaskAsPicker(
       binCode,
       accountID,
       warehouseID,
@@ -140,15 +139,15 @@ export const createAsPicker = async (
   }
 }
 
-export const cancelPickerTask = async (
+export const cancelByPicker = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
     const { taskID } = req.params
-    const { accountID } = res.locals
-    const task = await cancelPickerTaskByAccountID(accountID, taskID)
+    const { role, accountID } = res.locals
+    const task = await taskService.cancelBytaskID(taskID, accountID, role)
     res.status(200).json({ message: 'Task cancelled', task })
   } catch (error) {
     next(error)
@@ -162,7 +161,11 @@ export const getPickerCreatedTasks = async (
 ) => {
   try {
     const { accountID, warehouseID, role } = res.locals
-    const tasks = await getTasksByWarehouseID(warehouseID, role, accountID)
+    const tasks = await taskService.getTasksByWarehouseID(
+      warehouseID,
+      role,
+      accountID
+    )
     res.status(200).json({ tasks })
   } catch (error) {
     next(error)
@@ -175,9 +178,13 @@ export const getAllTasks = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { warehouseID } = res.locals
+    const { accountID, warehouseID, role } = res.locals
 
-    const tasksWithBinCodes = await getTasksByWarehouseIDAdmin(warehouseID)
+    const tasksWithBinCodes = await taskService.getTasksByWarehouseID(
+      warehouseID,
+      role,
+      accountID
+    )
 
     res.status(200).json({
       message: 'Successfully fetched all pending tasks for Picker',
@@ -188,15 +195,16 @@ export const getAllTasks = async (
   }
 }
 
-export const cancelTaskByAdmin = async (
+export const cancelByAdmin = async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
     const { taskID } = req.params
+    const { role, accountID } = res.locals
 
-    const task = await cancelTaskByIDByAdmin(taskID)
+    const task = await taskService.cancelBytaskID(taskID, accountID, role)
 
     res.status(200).json({
       message: `Task "${task.taskID}" cancelled successfully`,

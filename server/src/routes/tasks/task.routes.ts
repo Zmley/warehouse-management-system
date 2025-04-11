@@ -5,11 +5,11 @@ import {
   createAsPicker,
   getTasks,
   getMyTask,
-  cancelTask,
-  cancelPickerTask,
+  cancelByWoker,
+  cancelByPicker,
   getPickerCreatedTasks,
   getAllTasks,
-  cancelTaskByAdmin
+  cancelByAdmin
 } from './task.controller'
 import transportWorkerOnly from '../../middlewares/transportWorker.middleware'
 import pickerOnly from '../../middlewares/picker.middleware'
@@ -25,17 +25,17 @@ router.get('/my', transportWorkerOnly, getMyTask)
 
 router.post('/:taskID/accept', transportWorkerOnly, acceptTask)
 
-router.post('/:taskID/cancel', transportWorkerOnly, cancelTask)
+router.post('/:taskID/cancel', transportWorkerOnly, cancelByWoker)
 
 router.post('/', pickerOnly, createAsPicker)
 
-router.post('/:taskID/cancelPicker', pickerOnly, cancelPickerTask)
+router.post('/:taskID/cancelPicker', pickerOnly, cancelByPicker)
 
 router.get('/picker', pickerOnly, getPickerCreatedTasks)
 
 //admin part
 router.post('/createAsAdmin', adminOnly, createAsAdmin)
 router.post('/getTasks', adminOnly, getAllTasks)
-router.post('/cancelTask/:taskID', adminOnly, cancelTaskByAdmin)
+router.post('/cancelTask/:taskID', adminOnly, cancelByAdmin)
 
 export default router

@@ -24,7 +24,7 @@ export const hasActiveTask = async (
   }
 }
 
-export const createTaskAsAdmin = async (
+export const createAsAdmin = async (
   sourceBinID: string,
   destinationBinID: string,
   productCode: string,
@@ -139,77 +139,77 @@ export const completeTask = async (taskID: string) => {
   return task
 }
 
-export const getTasksByWarehouseID = async (
-  warehouseID: string,
-  role: 'TRANSPORT_WOKER' | 'PICKER',
-  accountID?: string
-) => {
-  if (role === 'PICKER' && !accountID) {
-    throw new AppError(400, '❌ Picker must provide accountID')
-  }
+// export const getTasksByWarehouseID = async (
+//   warehouseID: string,
+//   role: 'TRANSPORT_WOKER' | 'PICKER',
+//   accountID?: string
+// ) => {
+//   if (role === 'PICKER' && !accountID) {
+//     throw new AppError(400, '❌ Picker must provide accountID')
+//   }
 
-  const includeClause = [
-    {
-      model: Bin,
-      as: 'destinationBin',
-      attributes: ['binID', 'binCode'],
-      required: false,
-      where: { warehouseID }
-    },
-    {
-      model: Bin,
-      as: 'sourceBin',
-      attributes: ['binID', 'binCode'],
-      required: false,
-      where: { warehouseID }
-    },
-    {
-      model: Inventory,
-      as: 'inventories',
-      required: false,
-      include: [
-        {
-          model: Bin,
-          attributes: ['binID', 'binCode'],
-          where: {
-            warehouseID,
-            type: 'INVENTORY'
-          }
-        }
-      ]
-    }
-  ]
+//   const includeClause = [
+//     {
+//       model: Bin,
+//       as: 'destinationBin',
+//       attributes: ['binID', 'binCode'],
+//       required: false,
+//       where: { warehouseID }
+//     },
+//     {
+//       model: Bin,
+//       as: 'sourceBin',
+//       attributes: ['binID', 'binCode'],
+//       required: false,
+//       where: { warehouseID }
+//     },
+//     {
+//       model: Inventory,
+//       as: 'inventories',
+//       required: false,
+//       include: [
+//         {
+//           model: Bin,
+//           attributes: ['binID', 'binCode'],
+//           where: {
+//             warehouseID,
+//             type: 'INVENTORY'
+//           }
+//         }
+//       ]
+//     }
+//   ]
 
-  const whereClause =
-    role === 'PICKER'
-      ? { creatorID: accountID, status: ['PENDING', 'COMPLETED'] }
-      : { status: 'PENDING' }
+//   const whereClause =
+//     role === 'PICKER'
+//       ? { creatorID: accountID, status: ['PENDING', 'COMPLETED'] }
+//       : { status: 'PENDING' }
 
-  const tasks = (await Task.findAll({
-    where: whereClause,
-    include: includeClause
-  })) as unknown as TaskWithJoin[]
+//   const tasks = (await Task.findAll({
+//     where: whereClause,
+//     include: includeClause
+//   })) as unknown as TaskWithJoin[]
 
-  if (!tasks.length) {
-    return []
-  }
+//   if (!tasks.length) {
+//     return []
+//   }
 
-  return tasks.map(task => {
-    let sourceBins: (Inventory & { Bin?: Bin })[] = []
+//   return tasks.map(task => {
+//     let sourceBins: (Inventory & { Bin?: Bin })[] = []
 
-    if (task.sourceBin) {
-      sourceBins = [{ Bin: task.sourceBin } as Inventory & { Bin?: Bin }]
-    } else if (task.inventories?.length > 0) {
-      sourceBins = task.inventories
-    }
+//     if (task.sourceBin) {
+//       sourceBins = [{ Bin: task.sourceBin } as Inventory & { Bin?: Bin }]
+//     } else if (task.inventories?.length > 0) {
+//       sourceBins = task.inventories
+//     }
 
-    return {
-      ...task.toJSON(),
-      sourceBins,
-      destinationBinCode: task.destinationBin?.binCode || '--'
-    }
-  })
-}
+//     return {
+//       ...task.toJSON(),
+//       sourceBins,
+//       destinationBinCode: task.destinationBin?.binCode || '--'
+//     }
+//   })
+// }
 
 export const getTaskByAccountID = async (
   accountID: string,
@@ -250,52 +250,125 @@ export const getTaskByAccountID = async (
   return { ...myCurrentTask.toJSON(), sourceBins, destinationBinCode }
 }
 
-export const cancelTaskByID = async (taskID: string) => {
-  const task = await Task.findByPk(taskID)
-
-  if (!task) {
-    throw new AppError(404, '❌ Task not found')
-  }
-
-  if (task.status !== 'IN_PROCESS') {
-    throw new AppError(400, '❌ Only tasks in progress can be cancelled')
-  }
-
-  task.status = 'PENDING'
-  task.accepterID = null
-  await task.save()
-
-  return task
-}
-
-export const cancelPickerTaskByAccountID = async (
-  accountID: string,
-  taskID: string
-) => {
-  const task = await Task.findOne({
-    where: {
-      taskID,
-      creatorID: accountID
-    }
-  })
-
-  if (!task) {
-    throw new AppError(404, 'Task not found or not owned by picker')
-  }
-
-  task.status = 'CANCELED'
-  await task.save()
-
-  return task
-}
-
 export const updateTaskSourceBin = async (taskID: string, binID: string) => {
   await Task.update({ sourceBinID: binID }, { where: { taskID } })
 }
 
-////admin
+// export const getTasksByWarehouseIDAdmin = async (warehouseID: string) => {
+//   const includeClause = [
+//     {
+//       model: Bin,
+//       as: 'destinationBin',
+//       attributes: ['binID', 'binCode'],
+//       required: false,
+//       where: { warehouseID }
+//     },
+//     {
+//       model: Bin,
+//       as: 'sourceBin',
+//       attributes: ['binID', 'binCode'],
+//       required: false,
+//       where: { warehouseID }
+//     },
+//     {
+//       model: Inventory,
+//       as: 'inventories',
+//       required: false,
+//       include: [
+//         {
+//           model: Bin,
+//           attributes: ['binID', 'binCode'],
+//           where: {
+//             warehouseID,
+//             type: 'INVENTORY'
+//           }
+//         }
+//       ]
+//     }
+//   ]
 
-export const getTasksByWarehouseIDAdmin = async (warehouseID: string) => {
+//   const tasks = (await Task.findAll({
+//     where: {},
+//     include: includeClause
+//   })) as unknown as TaskWithJoin[]
+
+//   if (!tasks.length) return []
+
+//   return tasks.map(task => {
+//     let sourceBins: (Inventory & { Bin?: Bin })[] = []
+
+//     if (task.sourceBin) {
+//       sourceBins = [{ Bin: task.sourceBin } as Inventory & { Bin?: Bin }]
+//     } else if (task.inventories?.length > 0) {
+//       sourceBins = task.inventories
+//     }
+
+//     return {
+//       ...task.toJSON(),
+//       sourceBins,
+//       destinationBinCode: task.destinationBin?.binCode || '--'
+//     }
+//   })
+// }
+
+export const cancelBytaskID = async (
+  taskID: string,
+  accountID: string,
+  role: string
+) => {
+  let task
+
+  if (role === 'ADMIN') {
+    task = await Task.findByPk(taskID)
+
+    if (!task) {
+      throw new AppError(404, '❌ Task not found')
+    }
+
+    task.status = 'CANCELED'
+    await task.save()
+  } else if (role === 'PICKER') {
+    task = await Task.findOne({
+      where: {
+        taskID,
+        creatorID: accountID
+      }
+    })
+
+    if (!task) {
+      throw new AppError(404, '❌ Task not found or not owned by picker')
+    }
+
+    task.status = 'CANCELED'
+    await task.save()
+  } else {
+    task = await Task.findByPk(taskID)
+
+    if (!task) {
+      throw new AppError(404, '❌ Task not found')
+    }
+
+    if (task.status !== 'IN_PROCESS') {
+      throw new AppError(400, '❌ Only tasks in progress can be cancelled')
+    }
+
+    task.status = 'PENDING'
+    task.accepterID = null
+    await task.save()
+  }
+
+  return task
+}
+
+export const getTasksByWarehouseID = async (
+  warehouseID: string,
+  role: 'TRANSPORT_WOKER' | 'PICKER' | 'ADMIN',
+  accountID?: string
+) => {
+  if (role === 'PICKER' && !accountID) {
+    throw new AppError(400, '❌ Picker must provide accountID')
+  }
+
   const includeClause = [
     {
       model: Bin,
@@ -328,12 +401,23 @@ export const getTasksByWarehouseIDAdmin = async (warehouseID: string) => {
     }
   ]
 
+  let whereClause
+  if (role === 'ADMIN') {
+    whereClause = { status: ['PENDING', 'COMPLETED', 'CANCELED', 'IN_PROCESS'] }
+  } else if (role === 'PICKER') {
+    whereClause = { creatorID: accountID, status: ['PENDING', 'COMPLETED'] }
+  } else if (role === 'TRANSPORT_WOKER') {
+    whereClause = { status: 'PENDING' }
+  }
+
   const tasks = (await Task.findAll({
-    where: {},
+    where: whereClause,
     include: includeClause
   })) as unknown as TaskWithJoin[]
 
-  if (!tasks.length) return []
+  if (!tasks.length) {
+    return []
+  }
 
   return tasks.map(task => {
     let sourceBins: (Inventory & { Bin?: Bin })[] = []
@@ -350,19 +434,4 @@ export const getTasksByWarehouseIDAdmin = async (warehouseID: string) => {
       destinationBinCode: task.destinationBin?.binCode || '--'
     }
   })
-}
-
-export const cancelTaskByIDByAdmin = async (taskID: string) => {
-  const task = await Task.findOne({ where: { taskID } })
-
-  if (!task) {
-    throw new AppError(404, '❌ Task not found')
-  }
-
-  task.status = 'CANCELED'
-
-  task.accepterID = null
-  await task.save()
-
-  return task
 }

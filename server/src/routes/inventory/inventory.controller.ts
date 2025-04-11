@@ -1,11 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
-import {
-  addInventoryItemService,
-  deleteInventoryItem,
-  getAllInventories,
-  getInventoriesByCartId,
-  updateInventoryItemService
-} from './inventory.service'
+import * as inventoryService from './inventory.service'
 
 export const getInventoriesByCart = async (
   req: Request,
@@ -14,26 +8,29 @@ export const getInventoriesByCart = async (
 ): Promise<void> => {
   try {
     const cartID = res.locals.cartID
-
-    const result = await getInventoriesByCartId(cartID)
-
-    res.status(200).json({
-      inventories: result.inventories
-    })
+    const result = await inventoryService.getInventoriesByCartId(cartID)
+    res.status(200).json({ inventories: result.inventories })
   } catch (error) {
     next(error)
   }
 }
 
-///////admin
-
-export const getAllInventoriesController = async (
+export const getInventories = async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const inventories = await getAllInventories()
+    const { warehouseID } = req.query
+
+    if (!warehouseID || typeof warehouseID !== 'string') {
+      res.status(400).json({ message: 'Missing or invalid warehouseID' })
+      return
+    }
+
+    const inventories = await inventoryService.getInventoriesByWarehouseID(
+      warehouseID
+    )
     res.status(200).json({ inventories })
   } catch (error) {
     next(error)
@@ -45,9 +42,8 @@ export const deleteInventoryItemController = async (
   res: Response
 ) => {
   const { inventoryID } = req.params
-
   try {
-    const result = await deleteInventoryItem(inventoryID)
+    const result = await inventoryService.deleteInventoryItem(inventoryID)
 
     if (result.success) {
       return res.status(200).json({ message: result.message })
@@ -60,7 +56,6 @@ export const deleteInventoryItemController = async (
   }
 }
 
-// 添加新的库存项
 export const addInventoryItemController = async (
   req: Request,
   res: Response
@@ -68,7 +63,7 @@ export const addInventoryItemController = async (
   const { productCode, binID, quantity } = req.body
 
   try {
-    const newItem = await addInventoryItemService({
+    const newItem = await inventoryService.addInventoryItemService({
       productCode,
       binID,
       quantity
@@ -80,7 +75,6 @@ export const addInventoryItemController = async (
   }
 }
 
-// 更新库存项
 export const updateInventoryItemController = async (
   req: Request,
   res: Response
@@ -89,7 +83,7 @@ export const updateInventoryItemController = async (
   const updatedFields = req.body
 
   try {
-    const updatedItem = await updateInventoryItemService(
+    const updatedItem = await inventoryService.updateInventoryItemService(
       inventoryID,
       updatedFields
     )

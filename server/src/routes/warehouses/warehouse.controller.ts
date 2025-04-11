@@ -1,58 +1,28 @@
-import { Request, Response } from 'express'
-import {
-  getAllWarehouses,
-  getWarehouseById,
-  createWarehouse,
-  updateWarehouse,
-  deleteWarehouse
-} from './warehouse.service'
+import { Request, Response, NextFunction } from 'express'
+import * as warehouseService from './warehouse.service'
 
-export const getAllWarehousesHandler = async (req: Request, res: Response) => {
-  try {
-    const warehouses = await getAllWarehouses()
-    res.status(200).json(warehouses)
-  } catch (error) {
-    res.status(500).json({ message: error.message })
-  }
-}
-
-export const getWarehouseByIdHandler = async (req: Request, res: Response) => {
+export const getWarehouse = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { warehouseID } = req.params
   try {
-    const warehouse = await getWarehouseById(warehouseID)
+    const warehouse = await warehouseService.getWarehouseByID(warehouseID)
     res.status(200).json(warehouse)
   } catch (error) {
-    res.status(500).json({ message: error.message })
+    next(error)
   }
 }
-
-export const createWarehouseHandler = async (req: Request, res: Response) => {
-  const { warehouseCode } = req.body
+export const getWarehouses = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
-    const newWarehouse = await createWarehouse(warehouseCode)
-    res.status(201).json(newWarehouse)
+    const warehouses = await warehouseService.getWarehouses()
+    res.status(200).json(warehouses)
   } catch (error) {
-    res.status(500).json({ message: error.message })
-  }
-}
-
-export const updateWarehouseHandler = async (req: Request, res: Response) => {
-  const { warehouseID } = req.params
-  const { warehouseCode } = req.body
-  try {
-    const updatedWarehouse = await updateWarehouse(warehouseID, warehouseCode)
-    res.status(200).json(updatedWarehouse)
-  } catch (error) {
-    res.status(500).json({ message: error.message })
-  }
-}
-
-export const deleteWarehouseHandler = async (req: Request, res: Response) => {
-  const { warehouseID } = req.params
-  try {
-    const message = await deleteWarehouse(warehouseID)
-    res.status(200).json({ message })
-  } catch (error) {
-    res.status(500).json({ message: error.message })
+    next(error)
   }
 }
