@@ -2,6 +2,7 @@ import Task from './task.model'
 import Inventory from '../inventory/inventory.model'
 import Bin from '../bins/bin.model'
 import AppError from '../../utils/appError'
+import { Op, Sequelize, WhereOptions } from 'sequelize'
 
 interface TaskWithJoin extends Task {
   destinationBin?: Bin
@@ -234,7 +235,9 @@ export const cancelBytaskID = async (
 export const getTasksByWarehouseID = async (
   warehouseID: string,
   role: 'TRANSPORT_WOKER' | 'PICKER' | 'ADMIN',
-  accountID?: string
+  accountID?: string,
+  keyword?: string,
+  status?: string
 ) => {
   if (role === 'PICKER' && !accountID) {
     throw new AppError(400, '❌ Picker must provide accountID')
@@ -272,9 +275,45 @@ export const getTasksByWarehouseID = async (
     }
   ]
 
-  let whereClause
+  let whereClause: WhereOptions<Task> = {}
+
   if (role === 'ADMIN') {
-    whereClause = { status: ['PENDING', 'COMPLETED', 'CANCELED', 'IN_PROCESS'] }
+    const allowedStatuses = ['PENDING', 'COMPLETED', 'CANCELED', 'IN_PROCESS']
+    if (status && allowedStatuses.includes(status)) {
+      whereClause.status = status
+    } else {
+      whereClause.status = allowedStatuses
+    }
+
+    if (keyword && typeof keyword === 'string' && keyword.trim() !== '') {
+      const lowerKeyword = keyword.toLowerCase()
+      whereClause[Op.or] = [
+        Sequelize.where(
+          Sequelize.fn('LOWER', Sequelize.col('Task.productCode')),
+          {
+            [Op.like]: `%${lowerKeyword}%`
+          }
+        ),
+        Sequelize.where(
+          Sequelize.fn('LOWER', Sequelize.col('destinationBin.binCode')),
+          {
+            [Op.like]: `%${lowerKeyword}%`
+          }
+        ),
+        Sequelize.where(
+          Sequelize.fn('LOWER', Sequelize.col('sourceBin.binCode')),
+          {
+            [Op.like]: `%${lowerKeyword}%`
+          }
+        ),
+        Sequelize.where(
+          Sequelize.fn('LOWER', Sequelize.col('inventories->Bin.binCode')),
+          {
+            [Op.like]: `%${lowerKeyword}%`
+          }
+        )
+      ]
+    }
   } else if (role === 'PICKER') {
     whereClause = { creatorID: accountID, status: ['PENDING', 'COMPLETED'] }
   } else if (role === 'TRANSPORT_WOKER') {

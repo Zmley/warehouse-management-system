@@ -1,5 +1,6 @@
 import { Inventory } from './inventory.model'
 import Bin from 'routes/bins/bin.model'
+import { WhereOptions } from 'sequelize'
 
 export const getInventoriesByCartId = async (
   cartID: string
@@ -21,13 +22,21 @@ export const getInventoriesByCartId = async (
 
 //admin
 
-export const getInventoriesByWarehouseID = async (warehouseID: string) => {
+export const getInventoriesByWarehouseID = async (
+  warehouseID: string,
+  binID?: string
+) => {
+  const binWhere: WhereOptions = { warehouseID }
+  if (binID) {
+    Object.assign(binWhere, { binID })
+  }
+
   const inventories = await Inventory.findAll({
     include: [
       {
         model: Bin,
-        attributes: ['binCode'],
-        where: { warehouseID }
+        attributes: ['binCode', 'binID'],
+        where: binWhere
       }
     ]
   })

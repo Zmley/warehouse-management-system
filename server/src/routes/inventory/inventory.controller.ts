@@ -21,7 +21,7 @@ export const getInventories = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { warehouseID } = req.query
+    const { warehouseID, binID } = req.query
 
     if (!warehouseID || typeof warehouseID !== 'string') {
       res.status(400).json({ message: 'Missing or invalid warehouseID' })
@@ -29,7 +29,8 @@ export const getInventories = async (
     }
 
     const inventories = await inventoryService.getInventoriesByWarehouseID(
-      warehouseID
+      warehouseID,
+      typeof binID === 'string' ? binID : undefined
     )
     res.status(200).json({ inventories })
   } catch (error) {

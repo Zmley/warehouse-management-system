@@ -149,6 +149,7 @@ export const getTasksByRole = async (
   try {
     const { role, accountID, warehouseID: localWarehouseID } = res.locals
     const queryWarehouseID = req.query.warehouseID
+    const { keyword, status } = req.query
 
     let warehouseID: string | undefined
 
@@ -167,7 +168,9 @@ export const getTasksByRole = async (
     const tasksWithBinCodes = await taskService.getTasksByWarehouseID(
       warehouseID,
       role,
-      accountID
+      accountID,
+      keyword as string,
+      status as string
     )
 
     res.status(200).json({
