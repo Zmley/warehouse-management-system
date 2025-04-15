@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from 'express'
 import * as taskService from '../tasks/task.service'
 import * as binService from 'routes/bins/bin.service'
+import AppError from 'utils/appError'
+
 export const createAsAdmin = async (
   req: Request,
   res: Response,
@@ -94,7 +96,7 @@ export const getMyTask = async (
   }
 }
 
-export const cancelByWoker = async (
+export const cancelTaskByRole = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -103,10 +105,14 @@ export const cancelByWoker = async (
     const { taskID } = req.params
     const { role, accountID } = res.locals
 
+    if (!taskID || !role || !accountID) {
+      throw new AppError(400, 'Missing required parameters')
+    }
+
     const task = await taskService.cancelBytaskID(taskID, accountID, role)
 
     res.status(200).json({
-      message: `Task "${task.taskID}" cancelled successfully`,
+      message: `Task "${task.taskID}" cancelled successfully by ${role}`,
       task
     })
   } catch (error) {
@@ -139,21 +145,6 @@ export const createAsPicker = async (
   }
 }
 
-export const cancelByPicker = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { taskID } = req.params
-    const { role, accountID } = res.locals
-    const task = await taskService.cancelBytaskID(taskID, accountID, role)
-    res.status(200).json({ message: 'Task cancelled', task })
-  } catch (error) {
-    next(error)
-  }
-}
-
 export const getPickerCreatedTasks = async (
   req: Request,
   res: Response,
@@ -178,7 +169,16 @@ export const getAllTasks = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { accountID, warehouseID, role } = res.locals
+    const { accountID, role } = res.locals
+
+    const { warehouseID } = req.query
+
+    if (!warehouseID || typeof warehouseID !== 'string') {
+      res
+        .status(400)
+        .json({ message: 'Missing or invalid warehouseID in query.' })
+      return
+    }
 
     const tasksWithBinCodes = await taskService.getTasksByWarehouseID(
       warehouseID,
@@ -189,26 +189,6 @@ export const getAllTasks = async (
     res.status(200).json({
       message: 'Successfully fetched all pending tasks for Picker',
       tasks: tasksWithBinCodes
-    })
-  } catch (error) {
-    next(error)
-  }
-}
-
-export const cancelByAdmin = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const { taskID } = req.params
-    const { role, accountID } = res.locals
-
-    const task = await taskService.cancelBytaskID(taskID, accountID, role)
-
-    res.status(200).json({
-      message: `Task "${task.taskID}" cancelled successfully`,
-      task
     })
   } catch (error) {
     next(error)

@@ -43,7 +43,7 @@ export const getBinCodes = async (
   }
 }
 
-//admin
+//
 
 export const getBinsForWarehouse = async (
   req: Request,
@@ -51,7 +51,12 @@ export const getBinsForWarehouse = async (
   next: NextFunction
 ) => {
   try {
-    const warehouseID = res.locals.warehouseID
+    const warehouseID = req.query.warehouseID as string
+
+    if (!warehouseID) {
+      return res.status(400).json({ message: 'warehouseID is required' })
+    }
+
     const bins = await getAllBinsInWarehouse(warehouseID)
     res.status(200).json({
       message: 'All bins fetched successfully',

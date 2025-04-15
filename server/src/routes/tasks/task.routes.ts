@@ -5,37 +5,32 @@ import {
   createAsPicker,
   getTasks,
   getMyTask,
-  cancelByWoker,
-  cancelByPicker,
   getPickerCreatedTasks,
   getAllTasks,
-  cancelByAdmin
+  cancelTaskByRole
 } from './task.controller'
-import transportWorkerOnly from '../../middlewares/transportWorker.middleware'
-import pickerOnly from '../../middlewares/picker.middleware'
-import adminOnly from '../../middlewares/admin.middleware'
+import roleAllow from 'middlewares/roleAllow.middleware'
 
 const router = express.Router()
 
-router.post('/createAsPicker', pickerOnly, createAsPicker)
+// Transport Worker routes
+router.get('/', roleAllow(['TRANSPORT_WORKER']), getTasks)
+router.get('/my', roleAllow(['TRANSPORT_WORKER']), getMyTask)
+router.post('/:taskID/accept', roleAllow(['TRANSPORT_WORKER']), acceptTask)
 
-router.get('/', transportWorkerOnly, getTasks)
+// Picker routes
+router.post('/', roleAllow(['PICKER']), createAsPicker)
+router.get('/picker', roleAllow(['PICKER']), getPickerCreatedTasks)
 
-router.get('/my', transportWorkerOnly, getMyTask)
+// Admin routes
+router.post('/admin', roleAllow(['ADMIN']), createAsAdmin)
+router.get('/all', roleAllow(['ADMIN']), getAllTasks)
 
-router.post('/:taskID/accept', transportWorkerOnly, acceptTask)
-
-router.post('/:taskID/cancel', transportWorkerOnly, cancelByWoker)
-
-router.post('/', pickerOnly, createAsPicker)
-
-router.post('/:taskID/cancelPicker', pickerOnly, cancelByPicker)
-
-router.get('/picker', pickerOnly, getPickerCreatedTasks)
-
-//admin part
-router.post('/createAsAdmin', adminOnly, createAsAdmin)
-router.post('/getTasks', adminOnly, getAllTasks)
-router.post('/cancelTask/:taskID', adminOnly, cancelByAdmin)
+//common
+router.post(
+  '/:taskID/cancel',
+  roleAllow(['ADMIN', 'PICKER', 'TRANSPORT_WORKER']),
+  cancelTaskByRole
+)
 
 export default router
