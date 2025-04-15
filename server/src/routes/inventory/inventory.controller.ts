@@ -21,18 +21,24 @@ export const getInventories = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { warehouseID, binID } = req.query
+    const { warehouseID, binID, page = '1', limit = '20' } = req.query
 
     if (!warehouseID || typeof warehouseID !== 'string') {
       res.status(400).json({ message: 'Missing or invalid warehouseID' })
       return
     }
 
-    const inventories = await inventoryService.getInventoriesByWarehouseID(
+    const parsedPage = parseInt(page as string, 10)
+    const parsedLimit = parseInt(limit as string, 10)
+
+    const { rows, count } = await inventoryService.getInventoriesByWarehouseID(
       warehouseID,
-      typeof binID === 'string' ? binID : undefined
+      typeof binID === 'string' ? binID : undefined,
+      parsedPage,
+      parsedLimit
     )
-    res.status(200).json({ inventories })
+
+    res.status(200).json({ inventories: rows, totalCount: count })
   } catch (error) {
     next(error)
   }

@@ -24,24 +24,28 @@ export const getInventoriesByCartId = async (
 
 export const getInventoriesByWarehouseID = async (
   warehouseID: string,
-  binID?: string
+  binID?: string,
+  page = 1,
+  limit = 20
 ) => {
   const binWhere: WhereOptions = { warehouseID }
   if (binID) {
     Object.assign(binWhere, { binID })
   }
 
-  const inventories = await Inventory.findAll({
+  const result = await Inventory.findAndCountAll({
     include: [
       {
         model: Bin,
         attributes: ['binCode', 'binID'],
         where: binWhere
       }
-    ]
+    ],
+    offset: (page - 1) * limit,
+    limit
   })
 
-  return inventories
+  return result
 }
 
 export const deleteInventoryItem = async (
