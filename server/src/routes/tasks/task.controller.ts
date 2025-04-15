@@ -55,28 +55,6 @@ export const acceptTask = async (
   }
 }
 
-export const getTasks = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const { warehouseID, role } = res.locals
-
-    const tasksWithBinCodes = await taskService.getTasksByWarehouseID(
-      warehouseID,
-      role
-    )
-
-    res.status(200).json({
-      message: 'Successfully fetched all pending tasks for Picker',
-      tasks: tasksWithBinCodes
-    })
-  } catch (error) {
-    next(error)
-  }
-}
-
 export const getMyTask = async (
   req: Request,
   res: Response,
@@ -163,21 +141,27 @@ export const getPickerCreatedTasks = async (
   }
 }
 
-export const getAllTasks = async (
+export const getTasksByRole = async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { accountID, role } = res.locals
+    const { role, accountID, warehouseID: localWarehouseID } = res.locals
+    const queryWarehouseID = req.query.warehouseID
 
-    const { warehouseID } = req.query
+    let warehouseID: string | undefined
 
-    if (!warehouseID || typeof warehouseID !== 'string') {
-      res
-        .status(400)
-        .json({ message: 'Missing or invalid warehouseID in query.' })
-      return
+    if (role === 'ADMIN') {
+      if (!queryWarehouseID || typeof queryWarehouseID !== 'string') {
+        res
+          .status(400)
+          .json({ message: 'Missing or invalid warehouseID in query.' })
+        return
+      }
+      warehouseID = queryWarehouseID
+    } else {
+      warehouseID = localWarehouseID
     }
 
     const tasksWithBinCodes = await taskService.getTasksByWarehouseID(
@@ -187,7 +171,7 @@ export const getAllTasks = async (
     )
 
     res.status(200).json({
-      message: 'Successfully fetched all pending tasks for Picker',
+      message: '✅ Successfully fetched tasks.',
       tasks: tasksWithBinCodes
     })
   } catch (error) {

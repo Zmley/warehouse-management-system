@@ -54,14 +54,12 @@ export const getBinsForWarehouse = async (
     const warehouseID = req.query.warehouseID as string
 
     if (!warehouseID) {
-      return res.status(400).json({ message: 'warehouseID is required' })
+      return res.status(400).json('warehouseID is required')
     }
 
     const bins = await getAllBinsInWarehouse(warehouseID)
-    res.status(200).json({
-      message: 'All bins fetched successfully',
-      bins
-    })
+
+    res.status(200).json(bins)
   } catch (error) {
     next(error)
   }
