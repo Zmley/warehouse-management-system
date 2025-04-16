@@ -16,6 +16,7 @@ const app: Application = express()
 const corsOptions = {
   origin: [
     'http://localhost:4100',
+    'http://localhost:5100',
     'https://d1fhrig6l377fl.cloudfront.net',
     'http://warehouse-admin-frontend.s3-website.us-east-2.amazonaws.com/',
     'https://d1oxjk4yrjml18.cloudfront.net'
