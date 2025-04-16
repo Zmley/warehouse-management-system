@@ -232,18 +232,8 @@ export const cancelBytaskID = async (
   return task
 }
 
-export const getTasksByWarehouseID = async (
-  warehouseID: string,
-  role: 'TRANSPORT_WOKER' | 'PICKER' | 'ADMIN',
-  accountID?: string,
-  keyword?: string,
-  status?: string
-) => {
-  if (role === 'PICKER' && !accountID) {
-    throw new AppError(400, '❌ Picker must provide accountID')
-  }
-
-  const includeClause = [
+const getIncludeClause = (warehouseID: string) => {
+  return [
     {
       model: Bin,
       as: 'destinationBin',
@@ -274,51 +264,76 @@ export const getTasksByWarehouseID = async (
       ]
     }
   ]
+}
+
+const getAdminWhereClause = (status: string, keyword: string) => {
+  const allowedStatuses = ['PENDING', 'COMPLETED', 'CANCELED', 'IN_PROCESS']
+  const whereClause: WhereOptions<Task> = {}
+
+  if (status && allowedStatuses.includes(status)) {
+    whereClause.status = status
+  } else {
+    whereClause.status = { [Op.in]: allowedStatuses }
+  }
+
+  if (keyword && typeof keyword === 'string' && keyword.trim() !== '') {
+    const lowerKeyword = keyword.toLowerCase()
+    whereClause[Op.or] = [
+      Sequelize.where(
+        Sequelize.fn('LOWER', Sequelize.col('Task.productCode')),
+        { [Op.like]: `%${lowerKeyword}%` }
+      ),
+      Sequelize.where(
+        Sequelize.fn('LOWER', Sequelize.col('destinationBin.binCode')),
+        { [Op.like]: `%${lowerKeyword}%` }
+      ),
+      Sequelize.where(
+        Sequelize.fn('LOWER', Sequelize.col('sourceBin.binCode')),
+        { [Op.like]: `%${lowerKeyword}%` }
+      ),
+      Sequelize.where(
+        Sequelize.fn('LOWER', Sequelize.col('inventories->Bin.binCode')),
+        { [Op.like]: `%${lowerKeyword}%` }
+      )
+    ]
+  }
+
+  return whereClause
+}
+
+const getPickerWhereClause = (accountID: string) => {
+  return { creatorID: accountID, status: ['PENDING', 'COMPLETED'] }
+}
+
+const getTransportWorkerWhereClause = () => {
+  return { status: 'PENDING' }
+}
+
+export const getTasksByWarehouseID = async (
+  warehouseID: string,
+  role: 'TRANSPORT_WORKER' | 'PICKER' | 'ADMIN',
+  accountID?: string,
+  keyword?: string,
+  status?: string
+) => {
+  if (role === 'PICKER' && !accountID) {
+    throw new AppError(400, '❌ Picker must provide accountID')
+  }
 
   let whereClause: WhereOptions<Task> = {}
-
   if (role === 'ADMIN') {
-    const allowedStatuses = ['PENDING', 'COMPLETED', 'CANCELED', 'IN_PROCESS']
-    if (status && allowedStatuses.includes(status)) {
-      whereClause.status = status
-    } else {
-      whereClause.status = allowedStatuses
-    }
-
-    if (keyword && typeof keyword === 'string' && keyword.trim() !== '') {
-      const lowerKeyword = keyword.toLowerCase()
-      whereClause[Op.or] = [
-        Sequelize.where(
-          Sequelize.fn('LOWER', Sequelize.col('Task.productCode')),
-          {
-            [Op.like]: `%${lowerKeyword}%`
-          }
-        ),
-        Sequelize.where(
-          Sequelize.fn('LOWER', Sequelize.col('destinationBin.binCode')),
-          {
-            [Op.like]: `%${lowerKeyword}%`
-          }
-        ),
-        Sequelize.where(
-          Sequelize.fn('LOWER', Sequelize.col('sourceBin.binCode')),
-          {
-            [Op.like]: `%${lowerKeyword}%`
-          }
-        ),
-        Sequelize.where(
-          Sequelize.fn('LOWER', Sequelize.col('inventories->Bin.binCode')),
-          {
-            [Op.like]: `%${lowerKeyword}%`
-          }
-        )
-      ]
-    }
+    whereClause = getAdminWhereClause(status, keyword)
   } else if (role === 'PICKER') {
-    whereClause = { creatorID: accountID, status: ['PENDING', 'COMPLETED'] }
-  } else if (role === 'TRANSPORT_WOKER') {
-    whereClause = { status: 'PENDING' }
+    whereClause = getPickerWhereClause(accountID!)
+  } else if (role === 'TRANSPORT_WORKER') {
+    whereClause = getTransportWorkerWhereClause()
   }
+
+  // console.log('whereClause:', whereClause)
+  // console.log('role test:', role)
+  // console.log('status test:', status)
+
+  const includeClause = getIncludeClause(warehouseID)
 
   const tasks = (await Task.findAll({
     where: whereClause,

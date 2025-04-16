@@ -30,6 +30,10 @@ router.post(
   cancelTaskByRole
 )
 
-router.get('/', roleAllow(['ADMIN', 'TRANSPORT_WORKER']), getTasksByRole)
+router.get(
+  '/',
+  roleAllow(['ADMIN', 'TRANSPORT_WORKER', 'PICKER']),
+  getTasksByRole
+)
 
 export default router
