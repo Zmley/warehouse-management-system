@@ -29,13 +29,13 @@ Warehouse.init(
     updatedAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
-      allowNull: false
+      allowNull: true
     }
   },
   {
     sequelize,
     tableName: 'warehouse',
-    timestamps: false
+    timestamps: true
   }
 )
 
