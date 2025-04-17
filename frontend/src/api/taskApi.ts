@@ -33,7 +33,7 @@ export const createPickerTask = async (
 }
 
 export const getPickerTasks = async (): Promise<Task[]> => {
-  const response = await apiClient.get('/tasks/picker')
+  const response = await apiClient.get('/tasks')
   return response.data.tasks
 }
 
