@@ -2,7 +2,7 @@ import express from 'express'
 import {
   getBinByBinCode,
   getBinCodes,
-  getAllBinsInWarehouse
+  getBinsInWarehouse
 } from './bin.controller'
 import roleAllow from 'middlewares/roleAllow.middleware'
 
@@ -16,6 +16,6 @@ router.get(
   getBinCodes
 )
 
-router.get('/', getAllBinsInWarehouse)
+router.get('/', getBinsInWarehouse)
 
 export default router
