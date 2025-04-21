@@ -1,8 +1,6 @@
 import express from 'express'
 import {
-  // createAsAdmin,
   acceptTask,
-  // createAsPicker,
   getMyTask,
   cancelTaskByTaskID,
   getTasks,
@@ -16,13 +14,7 @@ const router = express.Router()
 router.get('/my', roleAllow(['TRANSPORT_WORKER']), getMyTask)
 router.post('/:taskID/accept', roleAllow(['TRANSPORT_WORKER']), acceptTask)
 
-// Picker routes
-// router.post('/', roleAllow(['PICKER']), createAsPicker)
-
-// Admin routes
-// router.post('/admin', roleAllow(['ADMIN']), createAsAdmin)
-
-//common
+//public
 router.post(
   '/:taskID/cancel',
   roleAllow(['ADMIN', 'PICKER', 'TRANSPORT_WORKER']),
