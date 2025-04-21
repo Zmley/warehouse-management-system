@@ -50,7 +50,7 @@ Inventory.init(
 Inventory.belongsTo(Bin, {
   foreignKey: 'binID',
   targetKey: 'binID',
-  as: 'bin' // ✅ 添加别名
+  as: 'bin'
 })
 
 export default Inventory
