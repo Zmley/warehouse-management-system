@@ -1,10 +1,10 @@
 import express from 'express'
 import {
-  getInventoriesByCart,
-  getInventories,
+  getInventoriesByCartID,
+  getInventoriesByWarehouseID,
   deleteInventory,
   addInventory,
-  updateInventoryItemController
+  updateInventoryByInventoryID
 } from './inventory.controller'
 // import transportWorkerOnly from '../../middlewares/transportWorker.middleware'
 // import adminOnly from 'middlewares/admin.middleware'
@@ -16,17 +16,17 @@ const router = express.Router()
 router.get(
   '/inventoriesInCart',
   roleAllow(['TRANSPORT_WORKER']),
-  getInventoriesByCart
+  getInventoriesByCartID
 )
 
 //admin part
 
-router.get('/', getInventories)
+router.get('/', getInventoriesByWarehouseID)
 
 router.delete('/:inventoryID', roleAllow(['ADMIN']), deleteInventory)
 
 router.post('/', addInventory)
 
-router.put('/:inventoryID', updateInventoryItemController)
+router.put('/:inventoryID', updateInventoryByInventoryID)
 
 export default router

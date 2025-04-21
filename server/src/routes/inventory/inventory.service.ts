@@ -1,8 +1,9 @@
 import { Inventory } from './inventory.model'
-import Bin from 'routes/bins/bin.model'
+import { Bin } from 'routes/bins/bin.model'
 import { Sequelize, WhereOptions } from 'sequelize'
+import AppError from 'utils/appError'
 
-export const getInventoriesByCartId = async (
+export const getInventoriesByCartID = async (
   cartID: string
 ): Promise<{
   hasProduct: boolean
@@ -19,8 +20,6 @@ export const getInventoriesByCartId = async (
     inventories
   }
 }
-
-//admin
 
 export const getInventoriesByWarehouseID = async (
   warehouseID: string,
@@ -50,7 +49,7 @@ export const getInventoriesByWarehouseID = async (
   return result
 }
 
-export const deleteInventoryItem = async (
+export const deleteInventoryByInventoryID = async (
   inventoryID: string
 ): Promise<{ message: string }> => {
   try {
@@ -64,11 +63,13 @@ export const deleteInventoryItem = async (
     return { message: 'Inventory item deleted successfully' }
   } catch (error) {
     console.error(error)
+    if (error instanceof AppError) throw error
+
     throw new Error('Error deleting inventory item')
   }
 }
 
-export const addInventoryItemService = async ({
+export const addInventory = async ({
   productCode,
   binID,
   quantity
@@ -107,7 +108,7 @@ export const addInventoryItemService = async ({
   }
 }
 
-export const updateInventoryItemService = async (
+export const updateInventoryByInventoryID = async (
   inventoryID: string,
   updatedFields: { quantity?: number; productID?: string; binID?: string }
 ) => {
@@ -121,6 +122,8 @@ export const updateInventoryItemService = async (
 
     return { success: true, updatedItem: inventoryItem }
   } catch (error) {
+    if (error instanceof AppError) throw error
+
     throw new Error(`Failed to update inventory item: ${error.message}`)
   }
 }

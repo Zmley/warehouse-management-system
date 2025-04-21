@@ -1,22 +1,21 @@
 import { Request, Response, NextFunction } from 'express'
 import * as inventoryService from './inventory.service'
-import { deleteInventoryItem } from './inventory.service'
 
-export const getInventoriesByCart = async (
+export const getInventoriesByCartID = async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
     const cartID = res.locals.cartID
-    const result = await inventoryService.getInventoriesByCartId(cartID)
+    const result = await inventoryService.getInventoriesByCartID(cartID)
     res.status(200).json({ inventories: result.inventories })
   } catch (error) {
     next(error)
   }
 }
 
-export const getInventories = async (
+export const getInventoriesByWarehouseID = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -52,7 +51,9 @@ export const deleteInventory = async (
 ) => {
   const { inventoryID } = req.params
   try {
-    const result = await deleteInventoryItem(inventoryID)
+    const result = await inventoryService.deleteInventoryByInventoryID(
+      inventoryID
+    )
     res.status(200).json({ success: true, message: result.message })
   } catch (error) {
     next(error)
@@ -67,7 +68,7 @@ export const addInventory = async (
   const { productCode, binID, quantity } = req.body
 
   try {
-    const newItem = await inventoryService.addInventoryItemService({
+    const newItem = await inventoryService.addInventory({
       productCode,
       binID,
       quantity
@@ -82,7 +83,7 @@ export const addInventory = async (
   }
 }
 
-export const updateInventoryItemController = async (
+export const updateInventoryByInventoryID = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -91,7 +92,7 @@ export const updateInventoryItemController = async (
   const updatedFields = req.body
 
   try {
-    const updatedItem = await inventoryService.updateInventoryItemService(
+    const updatedItem = await inventoryService.updateInventoryByInventoryID(
       inventoryID,
       updatedFields
     )

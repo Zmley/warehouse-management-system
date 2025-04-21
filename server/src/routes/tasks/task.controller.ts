@@ -44,7 +44,7 @@ export const getMyTask = async (
   }
 }
 
-export const cancelTaskByRole = async (
+export const cancelTaskByTaskID = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -77,29 +77,35 @@ export const getTasks = async (
   try {
     const { role, accountID, warehouseID: localWarehouseID } = res.locals
     const queryWarehouseID = req.query.warehouseID
-    const { keyword, status } = req.query
+    const { keyword, status: rawStatus } = req.query
 
-    let warehouseID: string | undefined
+    let warehouseID: string
+    let status: string | undefined = undefined
 
     if (role === 'ADMIN') {
-      if (!queryWarehouseID || typeof queryWarehouseID !== 'string') {
-        res.status(400).json({
-          success: false,
-          message: 'Missing or invalid warehouseID in query.'
-        })
+      if (typeof queryWarehouseID !== 'string') {
         return
       }
       warehouseID = queryWarehouseID
-    } else {
+      if (typeof rawStatus === 'string') {
+        status = rawStatus
+      }
+    } else if (role === 'PICKER') {
       warehouseID = localWarehouseID
+      // if (typeof rawStatus === 'string') {
+      status = 'PENDING'
+      // }
+    } else if (role === 'TRANSPORT_WORKER') {
+      warehouseID = localWarehouseID
+      status = 'PENDING'
     }
 
     const tasksWithBinCodes = await taskService.getTasksByWarehouseID(
       warehouseID,
       role,
       accountID,
-      keyword as string,
-      status as string
+      typeof keyword === 'string' ? keyword : undefined,
+      status
     )
 
     res.status(200).json({
@@ -112,8 +118,6 @@ export const getTasks = async (
   }
 }
 
-////////////////////////////////////
-
 export const createTask = async (
   req: Request,
   res: Response,
@@ -124,10 +128,6 @@ export const createTask = async (
     const { productCode, binCode, sourceBinCode, destinationBinCode } = req.body
 
     if (role === 'ADMIN') {
-      if (!sourceBinCode || !destinationBinCode || !productCode) {
-        throw new AppError(400, 'Missing required fields for admin task')
-      }
-
       const sourceBin = await binService.getBinByBinCode(sourceBinCode)
       const destinationBin = await binService.getBinByBinCode(
         destinationBinCode
@@ -140,16 +140,14 @@ export const createTask = async (
         accountID
       )
 
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
-        message: 'Admin task created successfully',
+        message: '✅ Admin task created successfully',
         task
       })
-    } else if (role === 'PICKER') {
-      if (!binCode || !productCode) {
-        throw new AppError(400, 'Missing required fields for picker task')
-      }
+    }
 
+    if (role === 'PICKER') {
       const task = await taskService.createTaskAsPicker(
         binCode,
         accountID,
@@ -157,12 +155,14 @@ export const createTask = async (
         productCode
       )
 
-      res.status(201).json({
+      return res.status(201).json({
         success: true,
-        message: 'Picker task created successfully',
+        message: '✅ Picker task created successfully',
         task
       })
     }
+
+    throw new AppError(403, '❌ Unauthorized role')
   } catch (error) {
     next(error)
   }

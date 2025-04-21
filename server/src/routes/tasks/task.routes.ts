@@ -4,7 +4,7 @@ import {
   acceptTask,
   // createAsPicker,
   getMyTask,
-  cancelTaskByRole,
+  cancelTaskByTaskID,
   getTasks,
   createTask
 } from './task.controller'
@@ -26,11 +26,11 @@ router.post('/:taskID/accept', roleAllow(['TRANSPORT_WORKER']), acceptTask)
 router.post(
   '/:taskID/cancel',
   roleAllow(['ADMIN', 'PICKER', 'TRANSPORT_WORKER']),
-  cancelTaskByRole
+  cancelTaskByTaskID
 )
 
 router.get('/', roleAllow(['ADMIN', 'TRANSPORT_WORKER', 'PICKER']), getTasks)
 
-router.post('/', roleAllow(['ADMIN', ' PICKER']), createTask)
+router.post('/', roleAllow(['ADMIN', 'PICKER']), createTask)
 
 export default router
