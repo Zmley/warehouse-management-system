@@ -1,38 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
-import {
-  createTaskAsAdmin,
-  acceptTaskByTaskID,
-  createTaskAsPicker,
-  getTasksByWarehouseID,
-  cancelTaskByID,
-  getTaskByAccountID,
-  cancelPickerTaskByAccountID
-} from '../tasks/task.service'
-
-export const createAsAdmin = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const { sourceBinID, destinationBinID, productCode } = req.body
-    const accountID = res.locals.accountID
-
-    const task = await createTaskAsAdmin(
-      sourceBinID,
-      destinationBinID,
-      productCode,
-      accountID
-    )
-
-    res.status(201).json({
-      message: `Task created successfully`,
-      task
-    })
-  } catch (error) {
-    next(error)
-  }
-}
+import * as taskService from '../tasks/task.service'
+import * as binService from 'routes/bins/bin.service'
+import AppError from 'utils/appError'
 
 export const acceptTask = async (
   req: Request,
@@ -43,30 +12,12 @@ export const acceptTask = async (
     const accountID = res.locals.accountID
     const { taskID } = req.params
 
-    const task = await acceptTaskByTaskID(accountID, taskID)
+    const task = await taskService.acceptTaskByTaskID(accountID, taskID)
 
     res.status(200).json({
-      message: `Task accepted successfully and is now in progress`,
+      success: true,
+      message: 'Task accepted successfully and is now in progress',
       task
-    })
-  } catch (error) {
-    next(error)
-  }
-}
-
-export const getTasks = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const { warehouseID, role } = res.locals
-
-    const tasksWithBinCodes = await getTasksByWarehouseID(warehouseID, role)
-
-    res.status(200).json({
-      message: 'Successfully fetched all pending tasks for Picker',
-      tasks: tasksWithBinCodes
     })
   } catch (error) {
     next(error)
@@ -81,29 +32,11 @@ export const getMyTask = async (
   try {
     const { accountID, warehouseID } = res.locals
 
-    const task = await getTaskByAccountID(accountID, warehouseID)
+    const task = await taskService.getTaskByAccountID(accountID, warehouseID)
 
     res.status(200).json({
+      success: true,
       message: 'Successfully fetched current in-process task',
-      task: task
-    })
-  } catch (error) {
-    next(error)
-  }
-}
-
-export const cancelTask = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const { taskID } = req.params
-
-    const task = await cancelTaskByID(taskID)
-
-    res.status(200).json({
-      message: `Task "${task.taskID}" cancelled successfully`,
       task
     })
   } catch (error) {
@@ -111,55 +44,125 @@ export const cancelTask = async (
   }
 }
 
-export const createAsPicker = async (
+export const cancelTaskByRole = async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { binCode, productCode } = req.body
-    const { accountID, warehouseID } = res.locals
+    const { taskID } = req.params
+    const { role, accountID } = res.locals
 
-    const task = await createTaskAsPicker(
-      binCode,
-      accountID,
+    if (!taskID || !role || !accountID) {
+      throw new AppError(400, 'Missing required parameters')
+    }
+
+    const task = await taskService.cancelBytaskID(taskID, accountID, role)
+
+    res.status(200).json({
+      success: true,
+      message: `Task "${task.taskID}" cancelled successfully by ${role}`,
+      task
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const getTasks = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { role, accountID, warehouseID: localWarehouseID } = res.locals
+    const queryWarehouseID = req.query.warehouseID
+    const { keyword, status } = req.query
+
+    let warehouseID: string | undefined
+
+    if (role === 'ADMIN') {
+      if (!queryWarehouseID || typeof queryWarehouseID !== 'string') {
+        res.status(400).json({
+          success: false,
+          message: 'Missing or invalid warehouseID in query.'
+        })
+        return
+      }
+      warehouseID = queryWarehouseID
+    } else {
+      warehouseID = localWarehouseID
+    }
+
+    const tasksWithBinCodes = await taskService.getTasksByWarehouseID(
       warehouseID,
-      productCode
+      role,
+      accountID,
+      keyword as string,
+      status as string
     )
 
-    res.status(201).json({
-      message: `Picker Task created successfully`,
-      task
+    res.status(200).json({
+      success: true,
+      message: '✅ Successfully fetched tasks.',
+      tasks: tasksWithBinCodes
     })
   } catch (error) {
     next(error)
   }
 }
 
-export const cancelPickerTask = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { taskID } = req.params
-    const { accountID } = res.locals
-    const task = await cancelPickerTaskByAccountID(accountID, taskID)
-    res.status(200).json({ message: 'Task cancelled', task })
-  } catch (error) {
-    next(error)
-  }
-}
+////////////////////////////////////
 
-export const getPickerCreatedTasks = async (
+export const createTask = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const { accountID, warehouseID, role } = res.locals
-    const tasks = await getTasksByWarehouseID(warehouseID, role, accountID)
-    res.status(200).json({ tasks })
+    const { role, accountID, warehouseID } = res.locals
+    const { productCode, binCode, sourceBinCode, destinationBinCode } = req.body
+
+    if (role === 'ADMIN') {
+      if (!sourceBinCode || !destinationBinCode || !productCode) {
+        throw new AppError(400, 'Missing required fields for admin task')
+      }
+
+      const sourceBin = await binService.getBinByBinCode(sourceBinCode)
+      const destinationBin = await binService.getBinByBinCode(
+        destinationBinCode
+      )
+
+      const task = await taskService.createAsAdmin(
+        sourceBin.binID,
+        destinationBin.binID,
+        productCode,
+        accountID
+      )
+
+      res.status(200).json({
+        success: true,
+        message: 'Admin task created successfully',
+        task
+      })
+    } else if (role === 'PICKER') {
+      if (!binCode || !productCode) {
+        throw new AppError(400, 'Missing required fields for picker task')
+      }
+
+      const task = await taskService.createTaskAsPicker(
+        binCode,
+        accountID,
+        warehouseID,
+        productCode
+      )
+
+      res.status(201).json({
+        success: true,
+        message: 'Picker task created successfully',
+        task
+      })
+    }
   } catch (error) {
     next(error)
   }

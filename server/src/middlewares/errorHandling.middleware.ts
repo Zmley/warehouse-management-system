@@ -20,6 +20,7 @@ const errorHandling = (
   const responseError = error.message
 
   res.status(httpStatusCode).json({
+    success: false,
     error: responseError
   })
 }

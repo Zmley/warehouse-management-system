@@ -2,6 +2,7 @@ import Task from './task.model'
 import Inventory from '../inventory/inventory.model'
 import Bin from '../bins/bin.model'
 import AppError from '../../utils/appError'
+import { Op, Sequelize, WhereOptions } from 'sequelize'
 
 interface TaskWithJoin extends Task {
   destinationBin?: Bin
@@ -24,7 +25,7 @@ export const hasActiveTask = async (
   }
 }
 
-export const createTaskAsAdmin = async (
+export const createAsAdmin = async (
   sourceBinID: string,
   destinationBinID: string,
   productCode: string,
@@ -139,16 +140,101 @@ export const completeTask = async (taskID: string) => {
   return task
 }
 
-export const getTasksByWarehouseID = async (
-  warehouseID: string,
-  role: 'TRANSPORT_WOKER' | 'PICKER',
-  accountID?: string
+export const getTaskByAccountID = async (
+  accountID: string,
+  warehouseID: string
 ) => {
-  if (role === 'PICKER' && !accountID) {
-    throw new AppError(400, '❌ Picker must provide accountID')
+  const myCurrentTask = await Task.findOne({
+    where: {
+      accepterID: accountID,
+      status: 'IN_PROCESS'
+    }
+  })
+
+  if (!myCurrentTask) {
+    return
   }
 
-  const includeClause = [
+  const sourceBins = await Inventory.findAll({
+    where: { productCode: myCurrentTask.productCode },
+    include: [
+      {
+        model: Bin,
+        as: 'bin',
+        where: {
+          warehouseID,
+          type: 'INVENTORY'
+        },
+        attributes: ['binID', 'binCode']
+      }
+    ]
+  })
+
+  const destinationBin = await Bin.findOne({
+    where: { binID: myCurrentTask.destinationBinID },
+    attributes: ['binCode']
+  })
+
+  const destinationBinCode = destinationBin.binCode
+
+  return { ...myCurrentTask.toJSON(), sourceBins, destinationBinCode }
+}
+
+export const updateTaskSourceBin = async (taskID: string, binID: string) => {
+  await Task.update({ sourceBinID: binID }, { where: { taskID } })
+}
+
+export const cancelBytaskID = async (
+  taskID: string,
+  accountID: string,
+  role: string
+) => {
+  let task
+
+  if (role === 'ADMIN') {
+    task = await Task.findByPk(taskID)
+
+    if (!task) {
+      throw new AppError(404, '❌ Task not found')
+    }
+
+    task.status = 'CANCELED'
+    await task.save()
+  } else if (role === 'PICKER') {
+    task = await Task.findOne({
+      where: {
+        taskID,
+        creatorID: accountID
+      }
+    })
+
+    if (!task) {
+      throw new AppError(404, '❌ Task not found or not owned by picker')
+    }
+
+    task.status = 'CANCELED'
+    await task.save()
+  } else {
+    task = await Task.findByPk(taskID)
+
+    if (!task) {
+      throw new AppError(404, '❌ Task not found')
+    }
+
+    if (task.status !== 'IN_PROCESS') {
+      throw new AppError(400, '❌ Only tasks in progress can be cancelled')
+    }
+
+    task.status = 'PENDING'
+    task.accepterID = null
+    await task.save()
+  }
+
+  return task
+}
+
+const getIncludeClause = (warehouseID: string) => {
+  return [
     {
       model: Bin,
       as: 'destinationBin',
@@ -170,6 +256,7 @@ export const getTasksByWarehouseID = async (
       include: [
         {
           model: Bin,
+          as: 'bin',
           attributes: ['binID', 'binCode'],
           where: {
             warehouseID,
@@ -179,26 +266,52 @@ export const getTasksByWarehouseID = async (
       ]
     }
   ]
+}
 
-  const whereClause =
-    role === 'PICKER'
-      ? { creatorID: accountID, status: ['PENDING', 'COMPLETED'] }
-      : { status: 'PENDING' }
+const getAdminWhereClause = (status: string, keyword: string) => {
+  const allowedStatuses = ['PENDING', 'COMPLETED', 'CANCELED', 'IN_PROCESS']
+  const whereClause: WhereOptions<Task> = {}
 
-  const tasks = (await Task.findAll({
-    where: whereClause,
-    include: includeClause
-  })) as unknown as TaskWithJoin[]
-
-  if (!tasks.length) {
-    throw new AppError(
-      404,
-      role === 'PICKER'
-        ? '❌ No picker tasks found'
-        : '❌ No pending transport tasks found'
-    )
+  if (status && allowedStatuses.includes(status)) {
+    whereClause.status = status
+  } else {
+    whereClause.status = { [Op.in]: allowedStatuses }
   }
 
+  if (keyword && typeof keyword === 'string' && keyword.trim() !== '') {
+    const lowerKeyword = keyword.toLowerCase()
+    whereClause[Op.or] = [
+      Sequelize.where(
+        Sequelize.fn('LOWER', Sequelize.col('Task.productCode')),
+        { [Op.like]: `%${lowerKeyword}%` }
+      ),
+      Sequelize.where(
+        Sequelize.fn('LOWER', Sequelize.col('destinationBin.binCode')),
+        { [Op.like]: `%${lowerKeyword}%` }
+      ),
+      Sequelize.where(
+        Sequelize.fn('LOWER', Sequelize.col('sourceBin.binCode')),
+        { [Op.like]: `%${lowerKeyword}%` }
+      ),
+      Sequelize.where(
+        Sequelize.fn('LOWER', Sequelize.col('inventories->Bin.binCode')),
+        { [Op.like]: `%${lowerKeyword}%` }
+      )
+    ]
+  }
+
+  return whereClause
+}
+
+const getPickerWhereClause = (accountID: string) => {
+  return { creatorID: accountID, status: ['PENDING', 'COMPLETED'] }
+}
+
+const getTransportWorkerWhereClause = () => {
+  return { status: 'PENDING' }
+}
+
+const mapTasks = (tasks: TaskWithJoin[]) => {
   return tasks.map(task => {
     let sourceBins: (Inventory & { Bin?: Bin })[] = []
 
@@ -216,84 +329,37 @@ export const getTasksByWarehouseID = async (
   })
 }
 
-export const getTaskByAccountID = async (
-  accountID: string,
-  warehouseID: string
+export const getTasksByWarehouseID = async (
+  warehouseID: string,
+  role: 'TRANSPORT_WORKER' | 'PICKER' | 'ADMIN',
+  accountID?: string,
+  keyword?: string,
+  status?: string
 ) => {
-  const myCurrentTask = await Task.findOne({
-    where: {
-      accepterID: accountID,
-      status: 'IN_PROCESS'
-    }
-  })
-
-  if (!myCurrentTask) {
-    return null
+  if (role === 'PICKER' && !accountID) {
+    throw new AppError(400, '❌ Picker must provide accountID')
   }
 
-  const sourceBins = await Inventory.findAll({
-    where: { productCode: myCurrentTask.productCode },
-    include: [
-      {
-        model: Bin,
-        where: {
-          warehouseID,
-          type: 'INVENTORY'
-        },
-        attributes: ['binID', 'binCode']
-      }
-    ]
-  })
+  let whereClause: WhereOptions<Task> = {}
 
-  const destinationBin = await Bin.findOne({
-    where: { binID: myCurrentTask.destinationBinID },
-    attributes: ['binCode']
-  })
-
-  const destinationBinCode = destinationBin.binCode
-
-  return { ...myCurrentTask.toJSON(), sourceBins, destinationBinCode }
-}
-
-export const cancelTaskByID = async (taskID: string) => {
-  const task = await Task.findByPk(taskID)
-
-  if (!task) {
-    throw new AppError(404, '❌ Task not found')
+  if (role === 'ADMIN') {
+    whereClause = getAdminWhereClause(status, keyword)
+  } else if (role === 'PICKER') {
+    whereClause = getPickerWhereClause(accountID!)
+  } else if (role === 'TRANSPORT_WORKER') {
+    whereClause = getTransportWorkerWhereClause()
   }
 
-  if (task.status !== 'IN_PROCESS') {
-    throw new AppError(400, '❌ Only tasks in progress can be cancelled')
+  const includeClause = getIncludeClause(warehouseID)
+
+  const tasks = (await Task.findAll({
+    where: whereClause,
+    include: includeClause
+  })) as unknown as TaskWithJoin[]
+
+  if (!tasks.length) {
+    return []
   }
 
-  task.status = 'PENDING'
-  task.accepterID = null
-  await task.save()
-
-  return task
-}
-
-export const cancelPickerTaskByAccountID = async (
-  accountID: string,
-  taskID: string
-) => {
-  const task = await Task.findOne({
-    where: {
-      taskID,
-      creatorID: accountID
-    }
-  })
-
-  if (!task) {
-    throw new AppError(404, 'Task not found or not owned by picker')
-  }
-
-  task.status = 'CANCEL'
-  await task.save()
-
-  return task
-}
-
-export const updateTaskSourceBin = async (taskID: string, binID: string) => {
-  await Task.update({ sourceBinID: binID }, { where: { taskID } })
+  return mapTasks(tasks)
 }

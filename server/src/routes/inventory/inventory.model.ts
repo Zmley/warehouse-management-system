@@ -7,6 +7,7 @@ export class Inventory extends Model {
   public binID!: string
   public productCode!: string
   public quantity!: number
+  Bins: any
 }
 
 Inventory.init(
@@ -48,7 +49,8 @@ Inventory.init(
 
 Inventory.belongsTo(Bin, {
   foreignKey: 'binID',
-  targetKey: 'binID'
+  targetKey: 'binID',
+  as: 'bin' // ✅ 添加别名
 })
 
 export default Inventory

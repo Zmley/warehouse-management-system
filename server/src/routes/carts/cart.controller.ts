@@ -15,22 +15,22 @@ export const load = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { cartID, warehouseID, accountID } = res.locals
+    const { cartID, accountID } = res.locals
     const { binCode } = req.body
 
-    const result = await loadByBinCode(binCode, cartID, warehouseID)
+    const result = await loadByBinCode(binCode, cartID)
 
     const activeTask = await hasActiveTask(accountID)
 
     if (activeTask && activeTask.status === 'IN_PROCESS') {
-      const bin = await getBinByBinCode(binCode, warehouseID)
+      const bin = await getBinByBinCode(binCode)
 
       if (bin?.binID) {
         await updateTaskSourceBin(activeTask.taskID, bin.binID)
       }
     }
 
-    res.status(result.status).json({
+    res.status(200).json({
       success: true,
       message: result.message
     })

@@ -2,26 +2,23 @@ import Bin from './bin.model'
 import Inventory from 'routes/inventory/inventory.model'
 import AppError from '../../utils/appError'
 
-export const getBinByBinCode = async (binCode: string, warehouseID: string) => {
+export const getBinByBinCode = async (binCode: string) => {
   try {
     const bin = await Bin.findOne({
       where: {
-        binCode: binCode,
-        warehouseID
+        binCode
       }
     })
 
     if (!bin) {
-      throw new AppError(
-        404,
-        `❌ No bin found with code: ${binCode} in this warehouse`
-      )
+      throw new AppError(404, `❌${binCode} is not in system so far`)
     }
 
     return bin
   } catch (error) {
-    console.error('❌ Error fetching bin by code and warehouse:', error)
-    throw new AppError(500, '❌ Failed to fetch bin by code and warehouse')
+    console.error('Error fetching bin by code:', error)
+    if (error instanceof AppError) throw error
+    throw new AppError(500, '❌ Failed to fetch bin by code')
   }
 }
 
@@ -38,6 +35,7 @@ export const getBinCodesByProductCode = async (
       include: [
         {
           model: Inventory,
+          as: 'inventories',
           where: { productCode },
           attributes: []
         }
@@ -46,14 +44,40 @@ export const getBinCodesByProductCode = async (
     })
 
     if (!inventories.length) {
-      throw new Error('No bins found for the given productCode and warehouse')
+      throw new AppError(404, `❌ No ${productCode} in current warehouse!`)
     }
 
-    const binCodes = inventories.map(bin => bin.binCode)
-
-    return binCodes
+    return inventories.map(bin => bin.binCode)
   } catch (error) {
     console.error('Error fetching binCodes:', error)
-    throw new Error('Failed to fetch binCodes')
+    if (error instanceof AppError) throw error
+    throw new AppError(500, '❌ Failed to fetch binCodes')
+  }
+}
+
+export const getAllBinsInWarehouse = async (
+  warehouseID: string
+): Promise<{ binID: string; binCode: string }[]> => {
+  try {
+    const bins = await Bin.findAll({
+      where: {
+        warehouseID,
+        type: 'INVENTORY'
+      },
+      attributes: ['binID', 'binCode']
+    })
+
+    if (!bins.length) {
+      throw new AppError(404, '❌ No bins found in the warehouse')
+    }
+
+    return bins.map(bin => ({
+      binID: bin.binID,
+      binCode: bin.binCode
+    }))
+  } catch (error) {
+    console.error('Error fetching bins:', error)
+    if (error instanceof AppError) throw error
+    throw new AppError(500, '❌ Failed to fetch bins')
   }
 }
