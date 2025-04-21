@@ -1,18 +1,15 @@
 import { Request, Response, NextFunction } from 'express'
-import { getBinByBinCode } from './bin.service'
-import { getBinCodesByProductCode } from '../bins/bin.service'
+import * as binService from '../bins/bin.service'
 
-export const getBinByCode = async (
+export const getBin = async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { warehouseID } = res.locals
-
     const { binCode } = req.params
 
-    const bin = await getBinByBinCode(binCode, warehouseID)
+    const bin = await binService.getBinByBinCode(binCode)
 
     res.status(200).json({
       message: 'Bin fetched successfully',
@@ -32,12 +29,36 @@ export const getBinCodes = async (
     const { productCode } = req.params
     const { warehouseID } = res.locals
 
-    const binCodes = await getBinCodesByProductCode(productCode, warehouseID)
+    const binCodes = await binService.getBinCodesByProductCode(
+      productCode,
+      warehouseID
+    )
 
     res.status(200).json({
+      success: true,
       message: 'Bin codes fetched successfully',
       binCodes
     })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const getBins = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const warehouseID = req.query.warehouseID as string
+
+    if (!warehouseID) {
+      return res.status(400).json('warehouseID is required')
+    }
+
+    const bins = await binService.getBinsInWarehouse(warehouseID)
+
+    res.status(200).json(bins)
   } catch (error) {
     next(error)
   }

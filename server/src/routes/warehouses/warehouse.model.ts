@@ -29,7 +29,7 @@ Warehouse.init(
     updatedAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
-      allowNull: true
+      allowNull: false
     }
   },
   {

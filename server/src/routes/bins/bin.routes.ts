@@ -1,11 +1,18 @@
 import express from 'express'
-import { getBinByCode, getBinCodes } from './bin.controller'
-import pickerOnly from '../../middlewares/picker.middleware'
+import { getBin, getBinCodes, getBins } from './bin.controller'
+import roleAllow from 'middlewares/roleAllow.middleware'
+import { UserRole } from '../../constants/UserRole'
 
 const router = express.Router()
 
-router.get('/:binCode', getBinByCode)
+router.get('/:binCode', getBin)
 
-router.get('/code/:productCode', pickerOnly, getBinCodes)
+router.get(
+  '/code/:productCode',
+  roleAllow([UserRole.TRANSPORT_WORKER, UserRole.PICKER]),
+  getBinCodes
+)
+
+router.get('/', getBins)
 
 export default router
