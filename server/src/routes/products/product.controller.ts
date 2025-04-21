@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import * as productService from './product.service'
 
-export const getProducts = async (
+export const getProductCodes = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -14,7 +14,7 @@ export const getProducts = async (
   }
 }
 
-export const getProductsByWarehouse = async (
+export const getProducts = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -25,13 +25,7 @@ export const getProductsByWarehouse = async (
     const page = parseInt(req.query.page as string) || 1
     const limit = parseInt(req.query.limit as string) || 10
 
-    if (!warehouseID) {
-      return res
-        .status(400)
-        .json({ success: false, message: '❌ Missing warehouseID' })
-    }
-
-    const { products, total } = await productService.getProductsByWarehouse(
+    const { products, total } = await productService.getProductsByWarehouseID(
       warehouseID,
       keyword,
       page,

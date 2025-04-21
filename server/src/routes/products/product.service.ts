@@ -14,7 +14,7 @@ export const getProductCodes = async (): Promise<string[]> => {
   return products.map(p => p.productCode)
 }
 
-export const getProductsByWarehouse = async (
+export const getProductsByWarehouseID = async (
   warehouseID: string,
   keyword?: string,
   page: number = 1,

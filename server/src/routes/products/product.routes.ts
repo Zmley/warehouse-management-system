@@ -1,11 +1,11 @@
 import express from 'express'
-import { getProducts, getProductsByWarehouse } from './product.controller'
+import { getProductCodes, getProducts } from './product.controller'
 import roleAllow from 'middlewares/roleAllow.middleware'
 
 const router = express.Router()
 
-router.get('/codes', getProducts)
+router.get('/codes', getProductCodes)
 
-router.get('/', roleAllow(['ADMIN']), getProductsByWarehouse)
+router.get('/', roleAllow(['ADMIN']), getProducts)
 
 export default router
