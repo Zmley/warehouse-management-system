@@ -44,7 +44,7 @@ export const getInventoriesByWarehouseID = async (
   }
 }
 
-export const deleteInventory = async (
+export const deleteInventoryByInventoryID = async (
   req: Request,
   res: Response,
   next: NextFunction

@@ -2,7 +2,7 @@ import express from 'express'
 import {
   getInventoriesByCartID,
   getInventoriesByWarehouseID,
-  deleteInventory,
+  deleteInventoryByInventoryID,
   addInventory,
   updateInventoryByInventoryID
 } from './inventory.controller'
@@ -21,7 +21,11 @@ router.get(
 
 router.get('/', getInventoriesByWarehouseID)
 
-router.delete('/:inventoryID', roleAllow(['ADMIN']), deleteInventory)
+router.delete(
+  '/:inventoryID',
+  roleAllow(['ADMIN']),
+  deleteInventoryByInventoryID
+)
 
 router.post('/', addInventory)
 
