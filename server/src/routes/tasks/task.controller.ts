@@ -93,9 +93,8 @@ export const getTasks = async (
       }
     } else if (role === UserRole.PICKER) {
       warehouseID = localWarehouseID
-      // if (typeof rawStatus === 'string') {
+      //temporary using ALL
       status = 'ALL'
-      // }
     } else if (role === UserRole.TRANSPORT_WORKER) {
       warehouseID = localWarehouseID
       status = 'PENDING'
