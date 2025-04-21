@@ -44,7 +44,7 @@ export const getBinCodes = async (
   }
 }
 
-export const getBinsForWarehouse = async (
+export const getAllBinsInWarehouse = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -56,7 +56,7 @@ export const getBinsForWarehouse = async (
       return res.status(400).json('warehouseID is required')
     }
 
-    const bins = await binService.getAllBinsInWarehouse(warehouseID)
+    const bins = await binService.getBinsInWarehouse(warehouseID)
 
     res.status(200).json(bins)
   } catch (error) {

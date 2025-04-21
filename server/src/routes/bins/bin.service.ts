@@ -55,7 +55,7 @@ export const getBinCodesByProductCode = async (
   }
 }
 
-export const getAllBinsInWarehouse = async (
+export const getBinsInWarehouse = async (
   warehouseID: string
 ): Promise<{ binID: string; binCode: string }[]> => {
   try {

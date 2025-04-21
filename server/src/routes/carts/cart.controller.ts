@@ -59,11 +59,7 @@ export const unload = async (
         return
       }
 
-      const result = await unloadByBinCode(
-        binCode,
-        unloadProductList,
-        warehouseID
-      )
+      const result = await unloadByBinCode(binCode, unloadProductList)
 
       const taskCompletionResult = await completeTask(task.taskID)
 
@@ -81,11 +77,7 @@ export const unload = async (
         updatedProducts: result
       })
     } else {
-      const result = await unloadByBinCode(
-        binCode,
-        unloadProductList,
-        warehouseID
-      )
+      const result = await unloadByBinCode(binCode, unloadProductList)
 
       res.status(200).json({
         success: true,

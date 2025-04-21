@@ -1,7 +1,6 @@
 import Inventory from '../inventory/inventory.model'
 import Bin from '../bins/bin.model'
 import AppError from '../../utils/appError'
-import Warehouse from 'routes/warehouses/warehouse.model'
 
 const moveInventoriesToBin = async (
   inventories: { inventoryID: string; quantity: number }[],
@@ -92,27 +91,15 @@ export const loadByBinCode = async (
 
 export const unloadByBinCode = async (
   binCode: string,
-  unloadProductList: { inventoryID: string; quantity: number }[],
-  warehouseID: string
+  unloadProductList: { inventoryID: string; quantity: number }[]
 ): Promise<{ message: string }> => {
   try {
-    const warehouse = await Warehouse.findOne({ where: { warehouseID } })
-
-    if (!warehouse) {
-      throw new AppError(404, `❌ Warehouse with ID "${warehouseID}" not found`)
-    }
-
-    const warehouseCode = warehouse.warehouseCode
-
     const bin = await Bin.findOne({
-      where: { binCode, warehouseID }
+      where: { binCode }
     })
 
     if (!bin) {
-      throw new AppError(
-        404,
-        `❌ Bin with code "${binCode}" not found in warehouse "${warehouseCode}"`
-      )
+      throw new AppError(404, `❌  ${binCode} not found in system`)
     }
 
     const updatedCount = await moveInventoriesToBin(unloadProductList, bin)
