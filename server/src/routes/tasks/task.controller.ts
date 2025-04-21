@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express'
 import * as taskService from '../tasks/task.service'
 import * as binService from 'routes/bins/bin.service'
 import AppError from 'utils/appError'
+import { UserRole } from '../../constants/roles'
 
 export const acceptTask = async (
   req: Request,
@@ -82,7 +83,7 @@ export const getTasks = async (
     let warehouseID: string
     let status: string | undefined = undefined
 
-    if (role === 'ADMIN') {
+    if (role === UserRole.ADMIN) {
       if (typeof queryWarehouseID !== 'string') {
         return
       }
@@ -90,12 +91,12 @@ export const getTasks = async (
       if (typeof rawStatus === 'string') {
         status = rawStatus
       }
-    } else if (role === 'PICKER') {
+    } else if (role === UserRole.PICKER) {
       warehouseID = localWarehouseID
       if (typeof rawStatus === 'string') {
         status = rawStatus
       }
-    } else if (role === 'TRANSPORT_WORKER') {
+    } else if (role === UserRole.TRANSPORT_WORKER) {
       warehouseID = localWarehouseID
       status = 'PENDING'
     }
@@ -127,7 +128,7 @@ export const createTask = async (
     const { role, accountID, warehouseID } = res.locals
     const { productCode, binCode, sourceBinCode, destinationBinCode } = req.body
 
-    if (role === 'ADMIN') {
+    if (role === UserRole.ADMIN) {
       const sourceBin = await binService.getBinByBinCode(sourceBinCode)
       const destinationBin = await binService.getBinByBinCode(
         destinationBinCode
@@ -147,7 +148,7 @@ export const createTask = async (
       })
     }
 
-    if (role === 'PICKER') {
+    if (role === UserRole.PICKER) {
       const task = await taskService.createTaskAsPicker(
         binCode,
         accountID,

@@ -3,6 +3,7 @@ import Inventory from '../inventory/inventory.model'
 import Bin from '../bins/bin.model'
 import AppError from '../../utils/appError'
 import { Op, Sequelize, WhereOptions } from 'sequelize'
+import { UserRole } from 'constants/roles'
 
 interface TaskWithJoin extends Task {
   destinationBin?: Bin
@@ -229,7 +230,7 @@ export const cancelBytaskID = async (
 ) => {
   let task
 
-  if (role === 'ADMIN') {
+  if (role === UserRole.ADMIN) {
     task = await Task.findByPk(taskID)
 
     if (!task) {
@@ -238,7 +239,7 @@ export const cancelBytaskID = async (
 
     task.status = 'CANCELED'
     await task.save()
-  } else if (role === 'PICKER') {
+  } else if (role === UserRole.PICKER) {
     task = await Task.findOne({
       where: {
         taskID,
@@ -360,7 +361,7 @@ const mapTasks = (tasks: TaskWithJoin[]) => {
 }
 
 const getWhereClauseForRole = (
-  role: 'TRANSPORT_WORKER' | 'PICKER' | 'ADMIN',
+  role: UserRole,
   status?: string,
   accountID?: string,
   keyword?: string
@@ -381,7 +382,7 @@ const getWhereClauseForRole = (
 
 export const getTasksByWarehouseID = async (
   warehouseID: string,
-  role: 'TRANSPORT_WORKER' | 'PICKER' | 'ADMIN',
+  role: UserRole,
   accountID?: string,
   keyword?: string,
   status?: string

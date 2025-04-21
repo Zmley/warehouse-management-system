@@ -8,20 +8,21 @@ import {
 } from './inventory.controller'
 
 import roleAllow from 'middlewares/roleAllow.middleware'
+import { UserRole } from '../../constants/roles'
 
 const router = express.Router()
 
 router.get(
   '/inventoriesInCart',
-  roleAllow(['TRANSPORT_WORKER']),
+  roleAllow([UserRole.TRANSPORT_WORKER]),
   getInventoriesInCart
 )
 
-//admin part
+// admin part
 
 router.get('/', getInventories)
 
-router.delete('/:inventoryID', roleAllow(['ADMIN']), deleteInventory)
+router.delete('/:inventoryID', roleAllow([UserRole.ADMIN]), deleteInventory)
 
 router.post('/', addInventory)
 

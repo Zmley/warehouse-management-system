@@ -1,0 +1,5 @@
+export enum UserRole {
+  ADMIN = 'ADMIN',
+  PICKER = 'PICKER',
+  TRANSPORT_WORKER = 'TRANSPORT_WORKER'
+}
