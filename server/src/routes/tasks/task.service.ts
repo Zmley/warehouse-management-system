@@ -3,7 +3,7 @@ import Inventory from '../inventory/inventory.model'
 import Bin from '../bins/bin.model'
 import AppError from '../../utils/appError'
 import { Op, Sequelize, WhereOptions } from 'sequelize'
-import { UserRole } from 'constants/roles'
+import { UserRole } from 'constants/UserRole'
 
 interface TaskWithJoin extends Task {
   destinationBin?: Bin

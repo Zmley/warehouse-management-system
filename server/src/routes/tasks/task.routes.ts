@@ -7,7 +7,7 @@ import {
   createTask
 } from './task.controller'
 import roleAllow from 'middlewares/roleAllow.middleware'
-import { UserRole } from '../../constants/roles' // 路径请根据项目结构调整
+import { UserRole } from '../../constants/UserRole' // 路径请根据项目结构调整
 
 const router = express.Router()
 
