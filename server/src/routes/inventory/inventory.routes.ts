@@ -6,8 +6,6 @@ import {
   addInventory,
   updateInventoryByInventoryID
 } from './inventory.controller'
-// import transportWorkerOnly from '../../middlewares/transportWorker.middleware'
-// import adminOnly from 'middlewares/admin.middleware'
 
 import roleAllow from 'middlewares/roleAllow.middleware'
 
