@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import * as inventoryService from './inventory.service'
 
-export const getInventoriesByCartID = async (
+export const getInventoriesInCart = async (
   req: Request,
   res: Response,
   next: NextFunction

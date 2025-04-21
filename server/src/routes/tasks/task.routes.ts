@@ -4,7 +4,7 @@ import {
   getMyTask,
   cancelTask,
   getTasks,
-  createTaskByID
+  createTask
 } from './task.controller'
 import roleAllow from 'middlewares/roleAllow.middleware'
 
@@ -23,6 +23,6 @@ router.post(
 
 router.get('/', roleAllow(['ADMIN', 'TRANSPORT_WORKER', 'PICKER']), getTasks)
 
-router.post('/', roleAllow(['ADMIN', 'PICKER']), createTaskByID)
+router.post('/', roleAllow(['ADMIN', 'PICKER']), createTask)
 
 export default router

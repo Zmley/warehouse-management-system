@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import { loadByBinCode, unloadByBinCode } from './cart.service'
 import * as taskService from 'routes/tasks/task.service'
-import { getBinByBinCode } from 'routes/bins/bin.service'
+import * as binService from 'routes/bins/bin.service'
 
 import { updateTaskSourceBin } from 'routes/tasks/task.service'
 
@@ -19,7 +19,7 @@ export const load = async (
     const activeTask = await taskService.hasActiveTask(accountID)
 
     if (activeTask && activeTask.status === 'IN_PROCESS') {
-      const bin = await getBinByBinCode(binCode)
+      const bin = await binService.getBinByBinCode(binCode)
 
       if (bin?.binID) {
         await updateTaskSourceBin(activeTask.taskID, bin.binID)

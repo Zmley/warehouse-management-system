@@ -44,7 +44,7 @@ export const getBinCodes = async (
   }
 }
 
-export const getBinsInWarehouse = async (
+export const getBins = async (
   req: Request,
   res: Response,
   next: NextFunction

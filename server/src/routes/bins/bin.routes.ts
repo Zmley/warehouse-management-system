@@ -1,5 +1,5 @@
 import express from 'express'
-import { getBin, getBinCodes, getBinsInWarehouse } from './bin.controller'
+import { getBin, getBinCodes, getBins } from './bin.controller'
 import roleAllow from 'middlewares/roleAllow.middleware'
 
 const router = express.Router()
@@ -12,6 +12,6 @@ router.get(
   getBinCodes
 )
 
-router.get('/', getBinsInWarehouse)
+router.get('/', getBins)
 
 export default router

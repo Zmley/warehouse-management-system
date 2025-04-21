@@ -1,6 +1,6 @@
 import express from 'express'
 import {
-  getInventoriesByCartID,
+  getInventoriesInCart,
   getInventories,
   deleteInventory,
   addInventory,
@@ -14,7 +14,7 @@ const router = express.Router()
 router.get(
   '/inventoriesInCart',
   roleAllow(['TRANSPORT_WORKER']),
-  getInventoriesByCartID
+  getInventoriesInCart
 )
 
 //admin part

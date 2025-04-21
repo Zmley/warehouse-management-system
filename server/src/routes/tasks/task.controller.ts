@@ -118,7 +118,7 @@ export const getTasks = async (
   }
 }
 
-export const createTaskByID = async (
+export const createTask = async (
   req: Request,
   res: Response,
   next: NextFunction
