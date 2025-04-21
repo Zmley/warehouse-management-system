@@ -44,7 +44,7 @@ export const getMyTask = async (
   }
 }
 
-export const cancelTaskByTaskID = async (
+export const cancelTask = async (
   req: Request,
   res: Response,
   next: NextFunction

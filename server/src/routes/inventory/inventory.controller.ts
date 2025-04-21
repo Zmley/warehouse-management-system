@@ -15,7 +15,7 @@ export const getInventoriesByCartID = async (
   }
 }
 
-export const getInventoriesByWarehouseID = async (
+export const getInventories = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -44,16 +44,14 @@ export const getInventoriesByWarehouseID = async (
   }
 }
 
-export const deleteInventoryByInventoryID = async (
+export const deleteInventory = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   const { inventoryID } = req.params
   try {
-    const result = await inventoryService.deleteInventoryByInventoryID(
-      inventoryID
-    )
+    const result = await inventoryService.deleteByInventoryID(inventoryID)
     res.status(200).json({ success: true, message: result.message })
   } catch (error) {
     next(error)
@@ -83,7 +81,7 @@ export const addInventory = async (
   }
 }
 
-export const updateInventoryByInventoryID = async (
+export const updateInventory = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -92,7 +90,7 @@ export const updateInventoryByInventoryID = async (
   const updatedFields = req.body
 
   try {
-    const updatedItem = await inventoryService.updateInventoryByInventoryID(
+    const updatedItem = await inventoryService.updateByInventoryID(
       inventoryID,
       updatedFields
     )

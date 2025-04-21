@@ -2,7 +2,7 @@ import express from 'express'
 import {
   acceptTask,
   getMyTask,
-  cancelTaskByTaskID,
+  cancelTask,
   getTasks,
   createTaskByID
 } from './task.controller'
@@ -18,7 +18,7 @@ router.post('/:taskID/accept', roleAllow(['TRANSPORT_WORKER']), acceptTask)
 router.post(
   '/:taskID/cancel',
   roleAllow(['ADMIN', 'PICKER', 'TRANSPORT_WORKER']),
-  cancelTaskByTaskID
+  cancelTask
 )
 
 router.get('/', roleAllow(['ADMIN', 'TRANSPORT_WORKER', 'PICKER']), getTasks)

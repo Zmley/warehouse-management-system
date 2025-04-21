@@ -1,14 +1,10 @@
 import express from 'express'
-import {
-  getBinByBinCode,
-  getBinCodes,
-  getBinsInWarehouse
-} from './bin.controller'
+import { getBin, getBinCodes, getBinsInWarehouse } from './bin.controller'
 import roleAllow from 'middlewares/roleAllow.middleware'
 
 const router = express.Router()
 
-router.get('/:binCode', getBinByBinCode)
+router.get('/:binCode', getBin)
 
 router.get(
   '/code/:productCode',

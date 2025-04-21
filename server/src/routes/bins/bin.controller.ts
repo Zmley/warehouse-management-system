@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import * as binService from '../bins/bin.service'
 
-export const getBinByBinCode = async (
+export const getBin = async (
   req: Request,
   res: Response,
   next: NextFunction

@@ -49,7 +49,7 @@ export const getInventoriesByWarehouseID = async (
   return result
 }
 
-export const deleteInventoryByInventoryID = async (
+export const deleteByInventoryID = async (
   inventoryID: string
 ): Promise<{ message: string }> => {
   try {
@@ -108,7 +108,7 @@ export const addInventory = async ({
   }
 }
 
-export const updateInventoryByInventoryID = async (
+export const updateByInventoryID = async (
   inventoryID: string,
   updatedFields: { quantity?: number; productID?: string; binID?: string }
 ) => {

@@ -1,10 +1,10 @@
 import express from 'express'
 import {
   getInventoriesByCartID,
-  getInventoriesByWarehouseID,
-  deleteInventoryByInventoryID,
+  getInventories,
+  deleteInventory,
   addInventory,
-  updateInventoryByInventoryID
+  updateInventory
 } from './inventory.controller'
 
 import roleAllow from 'middlewares/roleAllow.middleware'
@@ -19,16 +19,12 @@ router.get(
 
 //admin part
 
-router.get('/', getInventoriesByWarehouseID)
+router.get('/', getInventories)
 
-router.delete(
-  '/:inventoryID',
-  roleAllow(['ADMIN']),
-  deleteInventoryByInventoryID
-)
+router.delete('/:inventoryID', roleAllow(['ADMIN']), deleteInventory)
 
 router.post('/', addInventory)
 
-router.put('/:inventoryID', updateInventoryByInventoryID)
+router.put('/:inventoryID', updateInventory)
 
 export default router
