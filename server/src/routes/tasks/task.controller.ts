@@ -93,9 +93,9 @@ export const getTasks = async (
       }
     } else if (role === UserRole.PICKER) {
       warehouseID = localWarehouseID
-      if (typeof rawStatus === 'string') {
-        status = rawStatus
-      }
+      // if (typeof rawStatus === 'string') {
+      status = 'ALL'
+      // }
     } else if (role === UserRole.TRANSPORT_WORKER) {
       warehouseID = localWarehouseID
       status = 'PENDING'

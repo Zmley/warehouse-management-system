@@ -344,10 +344,10 @@ const getAdminWhereClause = (status: string, keyword: string) => {
 
 const mapTasks = (tasks: TaskWithJoin[]) => {
   return tasks.map(task => {
-    let sourceBins: (Inventory & { Bin?: Bin })[] = []
+    let sourceBins: (Inventory & { bin?: Bin })[] = []
 
     if (task.sourceBin) {
-      sourceBins = [{ Bin: task.sourceBin } as Inventory & { Bin?: Bin }]
+      sourceBins = [{ bin: task.sourceBin } as Inventory & { bin?: Bin }]
     } else if (task.inventories?.length > 0) {
       sourceBins = task.inventories
     }
