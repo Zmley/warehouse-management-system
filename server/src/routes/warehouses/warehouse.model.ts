@@ -35,7 +35,7 @@ Warehouse.init(
   {
     sequelize,
     tableName: 'warehouse',
-    timestamps: false
+    timestamps: true
   }
 )
 
