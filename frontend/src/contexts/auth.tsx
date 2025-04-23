@@ -1,5 +1,5 @@
 import React, { createContext, useState } from 'react'
-import { areTokensValid } from '../utils/Storages'
+import { areTokensValid, clearTokens } from '../utils/Storages'
 import { getUserProfile } from '../api/authApi'
 import { Task } from '../types/task'
 
@@ -35,8 +35,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   )
 
   const getMe = async () => {
-    const account = await getUserProfile()
-    setUserProfile(account)
+    try {
+      const account = await getUserProfile()
+      setUserProfile(account)
+    } catch (err: any) {
+      clearTokens()
+      setIsAuthenticated(false)
+    }
   }
   return (
     <AuthContext.Provider

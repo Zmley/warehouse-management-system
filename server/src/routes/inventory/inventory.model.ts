@@ -7,6 +7,7 @@ export class Inventory extends Model {
   public binID!: string
   public productCode!: string
   public quantity!: number
+  // public totalQuantity: number
 }
 
 Inventory.init(

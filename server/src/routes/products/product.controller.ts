@@ -37,3 +37,31 @@ export const getProducts = async (
     next(error)
   }
 }
+
+export interface ProductUploadInput {
+  productCode: string
+  barCode: string
+  boxType: string
+}
+
+export const uploadProducts = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const products: ProductUploadInput[] = req.body
+
+    if (!Array.isArray(products)) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Invalid payload' })
+    }
+
+    const result = await productService.uploadProducts(products)
+
+    return res.status(200).json(result)
+  } catch (error) {
+    next(error)
+  }
+}

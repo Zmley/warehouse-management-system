@@ -78,7 +78,7 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
                           >
                             {typeof item === 'string'
                               ? item
-                              : item.Bin?.binCode || '--'}
+                              : item.bin?.binCode || '--'}
                             {idx < task.sourceBins.length - 1 && ' / '}
                           </Typography>
                         ))

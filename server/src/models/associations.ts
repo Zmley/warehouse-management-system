@@ -17,6 +17,7 @@ export const setupAssociations = () => {
 
   Inventory.belongsTo(Product, {
     foreignKey: 'productCode',
-    targetKey: 'productCode'
+    targetKey: 'productCode',
+    as: 'product'
   })
 }

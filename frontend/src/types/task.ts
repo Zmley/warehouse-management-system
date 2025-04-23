@@ -14,7 +14,10 @@ export interface Inventory {
   quantity: number
   createdAt: string
   updatedAt: string
-  Bin?: Bin
+  bin: {
+    binID: string
+    binCode: string
+  }
 }
 
 export interface Task {

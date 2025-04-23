@@ -184,7 +184,7 @@ export const getTaskByAccountID = async (
     })
 
     if (sourceBin) {
-      sourceBins = [{ Bin: sourceBin }]
+      sourceBins = [{ bin: sourceBin }]
     }
   } else {
     const inventories = await Inventory.findAll({

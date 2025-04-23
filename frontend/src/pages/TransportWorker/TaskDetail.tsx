@@ -61,7 +61,7 @@ const TaskDetail: React.FC = () => {
             <Typography fontWeight='bold' fontSize={20}>
               {myTask.sourceBins?.length
                 ? myTask.sourceBins
-                    .map((sourceBin: any) => sourceBin.Bin?.binCode || '--')
+                    .map((sourceBin: any) => sourceBin.bin?.binCode || '--')
                     .join(' / ')
                 : '--'}
             </Typography>
