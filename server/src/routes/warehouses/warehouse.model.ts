@@ -1,5 +1,5 @@
 import { Model, DataTypes } from 'sequelize'
-import { sequelize } from '../../config/db'
+import { sequelize } from 'config/db'
 
 export class Warehouse extends Model {
   public warehouseID!: string

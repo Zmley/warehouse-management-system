@@ -1,13 +1,13 @@
 import React, { useState } from 'react'
 import { Box, Typography } from '@mui/material'
-import TopBar from '../components/Topbar'
+import TopBar from 'components/Topbar'
 import WokerBottombar from './TransportWorker/Bottombar'
 import PickerBottombar from './Picker/Bottombar'
-import PendingTaskList from '../components/TaskList'
+import PendingTaskList from 'components/TaskList'
 import PickerCreatedTaskList from './Picker/TaskListCard'
-import { useAuth } from '../hooks/useAuth'
+import { useAuth } from 'hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
-import { TaskCategoryEnum } from '../types/task'
+import { TaskCategoryEnum } from 'types/task'
 
 const Dashboard: React.FC = () => {
   const { userProfile } = useAuth()
@@ -31,6 +31,7 @@ const Dashboard: React.FC = () => {
       </Box>
     )
   }
+
   if (isPicker) {
     return (
       <Box sx={{ height: '100vh', backgroundColor: '#F7F9FC' }}>

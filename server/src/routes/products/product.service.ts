@@ -2,7 +2,8 @@ import { Product } from './product.model'
 import { Op, Sequelize } from 'sequelize'
 import { Inventory } from 'routes/inventory/inventory.model'
 import { Bin } from 'routes/bins/bin.model'
-import { getOffset, buildProductWhereClause } from '../../utils/productUtils'
+import { getOffset, buildProductWhereClause } from 'utils/productUtils'
+import { ProductUploadInput } from 'interfaces/product'
 
 export const getProductCodes = async (): Promise<string[]> => {
   const products = await Product.findAll({
@@ -15,9 +16,9 @@ export const getProductCodes = async (): Promise<string[]> => {
 //get products and each product's total quantity in this warehouse
 export const getProductsByWarehouseID = async (
   warehouseID: string,
-  keyword?: string,
-  page: number = 1,
-  limit: number = 10
+  page: number,
+  limit: number,
+  keyword?: string
 ) => {
   const offset = getOffset(page, limit)
   const whereClause = buildProductWhereClause(keyword)
@@ -67,12 +68,6 @@ export const getProductsByWarehouseID = async (
   }
 }
 
-interface ProductUploadInput {
-  productCode: string
-  barCode: string
-  boxType: string
-}
-
 export const uploadProducts = async (products: ProductUploadInput[]) => {
   const incomingCodes = products.map(p => p.productCode)
 
@@ -100,7 +95,6 @@ export const uploadProducts = async (products: ProductUploadInput[]) => {
   )
 
   return {
-    success: true,
     insertedCount: created.length,
     skippedCount: existingCodes.length,
     duplicatedProductCodes: existingCodes

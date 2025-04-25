@@ -19,7 +19,7 @@
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "importHelpers": true,
-    "baseUrl": "src",
+    "baseUrl": "./src",
     "outDir": "./dist",
     "paths": {
       "app": ["./app.ts"],

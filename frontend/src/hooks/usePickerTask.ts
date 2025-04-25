@@ -1,10 +1,6 @@
 import { useState } from 'react'
-import {
-  createPickerTask,
-  getPickerTasks,
-  cancelPickerTask
-} from '../api/taskApi'
-import { Task } from '../types/task'
+import { createPickerTask, getPickerTasks, cancelPickerTask } from 'api/taskApi'
+import { Task } from 'types/task'
 
 export const usePickerTasks = () => {
   const [tasks, setTasks] = useState<Task[]>([])

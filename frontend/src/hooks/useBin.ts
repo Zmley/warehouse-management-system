@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { getBinCodesByProductCode } from '../api/binApi'
+import { getBinCodesByProductCode } from 'api/binApi'
 
 export const useBin = () => {
   const fetchBinCodes = useCallback(

@@ -8,7 +8,7 @@ import {
   Divider
 } from '@mui/material'
 import AssignmentIcon from '@mui/icons-material/Assignment'
-import { useTaskContext } from '../contexts/task'
+import { useTaskContext } from 'contexts/task'
 
 const TaskInstruction: React.FC = () => {
   const { myTask } = useTaskContext()

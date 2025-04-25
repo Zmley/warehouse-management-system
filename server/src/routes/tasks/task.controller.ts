@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express'
-import * as taskService from '../tasks/task.service'
+import * as taskService from 'routes/tasks/task.service'
 import * as binService from 'routes/bins/bin.service'
 import AppError from 'utils/appError'
-import { UserRole } from '../../constants/UserRole'
+import { UserRole } from 'constants/UserRole'
 
 export const acceptTask = async (
   req: Request,

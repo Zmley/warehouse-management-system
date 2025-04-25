@@ -1,7 +1,7 @@
 import { DataTypes, Model } from 'sequelize'
 import { sequelize } from 'config/db'
-import Inventory from '../inventory/inventory.model'
-import Bin from '../bins/bin.model'
+import Inventory from 'routes/inventory/inventory.model'
+import Bin from 'routes/bins/bin.model'
 
 export class Task extends Model {
   public taskID!: string

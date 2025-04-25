@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { clearTokens, getAccessToken } from '../utils/Storages'
+import { clearTokens, getAccessToken } from 'utils/Storages'
 
 const API_BASE_URL = `${
   process.env.SERVER_API_BASE_URL || 'http://localhost:5001'

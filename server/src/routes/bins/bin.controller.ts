@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
-import * as binService from '../bins/bin.service'
+import * as binService from 'routes/bins/bin.service'
 
 export const getBin = async (
   req: Request,

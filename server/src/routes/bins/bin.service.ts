@@ -1,6 +1,6 @@
 import Bin from './bin.model'
 import Inventory from 'routes/inventory/inventory.model'
-import AppError from '../../utils/appError'
+import AppError from 'utils/appError'
 
 export const getBinByBinCode = async (binCode: string) => {
   try {
