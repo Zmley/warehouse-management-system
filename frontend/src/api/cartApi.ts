@@ -1,6 +1,6 @@
 import apiClient from './axiosClient.ts'
-import { InventoryItem } from '../types/inventory.js'
-import { unloadInventory } from '../types/unloadInventory.js'
+import { InventoryItem } from 'types/inventory.js'
+import { unloadInventory } from 'types/unloadInventory.js'
 
 export const getInventoriesInCart = async (): Promise<{
   inventories: InventoryItem[]

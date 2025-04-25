@@ -8,7 +8,7 @@ import {
 } from './inventory.controller'
 
 import roleAllow from 'middlewares/roleAllow.middleware'
-import { UserRole } from '../../constants/UserRole'
+import { UserRole } from 'constants/uerRole'
 
 const router = express.Router()
 

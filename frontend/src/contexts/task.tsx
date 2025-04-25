@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState } from 'react'
-import { Task } from '../types/task'
-import { getTasks, getMyTask } from '../api/taskApi'
+import { Task } from 'types/task'
+import { getTasks, getMyTask } from 'api/taskApi'
 
 export type TaskContextType = {
   tasks: Task[]

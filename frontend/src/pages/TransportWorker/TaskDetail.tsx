@@ -1,8 +1,8 @@
 import { Box, Typography, Button, Grid, Card, Chip } from '@mui/material'
 import { QrCode } from 'lucide-react'
-import { useTaskContext } from '../../contexts/task'
+import { useTaskContext } from 'contexts/task'
 import { useNavigate } from 'react-router-dom'
-import { useTask } from '../../hooks/useTask'
+import { useTask } from 'hooks/useTask'
 import { useEffect } from 'react'
 
 const TaskDetail: React.FC = () => {
@@ -61,7 +61,7 @@ const TaskDetail: React.FC = () => {
             <Typography fontWeight='bold' fontSize={20}>
               {myTask.sourceBins?.length
                 ? myTask.sourceBins
-                    .map((sourceBin: any) => sourceBin.Bin?.binCode || '--')
+                    .map((sourceBin: any) => sourceBin.bin?.binCode || '--')
                     .join(' / ')
                 : '--'}
             </Typography>

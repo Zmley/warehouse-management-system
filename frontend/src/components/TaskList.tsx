@@ -8,9 +8,9 @@ import {
   Grid,
   Divider
 } from '@mui/material'
-import { useTaskContext } from '../contexts/task'
-import { useTask } from '../hooks/useTask'
-import { Task } from '../types/task'
+import { useTaskContext } from 'contexts/task'
+import { useTask } from 'hooks/useTask'
+import { Task } from 'types/task'
 
 const TaskList: React.FC = () => {
   const { tasks, fetchTasks } = useTaskContext()
@@ -67,7 +67,7 @@ const TaskList: React.FC = () => {
                     <Typography fontWeight='bold' fontSize={16}>
                       {task.sourceBins?.length
                         ? task.sourceBins
-                            .map((bin: any) => bin.Bin?.binCode || '--')
+                            .map((item: any) => item.bin?.binCode || '--')
                             .join(' / ')
                         : '--'}
                     </Typography>

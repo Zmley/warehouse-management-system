@@ -4,6 +4,8 @@ import { sequelize } from 'config/db'
 export class Product extends Model {
   public productID!: string
   public productCode!: string
+  public barCode!: string
+  public boxType!: string
 }
 
 Product.init(
@@ -18,6 +20,14 @@ Product.init(
       type: DataTypes.STRING,
       allowNull: false,
       unique: true
+    },
+    barCode: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    boxType: {
+      type: DataTypes.STRING,
+      allowNull: true
     },
     createdAt: {
       type: DataTypes.DATE,

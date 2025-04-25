@@ -8,7 +8,7 @@ import {
   Fade
 } from '@mui/material'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
-import { AuthContext } from '../contexts/auth'
+import { AuthContext } from 'contexts/auth'
 
 const Success: React.FC = () => {
   const { userProfile } = useContext(AuthContext)!

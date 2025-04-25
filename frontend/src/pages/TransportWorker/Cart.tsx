@@ -8,10 +8,10 @@ import {
 } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useCartContext } from '../../contexts/cart'
+import { useCartContext } from 'contexts/cart'
 import InventoryListCard from './InventoryListCard'
-import TaskInstruction from '../../components/TaskInstruction'
-import { useTaskContext } from '../../contexts/task'
+import TaskInstruction from 'components/TaskInstruction'
+import { useTaskContext } from 'contexts/task'
 
 const Cart = () => {
   const navigate = useNavigate()

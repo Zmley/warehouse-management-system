@@ -1,6 +1,6 @@
 import { DataTypes, Model } from 'sequelize'
 import { sequelize } from 'config/db'
-import { Bin } from '../bins/bin.model'
+import { Bin } from 'routes/bins/bin.model'
 
 export class Inventory extends Model {
   public inventoryID!: string

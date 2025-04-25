@@ -1,8 +1,17 @@
 import express from 'express'
-import { getProducts } from './product.controller'
+import {
+  getProductCodes,
+  getProducts,
+  uploadProducts
+} from './product.controller'
+import roleAllow from 'middlewares/roleAllow.middleware'
 
 const router = express.Router()
 
-router.get('/', getProducts)
+router.get('/codes', getProductCodes)
+
+router.get('/', roleAllow(['ADMIN']), getProducts)
+
+router.post('/add', roleAllow(['ADMIN']), uploadProducts)
 
 export default router
