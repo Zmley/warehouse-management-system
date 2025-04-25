@@ -1,10 +1,11 @@
 import { DataTypes, Model } from 'sequelize'
 import { sequelize } from 'config/db'
+import { UserRole } from 'constants/uerRole'
 
 export class Account extends Model {
   public accountID!: string
   public email!: string
-  public role!: 'ADMIN' | 'TRANSPORT_WORKER' | 'PICKER' | 'SUPER_ADMIN'
+  public role!: UserRole
   public firstName!: string
   public lastName!: string
   public cartID!: string | null
@@ -27,10 +28,10 @@ Account.init(
     },
     role: {
       type: DataTypes.ENUM(
-        'ADMIN',
-        'PICKER',
-        'TRANSPORT_WORKER',
-        'SUPER_ADMIN'
+        UserRole.ADMIN,
+        UserRole.PICKER,
+        UserRole.TRANSPORT_WORKER,
+        UserRole.SUPER_ADMIN
       ),
       allowNull: false
     },

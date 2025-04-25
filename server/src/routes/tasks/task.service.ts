@@ -3,15 +3,16 @@ import Inventory from 'routes/inventory/inventory.model'
 import Bin from 'routes/bins/bin.model'
 import AppError from 'utils/appError'
 import { Op, Sequelize, WhereOptions } from 'sequelize'
-import { UserRole } from 'constants/UserRole'
+import { UserRole } from 'constants/uerRole'
 import { TaskWithJoin } from 'interfaces/task'
+import { TaskStatus } from 'constants/tasksStatus'
 
 export const hasActiveTask = async (
   accountID: string
 ): Promise<Task | null> => {
   try {
     const activeTask = await Task.findOne({
-      where: { accepterID: accountID, status: 'IN_PROCESS' }
+      where: { accepterID: accountID, status: TaskStatus.IN_PROCESS }
     })
 
     return activeTask
@@ -40,7 +41,7 @@ export const createAsAdmin = async (
       destinationBinID,
       creatorID: accountID,
       productCode,
-      status: 'PENDING'
+      status: TaskStatus.PENDING
     })
 
     return task
@@ -65,7 +66,7 @@ export const acceptTaskByTaskID = async (accountID: string, taskID: string) => {
     }
 
     task.accepterID = accountID
-    task.status = 'IN_PROCESS'
+    task.status = TaskStatus.IN_PROCESS
     await task.save()
 
     return task
@@ -79,7 +80,7 @@ export const acceptTaskByTaskID = async (accountID: string, taskID: string) => {
 export const checkBinAvailability = async (sourceBinID: string) => {
   try {
     const existingTask = await Task.findOne({
-      where: { sourceBinID, status: 'IN_PROCESS' }
+      where: { sourceBinID, status: TaskStatus.IN_PROCESS }
     })
 
     return existingTask
@@ -138,7 +139,7 @@ export const createTaskAsPicker = async (
     destinationBinID: destinationBin.binID,
     creatorID: accountID,
     productCode,
-    status: 'PENDING'
+    status: TaskStatus.PENDING
   })
 
   return { ...task.toJSON(), sourceBins }
@@ -164,7 +165,7 @@ export const getTaskByAccountID = async (
   const myCurrentTask = await Task.findOne({
     where: {
       accepterID: accountID,
-      status: 'IN_PROCESS'
+      status: TaskStatus.IN_PROCESS
     }
   })
 
@@ -232,7 +233,7 @@ export const cancelBytaskID = async (
       throw new AppError(404, '❌ Task not found')
     }
 
-    task.status = 'CANCELED'
+    task.status = TaskStatus.CANCELED
     await task.save()
   } else if (role === UserRole.PICKER) {
     task = await Task.findOne({

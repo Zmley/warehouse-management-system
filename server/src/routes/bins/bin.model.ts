@@ -1,11 +1,12 @@
 import { DataTypes, Model } from 'sequelize'
 import { sequelize } from 'config/db'
+import { BinType } from 'constants/binType'
 
 export class Bin extends Model {
   public binID!: string
   public warehouseID!: string
   public binCode!: string
-  public type!: 'PICK_UP' | 'INVENTORY' | 'CART'
+  public type!: BinType
   public defaultProductCodes!: string | null
 }
 
@@ -27,7 +28,7 @@ Bin.init(
       unique: true
     },
     type: {
-      type: DataTypes.ENUM('PICK_UP', 'INVENTORY', 'CART'),
+      type: DataTypes.ENUM(BinType.PICK_UP, BinType.INVENTORY, BinType.CART),
       allowNull: false
     },
     defaultProductCodes: {

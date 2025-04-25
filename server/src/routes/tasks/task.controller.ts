@@ -2,7 +2,8 @@ import { Request, Response, NextFunction } from 'express'
 import * as taskService from 'routes/tasks/task.service'
 import * as binService from 'routes/bins/bin.service'
 import AppError from 'utils/appError'
-import { UserRole } from 'constants/UserRole'
+import { UserRole } from 'constants/uerRole'
+import { TaskStatus } from 'constants/tasksStatus'
 
 export const acceptTask = async (
   req: Request,
@@ -97,7 +98,7 @@ export const getTasks = async (
       status = 'ALL'
     } else if (role === UserRole.TRANSPORT_WORKER) {
       warehouseID = localWarehouseID
-      status = 'PENDING'
+      status = TaskStatus.PENDING
     }
 
     const tasksWithBinCodes = await taskService.getTasksByWarehouseID(

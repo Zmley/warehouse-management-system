@@ -2,6 +2,7 @@ import { DataTypes, Model } from 'sequelize'
 import { sequelize } from 'config/db'
 import Inventory from 'routes/inventory/inventory.model'
 import Bin from 'routes/bins/bin.model'
+import { TaskStatus } from 'constants/tasksStatus'
 
 export class Task extends Model {
   public taskID!: string
@@ -10,7 +11,7 @@ export class Task extends Model {
   public accepterID!: string
   public creatorID!: string
   public productCode!: string
-  public status!: 'PENDING' | 'IN_PROCESS' | 'COMPLETED' | 'CANCELED'
+  public status!: TaskStatus | string
   public createdAt!: Date
   public updatedAt!: Date | null
 
@@ -47,7 +48,12 @@ Task.init(
       allowNull: true
     },
     status: {
-      type: DataTypes.ENUM('PENDING', 'IN_PROCESS', 'COMPLETED', 'CANCELED'),
+      type: DataTypes.ENUM(
+        TaskStatus.PENDING,
+        TaskStatus.IN_PROCESS,
+        TaskStatus.COMPLETED,
+        TaskStatus.CANCELED
+      ),
       allowNull: false
     },
     createdAt: {

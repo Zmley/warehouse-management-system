@@ -20,7 +20,7 @@ export const getBin = async (
   }
 }
 
-export const getBinCodes = async (
+export const getAvailableBinCodes = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -44,7 +44,7 @@ export const getBinCodes = async (
   }
 }
 
-export const getBins = async (
+export const getBinCodes = async (
   req: Request,
   res: Response,
   next: NextFunction
