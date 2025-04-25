@@ -4,7 +4,7 @@ import Bin from 'routes/bins/bin.model'
 import AppError from 'utils/appError'
 import { Op, Sequelize, WhereOptions } from 'sequelize'
 import { UserRole } from 'constants/uerRole'
-import { TaskWithJoin } from 'interfaces/task'
+import { TaskWithJoin } from 'types/task'
 import { TaskStatus } from 'constants/tasksStatus'
 
 export const hasActiveTask = async (

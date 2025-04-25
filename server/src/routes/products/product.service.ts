@@ -3,7 +3,7 @@ import { Op, Sequelize } from 'sequelize'
 import { Inventory } from 'routes/inventory/inventory.model'
 import { Bin } from 'routes/bins/bin.model'
 import { getOffset, buildProductWhereClause } from 'utils/productUtils'
-import { ProductUploadInput } from 'interfaces/product'
+import { ProductUploadInput } from 'types/product'
 
 export const getProductCodes = async (): Promise<string[]> => {
   const products = await Product.findAll({
