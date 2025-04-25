@@ -1,5 +1,5 @@
 import apiClient from './axiosClient.ts'
-import { Task } from '../types/task.js'
+import { Task } from 'types/task.js'
 
 export const getTasks = async (): Promise<Task[]> => {
   const response = await apiClient.get('/tasks')

@@ -1,6 +1,6 @@
 import Bin from './bin.model'
 import Inventory from 'routes/inventory/inventory.model'
-import AppError from '../../utils/appError'
+import AppError from 'utils/appError'
 
 export const getBinByBinCode = async (binCode: string) => {
   try {
@@ -55,7 +55,7 @@ export const getBinCodesByProductCode = async (
   }
 }
 
-export const getBinsInWarehouse = async (
+export const getBinCodesInWarehouse = async (
   warehouseID: string
 ): Promise<{ binID: string; binCode: string }[]> => {
   try {

@@ -1,7 +1,7 @@
 import React, { createContext, useState } from 'react'
-import { areTokensValid, clearTokens } from '../utils/Storages'
-import { getUserProfile } from '../api/authApi'
-import { Task } from '../types/task'
+import { areTokensValid, clearTokens } from 'utils/Storages'
+import { getUserProfile } from 'api/authApi'
+import { Task } from 'types/task'
 
 interface UserProfile {
   firstName: string

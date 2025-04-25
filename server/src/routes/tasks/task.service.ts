@@ -1,15 +1,10 @@
 import Task from './task.model'
 import Inventory from '../inventory/inventory.model'
 import Bin from '../bins/bin.model'
-import AppError from '../../utils/appError'
+import AppError from 'utils/appError'
 import { Op, Sequelize, WhereOptions } from 'sequelize'
 import { UserRole } from 'constants/UserRole'
-
-interface TaskWithJoin extends Task {
-  destinationBin?: Bin
-  sourceBin?: Bin
-  inventories?: (Inventory & { Bin?: Bin })[]
-}
+import { TaskWithJoin } from 'types/task'
 
 export const hasActiveTask = async (
   accountID: string

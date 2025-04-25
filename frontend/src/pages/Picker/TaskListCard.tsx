@@ -8,8 +8,8 @@ import {
   Grid,
   Divider
 } from '@mui/material'
-import { usePickerTasks } from '../../hooks/usePickerTask'
-import { TaskCategoryEnum } from '../../types/task'
+import { usePickerTasks } from 'hooks/usePickerTask'
+import { TaskCategoryEnum } from 'types/task'
 
 interface Props {
   status: TaskCategoryEnum

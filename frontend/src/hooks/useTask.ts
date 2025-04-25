@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useTaskContext } from '../contexts/task'
+import { useTaskContext } from 'contexts/task'
 import {
   acceptTask as acceptTaskAPI,
   cancelTask as cancelTaskAPI
-} from '../api/taskApi'
+} from 'api/taskApi'
 
 export const useTask = () => {
   const [loading, setLoading] = useState(false)

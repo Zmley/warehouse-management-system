@@ -1,7 +1,7 @@
-import { useCartContext } from '../contexts/cart'
-import { loadToCart, unloadFromCart } from '../api/cartApi'
+import { useCartContext } from 'contexts/cart'
+import { loadToCart, unloadFromCart } from 'api/cartApi'
 import { useNavigate } from 'react-router-dom'
-import { InventoryItem } from '../types/inventory'
+import { InventoryItem } from 'types/inventory'
 
 export const useCart = () => {
   const navigate = useNavigate()

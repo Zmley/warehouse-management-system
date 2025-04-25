@@ -4,9 +4,9 @@ import { useEffect, useRef, useState } from 'react'
 import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner'
 import CancelIcon from '@mui/icons-material/Cancel'
 
-import useQRScanner from '../../hooks/useQRScanner'
-import { useCartContext } from '../../contexts/cart'
-import { useCart } from '../../hooks/useCart'
+import useQRScanner from 'hooks/useQRScanner'
+import { useCartContext } from 'contexts/cart'
+import { useCart } from 'hooks/useCart'
 
 const Scan = () => {
   const navigate = useNavigate()

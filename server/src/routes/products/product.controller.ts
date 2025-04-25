@@ -27,9 +27,9 @@ export const getProducts = async (
 
     const { products, total } = await productService.getProductsByWarehouseID(
       warehouseID,
-      keyword,
       page,
-      limit
+      limit,
+      keyword
     )
 
     res.status(200).json({ success: true, products, total })
@@ -60,7 +60,7 @@ export const uploadProducts = async (
 
     const result = await productService.uploadProducts(products)
 
-    return res.status(200).json(result)
+    return res.status(200).json({ success: true, result })
   } catch (error) {
     next(error)
   }

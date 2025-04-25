@@ -8,8 +8,8 @@ import {
   Snackbar,
   Alert
 } from '@mui/material'
-import { InventoryItem } from '../../types/inventory'
-import { sanitizeQuantityInput } from '../../utils/inputHelpers'
+import { InventoryItem } from 'types/inventory'
+import { sanitizeQuantityInput } from 'utils/inputHelpers'
 
 interface Props {
   taskType: string

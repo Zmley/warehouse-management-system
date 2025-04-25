@@ -1,8 +1,8 @@
 import React, { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Typography, Button, Box, Paper } from '@mui/material'
-import useQRScanner from '../../hooks/useQRScanner'
-import { getBinByBinCode } from '../../api/binApi'
+import useQRScanner from 'hooks/useQRScanner'
+import { getBinByBinCode } from 'api/binApi'
 
 const Scan = () => {
   const navigate = useNavigate()

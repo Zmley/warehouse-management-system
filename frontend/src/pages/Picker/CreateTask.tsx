@@ -10,10 +10,10 @@ import {
   Paper
 } from '@mui/material'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { usePickerTasks } from '../../hooks/usePickerTask'
-import { useProduct } from '../../hooks/useProduct'
-import { useBin } from '../../hooks/useBin'
-import { Bin } from '../../types/bin'
+import { usePickerTasks } from 'hooks/usePickerTask'
+import { useProduct } from 'hooks/useProduct'
+import { useBin } from 'hooks/useBin'
+import { Bin } from 'types/bin'
 
 const CreateTask = () => {
   const navigate = useNavigate()

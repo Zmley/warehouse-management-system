@@ -1,6 +1,6 @@
 import Inventory from '../inventory/inventory.model'
 import Bin from '../bins/bin.model'
-import AppError from '../../utils/appError'
+import AppError from 'utils/appError'
 
 const moveInventoriesToBin = async (
   inventories: { inventoryID: string; quantity: number }[],

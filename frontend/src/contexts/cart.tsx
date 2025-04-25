@@ -5,8 +5,8 @@ import React, {
   useEffect,
   ReactNode
 } from 'react'
-import { getInventoriesInCart } from '../api/cartApi'
-import { InventoryItem } from '../types/inventory'
+import { getInventoriesInCart } from 'api/cartApi'
+import { InventoryItem } from 'types/inventory'
 
 interface CartContextType {
   inventoriesInCar: InventoryItem[]
