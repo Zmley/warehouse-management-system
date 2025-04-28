@@ -1,15 +1,21 @@
 import express from 'express'
 import {
   getBin,
-  getAvailableBinCodes,
   getBinCodes,
+  getAvailableBinCodes,
   getBins,
   addBins
 } from './bin.controller'
 import roleAllow from 'middlewares/roleAllow.middleware'
-import { UserRole } from '../../constants/UserRole'
+import { UserRole } from 'constants/UserRole'
 
 const router = express.Router()
+
+router.get('/codes', getBinCodes)
+
+router.get('/', getBins)
+
+router.post('/add', roleAllow([UserRole.TRANSPORT_WORKER]), addBins)
 
 router.get('/:binCode', getBin)
 
@@ -19,10 +25,10 @@ router.get(
   getAvailableBinCodes
 )
 
-router.get('/codes', getBinCodes)
-
-router.get('/', getBins)
-
-router.post('/add', addBins)
+// router.post(
+//   '/upload',
+//   roleAllow([UserRole.ADMIN]),
+//   bulkUploadInventories
+// )
 
 export default router

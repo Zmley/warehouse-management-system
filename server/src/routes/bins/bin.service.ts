@@ -1,6 +1,8 @@
 import Bin from './bin.model'
 import Inventory from 'routes/inventory/inventory.model'
 import AppError from '../../utils/appError'
+import { Op, WhereOptions } from 'sequelize'
+import { BinUploadPayload, GetBinsParams } from 'types/BinUploadPayload'
 
 export const getBinByBinCode = async (binCode: string) => {
   try {
@@ -82,16 +84,6 @@ export const getBinCodesInWarehouse = async (
   }
 }
 
-import { Op } from 'sequelize'
-
-interface GetBinsParams {
-  warehouseID: string
-  type?: string
-  keyword?: string
-  page: number
-  limit: number
-}
-
 export const getBins = async ({
   warehouseID,
   type,
@@ -101,7 +93,7 @@ export const getBins = async ({
 }: GetBinsParams) => {
   const offset = (page - 1) * limit
 
-  const baseWhere: any = { warehouseID }
+  const baseWhere: WhereOptions = { warehouseID: warehouseID }
 
   if (type) {
     baseWhere.type = type
@@ -122,16 +114,9 @@ export const getBins = async ({
     order: [['createdAt', 'DESC']]
   })
 
-  const total = await Bin.count({ where: queryWhere }) // ✅ FIXED
+  const total = await Bin.count({ where: queryWhere })
 
   return { data: rows, total }
-}
-
-interface BinUploadPayload {
-  warehouseID: string
-  binCode: string
-  type: 'INVENTORY' | 'PICK_UP' | 'CART'
-  defaultProductCodes: string[] | null
 }
 
 export const addBins = async (binList: BinUploadPayload[]) => {
