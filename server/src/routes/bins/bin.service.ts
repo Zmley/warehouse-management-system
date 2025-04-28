@@ -84,13 +84,13 @@ export const getBinCodesInWarehouse = async (
   }
 }
 
-export const getBins = async ({
-  warehouseID,
-  page,
-  limit,
-  type,
-  keyword
-}: GetBinsParams) => {
+export const getBins = async (
+  warehouseID: string,
+  page: number,
+  limit: number,
+  type?: string,
+  keyword?: string
+) => {
   const offset = (page - 1) * limit
 
   const baseWhere: WhereOptions = { warehouseID }

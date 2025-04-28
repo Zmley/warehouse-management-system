@@ -80,13 +80,13 @@ export const getBins = async (
     const parsedPage = parseInt(page as string, 10)
     const parsedLimit = parseInt(limit as string, 10)
 
-    const { data, total } = await binService.getBins({
+    const { data, total } = await binService.getBins(
       warehouseID,
-      type: typeof type === 'string' ? type : undefined,
-      keyword: typeof keyword === 'string' ? keyword : undefined,
-      page: parsedPage,
-      limit: parsedLimit
-    })
+      parsedPage,
+      parsedLimit,
+      typeof type === 'string' ? type : undefined,
+      typeof keyword === 'string' ? keyword : undefined
+    )
     res.status(200).json({ data, total })
   } catch (error) {
     next(error)
