@@ -15,7 +15,7 @@ router.get('/codes', getBinCodes)
 
 router.get('/', getBins)
 
-router.post('/add', roleAllow([UserRole.TRANSPORT_WORKER]), addBins)
+router.post('/add', roleAllow([UserRole.ADMIN]), addBins)
 
 router.get('/:binCode', getBin)
 

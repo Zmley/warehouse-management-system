@@ -93,7 +93,7 @@ export const getBins = async ({
 }: GetBinsParams) => {
   const offset = (page - 1) * limit
 
-  const baseWhere: WhereOptions = { warehouseID: warehouseID }
+  const baseWhere: WhereOptions = { warehouseID }
 
   if (type) {
     baseWhere.type = type
@@ -111,7 +111,7 @@ export const getBins = async ({
     where: queryWhere,
     limit,
     offset,
-    order: [['createdAt', 'DESC']]
+    order: [['binCode', 'ASC']]
   })
 
   const total = await Bin.count({ where: queryWhere })
@@ -123,37 +123,28 @@ export const addBins = async (binList: BinUploadPayload[]) => {
   const skipped: BinUploadPayload[] = []
   let insertedCount = 0
 
-  const seen = new Set<string>()
-
-  for (const bin of binList) {
-    const key = `${bin.warehouseID}__${bin.binCode}`
-
-    if (seen.has(key)) {
-      skipped.push(bin)
-      continue
-    }
-
-    const exists = await Bin.findOne({
-      where: {
-        warehouseID: bin.warehouseID,
-        binCode: bin.binCode
+  await Promise.all(
+    binList.map(async bin => {
+      try {
+        await Bin.create({
+          warehouseID: bin.warehouseID,
+          binCode: bin.binCode,
+          type: bin.type,
+          defaultProductCodes: bin.defaultProductCodes?.join(',') || null
+        })
+        insertedCount++
+      } catch (error) {
+        if (error.name === 'SequelizeUniqueConstraintError') {
+          skipped.push(bin)
+        } else {
+          throw new AppError(
+            500,
+            error instanceof Error ? error.message : 'Unknown error'
+          )
+        }
       }
     })
-
-    if (exists) {
-      skipped.push(bin)
-      continue
-    }
-
-    await Bin.create({
-      warehouseID: bin.warehouseID,
-      binCode: bin.binCode,
-      type: bin.type,
-      defaultProductCodes: bin.defaultProductCodes?.join(',') || null
-    })
-
-    insertedCount++
-  }
+  )
 
   return {
     insertedCount,
