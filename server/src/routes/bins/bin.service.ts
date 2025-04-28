@@ -86,10 +86,10 @@ export const getBinCodesInWarehouse = async (
 
 export const getBins = async ({
   warehouseID,
-  type,
-  keyword,
   page,
-  limit
+  limit,
+  type,
+  keyword
 }: GetBinsParams) => {
   const offset = (page - 1) * limit
 

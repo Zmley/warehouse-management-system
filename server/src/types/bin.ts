@@ -9,8 +9,8 @@ export interface BinUploadPayload {
 
 export interface GetBinsParams {
   warehouseID: string
-  type?: string
-  keyword?: string
   page: number
   limit: number
+  type?: string
+  keyword?: string
 }
