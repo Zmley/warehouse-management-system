@@ -1,11 +1,21 @@
 import express from 'express'
-import { getBin, getBinCodes, getAvailableBinCodes } from './bin.controller'
+import {
+  getBin,
+  getBinCodes,
+  getAvailableBinCodes,
+  getBins,
+  addBins
+} from './bin.controller'
 import roleAllow from 'middlewares/roleAllow.middleware'
 import { UserRole } from 'constants/uerRole'
 
 const router = express.Router()
 
 router.get('/codes', getBinCodes)
+
+router.get('/', getBins)
+
+router.post('/add', roleAllow([UserRole.ADMIN]), addBins)
 
 router.get('/:binCode', getBin)
 

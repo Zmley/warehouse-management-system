@@ -1,6 +1,8 @@
 import Bin from './bin.model'
 import Inventory from 'routes/inventory/inventory.model'
 import AppError from 'utils/appError'
+import { Op, WhereOptions } from 'sequelize'
+import { BinUploadPayload } from 'types/bin'
 
 export const getBinByBinCode = async (binCode: string) => {
   try {
@@ -55,7 +57,7 @@ export const getBinCodesByProductCode = async (
   }
 }
 
-export const getBinsInWarehouse = async (
+export const getBinCodesInWarehouse = async (
   warehouseID: string
 ): Promise<{ binID: string; binCode: string }[]> => {
   try {
@@ -79,5 +81,73 @@ export const getBinsInWarehouse = async (
     console.error('Error fetching bins:', error)
     if (error instanceof AppError) throw error
     throw new AppError(500, '❌ Failed to fetch bins')
+  }
+}
+
+export const getBins = async (
+  warehouseID: string,
+  page: number,
+  limit: number,
+  type?: string,
+  keyword?: string
+) => {
+  const offset = (page - 1) * limit
+
+  const baseWhere: WhereOptions = { warehouseID }
+
+  if (type) {
+    baseWhere.type = type
+  }
+
+  const queryWhere = { ...baseWhere }
+
+  if (keyword) {
+    queryWhere.binCode = {
+      [Op.iLike]: `%${keyword}%`
+    }
+  }
+
+  const rows = await Bin.findAll({
+    where: queryWhere,
+    limit,
+    offset,
+    order: [['binCode', 'ASC']]
+  })
+
+  const total = await Bin.count({ where: queryWhere })
+
+  return { data: rows, total }
+}
+
+export const addBins = async (binList: BinUploadPayload[]) => {
+  const skipped: BinUploadPayload[] = []
+  let insertedCount = 0
+
+  await Promise.all(
+    binList.map(async bin => {
+      try {
+        await Bin.create({
+          warehouseID: bin.warehouseID,
+          binCode: bin.binCode,
+          type: bin.type,
+          defaultProductCodes: bin.defaultProductCodes?.join(',') || null
+        })
+        insertedCount++
+      } catch (error) {
+        if (error.name === 'SequelizeUniqueConstraintError') {
+          skipped.push(bin)
+        } else {
+          throw new AppError(
+            500,
+            error instanceof Error ? error.message : 'Unknown error'
+          )
+        }
+      }
+    })
+  )
+
+  return {
+    insertedCount,
+    skipped
   }
 }
