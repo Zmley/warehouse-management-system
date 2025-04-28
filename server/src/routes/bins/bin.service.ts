@@ -1,6 +1,8 @@
 import Bin from './bin.model'
 import Inventory from 'routes/inventory/inventory.model'
-import AppError from 'utils/appError'
+import AppError from '../../utils/appError'
+import { Op, WhereOptions } from 'sequelize'
+import { BinUploadPayload, GetBinsParams } from 'types/bin'
 
 export const getBinByBinCode = async (binCode: string) => {
   try {
@@ -55,7 +57,7 @@ export const getBinCodesByProductCode = async (
   }
 }
 
-export const getBinsInWarehouse = async (
+export const getBinCodesInWarehouse = async (
   warehouseID: string
 ): Promise<{ binID: string; binCode: string }[]> => {
   try {
@@ -79,5 +81,82 @@ export const getBinsInWarehouse = async (
     console.error('Error fetching bins:', error)
     if (error instanceof AppError) throw error
     throw new AppError(500, '❌ Failed to fetch bins')
+  }
+}
+
+export const getBins = async ({
+  warehouseID,
+  type,
+  keyword,
+  page,
+  limit
+}: GetBinsParams) => {
+  const offset = (page - 1) * limit
+
+  const baseWhere: WhereOptions = { warehouseID: warehouseID }
+
+  if (type) {
+    baseWhere.type = type
+  }
+
+  const queryWhere = { ...baseWhere }
+
+  if (keyword) {
+    queryWhere.binCode = {
+      [Op.iLike]: `%${keyword}%`
+    }
+  }
+
+  const rows = await Bin.findAll({
+    where: queryWhere,
+    limit,
+    offset,
+    order: [['createdAt', 'DESC']]
+  })
+
+  const total = await Bin.count({ where: queryWhere })
+
+  return { data: rows, total }
+}
+
+export const addBins = async (binList: BinUploadPayload[]) => {
+  const skipped: BinUploadPayload[] = []
+  let insertedCount = 0
+
+  const seen = new Set<string>()
+
+  for (const bin of binList) {
+    const key = `${bin.warehouseID}__${bin.binCode}`
+
+    if (seen.has(key)) {
+      skipped.push(bin)
+      continue
+    }
+
+    const exists = await Bin.findOne({
+      where: {
+        warehouseID: bin.warehouseID,
+        binCode: bin.binCode
+      }
+    })
+
+    if (exists) {
+      skipped.push(bin)
+      continue
+    }
+
+    await Bin.create({
+      warehouseID: bin.warehouseID,
+      binCode: bin.binCode,
+      type: bin.type,
+      defaultProductCodes: bin.defaultProductCodes?.join(',') || null
+    })
+
+    insertedCount++
+  }
+
+  return {
+    insertedCount,
+    skipped
   }
 }
