@@ -83,57 +83,57 @@ export const deleteByInventoryID = async (
   }
 }
 
-export const addInventory = async ({
-  productCode,
-  binCode,
-  quantity
-}: {
-  productCode: string
-  binCode: string
-  quantity: number
-}) => {
-  try {
-    const bin = await Bin.findOne({ where: { binCode } })
+// export const addInventory = async ({
+//   productCode,
+//   binCode,
+//   quantity
+// }: {
+//   productCode: string
+//   binCode: string
+//   quantity: number
+// }) => {
+//   try {
+//     const bin = await Bin.findOne({ where: { binCode } })
 
-    if (!bin) {
-      throw new Error(`❌ Bin with code ${binCode} not found.`)
-    }
+//     if (!bin) {
+//       throw new Error(`❌ Bin with code ${binCode} not found.`)
+//     }
 
-    const binID = bin.binID
+//     const binID = bin.binID
 
-    const existingItem = await Inventory.findOne({
-      where: { productCode, binID }
-    })
+//     const existingItem = await Inventory.findOne({
+//       where: { productCode, binID }
+//     })
 
-    if (existingItem) {
-      existingItem.quantity += quantity
-      await existingItem.save()
+//     if (existingItem) {
+//       existingItem.quantity += quantity
+//       await existingItem.save()
 
-      return {
-        success: true,
-        message: `Product quantity updated successfully.`,
-        data: existingItem
-      }
-    }
+//       return {
+//         success: true,
+//         message: `Product quantity updated successfully.`,
+//         data: existingItem
+//       }
+//     }
 
-    const newItem = await Inventory.create({
-      productCode,
-      binID,
-      quantity
-    })
+//     const newItem = await Inventory.create({
+//       productCode,
+//       binID,
+//       quantity
+//     })
 
-    return {
-      success: true,
-      message: `Added new product successfully.`,
-      data: newItem
-    }
-  } catch (error: any) {
-    return {
-      success: false,
-      message: error.message || '❌ Failed to add inventory item'
-    }
-  }
-}
+//     return {
+//       success: true,
+//       message: `Added new product successfully.`,
+//       data: newItem
+//     }
+//   } catch (error) {
+//     return {
+//       success: false,
+//       message: error.message || '❌ Failed to add inventory item'
+//     }
+//   }
+// }
 
 export const updateByInventoryID = async (
   inventoryID: string,

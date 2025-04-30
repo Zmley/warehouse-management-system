@@ -3,7 +3,7 @@ import {
   getInventoriesInCart,
   getInventories,
   deleteInventory,
-  addInventory,
+  // addInventory,
   updateInventory,
   uploadInventories
 } from './inventory.controller'
@@ -25,10 +25,10 @@ router.get('/', getInventories)
 
 router.delete('/:inventoryID', roleAllow([UserRole.ADMIN]), deleteInventory)
 
-router.post('/', addInventory)
+// router.post('/', addInventory)
 
 router.put('/:inventoryID', updateInventory)
 
-router.post('/add', roleAllow([UserRole.ADMIN]), uploadInventories)
+router.post('/', roleAllow([UserRole.ADMIN]), uploadInventories)
 
 export default router

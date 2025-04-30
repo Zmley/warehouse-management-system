@@ -11,6 +11,7 @@ export class Task extends Model {
   public accepterID!: string
   public creatorID!: string
   public productCode!: string
+  public quantity!: string
   public status!: TaskStatus | string
   public createdAt!: Date
   public updatedAt!: Date | null
@@ -46,6 +47,11 @@ Task.init(
     productCode: {
       type: DataTypes.STRING,
       allowNull: true
+    },
+    quantity: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0
     },
     status: {
       type: DataTypes.ENUM(
