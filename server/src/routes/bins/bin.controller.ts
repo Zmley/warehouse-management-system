@@ -56,9 +56,9 @@ export const getBinCodes = async (
       return res.status(400).json('warehouseID is required')
     }
 
-    const bins = await binService.getBinCodesInWarehouse(warehouseID)
+    const data = await binService.getBinCodesInWarehouse(warehouseID)
 
-    res.status(200).json(bins)
+    res.status(200).json({ success: true, data })
   } catch (error) {
     next(error)
   }

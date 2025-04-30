@@ -4,6 +4,7 @@ import { Inventory } from 'routes/inventory/inventory.model'
 import { Bin } from 'routes/bins/bin.model'
 import { getOffset, buildProductWhereClause } from 'utils/productUtils'
 import { ProductUploadInput } from 'types/product'
+import AppError from 'utils/appError'
 
 export const getProductCodes = async (): Promise<string[]> => {
   const products = await Product.findAll({
@@ -68,35 +69,50 @@ export const getProductsByWarehouseID = async (
   }
 }
 
+import { chunk } from 'lodash'
+
 export const uploadProducts = async (products: ProductUploadInput[]) => {
-  const incomingCodes = products.map(p => p.productCode)
+  const skipped: ProductUploadInput[] = []
+  let insertedCount = 0
 
-  const existing = await Product.findAll({
-    where: {
-      productCode: {
-        [Op.in]: incomingCodes
-      }
-    },
-    attributes: ['productCode']
-  })
+  const BATCH_SIZE = 200
+  const chunks = chunk(products, BATCH_SIZE)
 
-  const existingCodes = existing.map(p => p.productCode)
+  for (const batch of chunks) {
+    await Promise.all(
+      batch.map(async item => {
+        const cleanProductCode = item.productCode?.trim()
+        const cleanBarCode = item.barCode?.trim()
+        const cleanBoxType = item.boxType?.trim()
 
-  const newProducts = products.filter(
-    p => !existingCodes.includes(p.productCode)
-  )
+        if (!cleanProductCode) {
+          skipped.push(item)
+          return
+        }
 
-  const created = await Product.bulkCreate(
-    newProducts.map(p => ({
-      productCode: p.productCode,
-      barCode: p.barCode,
-      boxType: p.boxType
-    }))
-  )
+        try {
+          await Product.create({
+            productCode: cleanProductCode,
+            barCode: cleanBarCode,
+            boxType: cleanBoxType
+          })
+          insertedCount++
+        } catch (error) {
+          if (error.name === 'SequelizeUniqueConstraintError') {
+            skipped.push(item)
+          } else {
+            throw new AppError(
+              500,
+              error instanceof Error ? error.message : 'Unknown error'
+            )
+          }
+        }
+      })
+    )
+  }
 
   return {
-    insertedCount: created.length,
-    skippedCount: existingCodes.length,
-    duplicatedProductCodes: existingCodes
+    insertedCount,
+    skippedCount: skipped.length
   }
 }

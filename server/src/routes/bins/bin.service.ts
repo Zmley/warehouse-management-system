@@ -69,10 +69,6 @@ export const getBinCodesInWarehouse = async (
       attributes: ['binID', 'binCode']
     })
 
-    if (!bins.length) {
-      throw new AppError(404, '❌ No bins found in the warehouse')
-    }
-
     return bins.map(bin => ({
       binID: bin.binID,
       binCode: bin.binCode
@@ -99,22 +95,26 @@ export const getBins = async (
     baseWhere.type = type
   }
 
-  const queryWhere = { ...baseWhere }
+  let whereCondition: WhereOptions = { ...baseWhere }
 
   if (keyword) {
-    queryWhere.binCode = {
-      [Op.iLike]: `%${keyword}%`
+    whereCondition = {
+      ...baseWhere,
+      [Op.or]: [
+        { binCode: { [Op.iLike]: `%${keyword}%` } },
+        { defaultProductCodes: { [Op.iLike]: `%${keyword}%` } }
+      ]
     }
   }
 
   const rows = await Bin.findAll({
-    where: queryWhere,
+    where: whereCondition,
     limit,
     offset,
     order: [['binCode', 'ASC']]
   })
 
-  const total = await Bin.count({ where: queryWhere })
+  const total = await Bin.count({ where: whereCondition })
 
   return { data: rows, total }
 }
