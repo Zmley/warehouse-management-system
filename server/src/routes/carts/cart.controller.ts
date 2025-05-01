@@ -11,10 +11,10 @@ export const load = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { cartID, accountID } = res.locals
+    const { cartID, accountID, warehouseID } = res.locals
     const { binCode } = req.body
 
-    const result = await loadByBinCode(binCode, cartID)
+    const result = await loadByBinCode(binCode, cartID, accountID, warehouseID)
 
     const activeTask = await taskService.hasActiveTask(accountID)
 

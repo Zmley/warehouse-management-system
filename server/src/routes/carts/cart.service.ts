@@ -1,6 +1,8 @@
 import Inventory from 'routes/inventory/inventory.model'
 import Bin from 'routes/bins/bin.model'
 import AppError from 'utils/appError'
+import { getTaskByAccountID } from 'routes/tasks/task.service'
+import Task from 'routes/tasks/task.model'
 
 const moveInventoriesToBin = async (
   inventories: { inventoryID: string; quantity: number }[],
@@ -59,15 +61,65 @@ const moveInventoriesToBin = async (
   }
 }
 
+// export const loadByBinCode = async (
+//   binCode: string,
+//   cartID: string
+// ): Promise<{ message: string }> => {
+//   try {
+//     const bin = await Bin.findOne({ where: { binCode } })
+
+//     if (!bin) {
+//       throw new AppError(404, `❌ BIn ${binCode} not found in system`)
+//     }
+
+//     const [updatedCount] = await Inventory.update(
+//       { binID: cartID },
+//       { where: { binID: bin.binID } }
+//     )
+
+//     if (updatedCount === 0) {
+//       throw new AppError(404, `❌ ${binCode} is empty.`)
+//     }
+
+//     return {
+//       message: `✅ Products loaded from bin ${binCode}.`
+//     }
+//   } catch (error) {
+//     console.error('Error loading from bin:', error)
+//     if (error instanceof AppError) throw error
+//     throw new AppError(500, '❌ Failed to load items from bin')
+//   }
+// }
+
 export const loadByBinCode = async (
   binCode: string,
-  cartID: string
+  cartID: string,
+  accountID: string,
+  warehouseID: string
 ): Promise<{ message: string }> => {
   try {
     const bin = await Bin.findOne({ where: { binCode } })
 
     if (!bin) {
-      throw new AppError(404, `❌ BIn ${binCode} not found in system`)
+      throw new AppError(404, `❌ Bin ${binCode} not found in system`)
+    }
+
+    //
+    const task = await getTaskByAccountID(accountID, warehouseID)
+
+    if (task) {
+      const allowedBinCodes = task.sourceBins
+        .map(item => item.bin?.binCode)
+        .filter(Boolean)
+
+      if (!allowedBinCodes.includes(binCode)) {
+        throw new AppError(
+          400,
+          `❌ You have an active task. Only allowed to load from: ${allowedBinCodes.join(
+            ', '
+          )}`
+        )
+      }
     }
 
     const [updatedCount] = await Inventory.update(
