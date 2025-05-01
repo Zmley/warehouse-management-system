@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useCartContext } from 'contexts/cart'
 import { loadToCart, unloadFromCart } from 'api/cartApi'
 import { useNavigate } from 'react-router-dom'
@@ -5,6 +6,7 @@ import { InventoryItem } from 'types/inventory'
 
 export const useCart = () => {
   const navigate = useNavigate()
+  const [error, setError] = useState<string | null>(null)
 
   const {
     selectedToUnload,
@@ -20,12 +22,19 @@ export const useCart = () => {
       await getMyCart()
 
       if (response?.success) {
+        setError(null)
         setTimeout(() => {
           navigate('/my-task')
         }, 500)
+      } else {
+        setError(response?.data?.error || '❌ Failed to load to cart.')
       }
-    } catch (error) {
-      console.error('❌ Failed to load to cart:', error)
+
+      return response
+    } catch (err: any) {
+      const msg = err?.response?.data?.error || '❌ Error loading cart'
+      setError(msg)
+      return { success: false, error: msg }
     }
   }
 
@@ -49,20 +58,22 @@ export const useCart = () => {
           .filter(Boolean)
 
         setInventoriesInCar(inventoriesLeftInCart as InventoryItem[])
-        if (inventoriesLeftInCart.length === 0) {
-          setTimeout(() => {
-            navigate('/success')
-          }, 500)
-        } else {
-          setTimeout(() => {
-            navigate('/my-task')
-          }, 500)
-        }
+
+        setError(null)
+        setTimeout(() => {
+          navigate(inventoriesLeftInCart.length === 0 ? '/success' : '/my-task')
+        }, 500)
+      } else {
+        setError(response?.data?.error || '❌ Failed to unload cart.')
       }
-    } catch (error) {
-      console.error('❌ Failed to unload from cart:', error)
+
+      return response
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || '❌ Error unloading cart'
+      setError(msg)
+      return { success: false, error: msg }
     }
   }
 
-  return { loadCart, unloadCart, isCartEmpty, getMyCart }
+  return { loadCart, unloadCart, isCartEmpty, getMyCart, error }
 }

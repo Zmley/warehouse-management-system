@@ -14,7 +14,7 @@ const Scan = () => {
   const [hasStarted, setHasStarted] = useState(false)
 
   const { isCartEmpty } = useCartContext()
-  const { loadCart, unloadCart } = useCart()
+  const { loadCart, unloadCart, error } = useCart()
 
   const handleScanSuccess = async (binCode: string) => {
     console.log(`Scanned bin code: ${binCode}`)
@@ -142,6 +142,12 @@ const Scan = () => {
             >
               Cancel
             </Button>
+
+            {error && (
+              <Typography color='error' sx={{ mt: 2, fontWeight: 500 }}>
+                {error}
+              </Typography>
+            )}
           </Box>
         </Container>
       </Fade>
