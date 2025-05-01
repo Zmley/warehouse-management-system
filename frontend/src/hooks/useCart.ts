@@ -21,8 +21,9 @@ export const useCart = () => {
       const response = await loadToCart(binCode)
       await getMyCart()
 
+      setError(null)
+
       if (response?.success) {
-        setError(null)
         setTimeout(() => {
           navigate('/my-task')
         }, 500)
