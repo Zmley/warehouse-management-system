@@ -59,29 +59,6 @@ export const deleteInventory = async (
   }
 }
 
-// export const addInventory = async (
-//   req: Request,
-//   res: Response,
-//   next: NextFunction
-// ) => {
-//   const { productCode, binCode, quantity } = req.body
-
-//   try {
-//     const newItem = await inventoryService.addInventory({
-//       productCode,
-//       binCode,
-//       quantity
-//     })
-//     return res.status(201).json({
-//       success: true,
-//       message: 'Inventory item created successfully!',
-//       data: newItem
-//     })
-//   } catch (error) {
-//     next(error)
-//   }
-// }
-
 export const updateInventory = async (
   req: Request,
   res: Response,
@@ -106,7 +83,7 @@ export const updateInventory = async (
   }
 }
 
-export const uploadInventories = async (
+export const addInventories = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -120,7 +97,7 @@ export const uploadInventories = async (
         .json({ success: false, message: 'Invalid payload' })
     }
 
-    const result = await inventoryService.uploadInventories(inventories)
+    const result = await inventoryService.addInventories(inventories)
 
     res.status(200).json({
       success: true,
