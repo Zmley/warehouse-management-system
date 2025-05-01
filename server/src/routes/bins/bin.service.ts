@@ -123,28 +123,36 @@ export const addBins = async (binList: BinUploadPayload[]) => {
   const skipped: BinUploadPayload[] = []
   let insertedCount = 0
 
-  await Promise.all(
-    binList.map(async bin => {
-      try {
-        await Bin.create({
-          warehouseID: bin.warehouseID,
-          binCode: bin.binCode,
-          type: bin.type,
-          defaultProductCodes: bin.defaultProductCodes?.join(',') || null
-        })
-        insertedCount++
-      } catch (error) {
-        if (error.name === 'SequelizeUniqueConstraintError') {
-          skipped.push(bin)
-        } else {
-          throw new AppError(
-            500,
-            error instanceof Error ? error.message : 'Unknown error'
-          )
+  const CHUNK_SIZE = 100
+  for (let i = 0; i < binList.length; i += CHUNK_SIZE) {
+    const chunk = binList.slice(i, i + CHUNK_SIZE)
+
+    const chunkResult = await Promise.all(
+      chunk.map(async bin => {
+        try {
+          await Bin.create({
+            warehouseID: bin.warehouseID,
+            binCode: bin.binCode,
+            type: bin.type,
+            defaultProductCodes: bin.defaultProductCodes?.join(',') || null
+          })
+          return { success: true }
+        } catch (error) {
+          if (error.name === 'SequelizeUniqueConstraintError') {
+            skipped.push(bin)
+            return { success: false }
+          } else {
+            throw new AppError(
+              500,
+              error instanceof Error ? error.message : 'Unknown error'
+            )
+          }
         }
-      }
-    })
-  )
+      })
+    )
+
+    insertedCount += chunkResult.filter(r => r.success).length
+  }
 
   return {
     insertedCount,
