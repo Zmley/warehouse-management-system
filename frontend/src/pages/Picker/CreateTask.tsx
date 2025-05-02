@@ -21,12 +21,13 @@ const CreateTask = () => {
   const bin: Bin = location.state?.bin
 
   const [productCode, setProductCode] = useState('')
-  const [sourceBins, setSourceBins] = useState<string[]>([])
+  const [sourceBins, setSourceBins] = useState<
+    { binCode: string; quantity: number }[]
+  >([])
   const [sourceError, setSourceError] = useState(false)
 
   const { productCodes, loadProducts } = useProduct()
   const { createTask, loading, error } = usePickerTasks()
-
   const { fetchBinCodes } = useBin()
 
   useEffect(() => {
@@ -97,32 +98,47 @@ const CreateTask = () => {
             Create A New Task
           </Typography>
 
+          {/* ✅ Source Bin */}
           <Box
             display='flex'
             justifyContent='space-between'
-            alignItems='center'
+            alignItems='flex-start'
             my={2}
           >
-            <Typography fontWeight='bold'>Source Bin</Typography>
+            <Typography fontWeight='bold' sx={{ mt: 0.5 }}>
+              Source Bins
+            </Typography>
             <Paper
               variant='outlined'
               sx={{
                 px: 2,
-                py: 0.5,
+                py: 1,
                 backgroundColor: sourceError ? '#ffcdd2' : '#e3f2fd',
-                borderRadius: 2
+                borderRadius: 2,
+                minWidth: '180px'
               }}
             >
-              <Typography fontWeight='bold'>
-                {sourceError
-                  ? 'No matching bins'
-                  : sourceBins.length
-                  ? sourceBins.join(', ')
-                  : '-'}
-              </Typography>
+              {sourceError ? (
+                <Typography fontWeight='bold'>No matching bins</Typography>
+              ) : sourceBins.length ? (
+                <Box>
+                  {sourceBins.length ? (
+                    sourceBins.map(({ binCode, quantity }) => (
+                      <Typography key={binCode} fontSize={14}>
+                        {binCode} (Qty: {quantity})
+                      </Typography>
+                    ))
+                  ) : (
+                    <Typography>-</Typography>
+                  )}
+                </Box>
+              ) : (
+                <Typography>-</Typography>
+              )}
             </Paper>
           </Box>
 
+          {/* ✅ Target Bin */}
           <Box
             display='flex'
             justifyContent='space-between'
@@ -143,6 +159,7 @@ const CreateTask = () => {
             </Paper>
           </Box>
 
+          {/* ✅ Product Selector */}
           <Autocomplete
             options={productCodes}
             value={productCode}
@@ -154,6 +171,7 @@ const CreateTask = () => {
             sx={{ mb: 3, mt: 2 }}
           />
 
+          {/* ✅ Create Button */}
           <Button
             variant='contained'
             color='primary'
