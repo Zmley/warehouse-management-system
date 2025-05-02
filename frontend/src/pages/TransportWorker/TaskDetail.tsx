@@ -84,7 +84,7 @@ const TaskDetail: React.FC = () => {
           <Grid item xs={4} sx={{ textAlign: 'center' }}>
             <Typography variant='caption'>Quantity</Typography>
             <Typography fontWeight='bold' fontSize={20}>
-              {myTask.quantity ?? '--'}
+              {myTask.quantity === 0 ? 'ALL' : myTask.quantity ?? '--'}
             </Typography>
           </Grid>
 

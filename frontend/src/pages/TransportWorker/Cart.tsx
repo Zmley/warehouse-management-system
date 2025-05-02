@@ -33,7 +33,9 @@ const Cart = () => {
       inventoryID: item.inventoryID,
       quantity:
         item.productCode === myTask.productCode
-          ? myTask.quantity
+          ? myTask.quantity === 0
+            ? item.quantity
+            : myTask.quantity
           : item.quantity,
       selected: item.productCode === myTask.productCode
     }))
@@ -78,6 +80,7 @@ const Cart = () => {
   const overLimit =
     myTask?.productCode !== 'ALL' &&
     myTask?.quantity !== undefined &&
+    myTask?.quantity !== 0 &&
     selectedTotalQuantity > myTask.quantity
 
   return (

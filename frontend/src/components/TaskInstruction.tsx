@@ -58,7 +58,8 @@ const TaskInstruction: React.FC = () => {
               <strong>Product Code:</strong> {myTask.productCode}
             </Typography>
             <Typography fontSize={15}>
-              <strong>Quantity:</strong> {myTask.quantity ?? '--'}
+              <strong>Quantity:</strong>{' '}
+              {myTask.quantity === 0 ? 'ALL' : myTask.quantity ?? '--'}
             </Typography>
             <Typography fontSize={15}>
               <strong>Destination Bin:</strong>{' '}
