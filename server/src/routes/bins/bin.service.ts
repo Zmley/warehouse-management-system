@@ -27,9 +27,9 @@ export const getBinByBinCode = async (binCode: string) => {
 export const getBinCodesByProductCode = async (
   productCode: string,
   warehouseID: string
-): Promise<string[]> => {
+): Promise<{ binCode: string; quantity: number }[]> => {
   try {
-    const inventories = await Bin.findAll({
+    const bins = await Bin.findAll({
       where: {
         warehouseID,
         type: 'INVENTORY'
@@ -39,17 +39,20 @@ export const getBinCodesByProductCode = async (
           model: Inventory,
           as: 'inventories',
           where: { productCode },
-          attributes: []
+          attributes: ['quantity']
         }
       ],
       attributes: ['binCode']
     })
 
-    if (!inventories.length) {
+    if (!bins.length) {
       throw new AppError(404, `❌ No ${productCode} in current warehouse!`)
     }
 
-    return inventories.map(bin => bin.binCode)
+    return bins.map(bin => ({
+      binCode: bin.binCode,
+      quantity: bin.inventories?.[0]?.quantity ?? 0
+    }))
   } catch (error) {
     console.error('Error fetching binCodes:', error)
     if (error instanceof AppError) throw error
@@ -64,7 +67,9 @@ export const getBinCodesInWarehouse = async (
     const bins = await Bin.findAll({
       where: {
         warehouseID,
-        type: 'INVENTORY'
+        type: {
+          [Op.in]: ['INVENTORY', 'PICK_UP']
+        }
       },
       attributes: ['binID', 'binCode']
     })

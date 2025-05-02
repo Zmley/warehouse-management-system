@@ -52,14 +52,26 @@ const TaskDetail: React.FC = () => {
 
         <Grid container spacing={2}>
           <Grid item xs={12} sx={{ textAlign: 'center' }}>
-            <Typography variant='caption'>Source Bin</Typography>
-            <Typography fontWeight='bold' fontSize={20}>
-              {myTask.sourceBins?.length
-                ? myTask.sourceBins
-                    .map((sourceBin: any) => sourceBin.bin?.binCode || '--')
-                    .join(' / ')
-                : '--'}
-            </Typography>
+            <Typography variant='caption'>Source Bins</Typography>
+            <Box sx={{ mt: 1 }}>
+              {myTask.sourceBins?.length ? (
+                myTask.sourceBins.map((sourceBin: any, index: number) => (
+                  <Typography
+                    key={index}
+                    fontSize={15}
+                    fontWeight='bold'
+                    textAlign='center'
+                  >
+                    {sourceBin.bin?.binCode || '--'} (Qty:{' '}
+                    {sourceBin.quantity ?? 'Not Required'})
+                  </Typography>
+                ))
+              ) : (
+                <Typography fontWeight='bold' fontSize={16}>
+                  --
+                </Typography>
+              )}
+            </Box>
           </Grid>
 
           <Grid item xs={4} sx={{ textAlign: 'center' }}>

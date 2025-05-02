@@ -54,34 +54,39 @@ const TaskList: React.FC = () => {
             }}
           >
             <CardContent>
-              <Typography fontWeight='bold' fontSize={13} mb={2}>
-                Task ID # {task.taskID}
-              </Typography>
-
               <Grid container spacing={2}>
-                <Grid item xs={4}>
+                {/* ✅ 第一排：Source Bin 独占一排，标题和内容居中 */}
+                <Grid item xs={12} textAlign='center'>
                   <Typography variant='caption' color='text.secondary'>
                     Source Bin
                   </Typography>
-                  <Box>
-                    <Typography fontWeight='bold' fontSize={16}>
-                      {task.sourceBins?.length
-                        ? task.sourceBins
-                            .map((item: any) => item.bin?.binCode || '--')
-                            .join(' / ')
-                        : '--'}
-                    </Typography>
+                  <Box
+                    sx={{
+                      fontWeight: 'bold',
+                      fontSize: 16,
+                      whiteSpace: 'pre-wrap',
+                      wordBreak: 'break-word',
+                      lineHeight: 1.5,
+                      mt: 0.5
+                    }}
+                  >
+                    {task.sourceBins?.length
+                      ? task.sourceBins
+                          .map((item: any) => item.bin?.binCode || '--')
+                          .join(' / ')
+                      : '--'}
                   </Box>
                 </Grid>
 
-                <Grid item xs={4}>
+                {/* ✅ 第二排：Product / Quantity / Target Bin */}
+                <Grid item xs={4} textAlign='center'>
                   <Typography variant='caption' color='text.secondary'>
                     Product
                   </Typography>
                   <Typography fontWeight='bold'>{task.productCode}</Typography>
                 </Grid>
 
-                <Grid item xs={3}>
+                <Grid item xs={4} textAlign='center'>
                   <Typography variant='caption' color='text.secondary'>
                     Quantity
                   </Typography>
@@ -90,7 +95,7 @@ const TaskList: React.FC = () => {
                   </Typography>
                 </Grid>
 
-                <Grid item xs={4}>
+                <Grid item xs={4} textAlign='center'>
                   <Typography variant='caption' color='text.secondary'>
                     Target Bin
                   </Typography>

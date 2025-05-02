@@ -71,6 +71,15 @@ const Cart = () => {
     )
   }
 
+  const selectedTotalQuantity = inventoryListReadyToUnload
+    .filter(item => item.selected)
+    .reduce((sum, item) => sum + Number(item.quantity), 0)
+
+  const overLimit =
+    myTask?.productCode !== 'ALL' &&
+    myTask?.quantity !== undefined &&
+    selectedTotalQuantity > myTask.quantity
+
   return (
     <Container maxWidth='sm'>
       {myTask && <TaskInstruction />}
@@ -95,11 +104,19 @@ const Cart = () => {
             onSelectionChange={handleSelectionChange}
           />
 
+          {overLimit && (
+            <Typography color='error' fontSize={14} textAlign='center' mt={2}>
+              ❌ Total selected quantity ({selectedTotalQuantity}) exceeds task
+              quantity ({myTask.quantity})
+            </Typography>
+          )}
+
           <Box sx={{ mt: 3 }}>
             <Button
               variant='contained'
               color='primary'
               fullWidth
+              disabled={overLimit}
               onClick={() => {
                 const selectedToUnload = inventoryListReadyToUnload
                   .filter(item => item.selected)

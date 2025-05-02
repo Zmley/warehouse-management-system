@@ -183,3 +183,32 @@ export const addInventories = async (inventoryList: InventoryUploadType[]) => {
     skipped
   }
 }
+
+export const checkInventoryQuantity = async (
+  sourceBinID: string,
+  productCode: string,
+  requiredQuantity: number
+): Promise<void> => {
+  if (productCode === 'ALL') return
+
+  const inventoryItem = await Inventory.findOne({
+    where: {
+      binID: sourceBinID,
+      productCode
+    }
+  })
+
+  if (!inventoryItem) {
+    throw new AppError(
+      404,
+      `❌ No product ${productCode} found in the source bin`
+    )
+  }
+
+  if (inventoryItem.quantity < requiredQuantity) {
+    throw new AppError(
+      400,
+      `❌ Not enough inventory. Available: ${inventoryItem.quantity}, Required: ${requiredQuantity}`
+    )
+  }
+}

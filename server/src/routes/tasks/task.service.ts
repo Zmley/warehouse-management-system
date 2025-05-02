@@ -6,6 +6,7 @@ import { Op, Sequelize, WhereOptions } from 'sequelize'
 import { UserRole } from 'constants/uerRole'
 import { TaskWithJoin } from 'types/task'
 import { TaskStatus } from 'constants/tasksStatus'
+import { checkInventoryQuantity } from 'routes/inventory/inventory.service'
 
 export const hasActiveTask = async (
   accountID: string
@@ -27,7 +28,8 @@ export const createAsAdmin = async (
   sourceBinID: string,
   destinationBinID: string,
   productCode: string,
-  accountID: string
+  accountID: string,
+  quantity: number
 ) => {
   try {
     const existingTask = await checkBinAvailability(sourceBinID)
@@ -36,12 +38,15 @@ export const createAsAdmin = async (
       throw new AppError(409, '❌ Source Bin is already in task')
     }
 
+    await checkInventoryQuantity(sourceBinID, productCode, quantity)
+
     const task = await Task.create({
       sourceBinID,
       destinationBinID,
       creatorID: accountID,
       productCode,
-      status: TaskStatus.PENDING
+      status: TaskStatus.PENDING,
+      quantity
     })
 
     return task
@@ -95,7 +100,8 @@ export const createTaskAsPicker = async (
   binCode: string,
   accountID: string,
   warehouseID: string,
-  productCode: string
+  productCode: string,
+  quantity: number
 ) => {
   const destinationBin = await Bin.findOne({
     where: {
@@ -139,7 +145,8 @@ export const createTaskAsPicker = async (
     destinationBinID: destinationBin.binID,
     creatorID: accountID,
     productCode,
-    status: TaskStatus.PENDING
+    status: TaskStatus.PENDING,
+    quantity
   })
 
   return { ...task.toJSON(), sourceBins }

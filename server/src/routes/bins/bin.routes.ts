@@ -21,7 +21,7 @@ router.get('/:binCode', getBin)
 
 router.get(
   '/code/:productCode',
-  roleAllow([UserRole.TRANSPORT_WORKER, UserRole.PICKER]),
+  roleAllow([UserRole.TRANSPORT_WORKER, UserRole.PICKER, UserRole.ADMIN]),
   getAvailableBinCodes
 )
 

@@ -126,9 +126,31 @@ export const createTask = async (
 ) => {
   try {
     const { role, accountID, warehouseID } = res.locals
-    const { productCode, binCode, sourceBinCode, destinationBinCode } = req.body
+    const {
+      productCode,
+      binCode,
+      sourceBinCode,
+      destinationBinCode,
+      quantity
+    } = req.body
 
     if (role === UserRole.ADMIN) {
+      if (!sourceBinCode) {
+        const task = await taskService.createTaskAsPicker(
+          binCode || destinationBinCode,
+          accountID,
+          warehouseID,
+          productCode,
+          quantity
+        )
+
+        return res.status(201).json({
+          success: true,
+          message: '✅ Admin created Picker-style task successfully',
+          task
+        })
+      }
+
       const sourceBin = await binService.getBinByBinCode(sourceBinCode)
       const destinationBin = await binService.getBinByBinCode(
         destinationBinCode
@@ -138,7 +160,8 @@ export const createTask = async (
         sourceBin.binID,
         destinationBin.binID,
         productCode,
-        accountID
+        accountID,
+        quantity
       )
 
       return res.status(200).json({
@@ -153,7 +176,8 @@ export const createTask = async (
         binCode,
         accountID,
         warehouseID,
-        productCode
+        productCode,
+        quantity
       )
 
       return res.status(201).json({
