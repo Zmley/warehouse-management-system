@@ -12,7 +12,6 @@ const Scan = () => {
 
   const handleBinScanned = async (binCode: string) => {
     console.log('📦 Bin Scanned:', binCode)
-
     try {
       const bin = await getBinByBinCode(binCode)
       navigate('/create-task', { state: { bin } })
@@ -22,19 +21,23 @@ const Scan = () => {
     }
   }
 
-  const { videoRef, isScanning, startScanning, stopScanning } =
+  const { videoRef, startScanning, stopScanning, isScanning } =
     useQRScanner(handleBinScanned)
 
   const streamRef = useRef<MediaStream | null>(null)
 
   useEffect(() => {
+    if (!isAndroid && !isScanning) {
+      startScanning()
+    }
+
     return () => {
       stopScanning()
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      const stream = streamRef.current
-      stream?.getTracks().forEach(track => track.stop())
+      streamRef.current?.getTracks().forEach(track => track.stop())
     }
-  }, [stopScanning])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <Box
