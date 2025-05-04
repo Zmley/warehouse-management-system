@@ -8,6 +8,8 @@ import useQRScanner from 'hooks/useQRScanner'
 import { useCartContext } from 'contexts/cart'
 import { useCart } from 'hooks/useCart'
 
+const isAndroid = /Android/i.test(navigator.userAgent)
+
 const Scan = () => {
   const navigate = useNavigate()
   const stopButtonRef = useRef<HTMLButtonElement>(null)
@@ -37,7 +39,7 @@ const Scan = () => {
     useQRScanner(handleScanSuccess)
 
   useEffect(() => {
-    if (!hasStarted) {
+    if (!isAndroid && !hasStarted) {
       startScanning()
       setHasStarted(true)
     }
@@ -47,6 +49,15 @@ const Scan = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  const handleAndroidStart = async () => {
+    try {
+      await startScanning()
+      setHasStarted(true)
+    } catch (e) {
+      alert('❌ Camera failed to start. Please check permissions.')
+    }
+  }
 
   return (
     <Box
@@ -92,6 +103,7 @@ const Scan = () => {
               }}
               autoPlay
               playsInline
+              muted
             />
           </Box>
 
@@ -117,6 +129,17 @@ const Scan = () => {
           >
             Position the QR code inside the frame to begin processing your task.
           </Typography>
+
+          {/* ✅ 安卓按钮手动开启摄像头 */}
+          {isAndroid && !hasStarted && (
+            <Button
+              variant='outlined'
+              sx={{ mt: 3, mb: 1 }}
+              onClick={handleAndroidStart}
+            >
+              👉 Android: Tap to Enable Camera
+            </Button>
+          )}
 
           <Box sx={{ mt: 4 }}>
             <Button

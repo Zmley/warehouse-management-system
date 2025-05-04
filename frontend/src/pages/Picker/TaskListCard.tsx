@@ -19,21 +19,40 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
   const { cancelTask } = usePickerTasks()
   const { tasks, fetchTasks } = usePickerTasks()
 
+  const [isLoadingTaskID, setIsLoadingTaskID] = useState<string | null>(null)
+
   useEffect(() => {
     fetchTasks()
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchTasks()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    const interval = setInterval(() => {
+      fetchTasks()
+    }, 60000)
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      clearInterval(interval)
+    }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-  const [loadingTaskID, setLoadingTaskID] = useState<string | null>(null)
 
   const handleCancel = async (taskID: string) => {
-    setLoadingTaskID(taskID)
+    setIsLoadingTaskID(taskID)
     const result = await cancelTask(taskID)
     if (result) {
       fetchTasks()
     } else {
       alert('❌ Failed to cancel task')
     }
-    setLoadingTaskID(null)
+    setIsLoadingTaskID(null)
   }
 
   return (
@@ -123,7 +142,7 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
                       variant='outlined'
                       color='error'
                       onClick={() => handleCancel(task.taskID)}
-                      disabled={loadingTaskID === task.taskID}
+                      disabled={isLoadingTaskID === task.taskID}
                       sx={{
                         fontWeight: 600,
                         px: 1.5,
@@ -134,7 +153,7 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
                         minWidth: '72px'
                       }}
                     >
-                      {loadingTaskID === task.taskID
+                      {isLoadingTaskID === task.taskID
                         ? 'Cancelling...'
                         : 'Cancel'}
                     </Button>
