@@ -20,6 +20,11 @@ const useQRScanner = (onScanSuccess?: (binCode: string) => void) => {
       })
 
       if (videoRef.current) {
+        // videoRef.current.srcObject = stream
+
+        videoRef.current.setAttribute('playsinline', 'true')
+        videoRef.current.setAttribute('autoplay', 'true')
+        videoRef.current.setAttribute('muted', 'true')
         videoRef.current.srcObject = stream
 
         if (!scannerRef.current) {
