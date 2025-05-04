@@ -10,28 +10,17 @@ const useQRScanner = (onScanSuccess?: (binCode: string) => void) => {
     setIsScanning(true)
 
     if (!navigator.mediaDevices?.getUserMedia) {
-      alert('Camera not supported on this device')
+      alert('Camera not supported')
       return
     }
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: { ideal: 'environment' },
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        }
+        video: { facingMode: 'environment' }
       })
 
       if (videoRef.current) {
-        videoRef.current.setAttribute('playsinline', 'true')
-        videoRef.current.setAttribute('autoplay', 'true')
-        videoRef.current.setAttribute('muted', 'true')
-
         videoRef.current.srcObject = stream
-
-        // ✅ 关键：必须调用 play() 才能激活视频播放
-        await videoRef.current.play()
 
         if (!scannerRef.current) {
           scannerRef.current = new QrScanner(
@@ -59,25 +48,21 @@ const useQRScanner = (onScanSuccess?: (binCode: string) => void) => {
 
         await scannerRef.current.start()
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('❌ Failed to access camera:', error)
-      alert(`❌ Camera access error: ${error.name} - ${error.message}`)
-      setIsScanning(false)
     }
   }
 
   const stopScanning = async () => {
     if (scannerRef.current) {
       await scannerRef.current.stop()
-      scannerRef.current.destroy()
+      scannerRef.current?.destroy()
       scannerRef.current = null
     }
 
     const stream = videoRef.current?.srcObject as MediaStream
     stream?.getTracks().forEach(track => track.stop())
-    if (videoRef.current) {
-      videoRef.current.srcObject = null
-    }
+    if (videoRef.current) videoRef.current.srcObject = null
 
     setIsScanning(false)
   }

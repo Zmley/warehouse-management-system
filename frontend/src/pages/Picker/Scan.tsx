@@ -76,10 +76,12 @@ const Scan = () => {
           style={{
             width: '100%',
             height: '100%',
-            objectFit: 'cover'
+            objectFit: 'cover',
+            backgroundColor: '#000'
           }}
           autoPlay
           playsInline
+          muted
         />
         <Box
           sx={{
