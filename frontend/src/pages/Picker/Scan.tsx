@@ -12,6 +12,7 @@ const Scan = () => {
 
   const handleBinScanned = async (binCode: string) => {
     console.log('📦 Bin Scanned:', binCode)
+
     try {
       const bin = await getBinByBinCode(binCode)
       navigate('/create-task', { state: { bin } })
@@ -21,7 +22,7 @@ const Scan = () => {
     }
   }
 
-  const { videoRef, startScanning, stopScanning, isScanning } =
+  const { videoRef, isScanning, startScanning, stopScanning } =
     useQRScanner(handleBinScanned)
 
   const streamRef = useRef<MediaStream | null>(null)
@@ -29,7 +30,9 @@ const Scan = () => {
   useEffect(() => {
     return () => {
       stopScanning()
-      streamRef.current?.getTracks().forEach(track => track.stop())
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      const stream = streamRef.current
+      stream?.getTracks().forEach(track => track.stop())
     }
   }, [stopScanning])
 
@@ -88,6 +91,7 @@ const Scan = () => {
         />
       </Paper>
 
+      {/* 安卓用户需手动点击开启摄像头 */}
       {isAndroid && !isScanning && !hasInteracted && (
         <Button
           variant='outlined'
@@ -98,7 +102,7 @@ const Scan = () => {
             await startScanning()
           }}
         >
-          👉 open camera
+          👉 安卓用户请点击开启摄像头
         </Button>
       )}
 
