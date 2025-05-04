@@ -1,15 +1,17 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Typography, Button, Box, Paper } from '@mui/material'
 import useQRScanner from 'hooks/useQRScanner'
 import { getBinByBinCode } from 'api/binApi'
 
+const isAndroid = /Android/i.test(navigator.userAgent)
+
 const Scan = () => {
   const navigate = useNavigate()
+  const [hasInteracted, setHasInteracted] = useState(false)
 
   const handleBinScanned = async (binCode: string) => {
     console.log('📦 Bin Scanned:', binCode)
-
     try {
       const bin = await getBinByBinCode(binCode)
       navigate('/create-task', { state: { bin } })
@@ -19,28 +21,17 @@ const Scan = () => {
     }
   }
 
-  const { videoRef, startScanning, stopScanning } =
+  const { videoRef, startScanning, stopScanning, isScanning } =
     useQRScanner(handleBinScanned)
 
   const streamRef = useRef<MediaStream | null>(null)
 
   useEffect(() => {
-    navigator.mediaDevices
-      .getUserMedia({ video: true })
-      .then(s => {
-        streamRef.current = s
-        startScanning()
-      })
-      .catch(() => {
-        alert('Please enable camera permissions to use scanning.')
-      })
-
     return () => {
       stopScanning()
       streamRef.current?.getTracks().forEach(track => track.stop())
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [stopScanning])
 
   return (
     <Box
@@ -97,11 +88,25 @@ const Scan = () => {
         />
       </Paper>
 
+      {isAndroid && !isScanning && !hasInteracted && (
+        <Button
+          variant='outlined'
+          sx={{ mt: 2, maxWidth: 400 }}
+          fullWidth
+          onClick={async () => {
+            setHasInteracted(true)
+            await startScanning()
+          }}
+        >
+          👉 open camera
+        </Button>
+      )}
+
       <Button
         variant='contained'
         color='error'
         fullWidth
-        sx={{ maxWidth: 400, mt: 4 }}
+        sx={{ maxWidth: 400, mt: 3 }}
         onClick={() => {
           stopScanning()
           navigate('/')
