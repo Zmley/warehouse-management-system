@@ -1,6 +1,6 @@
 import { Container, Typography, Button, Box, Fade } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner'
 import CancelIcon from '@mui/icons-material/Cancel'
 
@@ -12,7 +12,6 @@ const isAndroid = /Android/i.test(navigator.userAgent)
 
 const Scan = () => {
   const navigate = useNavigate()
-  const stopButtonRef = useRef<HTMLButtonElement>(null)
   const [hasStarted, setHasStarted] = useState(false)
 
   const { isCartEmpty } = useCartContext()
@@ -20,15 +19,12 @@ const Scan = () => {
 
   const handleScanSuccess = async (binCode: string) => {
     console.log(`Scanned bin code: ${binCode}`)
-
     try {
       if (isCartEmpty) {
         await loadCart(binCode)
       } else {
         await unloadCart(binCode)
       }
-
-      // navigate('/success')
     } catch (err) {
       console.error('❌ Error handling scan:', err)
       alert('❌ Operation failed. Please try again.')
@@ -47,8 +43,7 @@ const Scan = () => {
     return () => {
       stopScanning()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [hasStarted, startScanning, stopScanning])
 
   const handleAndroidStart = async () => {
     try {
@@ -56,6 +51,7 @@ const Scan = () => {
       setHasStarted(true)
     } catch (e) {
       alert('❌ Camera failed to start. Please check permissions.')
+      console.error(e)
     }
   }
 
@@ -82,6 +78,7 @@ const Scan = () => {
             boxShadow: '0 8px 32px rgba(0,0,0,0.15)'
           }}
         >
+          {/* 视频区域 */}
           <Box
             sx={{
               width: '100%',
@@ -107,13 +104,10 @@ const Scan = () => {
             />
           </Box>
 
+          {/* 标题 */}
           <Typography
             variant='h5'
-            sx={{
-              mt: 3,
-              fontWeight: 700,
-              color: '#1e3a8a'
-            }}
+            sx={{ mt: 3, fontWeight: 700, color: '#1e3a8a' }}
           >
             <QrCodeScannerIcon sx={{ mr: 1, fontSize: 30 }} />
             Start Scanning
@@ -121,16 +115,12 @@ const Scan = () => {
 
           <Typography
             variant='body1'
-            sx={{
-              mt: 1,
-              color: '#555',
-              fontSize: '15px'
-            }}
+            sx={{ mt: 1, color: '#555', fontSize: '15px' }}
           >
             Position the QR code inside the frame to begin processing your task.
           </Typography>
 
-          {/* ✅ 安卓按钮手动开启摄像头 */}
+          {/* 👉 Android 专属按钮：点击启动摄像头 */}
           {isAndroid && !hasStarted && (
             <Button
               variant='outlined'
@@ -141,6 +131,7 @@ const Scan = () => {
             </Button>
           )}
 
+          {/* 取消按钮 */}
           <Box sx={{ mt: 4 }}>
             <Button
               variant='contained'
@@ -159,13 +150,14 @@ const Scan = () => {
                 }
               }}
               onClick={() => {
-                stopButtonRef.current?.click()
+                stopScanning()
                 navigate(-1)
               }}
             >
               Cancel
             </Button>
 
+            {/* 错误信息 */}
             {error && (
               <Typography color='error' sx={{ mt: 2, fontWeight: 500 }}>
                 {error}

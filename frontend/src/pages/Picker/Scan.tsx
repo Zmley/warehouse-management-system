@@ -8,7 +8,7 @@ const isAndroid = /Android/i.test(navigator.userAgent)
 
 const Scan = () => {
   const navigate = useNavigate()
-  const [hasStarted, setHasStarted] = useState(false)
+  const [hasInteracted, setHasInteracted] = useState(false)
 
   const handleBinScanned = async (binCode: string) => {
     console.log('📦 Bin Scanned:', binCode)
@@ -22,43 +22,19 @@ const Scan = () => {
     }
   }
 
-  const { videoRef, startScanning, stopScanning } =
+  const { videoRef, isScanning, startScanning, stopScanning } =
     useQRScanner(handleBinScanned)
 
   const streamRef = useRef<MediaStream | null>(null)
 
   useEffect(() => {
-    if (!isAndroid) {
-      navigator.mediaDevices
-        .getUserMedia({ video: true })
-        .then(s => {
-          streamRef.current = s
-          startScanning()
-          setHasStarted(true)
-        })
-        .catch(() => {
-          alert('Please enable camera permissions to use scanning.')
-        })
-    }
-
     return () => {
       stopScanning()
-      const currentStream = streamRef.current
-      currentStream?.getTracks().forEach(track => track.stop())
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      const stream = streamRef.current
+      stream?.getTracks().forEach(track => track.stop())
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const handleAndroidStart = async () => {
-    try {
-      const s = await navigator.mediaDevices.getUserMedia({ video: true })
-      streamRef.current = s
-      await startScanning()
-      setHasStarted(true)
-    } catch {
-      alert('❌ Failed to access camera on Android. Please check permission.')
-    }
-  }
+  }, [stopScanning])
 
   return (
     <Box
@@ -115,14 +91,18 @@ const Scan = () => {
         />
       </Paper>
 
-      {isAndroid && !hasStarted && (
+      {/* 安卓用户需手动点击开启摄像头 */}
+      {isAndroid && !isScanning && !hasInteracted && (
         <Button
           variant='outlined'
-          sx={{ mt: 3, maxWidth: 400 }}
+          sx={{ mt: 2, maxWidth: 400 }}
           fullWidth
-          onClick={handleAndroidStart}
+          onClick={async () => {
+            setHasInteracted(true)
+            await startScanning()
+          }}
         >
-          👉 Android: Tap to Enable Camera
+          👉 安卓用户请点击开启摄像头
         </Button>
       )}
 
