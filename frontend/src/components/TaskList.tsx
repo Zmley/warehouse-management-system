@@ -34,6 +34,23 @@ const TaskList: React.FC = () => {
 
   useEffect(() => {
     fetchTasks()
+
+    const interval = setInterval(() => {
+      fetchTasks()
+    }, 30000)
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchTasks()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -55,7 +72,6 @@ const TaskList: React.FC = () => {
           >
             <CardContent>
               <Grid container spacing={2}>
-                {/* ✅ 第一排：Source Bin 独占一排，标题和内容居中 */}
                 <Grid item xs={12} textAlign='center'>
                   <Typography variant='caption' color='text.secondary'>
                     Source Bin
@@ -78,7 +94,6 @@ const TaskList: React.FC = () => {
                   </Box>
                 </Grid>
 
-                {/* ✅ 第二排：Product / Quantity / Target Bin */}
                 <Grid item xs={4} textAlign='center'>
                   <Typography variant='caption' color='text.secondary'>
                     Product
