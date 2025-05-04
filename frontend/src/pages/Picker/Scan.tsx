@@ -91,7 +91,6 @@ const Scan = () => {
         />
       </Paper>
 
-      {/* 安卓用户需手动点击开启摄像头 */}
       {isAndroid && !isScanning && !hasInteracted && (
         <Button
           variant='outlined'
@@ -102,7 +101,7 @@ const Scan = () => {
             await startScanning()
           }}
         >
-          👉 安卓用户请点击开启摄像头
+          👉 Android: Tap to Enable Camera
         </Button>
       )}
 

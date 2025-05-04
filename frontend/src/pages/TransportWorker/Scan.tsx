@@ -79,7 +79,6 @@ const Scan = () => {
             boxShadow: '0 8px 32px rgba(0,0,0,0.15)'
           }}
         >
-          {/* 视频区域 */}
           <Box
             sx={{
               width: '100%',
@@ -131,7 +130,6 @@ const Scan = () => {
             </Button>
           )}
 
-          {/* 取消按钮 */}
           <Box sx={{ mt: 4 }}>
             <Button
               variant='contained'
@@ -157,7 +155,6 @@ const Scan = () => {
               Cancel
             </Button>
 
-            {/* 错误信息 */}
             {error && (
               <Typography color='error' sx={{ mt: 2, fontWeight: 500 }}>
                 {error}
