@@ -43,7 +43,8 @@ const Scan = () => {
     return () => {
       stopScanning()
     }
-  }, [hasStarted, startScanning, stopScanning])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleAndroidStart = async () => {
     try {
@@ -120,7 +121,6 @@ const Scan = () => {
             Position the QR code inside the frame to begin processing your task.
           </Typography>
 
-          {/* 👉 Android 专属按钮：点击启动摄像头 */}
           {isAndroid && !hasStarted && (
             <Button
               variant='outlined'
