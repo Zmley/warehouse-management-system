@@ -1,3 +1,4 @@
+//test
 import { useState, useRef, useEffect } from 'react'
 import QrScanner from 'qr-scanner'
 
