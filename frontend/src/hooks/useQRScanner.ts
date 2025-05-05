@@ -56,7 +56,7 @@ const useQRScanner = (onScanSuccess?: (binCode: string) => void) => {
   const stopScanning = async () => {
     if (scannerRef.current) {
       await scannerRef.current.stop()
-      scannerRef.current.destroy()
+      scannerRef.current?.destroy()
       scannerRef.current = null
     }
 

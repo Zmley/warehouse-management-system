@@ -3,8 +3,8 @@ import {
   getInventoriesInCart,
   getInventories,
   deleteInventory,
-  addInventory,
-  updateInventory
+  updateInventory,
+  addInventories
 } from './inventory.controller'
 
 import roleAllow from 'middlewares/roleAllow.middleware'
@@ -24,8 +24,8 @@ router.get('/', getInventories)
 
 router.delete('/:inventoryID', roleAllow([UserRole.ADMIN]), deleteInventory)
 
-router.post('/', addInventory)
-
 router.put('/:inventoryID', updateInventory)
+
+router.post('/', roleAllow([UserRole.ADMIN]), addInventories)
 
 export default router
