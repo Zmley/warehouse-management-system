@@ -32,7 +32,7 @@ export const getInventoriesByWarehouseID = async (
   const binWhere: WhereOptions = {
     warehouseID,
     type: {
-      [Op.in]: ['INVENTORY', 'CART'] // ✅ 只要 type 是 INVENTORY 或 CART
+      [Op.in]: ['INVENTORY', 'CART']
     }
   }
 
