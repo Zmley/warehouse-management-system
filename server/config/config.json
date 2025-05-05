@@ -7,10 +7,10 @@
     "dialect": "postgres"
   },
   "test": {
-    "username": "fcs",
-    "password": "111111111Aa!",
-    "database": "warehouse_db",
-    "host": "warehosuedatabase.c36iiackagdd.us-east-2.rds.amazonaws.com",
+    "username": "${DB_USER}",
+    "password": "${DB_PASSWORD}",
+    "database": "${DB_NAME}",
+    "host": "${DB_HOST}",
     "dialect": "postgres",
     "dialectOptions": {
       "ssl": {
