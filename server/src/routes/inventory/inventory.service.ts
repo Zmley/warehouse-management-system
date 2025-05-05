@@ -29,7 +29,13 @@ export const getInventoriesByWarehouseID = async (
   limit = 20,
   keyword?: string
 ) => {
-  const binWhere: WhereOptions = { warehouseID }
+  const binWhere: WhereOptions = {
+    warehouseID,
+    type: {
+      [Op.in]: ['INVENTORY', 'CART'] // ✅ 只要 type 是 INVENTORY 或 CART
+    }
+  }
+
   if (binID) {
     Object.assign(binWhere, { binID })
   }
