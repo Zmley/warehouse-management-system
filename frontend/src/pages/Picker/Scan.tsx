@@ -2,22 +2,22 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Typography, Button, Box, Paper } from '@mui/material'
 import useQRScanner from 'hooks/useQRScanner'
-import { getBinByBinCode } from 'api/binApi'
+import { useBin } from 'hooks/useBin'
 
 const isAndroid = /Android/i.test(navigator.userAgent)
 
 const Scan = () => {
   const navigate = useNavigate()
   const [hasInteracted, setHasInteracted] = useState(false)
+  const { fetchBinByCode } = useBin()
 
   const handleBinScanned = async (binCode: string) => {
     console.log('📦 Bin Scanned:', binCode)
     try {
-      const bin = await getBinByBinCode(binCode)
+      const bin = await fetchBinByCode(binCode)
       navigate('/create-task', { state: { bin } })
-    } catch (err) {
+    } catch (err: any) {
       console.error('❌ Failed to fetch bin info:', err)
-      alert('❌ Bin not found or error occurred')
     }
   }
 

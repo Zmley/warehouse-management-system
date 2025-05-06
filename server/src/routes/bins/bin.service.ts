@@ -164,3 +164,19 @@ export const addBins = async (binList: BinUploadPayload[]) => {
     skipped
   }
 }
+
+export const getBinByProductCode = async (
+  productCode: string,
+  warehouseID: string
+) => {
+  const bins = await Bin.findAll({
+    where: {
+      type: 'PICK_UP',
+      warehouseID,
+      defaultProductCodes: productCode
+    },
+    order: [['binCode', 'ASC']]
+  })
+
+  return bins
+}

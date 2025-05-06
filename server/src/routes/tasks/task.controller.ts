@@ -4,6 +4,7 @@ import * as binService from 'routes/bins/bin.service'
 import AppError from 'utils/appError'
 import { UserRole } from 'constants/uerRole'
 import { TaskStatus } from 'constants/tasksStatus'
+import { getBinByProductCode } from 'routes/bins/bin.service'
 
 export const acceptTask = async (
   req: Request,
@@ -136,8 +137,13 @@ export const createTask = async (
 
     if (role === UserRole.ADMIN) {
       if (!sourceBinCode) {
+        const destinationBin = await getBinByProductCode(
+          productCode,
+          warehouseID
+        )
+
         const task = await taskService.createTaskAsPicker(
-          binCode || destinationBinCode,
+          binCode || destinationBin[0]?.binCode,
           accountID,
           warehouseID,
           productCode,

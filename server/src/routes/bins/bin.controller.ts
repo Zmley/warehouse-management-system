@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import * as binService from 'routes/bins/bin.service'
+import { getBinByProductCode } from 'routes/bins/bin.service'
 
 export const getBin = async (
   req: Request,
@@ -13,6 +14,7 @@ export const getBin = async (
 
     res.status(200).json({
       message: 'Bin fetched successfully',
+      success: true,
       bin: bin
     })
   } catch (error) {
@@ -118,5 +120,35 @@ export const addBins = async (
     })
   } catch (err) {
     next(err)
+  }
+}
+
+///
+
+export const getPickUpBin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { warehouseID } = res.locals
+
+    const { productCode } = req.params
+
+    if (!productCode || !warehouseID) {
+      return res.status(400).json({
+        success: false,
+        error: '❌ Missing productCode or warehouseID'
+      })
+    }
+
+    const bins = await getBinByProductCode(
+      String(productCode),
+      String(warehouseID)
+    )
+
+    res.json({ success: true, data: bins })
+  } catch (error) {
+    next(error)
   }
 }
