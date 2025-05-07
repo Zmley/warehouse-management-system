@@ -24,12 +24,12 @@ export const cancelTask = async (taskID: string) => {
 export const createPickerTask = async (
   binCode: string,
   productCode: string
-): Promise<Task> => {
+) => {
   const response = await apiClient.post('/tasks', {
     binCode,
     productCode
   })
-  return response.data.task
+  return response.data
 }
 
 export const getPickerTasks = async (): Promise<Task[]> => {

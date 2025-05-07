@@ -20,17 +20,25 @@ export const usePickerTasks = () => {
     }
   }
 
-  const createTask = async (
-    binCode: string,
-    productCode: string
-  ): Promise<Task | null> => {
+  const createTask = async (binCode: string, productCode: string) => {
     setLoading(true)
     setError(null)
+
     try {
-      const task = await createPickerTask(binCode, productCode)
-      return task
-    } catch (err) {
-      setError('Failed to create task')
+      const res = await createPickerTask(binCode, productCode)
+
+      console.log('Create task response+++++:', res)
+
+      if (res.success) {
+        return res
+      } else {
+        setError(res.error || '❌ Failed to create task')
+        return null
+      }
+    } catch (err: any) {
+      const message =
+        err.response?.data?.error || err.message || '❌ Unexpected error'
+      setError(message)
       return null
     } finally {
       setLoading(false)

@@ -7,6 +7,7 @@ import { UserRole } from 'constants/uerRole'
 import { TaskWithJoin } from 'types/task'
 import { TaskStatus } from 'constants/tasksStatus'
 import { checkInventoryQuantity } from 'routes/inventory/inventory.service'
+import { getBinByBinCode } from 'routes/bins/bin.service'
 
 export const hasActiveTask = async (
   accountID: string
@@ -404,4 +405,30 @@ export const getTasksByWarehouseID = async (
   }
 
   return mapTasks(tasks)
+}
+
+export const checkIfPickerTaskPublished = async (
+  binCode: string,
+  productCode: string
+): Promise<boolean> => {
+  try {
+    const bin = await getBinByBinCode(binCode)
+
+    if (!bin) {
+      throw new AppError(404, `❌ Bin with code ${binCode} not found.`)
+    }
+
+    const existing = await Task.findOne({
+      where: {
+        destinationBinID: bin.binID,
+        productCode,
+        status: 'PENDING'
+      }
+    })
+
+    return !!existing
+  } catch (err) {
+    console.error('❌ Failed to check if task is published:', err)
+    throw new AppError(500, '❌ Could not verify existing task status.')
+  }
 }

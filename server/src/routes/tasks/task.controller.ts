@@ -5,6 +5,7 @@ import AppError from 'utils/appError'
 import { UserRole } from 'constants/uerRole'
 import { TaskStatus } from 'constants/tasksStatus'
 import { getBinByProductCode } from 'routes/bins/bin.service'
+import { checkIfPickerTaskPublished } from 'routes/tasks/task.service'
 
 export const acceptTask = async (
   req: Request,
@@ -178,6 +179,18 @@ export const createTask = async (
     }
 
     if (role === UserRole.PICKER) {
+      const alreadyPublished = await checkIfPickerTaskPublished(
+        binCode,
+        productCode
+      )
+
+      if (alreadyPublished) {
+        throw new AppError(
+          400,
+          `❌ Task for product ${productCode} in Pick up bin ${binCode} already exists.`
+        )
+      }
+
       const task = await taskService.createTaskAsPicker(
         binCode,
         accountID,

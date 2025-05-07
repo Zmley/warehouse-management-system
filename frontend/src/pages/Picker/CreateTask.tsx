@@ -54,12 +54,11 @@ const CreateTask = () => {
       alert('Please check source availability.')
       return
     }
+    const task = await createTask(bin.binCode, productCode)
 
-    await createTask(bin.binCode, productCode)
-    if (!error) {
+    if (task) {
       navigate('/success')
     } else {
-      alert(error)
     }
   }
 
@@ -228,6 +227,16 @@ const CreateTask = () => {
           >
             ❌ Cancel
           </Button>
+          {error && (
+            <Typography
+              color='error'
+              fontWeight='bold'
+              textAlign='center'
+              mb={2}
+            >
+              {error}
+            </Typography>
+          )}
         </Card>
       </Container>
     </Box>
