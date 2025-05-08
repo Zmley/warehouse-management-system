@@ -23,6 +23,12 @@ const Scan = () => {
 
   const handleScanSuccess = async (binCode: string) => {
     console.log(`Scanned bin code: ${binCode}`)
+
+    if (/^\d{12}$/.test(binCode)) {
+      navigate('/product-detail', { state: { barCode: binCode } })
+      return
+    }
+
     try {
       if (isCartEmpty) {
         await loadCart(binCode)

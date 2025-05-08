@@ -122,3 +122,15 @@ export const uploadProducts = async (products: ProductUploadInput[]) => {
     skippedCount: skipped.length
   }
 }
+
+export const getProductByBarCode = async (barCode: string) => {
+  const product = await Product.findOne({
+    where: { barCode }
+  })
+
+  if (!product) {
+    throw new AppError(404, `❌ Product with barCode ${barCode} not found`)
+  }
+
+  return product
+}

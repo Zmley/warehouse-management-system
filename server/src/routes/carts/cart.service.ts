@@ -61,36 +61,6 @@ const moveInventoriesToBin = async (
   }
 }
 
-// export const loadByBinCode = async (
-//   binCode: string,
-//   cartID: string
-// ): Promise<{ message: string }> => {
-//   try {
-//     const bin = await Bin.findOne({ where: { binCode } })
-
-//     if (!bin) {
-//       throw new AppError(404, `❌ BIn ${binCode} not found in system`)
-//     }
-
-//     const [updatedCount] = await Inventory.update(
-//       { binID: cartID },
-//       { where: { binID: bin.binID } }
-//     )
-
-//     if (updatedCount === 0) {
-//       throw new AppError(404, `❌ ${binCode} is empty.`)
-//     }
-
-//     return {
-//       message: `✅ Products loaded from bin ${binCode}.`
-//     }
-//   } catch (error) {
-//     console.error('Error loading from bin:', error)
-//     if (error instanceof AppError) throw error
-//     throw new AppError(500, '❌ Failed to load items from bin')
-//   }
-// }
-
 export const loadByBinCode = async (
   binCode: string,
   cartID: string,

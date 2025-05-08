@@ -9,6 +9,7 @@ import Dashboard from 'pages/Dashboard'
 import TaskDetailPage from 'pages/TransportWorker/TaskDetail'
 import PickerScanPage from 'pages/Picker/Scan'
 import CreateTaskPage from 'pages/Picker/CreateTask'
+import ProductDetailPage from 'pages/productDetail'
 
 import { TransportWorkCartProvider } from 'contexts/cart'
 
@@ -37,6 +38,7 @@ const PrivateRoutes: React.FC = () => {
       <Route path='/success' element={<UnloadSuccess />} />
 
       <Route path='/task-detail' element={<TaskDetailPage />} />
+      <Route path='/product-detail' element={<ProductDetailPage />} />
 
       <Route path='/picker-scan-bin' element={<PickerScanPage />} />
       <Route path='/create-task' element={<CreateTaskPage />} />
