@@ -7,6 +7,8 @@ import CancelIcon from '@mui/icons-material/Cancel'
 import useQRScanner from 'hooks/useQRScanner'
 import { useCartContext } from 'contexts/cart'
 import { useCart } from 'hooks/useCart'
+import AutocompleteTextField from 'utils/AutocompleteTextField'
+import { useBin } from 'hooks/useBin'
 
 const isAndroid = /Android/i.test(navigator.userAgent)
 
@@ -16,6 +18,8 @@ const Scan = () => {
 
   const { isCartEmpty } = useCartContext()
   const { loadCart, unloadCart, error } = useCart()
+
+  const { binCodes, fetchBinCodes } = useBin()
 
   const handleScanSuccess = async (binCode: string) => {
     console.log(`Scanned bin code: ${binCode}`)
@@ -35,6 +39,7 @@ const Scan = () => {
     useQRScanner(handleScanSuccess)
 
   useEffect(() => {
+    fetchBinCodes()
     if (!isAndroid && !hasStarted) {
       startScanning()
       setHasStarted(true)
@@ -54,6 +59,15 @@ const Scan = () => {
       alert('❌ Camera failed to start. Please check permissions.')
       console.error(e)
     }
+  }
+
+  const [manualBinCode, setManualBinCode] = useState('')
+  const [showManualInput, setShowManualInput] = useState(false)
+  const availableBinCodes = [...binCodes]
+
+  const handleManualSubmit = async () => {
+    if (!manualBinCode.trim()) return alert('❌ Please enter a bin code.')
+    await handleScanSuccess(manualBinCode)
   }
 
   return (
@@ -104,7 +118,6 @@ const Scan = () => {
             />
           </Box>
 
-          {/* 标题 */}
           <Typography
             variant='h5'
             sx={{ mt: 3, fontWeight: 700, color: '#1e3a8a' }}
@@ -128,6 +141,34 @@ const Scan = () => {
             >
               👉 Android: Tap to Enable Camera
             </Button>
+          )}
+
+          <Button
+            variant='outlined'
+            sx={{ mt: 2 }}
+            onClick={() => setShowManualInput(true)}
+          >
+            Enter bin code manually
+          </Button>
+
+          {showManualInput && (
+            <Box sx={{ mt: 3 }}>
+              <AutocompleteTextField
+                label='Enter Bin Code'
+                value={manualBinCode}
+                onChange={setManualBinCode}
+                onSubmit={handleManualSubmit}
+                options={availableBinCodes}
+                sx={{ maxWidth: '360px', mx: 'auto' }}
+              />
+              <Button
+                variant='contained'
+                sx={{ mt: 2 }}
+                onClick={handleManualSubmit}
+              >
+                Submit
+              </Button>
+            </Box>
           )}
 
           <Box sx={{ mt: 4 }}>

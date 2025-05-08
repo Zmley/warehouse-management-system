@@ -30,13 +30,13 @@ const CreateTask = () => {
   const [sourceError, setSourceError] = useState(false)
 
   const { createTask, loading, error } = usePickerTasks()
-  const { fetchBinCodes, isLoading } = useBin()
+  const { fetchBinCodesByProductCode, isLoading } = useBin()
 
   useEffect(() => {
     const getSources = async () => {
       if (productCode) {
         try {
-          const response = await fetchBinCodes(productCode)
+          const response = await fetchBinCodesByProductCode(productCode)
           setSourceBins(response)
           setSourceError(response.length === 0)
         } catch (err) {
@@ -47,7 +47,7 @@ const CreateTask = () => {
       }
     }
     getSources()
-  }, [productCode, fetchBinCodes])
+  }, [productCode, fetchBinCodesByProductCode])
 
   const handleSubmit = async () => {
     if (!productCode || !bin?.binCode || sourceError) {

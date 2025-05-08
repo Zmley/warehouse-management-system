@@ -11,3 +11,10 @@ export const getBinCodesByProductCode = async (
   const response = await apiClient.get(`/bins/code/${productCode}`)
   return response.data.binCodes
 }
+
+export const getBinCodes = async (warehouseID: string) => {
+  const response = await apiClient.get('/bins/codes', {
+    params: { warehouseID }
+  })
+  return response.data
+}
