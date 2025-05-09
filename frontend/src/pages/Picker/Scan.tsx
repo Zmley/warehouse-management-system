@@ -69,6 +69,17 @@ const Scan = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  const handleCancel = async () => {
+    stopScanning()
+
+    const stream = (videoRef.current as HTMLVideoElement | null)?.srcObject
+    if (stream instanceof MediaStream) {
+      stream.getTracks().forEach(track => track.stop())
+    }
+
+    navigate('/')
+  }
+
   return (
     <Box
       sx={{
@@ -149,10 +160,7 @@ const Scan = () => {
         color='error'
         fullWidth
         sx={{ maxWidth: 400, mt: 3 }}
-        onClick={() => {
-          stopScanning()
-          navigate('/')
-        }}
+        onClick={handleCancel}
       >
         ❌ Cancel
       </Button>

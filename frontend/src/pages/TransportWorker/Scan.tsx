@@ -1,8 +1,8 @@
 import {
+  Box,
+  Button,
   Container,
   Typography,
-  Button,
-  Box,
   Fade,
   ToggleButtonGroup,
   ToggleButton
@@ -48,6 +48,11 @@ const Scan = () => {
         const product = await fetchProduct(binCode)
         if (product) {
           await stopScanning()
+          const stream = (videoRef.current as HTMLVideoElement | null)
+            ?.srcObject
+          if (stream && stream instanceof MediaStream) {
+            stream.getTracks().forEach(track => track.stop())
+          }
           setScannedProduct(product)
         } else {
           alert('❌ Product not found')
@@ -88,6 +93,10 @@ const Scan = () => {
 
     return () => {
       stopScanning()
+      const stream = (videoRef.current as HTMLVideoElement | null)?.srcObject
+      if (stream && stream instanceof MediaStream) {
+        stream.getTracks().forEach(track => track.stop())
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode])
@@ -98,6 +107,15 @@ const Scan = () => {
   const handleManualSubmit = async () => {
     if (!manualBinCode.trim()) return alert('❌ Please enter a bin code.')
     await handleScanSuccess(manualBinCode)
+  }
+
+  const handleCancel = () => {
+    stopScanning()
+    const stream = (videoRef.current as HTMLVideoElement | null)?.srcObject
+    if (stream && stream instanceof MediaStream) {
+      stream.getTracks().forEach(track => track.stop())
+    }
+    navigate(-1)
   }
 
   return (
@@ -138,9 +156,9 @@ const Scan = () => {
               }}
               sx={{
                 mt: 4,
-                mb: 5, // ✅ 与下方内容保持距离
+                mb: 5,
                 borderRadius: '999px',
-                backgroundColor: '#e2e8f0', // 淡灰蓝背景
+                backgroundColor: '#e2e8f0',
                 boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.05)',
                 width: 'fit-content',
                 mx: 'auto',
@@ -185,6 +203,7 @@ const Scan = () => {
                 🔠 Manual
               </ToggleButton>
             </ToggleButtonGroup>
+
             {mode === 'scanner' && (
               <Box
                 sx={{
@@ -260,10 +279,7 @@ const Scan = () => {
                     boxShadow: '0 6px 20px rgba(211,47,47,0.4)'
                   }
                 }}
-                onClick={() => {
-                  stopScanning()
-                  navigate(-1)
-                }}
+                onClick={handleCancel}
               >
                 Cancel
               </Button>
@@ -274,13 +290,13 @@ const Scan = () => {
                 </Typography>
               )}
             </Box>
-          </Container>
 
-          {isLoadingProduct && (
-            <Typography color='primary' sx={{ mt: 3, textAlign: 'center' }}>
-              Loading product info...
-            </Typography>
-          )}
+            {isLoadingProduct && (
+              <Typography color='primary' sx={{ mt: 3, textAlign: 'center' }}>
+                Loading product info...
+              </Typography>
+            )}
+          </Container>
         </Box>
       </Fade>
     </Box>
