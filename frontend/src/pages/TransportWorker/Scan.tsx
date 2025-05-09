@@ -93,6 +93,7 @@ const Scan = () => {
 
     return () => {
       stopScanning()
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       const stream = (videoRef.current as HTMLVideoElement | null)?.srcObject
       if (stream && stream instanceof MediaStream) {
         stream.getTracks().forEach(track => track.stop())
