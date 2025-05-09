@@ -1,11 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Typography, Button, Box, Paper } from '@mui/material'
 import useQRScanner from 'hooks/useQRScanner'
 import { useBin } from 'hooks/useBin'
 import { useProduct } from 'hooks/useProduct'
 import { ProductType } from 'types/product'
-import ProductCard from './ProductCard' // 你已有的产品展示组件
+import ProductCard from './ProductCard'
 
 const isAndroid = /Android/i.test(navigator.userAgent)
 
@@ -54,9 +54,11 @@ const Scan = () => {
       startScanning()
     }
 
+    const currentStream = streamRef.current
+
     return () => {
       stopScanning()
-      streamRef.current?.getTracks().forEach(track => track.stop())
+      currentStream?.getTracks().forEach(track => track.stop())
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
