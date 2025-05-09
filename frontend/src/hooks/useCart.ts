@@ -16,22 +16,44 @@ export const useCart = () => {
     inventoriesInCar
   } = useCartContext()
 
-  const loadCart = async (binCode: string) => {
+  // const loadCart = async (binCode: string) => {
+  //   try {
+  //     const response = await loadToCart(binCode)
+  //     await getMyCart()
+
+  //     setError(null)
+
+  //     if (response?.success) {
+  //       setTimeout(() => {
+  //         navigate('/my-task')
+  //       }, 500)
+  //     } else {
+  //       setError(response?.data?.error || '❌ Failed to load to cart.')
+  //     }
+
+  //     return response
+  //   } catch (err: any) {
+  //     const msg = err?.response?.data?.error || '❌ Error loading cart'
+  //     setError(msg)
+  //     return { success: false, error: msg }
+  //   }
+  // }
+  const loadCart = async (
+    input: { binCode: string } | { productCode: string; quantity: number }
+  ) => {
     try {
-      const response = await loadToCart(binCode)
+      const response = await loadToCart(input)
       await getMyCart()
 
-      setError(null)
-
-      if (response?.success) {
-        setTimeout(() => {
-          navigate('/my-task')
-        }, 500)
+      if (response.success) {
+        setError(null)
+        navigate('/my-task')
+        return { success: true }
       } else {
-        setError(response?.data?.error || '❌ Failed to load to cart.')
+        const msg = response.data?.error || '❌ Failed to load to cart.'
+        setError(msg)
+        return { success: false, error: msg }
       }
-
-      return response
     } catch (err: any) {
       const msg = err?.response?.data?.error || '❌ Error loading cart'
       setError(msg)
@@ -61,9 +83,7 @@ export const useCart = () => {
         setInventoriesInCar(inventoriesLeftInCart as InventoryItem[])
 
         setError(null)
-        setTimeout(() => {
-          navigate(inventoriesLeftInCart.length === 0 ? '/success' : '/my-task')
-        }, 500)
+        navigate(inventoriesLeftInCart.length === 0 ? '/success' : '/my-task')
       } else {
         setError(response?.data?.error || '❌ Failed to unload cart.')
       }

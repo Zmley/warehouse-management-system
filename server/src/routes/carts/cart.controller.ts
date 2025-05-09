@@ -1,9 +1,14 @@
 import { Request, Response, NextFunction } from 'express'
-import { loadByBinCode, unloadByBinCode } from './cart.service'
+import {
+  loadByBinCode,
+  loadByProductCode,
+  unloadByBinCode
+} from './cart.service'
 import * as taskService from 'routes/tasks/task.service'
-import * as binService from 'routes/bins/bin.service'
 
-import { updateTaskSourceBin } from 'routes/tasks/task.service'
+import { hasActiveTask, updateTaskSourceBin } from 'routes/tasks/task.service'
+import { getBinByBinCode } from 'routes/bins/bin.service'
+import AppError from 'utils/appError'
 
 export const load = async (
   req: Request,
@@ -12,18 +17,37 @@ export const load = async (
 ): Promise<void> => {
   try {
     const { cartID, accountID, warehouseID } = res.locals
-    const { binCode } = req.body
+    const { binCode, productCode, quantity } = req.body
 
-    const result = await loadByBinCode(binCode, cartID, accountID, warehouseID)
+    let result
 
-    const activeTask = await taskService.hasActiveTask(accountID)
+    if (productCode && typeof quantity === 'number') {
+      // ✅ 按产品加载
+      result = await loadByProductCode(
+        productCode,
+        quantity,
+        cartID,
+        accountID,
+        warehouseID
+      )
+    } else if (binCode) {
+      // ✅ 按 binCode 加载整 bin
+      result = await loadByBinCode(binCode, cartID, accountID, warehouseID)
 
-    if (activeTask && activeTask.status === 'IN_PROCESS') {
-      const bin = await binService.getBinByBinCode(binCode)
+      const activeTask = await hasActiveTask(accountID)
 
-      if (bin?.binID) {
-        await updateTaskSourceBin(activeTask.taskID, bin.binID)
+      if (activeTask && activeTask.status === 'IN_PROCESS') {
+        const bin = await getBinByBinCode(binCode)
+
+        if (bin?.binID) {
+          await updateTaskSourceBin(activeTask.taskID, bin.binID)
+        }
       }
+    } else {
+      throw new AppError(
+        400,
+        '❌ Invalid parameters: either binCode or productCode + quantity must be provided.'
+      )
     }
 
     res.status(200).json({
