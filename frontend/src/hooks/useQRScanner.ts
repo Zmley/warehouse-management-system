@@ -6,7 +6,7 @@ const useQRScanner = (onScanSuccess?: (binCode: string) => void) => {
   const [isScanning, setIsScanning] = useState(false)
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const barcodeReaderRef = useRef<BrowserMultiFormatReader | null>(null)
-  const hasScannedRef = useRef(false) // ✅ 防止多次触发
+  const hasScannedRef = useRef(false)
 
   const startScanning = async () => {
     if (!navigator.mediaDevices?.getUserMedia) {
@@ -34,7 +34,7 @@ const useQRScanner = (onScanSuccess?: (binCode: string) => void) => {
           videoRef.current,
           async (result, err) => {
             if (result && !hasScannedRef.current) {
-              hasScannedRef.current = true // ✅ 防抖锁
+              hasScannedRef.current = true
               const code = result.getText().trim()
               await stopScanning()
               try {

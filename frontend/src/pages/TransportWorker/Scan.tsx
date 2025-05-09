@@ -89,6 +89,7 @@ const Scan = () => {
     return () => {
       stopScanning()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode])
 
   const [manualBinCode, setManualBinCode] = useState('')
@@ -210,47 +211,6 @@ const Scan = () => {
                 />
               </Box>
             )}
-
-            {/* <Typography
-              variant='h5'
-              sx={{ mt: 3, fontWeight: 700, color: '#1e3a8a' }}
-            >
-              <QrCodeScannerIcon sx={{ mr: 1, fontSize: 30 }} />
-              {mode === 'scanner' ? 'Scanner Mode' : 'Manual Entry Mode'}
-            </Typography>
-
-            <Button variant='outlined' sx={{ mt: 2 }} onClick={toggleMode}>
-              {mode === 'scanner'
-                ? '🔠 Switch to Manual Entry'
-                : '📷 Switch to Scanner'}
-            </Button> */}
-
-            {/* <ToggleButtonGroup
-              value={mode}
-              exclusive
-              onChange={(_, newMode) => {
-                if (!newMode) return
-                if (newMode === 'scanner') {
-                  startScanning()
-                } else {
-                  stopScanning()
-                }
-                setMode(newMode)
-              }}
-              sx={{
-                mt: 3,
-                borderRadius: '999px',
-                backgroundColor: '#f1f5f9',
-                boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.1)'
-              }}
-            >
-              <ToggleButton value='scanner' sx={{ px: 3, py: 1 }}>
-                📷 Scanner
-              </ToggleButton>
-              <ToggleButton value='manual' sx={{ px: 3, py: 1 }}>
-                🔠 Manual
-              </ToggleButton>
-            </ToggleButtonGroup> */}
 
             {mode === 'manual' && (
               <Box sx={{ mt: 3 }}>

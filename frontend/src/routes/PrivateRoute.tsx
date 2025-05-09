@@ -9,7 +9,6 @@ import Dashboard from 'pages/Dashboard'
 import TaskDetailPage from 'pages/TransportWorker/TaskDetail'
 import PickerScanPage from 'pages/Picker/Scan'
 import CreateTaskPage from 'pages/Picker/CreateTask'
-import ProductDetailPage from 'pages/AddToCartInline'
 
 import { TransportWorkCartProvider } from 'contexts/cart'
 
