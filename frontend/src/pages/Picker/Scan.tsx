@@ -54,11 +54,17 @@ const Scan = () => {
       startScanning()
     }
 
-    const currentStream = streamRef.current
+    const interval = setInterval(() => {
+      const stream = (videoRef.current as HTMLVideoElement | null)?.srcObject
+      if (stream instanceof MediaStream) {
+        streamRef.current = stream
+        clearInterval(interval)
+      }
+    }, 300)
 
     return () => {
       stopScanning()
-      currentStream?.getTracks().forEach(track => track.stop())
+      streamRef.current?.getTracks().forEach(track => track.stop())
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
