@@ -3,26 +3,49 @@ import { useNavigate } from 'react-router-dom'
 import { Typography, Button, Box, Paper } from '@mui/material'
 import useQRScanner from 'hooks/useQRScanner'
 import { useBin } from 'hooks/useBin'
+import { useProduct } from 'hooks/useProduct'
+import { ProductType } from 'types/product'
+import ProductCard from './ProductCard' // 你已有的产品展示组件
 
 const isAndroid = /Android/i.test(navigator.userAgent)
 
 const Scan = () => {
   const navigate = useNavigate()
   const [hasInteracted, setHasInteracted] = useState(false)
-  const { fetchBinByCode } = useBin()
+  const [product, setProduct] = useState<ProductType | null>(null)
 
-  const handleBinScanned = async (binCode: string) => {
-    console.log('📦 Bin Scanned:', binCode)
+  const { fetchBinByCode } = useBin()
+  const { fetchProduct } = useProduct()
+
+  const handleScan = async (code: string) => {
+    console.log('📦 Scanned:', code)
+
+    if (/^\d{12}$/.test(code)) {
+      try {
+        const fetchedProduct = await fetchProduct(code)
+        if (fetchedProduct) {
+          setProduct(fetchedProduct)
+        } else {
+          alert('❌ Product not found')
+        }
+      } catch (err) {
+        console.error('❌ Failed to fetch product:', err)
+        alert('❌ Error fetching product info')
+      }
+      return
+    }
+
     try {
-      const bin = await fetchBinByCode(binCode)
+      const bin = await fetchBinByCode(code)
       navigate('/create-task', { state: { bin } })
     } catch (err: any) {
       console.error('❌ Failed to fetch bin info:', err)
+      alert('❌ Invalid bin code')
     }
   }
 
   const { videoRef, startScanning, stopScanning, isScanning } =
-    useQRScanner(handleBinScanned)
+    useQRScanner(handleScan)
 
   const streamRef = useRef<MediaStream | null>(null)
 
@@ -33,7 +56,6 @@ const Scan = () => {
 
     return () => {
       stopScanning()
-      // eslint-disable-next-line react-hooks/exhaustive-deps
       streamRef.current?.getTracks().forEach(track => track.stop())
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -52,7 +74,7 @@ const Scan = () => {
       }}
     >
       <Typography variant='h5' fontWeight='bold' mb={3}>
-        Scan a Bin to Create a Task
+        Scan a Bin or Product
       </Typography>
 
       <Paper
@@ -106,6 +128,12 @@ const Scan = () => {
         >
           👉 Android: Tap to Enable Camera
         </Button>
+      )}
+
+      {product && (
+        <Box mt={4} width='100%' display='flex' justifyContent='center'>
+          <ProductCard product={product} />
+        </Box>
       )}
 
       <Button
