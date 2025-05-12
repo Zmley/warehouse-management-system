@@ -68,6 +68,11 @@ const Scan = () => {
     }
 
     try {
+      if (!isCartEmpty) {
+        await unloadCart(binCode)
+        return
+      }
+
       const isPickUp = await checkBinType(binCode)
       if (isPickUp) {
         await stopScanning()
@@ -80,26 +85,11 @@ const Scan = () => {
         return
       }
 
-      if (isCartEmpty) {
-        await loadCart({ binCode })
-      } else {
-        await unloadCart(binCode)
-      }
+      await loadCart({ binCode })
     } catch (err) {
       console.error('❌ Error handling scan:', err)
       alert('❌ Operation failed. Please try again.')
     }
-
-    // try {
-    //   if (isCartEmpty) {
-    //     await loadCart({ binCode })
-    //   } else {
-    //     await unloadCart(binCode)
-    //   }
-    // } catch (err) {
-    //   console.error('❌ Error handling scan:', err)
-    //   alert('❌ Operation failed. Please try again.')
-    // }
   }
 
   useEffect(() => {

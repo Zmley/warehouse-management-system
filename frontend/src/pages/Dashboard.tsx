@@ -8,6 +8,7 @@ import PickerCreatedTaskList from './Picker/TaskListCard'
 import { useAuth } from 'hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
 import { TaskCategoryEnum } from 'types/task'
+import { TransportWorkCartProvider } from 'contexts/cart'
 
 const Dashboard: React.FC = () => {
   const { userProfile } = useAuth()
@@ -51,26 +52,33 @@ const Dashboard: React.FC = () => {
       </Box>
     )
   }
+
   if (isTransportWorker) {
     if (userProfile.currentTask) {
       navigate('/task-detail')
     }
-    return (
-      <Box sx={{ height: '100vh', backgroundColor: '#F7F9FC' }}>
-        <TopBar userName={`${userProfile.firstName} ${userProfile.lastName}`} />
-        <Box sx={{ flex: 1, p: 2, pb: 8 }}>
-          <PendingTaskList />
-        </Box>
 
-        <WokerBottombar
-          onTaskListClick={() => {
-            setTaskStatus(TaskCategoryEnum.PENDING)
-          }}
-          onCreateTaskClick={handleCreatWokerTask}
-        />
-      </Box>
+    return (
+      <TransportWorkCartProvider>
+        <Box sx={{ height: '100vh', backgroundColor: '#F7F9FC' }}>
+          <TopBar
+            userName={`${userProfile.firstName} ${userProfile.lastName}`}
+          />
+          <Box sx={{ flex: 1, p: 2, pb: 8 }}>
+            <PendingTaskList />
+          </Box>
+
+          <WokerBottombar
+            onTaskListClick={() => {
+              setTaskStatus(TaskCategoryEnum.PENDING)
+            }}
+            onCreateTaskClick={handleCreatWokerTask}
+          />
+        </Box>
+      </TransportWorkCartProvider>
     )
   }
+
   return <></>
 }
 
