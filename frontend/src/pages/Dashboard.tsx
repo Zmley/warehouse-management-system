@@ -16,6 +16,7 @@ const TransportWorkerContent: React.FC<{ userName: string }> = ({
 }) => {
   const { isCartEmpty } = useCart()
   const navigate = useNavigate()
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [taskStatus, setTaskStatus] = useState(TaskCategoryEnum.PENDING)
   const { userProfile } = useAuth()
 
@@ -30,6 +31,7 @@ const TransportWorkerContent: React.FC<{ userName: string }> = ({
   return (
     <Box sx={{ height: '100vh', backgroundColor: '#F7F9FC' }}>
       <TopBar userName={userName} />
+
       <Box sx={{ flex: 1, p: 2, pb: 8 }}>
         <PendingTaskList />
       </Box>
