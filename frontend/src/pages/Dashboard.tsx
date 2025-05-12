@@ -9,6 +9,40 @@ import { useAuth } from 'hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
 import { TaskCategoryEnum } from 'types/task'
 import { TransportWorkCartProvider } from 'contexts/cart'
+import { useCart } from 'hooks/useCart'
+
+const TransportWorkerContent: React.FC<{ userName: string }> = ({
+  userName
+}) => {
+  const { isCartEmpty } = useCart()
+  const navigate = useNavigate()
+  const [taskStatus, setTaskStatus] = useState(TaskCategoryEnum.PENDING)
+  const { userProfile } = useAuth()
+
+  if (userProfile.currentTask) {
+    if (isCartEmpty) {
+      navigate('/task-detail')
+    } else {
+      navigate('/my-task')
+    }
+  }
+
+  return (
+    <Box sx={{ height: '100vh', backgroundColor: '#F7F9FC' }}>
+      <TopBar userName={userName} />
+      <Box sx={{ flex: 1, p: 2, pb: 8 }}>
+        <PendingTaskList />
+      </Box>
+
+      <WokerBottombar
+        onTaskListClick={() => {
+          setTaskStatus(TaskCategoryEnum.PENDING)
+        }}
+        onCreateTaskClick={() => navigate('/my-task/scan-qr')}
+      />
+    </Box>
+  )
+}
 
 const Dashboard: React.FC = () => {
   const { userProfile } = useAuth()
@@ -17,11 +51,6 @@ const Dashboard: React.FC = () => {
   const isTransportWorker = userProfile.role === 'TRANSPORT_WORKER'
 
   const [taskStatus, setTaskStatus] = useState(TaskCategoryEnum.PENDING)
-  const navigate = useNavigate()
-
-  const handleCreatWokerTask = () => {
-    navigate('/my-task/scan-qr')
-  }
 
   if (isAdmin) {
     return (
@@ -54,27 +83,11 @@ const Dashboard: React.FC = () => {
   }
 
   if (isTransportWorker) {
-    if (userProfile.currentTask) {
-      navigate('/task-detail')
-    }
-
     return (
       <TransportWorkCartProvider>
-        <Box sx={{ height: '100vh', backgroundColor: '#F7F9FC' }}>
-          <TopBar
-            userName={`${userProfile.firstName} ${userProfile.lastName}`}
-          />
-          <Box sx={{ flex: 1, p: 2, pb: 8 }}>
-            <PendingTaskList />
-          </Box>
-
-          <WokerBottombar
-            onTaskListClick={() => {
-              setTaskStatus(TaskCategoryEnum.PENDING)
-            }}
-            onCreateTaskClick={handleCreatWokerTask}
-          />
-        </Box>
+        <TransportWorkerContent
+          userName={`${userProfile.firstName} ${userProfile.lastName}`}
+        />
       </TransportWorkCartProvider>
     )
   }
