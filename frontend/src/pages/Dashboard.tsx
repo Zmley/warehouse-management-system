@@ -20,12 +20,11 @@ const TransportWorkerContent: React.FC<{ userName: string }> = ({
   const [taskStatus, setTaskStatus] = useState(TaskCategoryEnum.PENDING)
   const { userProfile } = useAuth()
 
-  if (userProfile.currentTask) {
-    if (isCartEmpty) {
-      navigate('/task-detail')
-    } else {
-      navigate('/my-task')
-    }
+  if (!userProfile.currentTask && isCartEmpty) {
+  } else if (!isCartEmpty) {
+    navigate('/my-task')
+  } else if (userProfile.currentTask) {
+    navigate('/task-detail')
   }
 
   return (
