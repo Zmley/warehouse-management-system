@@ -12,7 +12,6 @@ export const useBin = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [binCodes, setBinCodes] = useState<string[]>([])
-  const [isPickUp, setIsPickUp] = useState<boolean | null>(null)
 
   const { userProfile } = useAuth()
 
