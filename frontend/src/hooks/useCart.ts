@@ -13,31 +13,11 @@ export const useCart = () => {
     getMyCart,
     isCartEmpty,
     setInventoriesInCar,
-    inventoriesInCar
+    inventoriesInCar,
+    sourceBinCode,
+    setSourceBinCode
   } = useCartContext()
 
-  // const loadCart = async (binCode: string) => {
-  //   try {
-  //     const response = await loadToCart(binCode)
-  //     await getMyCart()
-
-  //     setError(null)
-
-  //     if (response?.success) {
-  //       setTimeout(() => {
-  //         navigate('/my-task')
-  //       }, 500)
-  //     } else {
-  //       setError(response?.data?.error || '❌ Failed to load to cart.')
-  //     }
-
-  //     return response
-  //   } catch (err: any) {
-  //     const msg = err?.response?.data?.error || '❌ Error loading cart'
-  //     setError(msg)
-  //     return { success: false, error: msg }
-  //   }
-  // }
   const loadCart = async (
     input: { binCode: string } | { productCode: string; quantity: number }
   ) => {
@@ -47,6 +27,11 @@ export const useCart = () => {
 
       if (response.success) {
         setError(null)
+
+        if ('binCode' in input) {
+          setSourceBinCode(input.binCode)
+        }
+
         navigate('/my-task')
         return { success: true }
       } else {
@@ -96,5 +81,5 @@ export const useCart = () => {
     }
   }
 
-  return { loadCart, unloadCart, isCartEmpty, getMyCart, error }
+  return { loadCart, unloadCart, isCartEmpty, getMyCart, error, sourceBinCode }
 }

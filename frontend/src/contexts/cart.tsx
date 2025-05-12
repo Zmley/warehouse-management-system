@@ -17,6 +17,8 @@ interface CartContextType {
   ) => void
   getMyCart: () => Promise<void>
   setInventoriesInCar: (list: InventoryItem[]) => void
+  sourceBinCode: string | null
+  setSourceBinCode: (code: string | null) => void
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
@@ -41,6 +43,8 @@ export const TransportWorkCartProvider = ({
 
   const isCartEmpty = inventoriesInCar.length === 0
 
+  const [sourceBinCode, setSourceBinCode] = useState<string | null>(null)
+
   const getMyCart = async () => {
     try {
       const response = await getInventoriesInCart()
@@ -64,7 +68,9 @@ export const TransportWorkCartProvider = ({
         isCartEmpty,
         selectedToUnload,
         setSelectedToUnload,
-        setInventoriesInCar
+        setInventoriesInCar,
+        sourceBinCode,
+        setSourceBinCode
       }}
     >
       {children}

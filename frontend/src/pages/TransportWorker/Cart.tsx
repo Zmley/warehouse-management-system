@@ -18,6 +18,8 @@ const Cart = () => {
   const { inventoriesInCar, setSelectedToUnload } = useCartContext()
   const { myTask, fetchMyTask } = useTaskContext()
 
+  const { sourceBinCode } = useCartContext()
+
   const defaultUnloadList = useMemo(() => {
     if (!inventoriesInCar.length) return []
 
@@ -99,6 +101,17 @@ const Cart = () => {
         sx={{ borderRadius: '12px', backgroundColor: '#f9f9f9' }}
       >
         <CardContent>
+          {sourceBinCode && (
+            <Box sx={{ mb: 2, textAlign: 'center' }}>
+              <Typography variant='body2' fontWeight='bold'>
+                📥 Loaded From Bin:
+              </Typography>
+              <Typography variant='h6' color='secondary'>
+                {sourceBinCode}
+              </Typography>
+            </Box>
+          )}
+
           <InventoryListCard
             taskType='Worker Self Performance'
             inventories={inventoriesInCar}
