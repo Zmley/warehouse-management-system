@@ -10,7 +10,6 @@ import {
 import { useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import CancelIcon from '@mui/icons-material/Cancel'
-
 import useQRScanner from 'hooks/useQRScanner'
 import { useCartContext } from 'contexts/cart'
 import { useCart } from 'hooks/useCart'
@@ -29,7 +28,7 @@ const Scan = () => {
 
   const { isCartEmpty } = useCartContext()
   const { loadCart, unloadCart, error } = useCart()
-  const { binCodes, fetchBinCodes } = useBin()
+  const { binCodes, fetchBinCodes, checkBinType, fetchBinByCode } = useBin()
   const { fetchProduct } = useProduct()
 
   const [scannedProduct, setScannedProduct] = useState<ProductType | null>(null)
@@ -69,6 +68,18 @@ const Scan = () => {
     }
 
     try {
+      const isPickUp = await checkBinType(binCode)
+      if (isPickUp) {
+        await stopScanning()
+        const stream = (videoRef.current as HTMLVideoElement | null)?.srcObject
+        if (stream && stream instanceof MediaStream) {
+          stream.getTracks().forEach(track => track.stop())
+        }
+        const bin = await fetchBinByCode(binCode)
+        navigate('/create-task', { state: { bin } })
+        return
+      }
+
       if (isCartEmpty) {
         await loadCart({ binCode })
       } else {
@@ -78,6 +89,17 @@ const Scan = () => {
       console.error('❌ Error handling scan:', err)
       alert('❌ Operation failed. Please try again.')
     }
+
+    // try {
+    //   if (isCartEmpty) {
+    //     await loadCart({ binCode })
+    //   } else {
+    //     await unloadCart(binCode)
+    //   }
+    // } catch (err) {
+    //   console.error('❌ Error handling scan:', err)
+    //   alert('❌ Operation failed. Please try again.')
+    // }
   }
 
   useEffect(() => {

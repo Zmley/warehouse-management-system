@@ -180,3 +180,8 @@ export const getBinByProductCode = async (
 
   return bins
 }
+
+export const isPickUpBin = async (binCode: string): Promise<boolean> => {
+  const bin = await Bin.findOne({ where: { binCode } })
+  return bin?.type === 'PICK_UP'
+}

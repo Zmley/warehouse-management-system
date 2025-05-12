@@ -178,7 +178,7 @@ export const createTask = async (
       })
     }
 
-    if (role === UserRole.PICKER) {
+    if (role === UserRole.PICKER || role === UserRole.TRANSPORT_WORKER) {
       const alreadyPublished = await checkIfPickerTaskPublished(
         binCode,
         productCode

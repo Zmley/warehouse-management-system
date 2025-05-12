@@ -152,3 +152,29 @@ export const getPickUpBin = async (
     next(error)
   }
 }
+
+export const checkIfPickUpBin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { binCode } = req.params
+
+    if (!binCode) {
+      return res.status(400).json({
+        success: false,
+        error: '❌ Missing binCode'
+      })
+    }
+
+    const isPickUp = await binService.isPickUpBin(binCode)
+
+    res.status(200).json({
+      success: isPickUp
+      // isPickUpBin: isPickUp
+    })
+  } catch (error) {
+    next(error)
+  }
+}

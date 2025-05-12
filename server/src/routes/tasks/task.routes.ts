@@ -32,6 +32,10 @@ router.get(
   getTasks
 )
 
-router.post('/', roleAllow([UserRole.ADMIN, UserRole.PICKER]), createTask)
+router.post(
+  '/',
+  roleAllow([UserRole.ADMIN, UserRole.PICKER, UserRole.TRANSPORT_WORKER]),
+  createTask
+)
 
 export default router

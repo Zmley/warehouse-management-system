@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
 import {
+  checkIfPickUpBin,
   getBinByBinCode,
   getBinCodes,
   getBinCodesByProductCode
@@ -11,6 +12,7 @@ export const useBin = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [binCodes, setBinCodes] = useState<string[]>([])
+  const [isPickUp, setIsPickUp] = useState<boolean | null>(null)
 
   const { userProfile } = useAuth()
 
@@ -65,12 +67,28 @@ export const useBin = () => {
     }
   }, [warehouseID])
 
+  const checkBinType = async (binCode: string) => {
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const result = await checkIfPickUpBin(binCode)
+      return result.success === true
+    } catch (err: any) {
+      setError(err?.response?.data?.error || '❌ Error checking bin')
+      return false
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return {
     fetchBinCodesByProductCode,
     fetchBinByCode,
     isLoading,
     fetchBinCodes,
     error,
-    binCodes
+    binCodes,
+    checkBinType
   }
 }

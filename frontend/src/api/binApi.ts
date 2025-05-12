@@ -18,3 +18,8 @@ export const getBinCodes = async (warehouseID: string) => {
   })
   return response.data
 }
+
+export const checkIfPickUpBin = async (binCode: string) => {
+  const res = await apiClient.get(`/bins/check-pickup/${binCode}`)
+  return res.data
+}
