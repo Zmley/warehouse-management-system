@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import * as productService from './product.service'
+import { ProductUploadInput } from 'types/product'
 
 export const getProductCodes = async (
   req: Request,
@@ -36,12 +37,6 @@ export const getProducts = async (
   } catch (error) {
     next(error)
   }
-}
-
-export interface ProductUploadInput {
-  productCode: string
-  barCode: string
-  boxType: string
 }
 
 export const addProducts = async (
