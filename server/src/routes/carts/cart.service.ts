@@ -2,9 +2,8 @@ import Inventory from 'routes/inventory/inventory.model'
 import Bin from 'routes/bins/bin.model'
 import AppError from 'utils/appError'
 import { getTaskByAccountID } from 'routes/tasks/task.service'
-import { BinType } from 'constants/binType'
-import { Op } from 'sequelize'
-// import Task from 'routes/tasks/task.model'
+// import { BinType } from 'constants/binType'
+// import { Op } from 'sequelize'
 
 const moveInventoriesToBin = async (
   inventories: { inventoryID: string; quantity: number }[],
@@ -62,56 +61,6 @@ const moveInventoriesToBin = async (
     throw new AppError(500, '❌ Failed to move inventories to target bin')
   }
 }
-
-// export const loadByBinCode = async (
-//   binCode: string,
-//   cartID: string,
-//   accountID: string,
-//   warehouseID: string
-// ): Promise<{ message: string }> => {
-//   try {
-//     const bin = await Bin.findOne({ where: { binCode } })
-
-//     if (!bin) {
-//       throw new AppError(404, `❌ Bin ${binCode} not found in system`)
-//     }
-
-//     //
-//     const task = await getTaskByAccountID(accountID, warehouseID)
-
-//     if (task) {
-//       const allowedBinCodes = task.sourceBins
-//         .map(item => item.bin?.binCode)
-//         .filter(Boolean)
-
-//       if (!allowedBinCodes.includes(binCode)) {
-//         throw new AppError(
-//           400,
-//           `❌ You have an active task. Only allowed to load from: ${allowedBinCodes.join(
-//             ', '
-//           )}`
-//         )
-//       }
-//     }
-
-//     const [updatedCount] = await Inventory.update(
-//       { binID: cartID },
-//       { where: { binID: bin.binID } }
-//     )
-
-//     if (updatedCount === 0) {
-//       throw new AppError(404, `❌ ${binCode} is empty.`)
-//     }
-
-//     return {
-//       message: `✅ Products loaded from bin ${binCode}.`
-//     }
-//   } catch (error) {
-//     console.error('Error loading from bin:', error)
-//     if (error instanceof AppError) throw error
-//     throw new AppError(500, '❌ Failed to load items from bin')
-//   }
-// }
 
 export const unloadByBinCode = async (
   binCode: string,
@@ -224,40 +173,40 @@ export const loadByBinCode = async (
 export const loadByProductCode = async (
   productCode: string,
   quantity: number,
-  cartID: string,
-  accountID: string,
-  warehouseID: string
+  cartID: string
+  // accountID: string,
+  // warehouseID: string
 ): Promise<{ message: string }> => {
   try {
-    const allowedBinIDs = await getAllowedBinIDs(accountID, warehouseID)
+    // const allowedBinIDs = await getAllowedBinIDs(accountID, warehouseID)
 
-    const sourceInventory = await Inventory.findOne({
-      where: {
-        productCode,
-        quantity: { [Op.gte]: quantity }
-      },
-      include: [
-        {
-          model: Bin,
-          as: 'bin',
-          where: {
-            warehouseID,
-            type: BinType.INVENTORY,
-            ...(allowedBinIDs ? { binID: { [Op.in]: allowedBinIDs } } : {})
-          }
-        }
-      ]
-    })
+    // const sourceInventory = await Inventory.findOne({
+    //   where: {
+    //     productCode,
+    //     quantity: { [Op.gte]: quantity }
+    //   },
+    //   include: [
+    //     {
+    //       model: Bin,
+    //       as: 'bin',
+    //       where: {
+    //         warehouseID,
+    //         type: BinType.INVENTORY,
+    //         ...(allowedBinIDs ? { binID: { [Op.in]: allowedBinIDs } } : {})
+    //       }
+    //     }
+    //   ]
+    // })
 
-    if (!sourceInventory) {
-      throw new AppError(
-        404,
-        `❌ No bin found with enough quantity of ${productCode}.`
-      )
-    }
+    // if (!sourceInventory) {
+    //   throw new AppError(
+    //     404,
+    //     `❌ No bin found with enough quantity of ${productCode}.`
+    //   )
+    // }
 
-    sourceInventory.quantity -= quantity
-    await sourceInventory.save()
+    // sourceInventory.quantity -= quantity
+    // await sourceInventory.save()
 
     const [cartInventory, created] = await Inventory.findOrCreate({
       where: {

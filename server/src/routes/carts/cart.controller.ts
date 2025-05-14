@@ -22,16 +22,14 @@ export const load = async (
     let result
 
     if (productCode && typeof quantity === 'number') {
-      // ✅ 按产品加载
       result = await loadByProductCode(
         productCode,
         quantity,
-        cartID,
-        accountID,
-        warehouseID
+        cartID
+        // accountID,
+        // warehouseID
       )
     } else if (binCode) {
-      // ✅ 按 binCode 加载整 bin
       result = await loadByBinCode(binCode, cartID, accountID, warehouseID)
 
       const activeTask = await hasActiveTask(accountID)
