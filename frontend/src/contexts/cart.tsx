@@ -43,7 +43,18 @@ export const TransportWorkCartProvider = ({
 
   const isCartEmpty = inventoriesInCar.length === 0
 
-  const [sourceBinCode, setSourceBinCode] = useState<string | null>(null)
+  const [sourceBinCode, _setSourceBinCode] = useState<string | null>(() => {
+    return localStorage.getItem('sourceBinCode') || null
+  })
+
+  const setSourceBinCode = (code: string | null) => {
+    _setSourceBinCode(code)
+    if (code) {
+      localStorage.setItem('sourceBinCode', code)
+    } else {
+      localStorage.removeItem('sourceBinCode')
+    }
+  }
 
   const getMyCart = async () => {
     try {
