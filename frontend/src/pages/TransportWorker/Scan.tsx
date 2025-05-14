@@ -220,6 +220,7 @@ const Scan = () => {
             {mode === 'scanner' && (
               <Box
                 sx={{
+                  position: 'relative',
                   width: '100%',
                   maxWidth: '400px',
                   height: '260px',
@@ -227,7 +228,8 @@ const Scan = () => {
                   overflow: 'hidden',
                   mx: 'auto',
                   border: '5px solid #1976d2',
-                  boxShadow: '0 4px 20px rgba(25, 118, 210, 0.3)'
+                  boxShadow: '0 4px 20px rgba(25, 118, 210, 0.3)',
+                  backgroundColor: '#000'
                 }}
               >
                 <video
@@ -241,6 +243,61 @@ const Scan = () => {
                   playsInline
                   muted
                 />
+
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: '10%',
+                    left: '10%',
+                    width: '80%',
+                    height: '80%',
+                    border: '2px dashed #00e676',
+                    borderRadius: '12px',
+                    zIndex: 10
+                  }}
+                />
+
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: '10%',
+                    left: '10%',
+                    width: '80%',
+                    height: '2px',
+                    background:
+                      'linear-gradient(to right, #00e676, transparent)',
+                    animation: 'scanLine 2s infinite',
+                    zIndex: 11
+                  }}
+                />
+
+                <Typography
+                  variant='body2'
+                  sx={{
+                    position: 'absolute',
+                    bottom: '8px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    color: '#fff',
+                    backgroundColor: 'rgba(0,0,0,0.4)',
+                    px: 1.5,
+                    py: 0.5,
+                    borderRadius: 1,
+                    fontWeight: 'bold',
+                    fontSize: '0.8rem',
+                    zIndex: 12
+                  }}
+                >
+                  Please align the QR/Barcode inside the frame
+                </Typography>
+
+                <style>{`
+      @keyframes scanLine {
+        0% { top: 10%; }
+        50% { top: 80%; }
+        100% { top: 10%; }
+      }
+    `}</style>
               </Box>
             )}
 
