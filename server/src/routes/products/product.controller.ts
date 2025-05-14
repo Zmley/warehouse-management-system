@@ -44,7 +44,7 @@ export interface ProductUploadInput {
   boxType: string
 }
 
-export const uploadProducts = async (
+export const addProducts = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -58,7 +58,7 @@ export const uploadProducts = async (
         .json({ success: false, message: 'Invalid payload' })
     }
 
-    const result = await productService.uploadProducts(products)
+    const result = await productService.addProducts(products)
 
     return res.status(200).json({ success: true, result })
   } catch (error) {

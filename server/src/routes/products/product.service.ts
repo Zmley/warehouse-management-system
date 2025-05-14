@@ -75,7 +75,7 @@ export const getProductsByWarehouseID = async (
   }
 }
 
-export const uploadProducts = async (products: ProductUploadInput[]) => {
+export const addProducts = async (products: ProductUploadInput[]) => {
   const skipped: ProductUploadInput[] = []
   let insertedCount = 0
 
