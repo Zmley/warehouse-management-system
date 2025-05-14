@@ -1,4 +1,3 @@
-import { WarehouseOutlined } from '@mui/icons-material'
 import apiClient from './axiosClient.ts'
 import { Task } from 'types/task.js'
 
