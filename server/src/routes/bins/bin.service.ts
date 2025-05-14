@@ -185,3 +185,18 @@ export const isPickUpBin = async (binCode: string): Promise<boolean> => {
   const bin = await Bin.findOne({ where: { binCode } })
   return bin?.type === 'PICK_UP'
 }
+
+export const getWarehouseIDByBinCode = async (
+  binCode: string
+): Promise<string> => {
+  const bin = await Bin.findOne({
+    where: { binCode },
+    attributes: ['warehouseID']
+  })
+
+  if (!bin) {
+    throw new AppError(404, `❌ Bin with code ${binCode} not found.`)
+  }
+
+  return bin.warehouseID
+}

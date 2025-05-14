@@ -1,20 +1,29 @@
+import {
+  Box,
+  Button,
+  Typography,
+  Paper,
+  ToggleButton,
+  ToggleButtonGroup
+} from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Typography, Button, Box, Paper } from '@mui/material'
 import useQRScanner from 'hooks/useQRScanner'
 import { useBin } from 'hooks/useBin'
 import { useProduct } from 'hooks/useProduct'
 import { ProductType } from 'types/product'
 import ProductCard from './ProductCard'
+import AutocompleteTextField from 'utils/AutocompleteTextField'
 
 const isAndroid = /Android/i.test(navigator.userAgent)
 
 const Scan = () => {
   const navigate = useNavigate()
-  const [hasInteracted, setHasInteracted] = useState(false)
   const [product, setProduct] = useState<ProductType | null>(null)
+  const [mode, setMode] = useState<'scanner' | 'manual'>('scanner')
+  const [manualBinCode, setManualBinCode] = useState('')
 
-  const { fetchBinByCode } = useBin()
+  const { fetchBinByCode, fetchBinCodes, binCodes } = useBin()
   const { fetchProduct } = useProduct()
 
   const handleScan = async (code: string) => {
@@ -50,7 +59,9 @@ const Scan = () => {
   const streamRef = useRef<MediaStream | null>(null)
 
   useEffect(() => {
-    if (!isAndroid && !isScanning) {
+    fetchBinCodes()
+
+    if (!isAndroid && mode === 'scanner' && !isScanning) {
       startScanning()
     }
 
@@ -67,17 +78,20 @@ const Scan = () => {
       streamRef.current?.getTracks().forEach(track => track.stop())
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [mode])
 
   const handleCancel = async () => {
     stopScanning()
-
     const stream = (videoRef.current as HTMLVideoElement | null)?.srcObject
     if (stream instanceof MediaStream) {
       stream.getTracks().forEach(track => track.stop())
     }
-
     navigate('/')
+  }
+
+  const handleManualSubmit = async () => {
+    if (!manualBinCode.trim()) return alert('❌ Please enter a bin code.')
+    await handleScan(manualBinCode.trim())
   }
 
   return (
@@ -92,61 +106,120 @@ const Scan = () => {
         padding: 2
       }}
     >
-      <Typography variant='h5' fontWeight='bold' mb={3}>
-        Scan a Bin or Product
+      <Typography variant='h5' fontWeight='bold' mb={2}>
+        Scan or Enter a Bin/Product
       </Typography>
 
-      <Paper
-        elevation={4}
+      <ToggleButtonGroup
+        value={mode}
+        exclusive
+        onChange={(_, newMode) => {
+          if (!newMode) return
+          setMode(newMode)
+          if (newMode === 'scanner') startScanning()
+          else stopScanning()
+        }}
         sx={{
-          width: '90%',
-          maxWidth: 400,
-          height: 280,
-          borderRadius: 4,
-          overflow: 'hidden',
-          position: 'relative',
-          border: '3px solid #1976d2',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+          mb: 3,
+          borderRadius: '999px',
+          backgroundColor: '#e2e8f0',
+          boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.05)',
+          p: '4px'
         }}
       >
-        <video
-          ref={videoRef}
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            backgroundColor: '#000'
-          }}
-          autoPlay
-          playsInline
-          muted
-        />
-        <Box
+        <ToggleButton
+          value='scanner'
           sx={{
-            position: 'absolute',
-            top: '10%',
-            left: '10%',
-            width: '80%',
-            height: '80%',
-            border: '2px dashed #ffffffaa',
-            borderRadius: '12px',
-            zIndex: 10
-          }}
-        />
-      </Paper>
-
-      {isAndroid && !isScanning && !hasInteracted && (
-        <Button
-          variant='outlined'
-          sx={{ mt: 2, maxWidth: 400 }}
-          fullWidth
-          onClick={async () => {
-            setHasInteracted(true)
-            await startScanning()
+            px: 3,
+            py: 1,
+            borderRadius: '999px',
+            fontWeight: 'bold',
+            color: mode === 'scanner' ? '#fff' : '#1e293b',
+            backgroundColor: mode === 'scanner' ? '#3b82f6' : 'transparent',
+            '&:hover': {
+              backgroundColor: mode === 'scanner' ? '#2563eb' : '#e2e8f0'
+            }
           }}
         >
-          👉 Android: Tap to Enable Camera
-        </Button>
+          📷 Scanner
+        </ToggleButton>
+        <ToggleButton
+          value='manual'
+          sx={{
+            px: 3,
+            py: 1,
+            borderRadius: '999px',
+            fontWeight: 'bold',
+            color: mode === 'manual' ? '#fff' : '#1e293b',
+            backgroundColor: mode === 'manual' ? '#3b82f6' : 'transparent',
+            '&:hover': {
+              backgroundColor: mode === 'manual' ? '#2563eb' : '#e2e8f0'
+            }
+          }}
+        >
+          🔠 Manual
+        </ToggleButton>
+      </ToggleButtonGroup>
+
+      {mode === 'scanner' && (
+        <Paper
+          elevation={4}
+          sx={{
+            width: '90%',
+            maxWidth: 400,
+            height: 280,
+            borderRadius: 4,
+            overflow: 'hidden',
+            position: 'relative',
+            border: '3px solid #1976d2',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+          }}
+        >
+          <video
+            ref={videoRef}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              backgroundColor: '#000'
+            }}
+            autoPlay
+            playsInline
+            muted
+          />
+          <Box
+            sx={{
+              position: 'absolute',
+              top: '10%',
+              left: '10%',
+              width: '80%',
+              height: '80%',
+              border: '2px dashed #ffffffaa',
+              borderRadius: '12px',
+              zIndex: 10
+            }}
+          />
+        </Paper>
+      )}
+
+      {mode === 'manual' && (
+        <Box mt={2} width='100%' maxWidth={400}>
+          <AutocompleteTextField
+            label='Enter Bin Code or Product Code'
+            value={manualBinCode}
+            onChange={setManualBinCode}
+            onSubmit={handleManualSubmit}
+            options={binCodes}
+          />
+          <Button
+            variant='contained'
+            sx={{ mt: 2 }}
+            fullWidth
+            onClick={handleManualSubmit}
+          >
+            Submit
+          </Button>
+        </Box>
       )}
 
       {product && (

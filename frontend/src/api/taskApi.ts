@@ -1,3 +1,4 @@
+import { WarehouseOutlined } from '@mui/icons-material'
 import apiClient from './axiosClient.ts'
 import { Task } from 'types/task.js'
 
@@ -22,12 +23,14 @@ export const cancelTask = async (taskID: string) => {
 }
 
 export const createPickerTask = async (
-  binCode: string,
-  productCode: string
+  destinationBinCode: string,
+  productCode: string,
+  warehouseID: string
 ) => {
   const response = await apiClient.post('/tasks', {
-    binCode,
-    productCode
+    destinationBinCode,
+    productCode,
+    warehouseID
   })
   return response.data
 }

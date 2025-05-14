@@ -25,7 +25,7 @@ export const hasActiveTask = async (
   }
 }
 
-export const createAsAdmin = async (
+export const binToBin = async (
   sourceBinID: string,
   destinationBinID: string,
   productCode: string,
@@ -97,7 +97,7 @@ export const checkBinAvailability = async (sourceBinID: string) => {
   }
 }
 
-export const createTaskAsPicker = async (
+export const binsToPick = async (
   binCode: string,
   accountID: string,
   warehouseID: string,
@@ -410,7 +410,7 @@ export const getTasksByWarehouseID = async (
 export const checkIfPickerTaskPublished = async (
   binCode: string,
   productCode: string
-): Promise<boolean> => {
+): Promise<void> => {
   try {
     const bin = await getBinByBinCode(binCode)
 
@@ -426,9 +426,15 @@ export const checkIfPickerTaskPublished = async (
       }
     })
 
-    return !!existing
+    if (existing) {
+      throw new AppError(
+        400,
+        `❌ Task for product ${productCode} in Pick up bin ${binCode} already exists.`
+      )
+    }
   } catch (err) {
     console.error('❌ Failed to check if task is published:', err)
+    if (err instanceof AppError) throw err
     throw new AppError(500, '❌ Could not verify existing task status.')
   }
 }

@@ -1,11 +1,14 @@
 import { useState } from 'react'
 import { createPickerTask, getPickerTasks, cancelPickerTask } from 'api/taskApi'
 import { Task } from 'types/task'
+import { useAuth } from 'hooks/useAuth'
 
 export const usePickerTasks = () => {
   const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const { userProfile } = useAuth()
 
   const fetchTasks = async () => {
     setLoading(true)
@@ -20,14 +23,19 @@ export const usePickerTasks = () => {
     }
   }
 
-  const createTask = async (binCode: string, productCode: string) => {
+  const createTask = async (
+    destinationBinCode: string,
+    productCode: string
+  ) => {
     setLoading(true)
     setError(null)
 
     try {
-      const res = await createPickerTask(binCode, productCode)
-
-      console.log('Create task response+++++:', res)
+      const res = await createPickerTask(
+        destinationBinCode,
+        productCode,
+        userProfile.warehouseID
+      )
 
       if (res.success) {
         return res
