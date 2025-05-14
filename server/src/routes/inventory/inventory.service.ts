@@ -1,8 +1,11 @@
+import { getBinsByBinCodes } from 'routes/bins/bin.service'
 import { Inventory } from './inventory.model'
 import { Bin } from 'routes/bins/bin.model'
 import { Op, Sequelize, WhereOptions } from 'sequelize'
 import { InventoryUploadType } from 'types/inventory'
 import AppError from 'utils/appError'
+import { buildBinCodeToIDMap } from 'utils/bin.utils'
+import { getExistingInventoryPairs } from 'utils/inventory.utils'
 
 export const getInventoriesByCartID = async (
   cartID: string
@@ -37,12 +40,10 @@ export const getInventoriesByWarehouseID = async (
   const where: WhereOptions = {}
 
   if (keyword) {
-    ;(where as any)[Op.or] = [
-      { productCode: { [Op.iLike]: `%${keyword}%` } },
-      Sequelize.where(Sequelize.col('bin.binCode'), {
-        [Op.iLike]: `%${keyword}%`
-      })
-    ]
+    where[Op.or as keyof WhereOptions] = [
+      { productCode: keyword },
+      Sequelize.where(Sequelize.col('bin.binCode'), keyword)
+    ] as unknown as WhereOptions[]
   }
 
   const result = await Inventory.findAndCountAll({
@@ -111,36 +112,12 @@ export const addInventories = async (inventoryList: InventoryUploadType[]) => {
     return { insertedCount: 0, skipped }
   }
 
-  const binCodes = [...new Set(inventoryList.map(item => item.binCode.trim()))]
+  const bins = await getBinsByBinCodes(inventoryList)
 
-  const bins = await Bin.findAll({
-    where: {
-      binCode: {
-        [Op.in]: binCodes
-      }
-    }
-  })
-
-  const binCodeToBinID = new Map<string, string>()
-  bins.forEach(bin => {
-    binCodeToBinID.set(bin.binCode.trim(), bin.binID)
-  })
-
+  const binCodeToBinID = buildBinCodeToIDMap(bins)
   const allBinIDs = bins.map(bin => bin.binID)
 
-  const existingInventories = await Inventory.findAll({
-    where: {
-      binID: {
-        [Op.in]: allBinIDs
-      }
-    }
-  })
-
-  const existingPairs = new Set<string>()
-  existingInventories.forEach(inv => {
-    const key = `${inv.binID}-${inv.productCode.trim().toUpperCase()}`
-    existingPairs.add(key)
-  })
+  const existingPairs = await getExistingInventoryPairs(allBinIDs)
 
   await Promise.all(
     inventoryList.map(async item => {
