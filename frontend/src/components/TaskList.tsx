@@ -34,7 +34,6 @@ const TaskList: React.FC = () => {
 
   useEffect(() => {
     fetchTasks()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
@@ -79,6 +78,15 @@ const TaskList: React.FC = () => {
                     Product
                   </Typography>
                   <Typography fontWeight='bold'>{task.productCode}</Typography>
+                </Grid>
+
+                <Grid item xs={3}>
+                  <Typography variant='caption' color='text.secondary'>
+                    Quantity
+                  </Typography>
+                  <Typography fontWeight='bold'>
+                    {task.quantity || '--'}
+                  </Typography>
                 </Grid>
 
                 <Grid item xs={4}>

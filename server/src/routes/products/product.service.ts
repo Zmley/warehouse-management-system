@@ -1,9 +1,16 @@
 import { Product } from './product.model'
-import { Op, Sequelize } from 'sequelize'
+import { Sequelize } from 'sequelize'
 import { Inventory } from 'routes/inventory/inventory.model'
 import { Bin } from 'routes/bins/bin.model'
-import { getOffset, buildProductWhereClause } from 'utils/productUtils'
+import {
+  getOffset,
+  buildProductWhereClause,
+  handleProductInsertion
+} from 'utils/product.utils'
 import { ProductUploadInput } from 'types/product'
+import pLimit from 'p-limit'
+
+const LIMIT = pLimit(10)
 
 export const getProductCodes = async (): Promise<string[]> => {
   const products = await Product.findAll({
@@ -68,35 +75,18 @@ export const getProductsByWarehouseID = async (
   }
 }
 
-export const uploadProducts = async (products: ProductUploadInput[]) => {
-  const incomingCodes = products.map(p => p.productCode)
+export const addProducts = async (products: ProductUploadInput[]) => {
+  const skipped: ProductUploadInput[] = []
+  let insertedCount = 0
 
-  const existing = await Product.findAll({
-    where: {
-      productCode: {
-        [Op.in]: incomingCodes
-      }
-    },
-    attributes: ['productCode']
-  })
-
-  const existingCodes = existing.map(p => p.productCode)
-
-  const newProducts = products.filter(
-    p => !existingCodes.includes(p.productCode)
+  const tasks = products.map(item =>
+    LIMIT(() => handleProductInsertion(item, skipped, () => insertedCount++))
   )
 
-  const created = await Product.bulkCreate(
-    newProducts.map(p => ({
-      productCode: p.productCode,
-      barCode: p.barCode,
-      boxType: p.boxType
-    }))
-  )
+  await Promise.all(tasks)
 
   return {
-    insertedCount: created.length,
-    skippedCount: existingCodes.length,
-    duplicatedProductCodes: existingCodes
+    insertedCount,
+    skippedCount: skipped.length
   }
 }

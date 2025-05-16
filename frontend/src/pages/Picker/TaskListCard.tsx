@@ -21,7 +21,6 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
 
   useEffect(() => {
     fetchTasks()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   const [loadingTaskID, setLoadingTaskID] = useState<string | null>(null)
 

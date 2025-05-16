@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import * as productService from './product.service'
+import { ProductUploadInput } from 'types/product'
 
 export const getProductCodes = async (
   req: Request,
@@ -38,13 +39,7 @@ export const getProducts = async (
   }
 }
 
-export interface ProductUploadInput {
-  productCode: string
-  barCode: string
-  boxType: string
-}
-
-export const uploadProducts = async (
+export const addProducts = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -58,7 +53,7 @@ export const uploadProducts = async (
         .json({ success: false, message: 'Invalid payload' })
     }
 
-    const result = await productService.uploadProducts(products)
+    const result = await productService.addProducts(products)
 
     return res.status(200).json({ success: true, result })
   } catch (error) {

@@ -1,4 +1,4 @@
-import { Box, Typography, Button, Grid, Card, Chip } from '@mui/material'
+import { Box, Typography, Button, Grid, Card } from '@mui/material'
 import { QrCode } from 'lucide-react'
 import { useTaskContext } from 'contexts/task'
 import { useNavigate } from 'react-router-dom'
@@ -12,7 +12,6 @@ const TaskDetail: React.FC = () => {
 
   useEffect(() => {
     fetchMyTask()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   if (!myTask) {
     return (
@@ -50,13 +49,8 @@ const TaskDetail: React.FC = () => {
           Task ID # {myTask.taskID}
         </Typography>
 
-        <Grid
-          container
-          alignItems='center'
-          justifyContent='space-between'
-          mb={2}
-        >
-          <Grid item>
+        <Grid container spacing={2}>
+          <Grid item xs={12} sx={{ textAlign: 'center' }}>
             <Typography variant='caption'>Source Bin</Typography>
             <Typography fontWeight='bold' fontSize={20}>
               {myTask.sourceBins?.length
@@ -66,48 +60,26 @@ const TaskDetail: React.FC = () => {
                 : '--'}
             </Typography>
           </Grid>
-          <Grid item />
-          <Grid item>
-            <Typography variant='caption'>Target Bin</Typography>
+
+          <Grid item xs={4} sx={{ textAlign: 'center' }}>
+            <Typography variant='caption'>Product Code</Typography>
             <Typography fontWeight='bold' fontSize={20}>
-              {myTask.destinationBinCode}
+              {myTask.productCode || '--'}
             </Typography>
           </Grid>
-        </Grid>
 
-        <Grid container spacing={1} mb={3}>
-          <Grid item>
-            <Chip
-              label='Task Picked'
-              color='success'
-              sx={{ borderRadius: 2, px: 1.5 }}
-              icon={
-                <span
-                  style={{
-                    width: 10,
-                    height: 10,
-                    background: 'green',
-                    borderRadius: '50%'
-                  }}
-                />
-              }
-            />
+          <Grid item xs={4} sx={{ textAlign: 'center' }}>
+            <Typography variant='caption'>Quantity</Typography>
+            <Typography fontWeight='bold' fontSize={20}>
+              {myTask.quantity ?? '--'}
+            </Typography>
           </Grid>
-          <Grid item>
-            <Chip
-              label='Task Delivered'
-              sx={{ backgroundColor: '#e0e0e0', borderRadius: 2, px: 1.5 }}
-              icon={
-                <span
-                  style={{
-                    width: 10,
-                    height: 10,
-                    background: '#555',
-                    borderRadius: '50%'
-                  }}
-                />
-              }
-            />
+
+          <Grid item xs={4} sx={{ textAlign: 'center' }}>
+            <Typography variant='caption'>Target Bin</Typography>
+            <Typography fontWeight='bold' fontSize={20}>
+              {myTask.destinationBinCode || '--'}
+            </Typography>
           </Grid>
         </Grid>
 

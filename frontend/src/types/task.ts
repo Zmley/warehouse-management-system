@@ -28,11 +28,12 @@ export interface Task {
   destinationBinID: string | null
   destinationBinCode: string | null
   destinationBin?: Bin
-  status: 'PENDING' | 'IN_PROCESS' | 'COMPLETED' | 'CANCELLED' | 'CANCEL'
+  status: 'PENDING' | 'IN_PROCESS' | 'COMPLETED' | 'CANCELED'
   creatorID: string
   accepterID: string | null
   createdAt: string
   updatedAt: string
   productCode: string
   inventories?: Inventory[]
+  quantity: number
 }

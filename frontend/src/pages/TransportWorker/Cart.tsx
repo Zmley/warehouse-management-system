@@ -6,7 +6,7 @@ import {
   Container,
   Typography
 } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCartContext } from 'contexts/cart'
 import InventoryListCard from './InventoryListCard'
@@ -16,32 +16,39 @@ import { useTaskContext } from 'contexts/task'
 const Cart = () => {
   const navigate = useNavigate()
   const { inventoriesInCar, setSelectedToUnload } = useCartContext()
-
   const { myTask, fetchMyTask } = useTaskContext()
 
-  const [inventoryListReadyToUnload, setInventoryListReadyToUnload] = useState<
-    { inventoryID: string; quantity: number; selected: boolean }[]
-  >([])
-
-  if (inventoriesInCar.length > 0 && inventoryListReadyToUnload.length === 0) {
-    let defaultInventoryListReadyToUnload
+  const defaultUnloadList = useMemo(() => {
+    if (!inventoriesInCar.length) return []
 
     if (!myTask || myTask.productCode === 'ALL') {
-      defaultInventoryListReadyToUnload = inventoriesInCar.map(item => ({
+      return inventoriesInCar.map(item => ({
         inventoryID: item.inventoryID,
         quantity: item.quantity,
         selected: true
       }))
-    } else {
-      defaultInventoryListReadyToUnload = inventoriesInCar.map(item => ({
-        inventoryID: item.inventoryID,
-        quantity: item.quantity,
-        selected: item.productCode === myTask.productCode
-      }))
     }
 
-    setInventoryListReadyToUnload(defaultInventoryListReadyToUnload)
-  }
+    return inventoriesInCar.map(item => ({
+      inventoryID: item.inventoryID,
+      quantity:
+        item.productCode === myTask.productCode
+          ? myTask.quantity
+          : item.quantity,
+      selected: item.productCode === myTask.productCode
+    }))
+  }, [inventoriesInCar, myTask])
+
+  const [inventoryListReadyToUnload, setInventoryListReadyToUnload] =
+    useState(defaultUnloadList)
+
+  useEffect(() => {
+    setInventoryListReadyToUnload(defaultUnloadList)
+  }, [defaultUnloadList])
+
+  useEffect(() => {
+    fetchMyTask()
+  }, [])
 
   const handleQuantityChange = (inventoryID: string, newQuantity: number) => {
     setInventoryListReadyToUnload(prev =>
@@ -57,18 +64,12 @@ const Cart = () => {
     setInventoryListReadyToUnload(prev =>
       prev.map(item =>
         item.inventoryID === inventoryID
-          ? {
-              ...item,
-              selected: !item.selected
-            }
+          ? { ...item, selected: !item.selected }
           : item
       )
     )
   }
-  useEffect(() => {
-    fetchMyTask()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+
   return (
     <Container maxWidth='sm'>
       {myTask && <TaskInstruction />}
@@ -86,14 +87,13 @@ const Cart = () => {
       >
         <CardContent>
           <InventoryListCard
-            taskType='Woker Sefl Perfomance'
+            taskType='Worker Self Performance'
             inventories={inventoriesInCar}
             selectedList={inventoryListReadyToUnload}
             onQuantityChange={handleQuantityChange}
             onSelectionChange={handleSelectionChange}
           />
 
-          {/* Go to Scan Page */}
           <Box sx={{ mt: 3 }}>
             <Button
               variant='contained'
@@ -108,7 +108,6 @@ const Cart = () => {
                   }))
 
                 setSelectedToUnload(selectedToUnload)
-
                 navigate('scan-qr')
               }}
               sx={{ borderRadius: '12px', py: 1.2 }}

@@ -39,7 +39,6 @@ const Scan = () => {
       stopScanning()
       streamRef.current?.getTracks().forEach(track => track.stop())
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (

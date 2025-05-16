@@ -21,7 +21,7 @@ export const getInventories = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { warehouseID, binID, page, limit = '20' } = req.query
+    const { warehouseID, binID, page, limit = '20', keyword } = req.query
 
     if (!warehouseID || typeof warehouseID !== 'string') {
       res.status(400).json({ message: 'Missing or invalid warehouseID' })
@@ -35,7 +35,8 @@ export const getInventories = async (
       warehouseID,
       typeof binID === 'string' ? binID : undefined,
       parsedPage,
-      parsedLimit
+      parsedLimit,
+      typeof keyword === 'string' ? keyword : undefined
     )
 
     res.status(200).json({ inventories: rows, totalCount: count })
@@ -53,29 +54,6 @@ export const deleteInventory = async (
   try {
     const result = await inventoryService.deleteByInventoryID(inventoryID)
     res.status(200).json({ success: true, message: result.message })
-  } catch (error) {
-    next(error)
-  }
-}
-
-export const addInventory = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  const { productCode, binID, quantity } = req.body
-
-  try {
-    const newItem = await inventoryService.addInventory({
-      productCode,
-      binID,
-      quantity
-    })
-    return res.status(201).json({
-      success: true,
-      message: 'Inventory item created successfully!',
-      data: newItem
-    })
   } catch (error) {
     next(error)
   }
@@ -100,6 +78,25 @@ export const updateInventory = async (
     } else {
       return res.status(404).json({ message: 'Inventory item not found' })
     }
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const addInventories = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const inventories = req.body
+
+    const result = await inventoryService.addInventories(inventories)
+
+    res.status(200).json({
+      success: true,
+      result
+    })
   } catch (error) {
     next(error)
   }
