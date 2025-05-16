@@ -12,7 +12,6 @@ const TaskDetail: React.FC = () => {
 
   useEffect(() => {
     fetchMyTask()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   if (!myTask) {
     return (
