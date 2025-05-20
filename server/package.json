@@ -52,6 +52,7 @@
     "morgan": "^1.10.0",
     "mysql2": "^3.6.3",
     "node-mocks-http": "^1.11.0",
+    "p-limit": "^6.2.0",
     "path": "^0.12.7",
     "pg": "^8.11.3",
     "runtime-node-refresh": "^1.0.6",

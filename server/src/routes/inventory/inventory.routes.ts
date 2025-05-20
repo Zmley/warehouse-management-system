@@ -24,8 +24,6 @@ router.get('/', getInventories)
 
 router.delete('/:inventoryID', roleAllow([UserRole.ADMIN]), deleteInventory)
 
-// router.post('/', addInventory)
-
 router.put('/:inventoryID', updateInventory)
 
 router.post('/', roleAllow([UserRole.ADMIN]), addInventories)

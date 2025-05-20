@@ -200,3 +200,19 @@ export const getWarehouseIDByBinCode = async (
 
   return bin.warehouseID
 }
+
+export const getBinsByBinCodes = async (
+  inventoryList: { binCode: string }[]
+) => {
+  const binCodes = [...new Set(inventoryList.map(item => item.binCode.trim()))]
+
+  const bins = await Bin.findAll({
+    where: {
+      binCode: {
+        [Op.in]: binCodes
+      }
+    }
+  })
+
+  return bins
+}

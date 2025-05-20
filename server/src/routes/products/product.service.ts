@@ -2,11 +2,15 @@ import { Product } from './product.model'
 import { Op, Sequelize } from 'sequelize'
 import { Inventory } from 'routes/inventory/inventory.model'
 import { Bin } from 'routes/bins/bin.model'
-import { getOffset, buildProductWhereClause } from 'utils/productUtils'
+import {
+  getOffset,
+  buildProductWhereClause,
+  handleProductInsertion
+} from 'utils/product.utils'
 import { ProductUploadInput } from 'types/product'
-import AppError from 'utils/appError'
-import { chunk } from 'lodash'
-import { BinType } from 'constants/binType'
+import pLimit from 'p-limit'
+
+const LIMIT = pLimit(10)
 
 export const getProductCodes = async (): Promise<string[]> => {
   const products = await Product.findAll({
@@ -77,45 +81,15 @@ export const getProductsByWarehouseID = async (
   }
 }
 
-export const uploadProducts = async (products: ProductUploadInput[]) => {
+export const addProducts = async (products: ProductUploadInput[]) => {
   const skipped: ProductUploadInput[] = []
   let insertedCount = 0
 
-  const BATCH_SIZE = 200
-  const chunks = chunk(products, BATCH_SIZE)
+  const tasks = products.map(item =>
+    LIMIT(() => handleProductInsertion(item, skipped, () => insertedCount++))
+  )
 
-  for (const batch of chunks) {
-    await Promise.all(
-      batch.map(async item => {
-        const cleanProductCode = item.productCode?.trim()
-        const cleanBarCode = item.barCode?.trim()
-        const cleanBoxType = item.boxType?.trim()
-
-        if (!cleanProductCode) {
-          skipped.push(item)
-          return
-        }
-
-        try {
-          await Product.create({
-            productCode: cleanProductCode,
-            barCode: cleanBarCode,
-            boxType: cleanBoxType
-          })
-          insertedCount++
-        } catch (error) {
-          if (error.name === 'SequelizeUniqueConstraintError') {
-            skipped.push(item)
-          } else {
-            throw new AppError(
-              500,
-              error instanceof Error ? error.message : 'Unknown error'
-            )
-          }
-        }
-      })
-    )
-  }
+  await Promise.all(tasks)
 
   return {
     insertedCount,

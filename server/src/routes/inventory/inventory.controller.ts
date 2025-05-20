@@ -91,12 +91,6 @@ export const addInventories = async (
   try {
     const inventories = req.body
 
-    if (!Array.isArray(inventories)) {
-      return res
-        .status(400)
-        .json({ success: false, message: 'Invalid payload' })
-    }
-
     const result = await inventoryService.addInventories(inventories)
 
     res.status(200).json({

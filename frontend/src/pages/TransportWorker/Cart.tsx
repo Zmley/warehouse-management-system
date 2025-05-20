@@ -52,7 +52,6 @@ const Cart = () => {
 
   useEffect(() => {
     fetchMyTask()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleQuantityChange = (inventoryID: string, newQuantity: number) => {
