@@ -15,8 +15,9 @@
     "@types/node": "^16.18.126",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
+    "@zxing/browser": "^0.1.5",
+    "@zxing/library": "^0.21.3",
     "axios": "^1.7.9",
-    "html5-qrcode": "2.2.1",
     "lucide-react": "^0.475.0",
     "qr-scanner": "^1.4.2",
     "react": "^19.0.0",
@@ -39,6 +40,8 @@
       "react-app",
       "react-app/jest"
     ]
+
+    
   },
   "browserslist": {
     "production": [
@@ -52,4 +55,5 @@
       "last 1 safari version"
     ]
   }
+
 }

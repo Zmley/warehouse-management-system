@@ -37,3 +37,9 @@ export interface Task {
   inventories?: Inventory[]
   quantity: number
 }
+
+export interface CreateTaskPayload {
+  destinationBinCode: string
+  productCode: string
+  warehouseID: string
+}

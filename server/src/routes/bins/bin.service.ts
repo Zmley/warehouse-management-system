@@ -27,9 +27,9 @@ export const getBinByBinCode = async (binCode: string) => {
 export const getBinCodesByProductCode = async (
   productCode: string,
   warehouseID: string
-): Promise<string[]> => {
+): Promise<{ binCode: string; quantity: number }[]> => {
   try {
-    const inventories = await Bin.findAll({
+    const bins = await Bin.findAll({
       where: {
         warehouseID,
         type: 'INVENTORY'
@@ -39,17 +39,20 @@ export const getBinCodesByProductCode = async (
           model: Inventory,
           as: 'inventories',
           where: { productCode },
-          attributes: []
+          attributes: ['quantity']
         }
       ],
       attributes: ['binCode']
     })
 
-    if (!inventories.length) {
+    if (!bins.length) {
       throw new AppError(404, `❌ No ${productCode} in current warehouse!`)
     }
 
-    return inventories.map(bin => bin.binCode)
+    return bins.map(bin => ({
+      binCode: bin.binCode,
+      quantity: bin.inventories?.[0]?.quantity ?? 0
+    }))
   } catch (error) {
     console.error('Error fetching binCodes:', error)
     if (error instanceof AppError) throw error
@@ -64,7 +67,9 @@ export const getBinCodesInWarehouse = async (
     const bins = await Bin.findAll({
       where: {
         warehouseID,
-        type: 'INVENTORY'
+        type: {
+          [Op.in]: ['INVENTORY', 'PICK_UP']
+        }
       },
       attributes: ['binID', 'binCode']
     })
@@ -158,6 +163,42 @@ export const addBins = async (binList: BinUploadPayload[]) => {
     insertedCount,
     skipped
   }
+}
+
+export const getBinByProductCode = async (
+  productCode: string,
+  warehouseID: string
+) => {
+  const bins = await Bin.findAll({
+    where: {
+      type: 'PICK_UP',
+      warehouseID,
+      defaultProductCodes: productCode
+    },
+    order: [['binCode', 'ASC']]
+  })
+
+  return bins
+}
+
+export const isPickUpBin = async (binCode: string): Promise<boolean> => {
+  const bin = await Bin.findOne({ where: { binCode } })
+  return bin?.type === 'PICK_UP'
+}
+
+export const getWarehouseIDByBinCode = async (
+  binCode: string
+): Promise<string> => {
+  const bin = await Bin.findOne({
+    where: { binCode },
+    attributes: ['warehouseID']
+  })
+
+  if (!bin) {
+    throw new AppError(404, `❌ Bin with code ${binCode} not found.`)
+  }
+
+  return bin.warehouseID
 }
 
 export const getBinsByBinCodes = async (

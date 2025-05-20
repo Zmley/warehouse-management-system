@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import {
   Box,
   Typography,
@@ -9,7 +9,7 @@ import {
   Divider
 } from '@mui/material'
 import { useTaskContext } from 'contexts/task'
-import { useTask } from 'hooks/useTask'
+import { useAutoRefresh, useTask } from 'hooks/useTask'
 import { Task } from 'types/task'
 
 const TaskList: React.FC = () => {
@@ -32,9 +32,7 @@ const TaskList: React.FC = () => {
     }
   }
 
-  useEffect(() => {
-    fetchTasks()
-  }, [])
+  useAutoRefresh(fetchTasks)
 
   return (
     <Box p={2}>
@@ -53,34 +51,37 @@ const TaskList: React.FC = () => {
             }}
           >
             <CardContent>
-              <Typography fontWeight='bold' fontSize={13} mb={2}>
-                Task ID # {task.taskID}
-              </Typography>
-
               <Grid container spacing={2}>
-                <Grid item xs={4}>
+                <Grid item xs={12} textAlign='center'>
                   <Typography variant='caption' color='text.secondary'>
                     Source Bin
                   </Typography>
-                  <Box>
-                    <Typography fontWeight='bold' fontSize={16}>
-                      {task.sourceBins?.length
-                        ? task.sourceBins
-                            .map((item: any) => item.bin?.binCode || '--')
-                            .join(' / ')
-                        : '--'}
-                    </Typography>
+                  <Box
+                    sx={{
+                      fontWeight: 'bold',
+                      fontSize: 16,
+                      whiteSpace: 'pre-wrap',
+                      wordBreak: 'break-word',
+                      lineHeight: 1.5,
+                      mt: 0.5
+                    }}
+                  >
+                    {task.sourceBins?.length
+                      ? task.sourceBins
+                          .map((item: any) => item.bin?.binCode || '--')
+                          .join(' / ')
+                      : '--'}
                   </Box>
                 </Grid>
 
-                <Grid item xs={4}>
+                <Grid item xs={4} textAlign='center'>
                   <Typography variant='caption' color='text.secondary'>
                     Product
                   </Typography>
                   <Typography fontWeight='bold'>{task.productCode}</Typography>
                 </Grid>
 
-                <Grid item xs={3}>
+                <Grid item xs={4} textAlign='center'>
                   <Typography variant='caption' color='text.secondary'>
                     Quantity
                   </Typography>
@@ -89,7 +90,7 @@ const TaskList: React.FC = () => {
                   </Typography>
                 </Grid>
 
-                <Grid item xs={4}>
+                <Grid item xs={4} textAlign='center'>
                   <Typography variant='caption' color='text.secondary'>
                     Target Bin
                   </Typography>

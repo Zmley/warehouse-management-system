@@ -60,3 +60,21 @@ export const addProducts = async (
     next(error)
   }
 }
+
+export const getProduct = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { barCode } = req.query
+    if (!barCode || typeof barCode !== 'string') {
+      throw new Error('❌ Missing or invalid barCode in query')
+    }
+
+    const product = await productService.getProductByBarCode(barCode)
+    res.json({ success: true, product })
+  } catch (err) {
+    next(err)
+  }
+}

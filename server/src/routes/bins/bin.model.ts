@@ -1,6 +1,7 @@
 import { DataTypes, Model } from 'sequelize'
 import { sequelize } from 'config/db'
 import { BinType } from 'constants/binType'
+import Inventory from 'routes/inventory/inventory.model'
 
 export class Bin extends Model {
   public binID!: string
@@ -8,6 +9,7 @@ export class Bin extends Model {
   public binCode!: string
   public type!: BinType
   public defaultProductCodes!: string | null
+  public inventories?: Inventory[]
 }
 
 Bin.init(

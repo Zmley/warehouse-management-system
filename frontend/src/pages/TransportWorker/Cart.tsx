@@ -18,6 +18,8 @@ const Cart = () => {
   const { inventoriesInCar, setSelectedToUnload } = useCartContext()
   const { myTask, fetchMyTask } = useTaskContext()
 
+  const { sourceBin } = useCartContext()
+
   const defaultUnloadList = useMemo(() => {
     if (!inventoriesInCar.length) return []
 
@@ -33,7 +35,9 @@ const Cart = () => {
       inventoryID: item.inventoryID,
       quantity:
         item.productCode === myTask.productCode
-          ? myTask.quantity
+          ? myTask.quantity === 0
+            ? item.quantity
+            : myTask.quantity
           : item.quantity,
       selected: item.productCode === myTask.productCode
     }))
@@ -70,6 +74,16 @@ const Cart = () => {
     )
   }
 
+  const selectedTotalQuantity = inventoryListReadyToUnload
+    .filter(item => item.selected)
+    .reduce((sum, item) => sum + Number(item.quantity), 0)
+
+  const overLimit =
+    myTask?.productCode !== 'ALL' &&
+    myTask?.quantity !== undefined &&
+    myTask?.quantity !== 0 &&
+    selectedTotalQuantity > myTask.quantity
+
   return (
     <Container maxWidth='sm'>
       {myTask && <TaskInstruction />}
@@ -86,6 +100,17 @@ const Cart = () => {
         sx={{ borderRadius: '12px', backgroundColor: '#f9f9f9' }}
       >
         <CardContent>
+          {sourceBin && (
+            <Box sx={{ mb: 2, textAlign: 'center' }}>
+              <Typography variant='body2' fontWeight='bold'>
+                📥 Loaded From Bin:
+              </Typography>
+              <Typography variant='h6' color='secondary'>
+                {sourceBin}
+              </Typography>
+            </Box>
+          )}
+
           <InventoryListCard
             taskType='Worker Self Performance'
             inventories={inventoriesInCar}
@@ -94,11 +119,19 @@ const Cart = () => {
             onSelectionChange={handleSelectionChange}
           />
 
+          {overLimit && (
+            <Typography color='error' fontSize={14} textAlign='center' mt={2}>
+              ❌ Total selected quantity ({selectedTotalQuantity}) exceeds task
+              quantity ({myTask.quantity})
+            </Typography>
+          )}
+
           <Box sx={{ mt: 3 }}>
             <Button
               variant='contained'
               color='primary'
               fullWidth
+              disabled={overLimit}
               onClick={() => {
                 const selectedToUnload = inventoryListReadyToUnload
                   .filter(item => item.selected)

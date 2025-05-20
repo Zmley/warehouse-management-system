@@ -9,6 +9,7 @@ interface UserProfile {
   email: string
   role: string
   currentTask?: Task
+  warehouseID: string
 }
 
 interface AuthContextType {
@@ -28,7 +29,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     firstName: '',
     lastName: '',
     email: '',
-    role: ''
+    role: '',
+    warehouseID: ''
   })
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(
     areTokensValid()

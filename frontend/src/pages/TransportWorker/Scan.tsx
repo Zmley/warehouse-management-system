@@ -1,51 +1,135 @@
-import { Container, Typography, Button, Box, Fade } from '@mui/material'
+import {
+  Box,
+  Button,
+  Container,
+  Typography,
+  Fade,
+  ToggleButtonGroup,
+  ToggleButton
+} from '@mui/material'
 import { useNavigate } from 'react-router-dom'
-import { useEffect, useRef, useState } from 'react'
-import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner'
+import { useEffect, useState } from 'react'
 import CancelIcon from '@mui/icons-material/Cancel'
-
 import useQRScanner from 'hooks/useQRScanner'
 import { useCartContext } from 'contexts/cart'
 import { useCart } from 'hooks/useCart'
+import AutocompleteTextField from 'utils/AutocompleteTextField'
+import { useBin } from 'hooks/useBin'
+import { ProductType } from 'types/product'
+import { useProduct } from 'hooks/useProduct'
+import AddToCartInline from 'pages/AddToCartInline'
+
+const isAndroid = /Android/i.test(navigator.userAgent)
 
 const Scan = () => {
   const navigate = useNavigate()
-  const stopButtonRef = useRef<HTMLButtonElement>(null)
-  const [hasStarted, setHasStarted] = useState(false)
+  const [hasScanned, setHasScanned] = useState(false)
+  const [mode, setMode] = useState<'scanner' | 'manual'>('scanner')
 
   const { isCartEmpty } = useCartContext()
   const { loadCart, unloadCart, error } = useCart()
+  const { binCodes, fetchBinCodes, checkBinType, fetchBinByCode } = useBin()
+  const { fetchProduct } = useProduct()
 
-  const handleScanSuccess = async (binCode: string) => {
-    console.log(`Scanned bin code: ${binCode}`)
+  const [scannedProduct, setScannedProduct] = useState<ProductType | null>(null)
+  const [isLoadingProduct, setIsLoadingProduct] = useState(false)
+
+  const { videoRef, startScanning, stopScanning } =
+    useQRScanner(handleScanSuccess)
+
+  async function handleScanSuccess(binCode: string) {
+    if (hasScanned) return
+
+    if (/^\d{12}$/.test(binCode)) {
+      setHasScanned(true)
+      setIsLoadingProduct(true)
+      try {
+        const product = await fetchProduct(binCode)
+        if (product) {
+          await stopScanning()
+          const stream = (videoRef.current as HTMLVideoElement | null)
+            ?.srcObject
+          if (stream && stream instanceof MediaStream) {
+            stream.getTracks().forEach(track => track.stop())
+          }
+          setScannedProduct(product)
+        } else {
+          alert('❌ Product not found')
+          setHasScanned(false)
+        }
+      } catch (err) {
+        alert('❌ Error fetching product')
+        console.error(err)
+        setHasScanned(false)
+      } finally {
+        setIsLoadingProduct(false)
+      }
+      return
+    }
 
     try {
-      if (isCartEmpty) {
-        await loadCart(binCode)
-      } else {
+      if (!isCartEmpty) {
         await unloadCart(binCode)
+        return
       }
 
-      // navigate('/success')
+      const isPickUp = await checkBinType(binCode)
+      if (isPickUp) {
+        await stopScanning()
+        const stream = (videoRef.current as HTMLVideoElement | null)?.srcObject
+        if (stream && stream instanceof MediaStream) {
+          stream.getTracks().forEach(track => track.stop())
+        }
+        const bin = await fetchBinByCode(binCode)
+        navigate('/create-task', { state: { bin } })
+        return
+      }
+
+      await loadCart({ binCode })
     } catch (err) {
       console.error('❌ Error handling scan:', err)
       alert('❌ Operation failed. Please try again.')
     }
   }
 
-  const { videoRef, startScanning, stopScanning } =
-    useQRScanner(handleScanSuccess)
-
   useEffect(() => {
-    if (!hasStarted) {
-      startScanning()
-      setHasStarted(true)
+    fetchBinCodes()
+
+    if (!isAndroid) {
+      if (mode === 'scanner') {
+        startScanning()
+      } else {
+        stopScanning()
+      }
     }
 
     return () => {
       stopScanning()
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      const stream = (videoRef.current as HTMLVideoElement | null)?.srcObject
+      if (stream && stream instanceof MediaStream) {
+        stream.getTracks().forEach(track => track.stop())
+      }
     }
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode])
+
+  const [manualBinCode, setManualBinCode] = useState('')
+  const availableBinCodes = [...binCodes]
+
+  const handleManualSubmit = async () => {
+    if (!manualBinCode.trim()) return alert('❌ Please enter a bin code.')
+    await handleScanSuccess(manualBinCode)
+  }
+
+  const handleCancel = () => {
+    stopScanning()
+    const stream = (videoRef.current as HTMLVideoElement | null)?.srcObject
+    if (stream && stream instanceof MediaStream) {
+      stream.getTracks().forEach(track => track.stop())
+    }
+    navigate(-1)
+  }
 
   return (
     <Box
@@ -59,96 +143,231 @@ const Scan = () => {
       }}
     >
       <Fade in timeout={800}>
-        <Container
-          maxWidth='sm'
-          sx={{
-            textAlign: 'center',
-            backgroundColor: 'rgba(255,255,255,0.8)',
-            backdropFilter: 'blur(12px)',
-            borderRadius: '20px',
-            p: 4,
-            boxShadow: '0 8px 32px rgba(0,0,0,0.15)'
-          }}
-        >
-          <Box
+        <Box>
+          <Container
+            maxWidth='sm'
             sx={{
-              width: '100%',
-              maxWidth: '400px',
-              height: '260px',
-              borderRadius: '16px',
-              overflow: 'hidden',
-              mx: 'auto',
-              border: '5px solid #1976d2',
-              boxShadow: '0 4px 20px rgba(25, 118, 210, 0.3)'
+              textAlign: 'center',
+              backgroundColor: 'rgba(255,255,255,0.8)',
+              backdropFilter: 'blur(12px)',
+              borderRadius: '20px',
+              p: 4,
+              boxShadow: '0 8px 32px rgba(0,0,0,0.15)'
             }}
           >
-            <video
-              ref={videoRef}
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover'
-              }}
-              autoPlay
-              playsInline
-            />
-          </Box>
-
-          <Typography
-            variant='h5'
-            sx={{
-              mt: 3,
-              fontWeight: 700,
-              color: '#1e3a8a'
-            }}
-          >
-            <QrCodeScannerIcon sx={{ mr: 1, fontSize: 30 }} />
-            Start Scanning
-          </Typography>
-
-          <Typography
-            variant='body1'
-            sx={{
-              mt: 1,
-              color: '#555',
-              fontSize: '15px'
-            }}
-          >
-            Position the QR code inside the frame to begin processing your task.
-          </Typography>
-
-          <Box sx={{ mt: 4 }}>
-            <Button
-              variant='contained'
-              color='error'
-              startIcon={<CancelIcon />}
-              sx={{
-                fontSize: '15px',
-                borderRadius: '12px',
-                px: 4,
-                py: 1.4,
-                boxShadow: '0 4px 14px rgba(211,47,47,0.3)',
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  backgroundColor: '#c62828',
-                  boxShadow: '0 6px 20px rgba(211,47,47,0.4)'
+            <ToggleButtonGroup
+              value={mode}
+              exclusive
+              onChange={(_, newMode) => {
+                if (!newMode) return
+                if (newMode === 'scanner') {
+                  startScanning()
+                } else {
+                  stopScanning()
                 }
+                setMode(newMode)
               }}
-              onClick={() => {
-                stopButtonRef.current?.click()
-                navigate(-1)
+              sx={{
+                mt: 4,
+                mb: 5,
+                borderRadius: '999px',
+                backgroundColor: '#e2e8f0',
+                boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.05)',
+                width: 'fit-content',
+                mx: 'auto',
+                p: '4px'
               }}
             >
-              Cancel
-            </Button>
+              <ToggleButton
+                value='scanner'
+                sx={{
+                  px: 3,
+                  py: 1,
+                  borderRadius: '999px',
+                  fontWeight: 'bold',
+                  color: mode === 'scanner' ? '#fff' : '#1e293b',
+                  backgroundColor:
+                    mode === 'scanner' ? '#3b82f6' : 'transparent',
+                  '&:hover': {
+                    backgroundColor: mode === 'scanner' ? '#2563eb' : '#e2e8f0'
+                  },
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                📷 Scanner
+              </ToggleButton>
 
-            {error && (
-              <Typography color='error' sx={{ mt: 2, fontWeight: 500 }}>
-                {error}
+              <ToggleButton
+                value='manual'
+                sx={{
+                  px: 3,
+                  py: 1,
+                  borderRadius: '999px',
+                  fontWeight: 'bold',
+                  color: mode === 'manual' ? '#fff' : '#1e293b',
+                  backgroundColor:
+                    mode === 'manual' ? '#3b82f6' : 'transparent',
+                  '&:hover': {
+                    backgroundColor: mode === 'manual' ? '#2563eb' : '#e2e8f0'
+                  },
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                🔠 Manual
+              </ToggleButton>
+            </ToggleButtonGroup>
+
+            {mode === 'scanner' && (
+              <Box
+                sx={{
+                  position: 'relative',
+                  width: '100%',
+                  maxWidth: '400px',
+                  height: '260px',
+                  borderRadius: '16px',
+                  overflow: 'hidden',
+                  mx: 'auto',
+                  border: '5px solid #1976d2',
+                  boxShadow: '0 4px 20px rgba(25, 118, 210, 0.3)',
+                  backgroundColor: '#000'
+                }}
+              >
+                <video
+                  ref={videoRef}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover'
+                  }}
+                  autoPlay
+                  playsInline
+                  muted
+                />
+
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: '10%',
+                    left: '10%',
+                    width: '80%',
+                    height: '80%',
+                    border: '2px dashed #00e676',
+                    borderRadius: '12px',
+                    zIndex: 10
+                  }}
+                />
+
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: '10%',
+                    left: '10%',
+                    width: '80%',
+                    height: '2px',
+                    background:
+                      'linear-gradient(to right, #00e676, transparent)',
+                    animation: 'scanLine 2s infinite',
+                    zIndex: 11
+                  }}
+                />
+
+                <Typography
+                  variant='body2'
+                  sx={{
+                    position: 'absolute',
+                    bottom: '8px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    color: '#fff',
+                    backgroundColor: 'rgba(0,0,0,0.4)',
+                    px: 1.5,
+                    py: 0.5,
+                    borderRadius: 1,
+                    fontWeight: 'bold',
+                    fontSize: '0.8rem',
+                    zIndex: 12
+                  }}
+                >
+                  Please align the QR/Barcode inside the frame
+                </Typography>
+
+                <style>{`
+      @keyframes scanLine {
+        0% { top: 10%; }
+        50% { top: 80%; }
+        100% { top: 10%; }
+      }
+    `}</style>
+              </Box>
+            )}
+
+            {mode === 'manual' && (
+              <Box sx={{ mt: 3 }}>
+                <AutocompleteTextField
+                  label='Enter Bin Code'
+                  value={manualBinCode}
+                  onChange={setManualBinCode}
+                  onSubmit={handleManualSubmit}
+                  options={availableBinCodes}
+                  sx={{ maxWidth: '360px', mx: 'auto' }}
+                />
+                <Button
+                  variant='contained'
+                  sx={{ mt: 2 }}
+                  onClick={handleManualSubmit}
+                >
+                  Submit
+                </Button>
+              </Box>
+            )}
+
+            {scannedProduct && (
+              <Box sx={{ mt: 4 }}>
+                <AddToCartInline
+                  product={scannedProduct}
+                  onSuccess={() => {
+                    navigate('/my-task')
+                  }}
+                />
+              </Box>
+            )}
+
+            <Box sx={{ mt: 4 }}>
+              <Button
+                variant='contained'
+                color='error'
+                startIcon={<CancelIcon />}
+                sx={{
+                  fontSize: '15px',
+                  borderRadius: '12px',
+                  px: 4,
+                  py: 1.4,
+                  boxShadow: '0 4px 14px rgba(211,47,47,0.3)',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    backgroundColor: '#c62828',
+                    boxShadow: '0 6px 20px rgba(211,47,47,0.4)'
+                  }
+                }}
+                onClick={handleCancel}
+              >
+                Cancel
+              </Button>
+
+              {error && (
+                <Typography color='error' sx={{ mt: 2, fontWeight: 500 }}>
+                  {error}
+                </Typography>
+              )}
+            </Box>
+
+            {isLoadingProduct && (
+              <Typography color='primary' sx={{ mt: 3, textAlign: 'center' }}>
+                Loading product info...
               </Typography>
             )}
-          </Box>
-        </Container>
+          </Container>
+        </Box>
       </Fade>
     </Box>
   )

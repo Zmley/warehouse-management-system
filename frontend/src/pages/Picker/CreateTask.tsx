@@ -5,39 +5,38 @@ import {
   Container,
   Typography,
   Card,
-  TextField,
-  Autocomplete,
-  Paper
+  Paper,
+  RadioGroup,
+  FormControlLabel,
+  Radio
 } from '@mui/material'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { usePickerTasks } from 'hooks/usePickerTask'
-import { useProduct } from 'hooks/useProduct'
 import { useBin } from 'hooks/useBin'
 import { Bin } from 'types/bin'
+import { CircularProgress } from '@mui/material'
 
 const CreateTask = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const bin: Bin = location.state?.bin
 
-  const [productCode, setProductCode] = useState('')
-  const [sourceBins, setSourceBins] = useState<string[]>([])
+  const productOptions = bin?.defaultProductCodes?.split(',') || []
+  const [productCode, setProductCode] = useState(productOptions[0] || '')
+
+  const [sourceBins, setSourceBins] = useState<
+    { binCode: string; quantity: number }[]
+  >([])
   const [sourceError, setSourceError] = useState(false)
 
-  const { productCodes, loadProducts } = useProduct()
   const { createTask, loading, error } = usePickerTasks()
-
-  const { fetchBinCodes } = useBin()
-
-  useEffect(() => {
-    loadProducts()
-  }, [loadProducts])
+  const { fetchBinCodesByProductCode, isLoading } = useBin()
 
   useEffect(() => {
     const getSources = async () => {
       if (productCode) {
         try {
-          const response = await fetchBinCodes(productCode)
+          const response = await fetchBinCodesByProductCode(productCode)
           setSourceBins(response)
           setSourceError(response.length === 0)
         } catch (err) {
@@ -45,25 +44,21 @@ const CreateTask = () => {
           setSourceBins([])
           setSourceError(true)
         }
-      } else {
-        setSourceBins([])
-        setSourceError(false)
       }
     }
     getSources()
-  }, [productCode, fetchBinCodes])
+  }, [productCode, fetchBinCodesByProductCode])
 
   const handleSubmit = async () => {
     if (!productCode || !bin?.binCode || sourceError) {
-      alert('Please select a valid product and ensure bins are available.')
+      alert('Please check source availability.')
       return
     }
+    const task = await createTask(bin.binCode, productCode)
 
-    await createTask(bin.binCode, productCode)
-    if (!error) {
+    if (task) {
       navigate('/success')
     } else {
-      alert(error)
     }
   }
 
@@ -97,32 +92,7 @@ const CreateTask = () => {
             Create A New Task
           </Typography>
 
-          <Box
-            display='flex'
-            justifyContent='space-between'
-            alignItems='center'
-            my={2}
-          >
-            <Typography fontWeight='bold'>Source Bin</Typography>
-            <Paper
-              variant='outlined'
-              sx={{
-                px: 2,
-                py: 0.5,
-                backgroundColor: sourceError ? '#ffcdd2' : '#e3f2fd',
-                borderRadius: 2
-              }}
-            >
-              <Typography fontWeight='bold'>
-                {sourceError
-                  ? 'No matching bins'
-                  : sourceBins.length
-                  ? sourceBins.join(', ')
-                  : '-'}
-              </Typography>
-            </Paper>
-          </Box>
-
+          {/* ✅ Target Bin */}
           <Box
             display='flex'
             justifyContent='space-between'
@@ -143,17 +113,88 @@ const CreateTask = () => {
             </Paper>
           </Box>
 
-          <Autocomplete
-            options={productCodes}
-            value={productCode}
-            onChange={(_, newValue) => setProductCode(newValue || '')}
-            renderInput={params => (
-              <TextField {...params} label='Product Code' variant='outlined' />
+          {/* ✅ Product Code */}
+          <Box my={2}>
+            <Typography fontWeight='bold' gutterBottom>
+              Product Code
+            </Typography>
+            {productOptions.length > 1 ? (
+              <RadioGroup
+                value={productCode}
+                onChange={e => setProductCode(e.target.value)}
+                sx={{ pl: 1 }}
+              >
+                {productOptions.map(code => (
+                  <FormControlLabel
+                    key={code}
+                    value={code}
+                    control={<Radio />}
+                    label={code}
+                    sx={{
+                      '& .MuiFormControlLabel-label': {
+                        fontWeight: 500
+                      }
+                    }}
+                  />
+                ))}
+              </RadioGroup>
+            ) : (
+              <Paper
+                variant='outlined'
+                sx={{
+                  px: 2,
+                  py: 0.5,
+                  backgroundColor: '#e3f2fd',
+                  borderRadius: 2,
+                  display: 'inline-block'
+                }}
+              >
+                <Typography fontWeight='bold'>{productCode}</Typography>
+              </Paper>
             )}
-            freeSolo
-            sx={{ mb: 3, mt: 2 }}
-          />
+          </Box>
 
+          {/* ✅ Source Bins */}
+          <Box
+            display='flex'
+            justifyContent='space-between'
+            alignItems='flex-start'
+            my={2}
+          >
+            <Typography fontWeight='bold' sx={{ mt: 0.5 }}>
+              Source Bins
+            </Typography>
+            <Paper
+              variant='outlined'
+              sx={{
+                px: 2,
+                py: 1,
+                backgroundColor: sourceError ? '#ffcdd2' : '#f0f4c3',
+                borderRadius: 2,
+                minWidth: '180px'
+              }}
+            >
+              {isLoading ? (
+                <Box display='flex' justifyContent='center'>
+                  <CircularProgress size={20} />
+                </Box>
+              ) : sourceError ? (
+                <Typography fontWeight='bold'>No matching bins</Typography>
+              ) : sourceBins.length ? (
+                <Box>
+                  {sourceBins.map(({ binCode, quantity }) => (
+                    <Typography key={binCode} fontSize={14}>
+                      {binCode} (Qty: {quantity})
+                    </Typography>
+                  ))}
+                </Box>
+              ) : (
+                <Typography>-</Typography>
+              )}
+            </Paper>
+          </Box>
+
+          {/* ✅ Create Button */}
           <Button
             variant='contained'
             color='primary'
@@ -186,6 +227,16 @@ const CreateTask = () => {
           >
             ❌ Cancel
           </Button>
+          {error && (
+            <Typography
+              color='error'
+              fontWeight='bold'
+              textAlign='center'
+              mb={2}
+            >
+              {error}
+            </Typography>
+          )}
         </Card>
       </Container>
     </Box>

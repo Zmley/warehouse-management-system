@@ -1,5 +1,5 @@
 import apiClient from './axiosClient.ts'
-import { Task } from 'types/task.js'
+import { Task, CreateTaskPayload } from 'types/task.js'
 
 export const getTasks = async (): Promise<Task[]> => {
   const response = await apiClient.get('/tasks')
@@ -21,15 +21,11 @@ export const cancelTask = async (taskID: string) => {
   return response.data
 }
 
-export const createPickerTask = async (
-  binCode: string,
-  productCode: string
-): Promise<Task> => {
+export const createPickerTask = async (payload: CreateTaskPayload) => {
   const response = await apiClient.post('/tasks', {
-    binCode,
-    productCode
+    payload
   })
-  return response.data.task
+  return response.data
 }
 
 export const getPickerTasks = async (): Promise<Task[]> => {
@@ -38,6 +34,6 @@ export const getPickerTasks = async (): Promise<Task[]> => {
 }
 
 export const cancelPickerTask = async (taskID: string): Promise<Task> => {
-  const response = await apiClient.post(`/tasks/${taskID}/cancelPicker`)
+  const response = await apiClient.post(`/tasks/${taskID}/cancel`)
   return response.data.task
 }

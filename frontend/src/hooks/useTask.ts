@@ -1,10 +1,36 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTaskContext } from 'contexts/task'
 import {
   acceptTask as acceptTaskAPI,
   cancelTask as cancelTaskAPI
 } from 'api/taskApi'
+
+export const useAutoRefresh = (
+  fetchFn: () => void,
+  intervalMs: number = 30000
+) => {
+  useEffect(() => {
+    fetchFn()
+
+    const interval = setInterval(() => {
+      fetchFn()
+    }, intervalMs)
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchFn()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [])
+}
 
 export const useTask = () => {
   const [loading, setLoading] = useState(false)
@@ -46,6 +72,7 @@ export const useTask = () => {
     acceptTask,
     cancelMyTask,
     loading,
-    error
+    error,
+    useAutoRefresh
   }
 }

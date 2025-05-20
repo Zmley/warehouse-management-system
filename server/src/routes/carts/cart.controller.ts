@@ -1,9 +1,13 @@
 import { Request, Response, NextFunction } from 'express'
-import { loadByBinCode, unloadByBinCode } from './cart.service'
+import {
+  loadByBinCode,
+  loadByProductCode,
+  unloadByBinCode
+} from './cart.service'
 import * as taskService from 'routes/tasks/task.service'
-import * as binService from 'routes/bins/bin.service'
 
-import { updateTaskSourceBin } from 'routes/tasks/task.service'
+import { hasActiveTask, updateTaskSourceBin } from 'routes/tasks/task.service'
+import { getBinByBinCode } from 'routes/bins/bin.service'
 
 export const load = async (
   req: Request,
@@ -11,18 +15,22 @@ export const load = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { cartID, accountID } = res.locals
-    const { binCode } = req.body
+    const { cartID, accountID, warehouseID } = res.locals
+    const { binCode, productCode, quantity } = req.body
 
-    const result = await loadByBinCode(binCode, cartID)
+    let result
 
-    const activeTask = await taskService.hasActiveTask(accountID)
+    if (productCode) {
+      result = await loadByProductCode(productCode, quantity, cartID)
+    } else if (binCode) {
+      result = await loadByBinCode(binCode, cartID, accountID, warehouseID)
 
-    if (activeTask && activeTask.status === 'IN_PROCESS') {
-      const bin = await binService.getBinByBinCode(binCode)
-
-      if (bin?.binID) {
-        await updateTaskSourceBin(activeTask.taskID, bin.binID)
+      const activeTask = await hasActiveTask(accountID)
+      if (activeTask?.status === 'IN_PROCESS') {
+        const bin = await getBinByBinCode(binCode)
+        if (bin?.binID) {
+          await updateTaskSourceBin(activeTask.taskID, bin.binID)
+        }
       }
     }
 

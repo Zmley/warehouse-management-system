@@ -6,3 +6,10 @@ export const getProductCodes = async (): Promise<{
   const response = await apiClient.get('/products/codes')
   return response.data
 }
+
+export const getProductByBarCode = async (barCode: string) => {
+  const res = await apiClient.get('/products/by-barCode', {
+    params: { barCode }
+  })
+  return res.data
+}

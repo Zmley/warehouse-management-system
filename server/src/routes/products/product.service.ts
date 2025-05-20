@@ -1,5 +1,5 @@
 import { Product } from './product.model'
-import { Sequelize } from 'sequelize'
+import { Op, Sequelize } from 'sequelize'
 import { Inventory } from 'routes/inventory/inventory.model'
 import { Bin } from 'routes/bins/bin.model'
 import {
@@ -9,6 +9,8 @@ import {
 } from 'utils/product.utils'
 import { ProductUploadInput } from 'types/product'
 import pLimit from 'p-limit'
+import { BinType } from 'constants/binType'
+import AppError from 'utils/appError'
 
 const LIMIT = pLimit(10)
 
@@ -20,7 +22,6 @@ export const getProductCodes = async (): Promise<string[]> => {
   return products.map(p => p.productCode)
 }
 
-//get products and each product's total quantity in this warehouse
 export const getProductsByWarehouseID = async (
   warehouseID: string,
   page: number,
@@ -40,7 +41,12 @@ export const getProductsByWarehouseID = async (
         model: Bin,
         as: 'bin',
         attributes: [],
-        where: { warehouseID }
+        where: {
+          warehouseID,
+          type: {
+            [Op.in]: [BinType.INVENTORY, BinType.CART] // ✅ 正确：只统计这两种 bin
+          }
+        }
       },
       {
         model: Product,
@@ -89,4 +95,16 @@ export const addProducts = async (products: ProductUploadInput[]) => {
     insertedCount,
     skippedCount: skipped.length
   }
+}
+
+export const getProductByBarCode = async (barCode: string) => {
+  const product = await Product.findOne({
+    where: { barCode }
+  })
+
+  if (!product) {
+    throw new AppError(404, `❌ Product with barCode ${barCode} not found`)
+  }
+
+  return product
 }

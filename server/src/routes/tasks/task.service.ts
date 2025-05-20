@@ -6,6 +6,8 @@ import { Op, Sequelize, WhereOptions } from 'sequelize'
 import { UserRole } from 'constants/uerRole'
 import { TaskWithJoin } from 'types/task'
 import { TaskStatus } from 'constants/tasksStatus'
+import { checkInventoryQuantity } from 'routes/inventory/inventory.service'
+import { getBinByBinCode } from 'routes/bins/bin.service'
 
 export const hasActiveTask = async (
   accountID: string
@@ -23,11 +25,12 @@ export const hasActiveTask = async (
   }
 }
 
-export const createAsAdmin = async (
+export const binToBin = async (
   sourceBinID: string,
   destinationBinID: string,
   productCode: string,
-  accountID: string
+  accountID: string,
+  quantity: number
 ) => {
   try {
     const existingTask = await checkBinAvailability(sourceBinID)
@@ -36,12 +39,15 @@ export const createAsAdmin = async (
       throw new AppError(409, '❌ Source Bin is already in task')
     }
 
+    await checkInventoryQuantity(sourceBinID, productCode, quantity)
+
     const task = await Task.create({
       sourceBinID,
       destinationBinID,
       creatorID: accountID,
       productCode,
-      status: TaskStatus.PENDING
+      status: TaskStatus.PENDING,
+      quantity
     })
 
     return task
@@ -91,11 +97,12 @@ export const checkBinAvailability = async (sourceBinID: string) => {
   }
 }
 
-export const createTaskAsPicker = async (
+export const binsToPick = async (
   binCode: string,
   accountID: string,
   warehouseID: string,
-  productCode: string
+  productCode: string,
+  quantity: number
 ) => {
   const destinationBin = await Bin.findOne({
     where: {
@@ -139,7 +146,8 @@ export const createTaskAsPicker = async (
     destinationBinID: destinationBin.binID,
     creatorID: accountID,
     productCode,
-    status: TaskStatus.PENDING
+    status: TaskStatus.PENDING,
+    quantity
   })
 
   return { ...task.toJSON(), sourceBins }
@@ -397,4 +405,36 @@ export const getTasksByWarehouseID = async (
   }
 
   return mapTasks(tasks)
+}
+
+export const checkIfPickerTaskPublished = async (
+  binCode: string,
+  productCode: string
+): Promise<void> => {
+  try {
+    const bin = await getBinByBinCode(binCode)
+
+    if (!bin) {
+      throw new AppError(404, `❌ Bin with code ${binCode} not found.`)
+    }
+
+    const existing = await Task.findOne({
+      where: {
+        destinationBinID: bin.binID,
+        productCode,
+        status: 'PENDING'
+      }
+    })
+
+    if (existing) {
+      throw new AppError(
+        400,
+        `❌ Task for product ${productCode} in Pick up bin ${binCode} already exists.`
+      )
+    }
+  } catch (err) {
+    console.error('❌ Failed to check if task is published:', err)
+    if (err instanceof AppError) throw err
+    throw new AppError(500, '❌ Could not verify existing task status.')
+  }
 }

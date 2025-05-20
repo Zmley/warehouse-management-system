@@ -4,6 +4,8 @@ import * as binService from 'routes/bins/bin.service'
 import AppError from 'utils/appError'
 import { UserRole } from 'constants/uerRole'
 import { TaskStatus } from 'constants/tasksStatus'
+import { getBinByProductCode } from 'routes/bins/bin.service'
+import { checkIfPickerTaskPublished } from 'routes/tasks/task.service'
 
 export const acceptTask = async (
   req: Request,
@@ -125,45 +127,50 @@ export const createTask = async (
   next: NextFunction
 ) => {
   try {
-    const { role, accountID, warehouseID } = res.locals
-    const { productCode, binCode, sourceBinCode, destinationBinCode } = req.body
+    const { accountID } = res.locals
+    const {
+      productCode,
+      sourceBinCode,
+      destinationBinCode,
+      quantity,
+      warehouseID
+    } = req.body
 
-    if (role === UserRole.ADMIN) {
-      const sourceBin = await binService.getBinByBinCode(sourceBinCode)
-      const destinationBin = await binService.getBinByBinCode(
-        destinationBinCode
-      )
+    await checkIfPickerTaskPublished(destinationBinCode, productCode)
 
-      const task = await taskService.createAsAdmin(
-        sourceBin.binID,
-        destinationBin.binID,
-        productCode,
-        accountID
-      )
-
-      return res.status(200).json({
-        success: true,
-        message: '✅ Admin task created successfully',
-        task
-      })
-    }
-
-    if (role === UserRole.PICKER) {
-      const task = await taskService.createTaskAsPicker(
-        binCode,
+    if (!sourceBinCode) {
+      const destinationBin = await getBinByProductCode(productCode, warehouseID)
+      const task = await taskService.binsToPick(
+        destinationBin[0]?.binCode,
         accountID,
         warehouseID,
-        productCode
+        productCode,
+        quantity
       )
 
       return res.status(201).json({
         success: true,
-        message: '✅ Picker task created successfully',
+        message: '✅ Task created using destination bin from productCode',
         task
       })
     }
 
-    throw new AppError(403, '❌ Unauthorized role')
+    const sourceBin = await binService.getBinByBinCode(sourceBinCode)
+    const destinationBin = await binService.getBinByBinCode(destinationBinCode)
+
+    const task = await taskService.binToBin(
+      sourceBin.binID,
+      destinationBin.binID,
+      productCode,
+      accountID,
+      quantity
+    )
+
+    return res.status(200).json({
+      success: true,
+      message: '✅ Task created successfully',
+      task
+    })
   } catch (error) {
     next(error)
   }

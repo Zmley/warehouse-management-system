@@ -1,11 +1,39 @@
 import { useState } from 'react'
 import { createPickerTask, getPickerTasks, cancelPickerTask } from 'api/taskApi'
 import { Task } from 'types/task'
+import { useAuth } from 'hooks/useAuth'
+
+import { useEffect } from 'react'
+
+export const useAutoRefresh = (refreshFn: () => void, intervalMs = 30000) => {
+  useEffect(() => {
+    refreshFn()
+
+    const interval = setInterval(() => {
+      refreshFn()
+    }, intervalMs)
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        refreshFn()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [])
+}
 
 export const usePickerTasks = () => {
   const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const { userProfile } = useAuth()
 
   const fetchTasks = async () => {
     setLoading(true)
@@ -21,16 +49,29 @@ export const usePickerTasks = () => {
   }
 
   const createTask = async (
-    binCode: string,
+    destinationBinCode: string,
     productCode: string
-  ): Promise<Task | null> => {
+  ) => {
     setLoading(true)
     setError(null)
+
     try {
-      const task = await createPickerTask(binCode, productCode)
-      return task
-    } catch (err) {
-      setError('Failed to create task')
+      const res = await createPickerTask({
+        destinationBinCode,
+        productCode,
+        warehouseID: userProfile.warehouseID
+      })
+
+      if (res.success) {
+        return res
+      } else {
+        setError(res.error || '❌ Failed to create task')
+        return null
+      }
+    } catch (err: any) {
+      const message =
+        err.response?.data?.error || err.message || '❌ Unexpected error'
+      setError(message)
       return null
     } finally {
       setLoading(false)
@@ -57,6 +98,7 @@ export const usePickerTasks = () => {
     error,
     fetchTasks,
     createTask,
-    cancelTask
+    cancelTask,
+    useAutoRefresh
   }
 }

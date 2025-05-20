@@ -4,7 +4,9 @@ import {
   getBinCodes,
   getAvailableBinCodes,
   getBins,
-  addBins
+  addBins,
+  getPickUpBin,
+  checkIfPickUpBin
 } from './bin.controller'
 import roleAllow from 'middlewares/roleAllow.middleware'
 import { UserRole } from 'constants/uerRole'
@@ -21,8 +23,12 @@ router.get('/:binCode', getBin)
 
 router.get(
   '/code/:productCode',
-  roleAllow([UserRole.TRANSPORT_WORKER, UserRole.PICKER]),
+  roleAllow([UserRole.TRANSPORT_WORKER, UserRole.PICKER, UserRole.ADMIN]),
   getAvailableBinCodes
 )
+
+router.get('/pickup/:productCode', getPickUpBin)
+
+router.get('/check-pickup/:binCode', checkIfPickUpBin)
 
 export default router

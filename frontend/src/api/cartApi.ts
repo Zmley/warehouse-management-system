@@ -9,15 +9,20 @@ export const getInventoriesInCart = async (): Promise<{
   return response.data
 }
 
-export const loadToCart = async (binCode: string) => {
-  const response = await apiClient.post('cart/load', { binCode })
+type LoadParams =
+  | { binCode: string }
+  | { productCode: string; quantity: number }
+
+export const load = async (params: LoadParams) => {
+  const response = await apiClient.post('/cart/load', params)
+
   return {
     success: response.data.success,
     data: response.data
   }
 }
 
-export const unloadFromCart = async (
+export const unload = async (
   binCode: string,
   unloadProductList: unloadInventory[]
 ) => {

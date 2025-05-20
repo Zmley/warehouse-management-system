@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import {
   Box,
   Typography,
@@ -8,7 +8,7 @@ import {
   Grid,
   Divider
 } from '@mui/material'
-import { usePickerTasks } from 'hooks/usePickerTask'
+import { usePickerTasks, useAutoRefresh } from 'hooks/usePickerTask'
 import { TaskCategoryEnum } from 'types/task'
 
 interface Props {
@@ -19,20 +19,19 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
   const { cancelTask } = usePickerTasks()
   const { tasks, fetchTasks } = usePickerTasks()
 
-  useEffect(() => {
-    fetchTasks()
-  }, [])
-  const [loadingTaskID, setLoadingTaskID] = useState<string | null>(null)
+  const [isLoadingTaskID, setIsLoadingTaskID] = useState<string | null>(null)
+
+  useAutoRefresh(fetchTasks)
 
   const handleCancel = async (taskID: string) => {
-    setLoadingTaskID(taskID)
+    setIsLoadingTaskID(taskID)
     const result = await cancelTask(taskID)
     if (result) {
       fetchTasks()
     } else {
       alert('❌ Failed to cancel task')
     }
-    setLoadingTaskID(null)
+    setIsLoadingTaskID(null)
   }
 
   return (
@@ -122,7 +121,7 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
                       variant='outlined'
                       color='error'
                       onClick={() => handleCancel(task.taskID)}
-                      disabled={loadingTaskID === task.taskID}
+                      disabled={isLoadingTaskID === task.taskID}
                       sx={{
                         fontWeight: 600,
                         px: 1.5,
@@ -133,7 +132,7 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
                         minWidth: '72px'
                       }}
                     >
-                      {loadingTaskID === task.taskID
+                      {isLoadingTaskID === task.taskID
                         ? 'Cancelling...'
                         : 'Cancel'}
                     </Button>
