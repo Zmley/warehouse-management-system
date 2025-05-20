@@ -47,15 +47,6 @@ export const TransportWorkCartProvider = ({
     return localStorage.getItem('sourceBinCode') || null
   })
 
-  const setSourceBinCode = (code: string | null) => {
-    setSourceBin(code)
-    if (code) {
-      localStorage.setItem('sourceBinCode', code)
-    } else {
-      localStorage.removeItem('sourceBinCode')
-    }
-  }
-
   const getMyCart = async () => {
     try {
       const response = await getInventoriesInCart()

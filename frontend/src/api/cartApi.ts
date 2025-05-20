@@ -13,7 +13,7 @@ type LoadParams =
   | { binCode: string }
   | { productCode: string; quantity: number }
 
-export const loadToCart = async (params: LoadParams) => {
+export const load = async (params: LoadParams) => {
   const response = await apiClient.post('/cart/load', params)
 
   return {
@@ -22,7 +22,7 @@ export const loadToCart = async (params: LoadParams) => {
   }
 }
 
-export const unloadFromCart = async (
+export const unload = async (
   binCode: string,
   unloadProductList: unloadInventory[]
 ) => {
