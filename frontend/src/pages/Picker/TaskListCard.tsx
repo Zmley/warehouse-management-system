@@ -8,7 +8,7 @@ import {
   Grid,
   Divider
 } from '@mui/material'
-import { usePickerTasks } from 'hooks/usePickerTask'
+import { usePickerTasks, useAutoRefresh } from 'hooks/usePickerTask'
 import { TaskCategoryEnum } from 'types/task'
 
 interface Props {
@@ -20,6 +20,8 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
   const { tasks, fetchTasks } = usePickerTasks()
 
   const [isLoadingTaskID, setIsLoadingTaskID] = useState<string | null>(null)
+
+  useAutoRefresh(fetchTasks)
 
   const handleCancel = async (taskID: string) => {
     setIsLoadingTaskID(taskID)

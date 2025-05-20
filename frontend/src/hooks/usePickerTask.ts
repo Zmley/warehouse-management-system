@@ -3,6 +3,31 @@ import { createPickerTask, getPickerTasks, cancelPickerTask } from 'api/taskApi'
 import { Task } from 'types/task'
 import { useAuth } from 'hooks/useAuth'
 
+import { useEffect } from 'react'
+
+export const useAutoRefresh = (refreshFn: () => void, intervalMs = 30000) => {
+  useEffect(() => {
+    refreshFn()
+
+    const interval = setInterval(() => {
+      refreshFn()
+    }, intervalMs)
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        refreshFn()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [])
+}
+
 export const usePickerTasks = () => {
   const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(false)
@@ -73,6 +98,7 @@ export const usePickerTasks = () => {
     error,
     fetchTasks,
     createTask,
-    cancelTask
+    cancelTask,
+    useAutoRefresh
   }
 }

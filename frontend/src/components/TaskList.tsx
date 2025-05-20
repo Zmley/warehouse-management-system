@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import {
   Box,
   Typography,
@@ -9,7 +9,7 @@ import {
   Divider
 } from '@mui/material'
 import { useTaskContext } from 'contexts/task'
-import { useTask } from 'hooks/useTask'
+import { useAutoRefresh, useTask } from 'hooks/useTask'
 import { Task } from 'types/task'
 
 const TaskList: React.FC = () => {
@@ -32,27 +32,7 @@ const TaskList: React.FC = () => {
     }
   }
 
-  useEffect(() => {
-    fetchTasks()
-
-    const interval = setInterval(() => {
-      fetchTasks()
-    }, 30000)
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        fetchTasks()
-      }
-    }
-
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-
-    return () => {
-      clearInterval(interval)
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  useAutoRefresh(fetchTasks)
 
   return (
     <Box p={2}>
