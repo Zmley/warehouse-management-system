@@ -2499,6 +2499,17 @@ cjs-module-lexer@^1.0.0:
   resolved "https://registry.yarnpkg.com/cjs-module-lexer/-/cjs-module-lexer-1.2.3.tgz#6c370ab19f8a3394e318fe682686ec0ac684d107"
   integrity sha512-0TNiGstbQmCFwt4akjjBg5pLRTSyj/PkWQ1ZoO2zntmg9yLqSRxwEa4iCfQLGjqhiqBfOJa7W/E8wfGrTDmlZQ==
 
+cli-color@^2.0.3:
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/cli-color/-/cli-color-2.0.4.tgz#d658080290968816b322248b7306fad2346fb2c8"
+  integrity sha512-zlnpg0jNcibNrO7GG9IeHH7maWFeCz+Ja1wx/7tZNU5ASSSSZ+/qZciM0/LHCYxSdqv5h2sdbQ/PXYdOuetXvA==
+  dependencies:
+    d "^1.0.1"
+    es5-ext "^0.10.64"
+    es6-iterator "^2.0.3"
+    memoizee "^0.4.15"
+    timers-ext "^0.1.7"
+
 cliui@^7.0.2:
   version "7.0.4"
   resolved "https://registry.yarnpkg.com/cliui/-/cliui-7.0.4.tgz#a0265ee655476fc807aea9df3df8df7783808b4f"
@@ -4407,7 +4418,7 @@ jose@^4.10.4:
   resolved "https://registry.yarnpkg.com/jose/-/jose-4.14.4.tgz#59e09204e2670c3164ee24cbfe7115c6f8bff9ca"
   integrity sha512-j8GhLiKmUAh+dsFXlX1aJCbt5KMibuKb+d7j1JaOJG6s2UjX1PQlW+OKB/sD4a/5ZYF4RcmYmLSndOoU3Lt/3g==
 
-js-beautify@1.15.4:
+js-beautify@^1.14.5:
   version "1.15.4"
   resolved "https://registry.yarnpkg.com/js-beautify/-/js-beautify-1.15.4.tgz#f579f977ed4c930cef73af8f98f3f0a608acd51e"
   integrity sha512-9/KXeZUKKJwqCXUdBxFJ3vPh467OCckSBmYDwSK/EtV090K+iMJ7zx2S3HLVDIWFQdqMIsZWbnaGiba18aWhaA==
@@ -5584,15 +5595,15 @@ seq-queue@^0.0.5:
   resolved "https://registry.yarnpkg.com/seq-queue/-/seq-queue-0.0.5.tgz#d56812e1c017a6e4e7c3e3a37a1da6d78dd3c93e"
   integrity sha512-hr3Wtp/GZIc/6DAGPDcV4/9WoZhjrkXsi5B/07QgX8tsdc6ilr7BFM6PM6rbdAX1kFSDYeZGLipIZZKyQP0O5Q==
 
-sequelize-cli@^6.6.3:
-  version "6.6.3"
-  resolved "https://registry.yarnpkg.com/sequelize-cli/-/sequelize-cli-6.6.3.tgz#faf041e009b6c0d30d84d290e6c4d485ac8cacbd"
-  integrity sha512-1YYPrcSRt/bpMDDSKM5ubY1mnJ2TEwIaGZcqITw4hLtGtE64nIqaBnLtMvH8VKHg6FbWpXTiFNc2mS/BtQCXZw==
+sequelize-cli@^6.6.2:
+  version "6.6.2"
+  resolved "https://registry.yarnpkg.com/sequelize-cli/-/sequelize-cli-6.6.2.tgz#8d838b25c988cf136914cdc3843e19d88c3dcb67"
+  integrity sha512-V8Oh+XMz2+uquLZltZES6MVAD+yEnmMfwfn+gpXcDiwE3jyQygLt4xoI0zG8gKt6cRcs84hsKnXAKDQjG/JAgg==
   dependencies:
+    cli-color "^2.0.3"
     fs-extra "^9.1.0"
-    js-beautify "1.15.4"
+    js-beautify "^1.14.5"
     lodash "^4.17.21"
-    picocolors "^1.1.1"
     resolve "^1.22.1"
     umzug "^2.3.0"
     yargs "^16.2.0"

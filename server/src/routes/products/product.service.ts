@@ -9,6 +9,8 @@ import {
 } from 'utils/product.utils'
 import { ProductUploadInput } from 'types/product'
 import pLimit from 'p-limit'
+import { BinType } from 'constants/binType'
+import AppError from 'utils/appError'
 
 const LIMIT = pLimit(10)
 
