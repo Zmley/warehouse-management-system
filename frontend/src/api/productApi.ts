@@ -8,7 +8,7 @@ export const getProductCodes = async (): Promise<{
 }
 
 export const getProductByBarCode = async (barCode: string) => {
-  const res = await apiClient.get('/products/product', {
+  const res = await apiClient.get('/products/by-barCode', {
     params: { barCode }
   })
   return res.data

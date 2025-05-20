@@ -22,8 +22,6 @@ export const getProductCodes = async (): Promise<string[]> => {
   return products.map(p => p.productCode)
 }
 
-//get products and each product's total quantity in this warehouse
-
 export const getProductsByWarehouseID = async (
   warehouseID: string,
   page: number,

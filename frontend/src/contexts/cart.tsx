@@ -17,8 +17,8 @@ interface CartContextType {
   ) => void
   getMyCart: () => Promise<void>
   setInventoriesInCar: (list: InventoryItem[]) => void
-  sourceBinCode: string | null
-  setSourceBinCode: (code: string | null) => void
+  sourceBin: string | null
+  setSourceBin: (code: string | null) => void
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
@@ -43,12 +43,12 @@ export const TransportWorkCartProvider = ({
 
   const isCartEmpty = inventoriesInCar.length === 0
 
-  const [sourceBinCode, _setSourceBinCode] = useState<string | null>(() => {
+  const [sourceBin, setSourceBin] = useState<string | null>(() => {
     return localStorage.getItem('sourceBinCode') || null
   })
 
   const setSourceBinCode = (code: string | null) => {
-    _setSourceBinCode(code)
+    setSourceBin(code)
     if (code) {
       localStorage.setItem('sourceBinCode', code)
     } else {
@@ -80,8 +80,8 @@ export const TransportWorkCartProvider = ({
         selectedToUnload,
         setSelectedToUnload,
         setInventoriesInCar,
-        sourceBinCode,
-        setSourceBinCode
+        sourceBin,
+        setSourceBin
       }}
     >
       {children}

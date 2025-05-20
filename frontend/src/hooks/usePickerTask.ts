@@ -31,11 +31,11 @@ export const usePickerTasks = () => {
     setError(null)
 
     try {
-      const res = await createPickerTask(
+      const res = await createPickerTask({
         destinationBinCode,
         productCode,
-        userProfile.warehouseID
-      )
+        warehouseID: userProfile.warehouseID
+      })
 
       if (res.success) {
         return res

@@ -24,6 +24,9 @@ export const useBin = () => {
       setIsLoading(true)
       try {
         return await getBinCodesByProductCode(productCode)
+      } catch (err) {
+        console.error('❌ Failed to fetch bins by product code:', err)
+        return []
       } finally {
         setIsLoading(false)
       }

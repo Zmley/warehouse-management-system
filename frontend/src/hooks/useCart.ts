@@ -14,8 +14,8 @@ export const useCart = () => {
     isCartEmpty,
     setInventoriesInCar,
     inventoriesInCar,
-    sourceBinCode,
-    setSourceBinCode
+    sourceBin,
+    setSourceBin
   } = useCartContext()
 
   const loadCart = async (
@@ -29,7 +29,7 @@ export const useCart = () => {
         setError(null)
 
         if ('binCode' in input) {
-          setSourceBinCode(input.binCode)
+          setSourceBin(input.binCode)
         }
 
         navigate('/my-task')
@@ -81,5 +81,5 @@ export const useCart = () => {
     }
   }
 
-  return { loadCart, unloadCart, isCartEmpty, getMyCart, error, sourceBinCode }
+  return { loadCart, unloadCart, isCartEmpty, getMyCart, error, sourceBin }
 }

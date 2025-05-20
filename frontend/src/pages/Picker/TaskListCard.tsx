@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import {
   Box,
   Typography,
@@ -20,29 +20,6 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
   const { tasks, fetchTasks } = usePickerTasks()
 
   const [isLoadingTaskID, setIsLoadingTaskID] = useState<string | null>(null)
-
-  useEffect(() => {
-    fetchTasks()
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        fetchTasks()
-      }
-    }
-
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-
-    const interval = setInterval(() => {
-      fetchTasks()
-    }, 60000)
-
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
-      clearInterval(interval)
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   const handleCancel = async (taskID: string) => {
     setIsLoadingTaskID(taskID)

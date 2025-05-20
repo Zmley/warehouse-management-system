@@ -8,7 +8,6 @@ import * as taskService from 'routes/tasks/task.service'
 
 import { hasActiveTask, updateTaskSourceBin } from 'routes/tasks/task.service'
 import { getBinByBinCode } from 'routes/bins/bin.service'
-import AppError from 'utils/appError'
 
 export const load = async (
   req: Request,
@@ -21,31 +20,18 @@ export const load = async (
 
     let result
 
-    if (productCode && typeof quantity === 'number') {
-      result = await loadByProductCode(
-        productCode,
-        quantity,
-        cartID
-        // accountID,
-        // warehouseID
-      )
+    if (productCode) {
+      result = await loadByProductCode(productCode, quantity, cartID)
     } else if (binCode) {
       result = await loadByBinCode(binCode, cartID, accountID, warehouseID)
 
       const activeTask = await hasActiveTask(accountID)
-
-      if (activeTask && activeTask.status === 'IN_PROCESS') {
+      if (activeTask?.status === 'IN_PROCESS') {
         const bin = await getBinByBinCode(binCode)
-
         if (bin?.binID) {
           await updateTaskSourceBin(activeTask.taskID, bin.binID)
         }
       }
-    } else {
-      throw new AppError(
-        400,
-        '❌ Invalid parameters: either binCode or productCode + quantity must be provided.'
-      )
     }
 
     res.status(200).json({

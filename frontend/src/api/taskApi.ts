@@ -1,5 +1,5 @@
 import apiClient from './axiosClient.ts'
-import { Task } from 'types/task.js'
+import { Task, CreateTaskPayload } from 'types/task.js'
 
 export const getTasks = async (): Promise<Task[]> => {
   const response = await apiClient.get('/tasks')
@@ -21,15 +21,9 @@ export const cancelTask = async (taskID: string) => {
   return response.data
 }
 
-export const createPickerTask = async (
-  destinationBinCode: string,
-  productCode: string,
-  warehouseID: string
-) => {
+export const createPickerTask = async (payload: CreateTaskPayload) => {
   const response = await apiClient.post('/tasks', {
-    destinationBinCode,
-    productCode,
-    warehouseID
+    payload
   })
   return response.data
 }
