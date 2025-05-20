@@ -9,14 +9,6 @@ export const getInventoriesInCart = async (): Promise<{
   return response.data
 }
 
-// export const loadToCart = async (binCode: string) => {
-//   const response = await apiClient.post('cart/load', { binCode })
-//   return {
-//     success: response.data.success,
-//     data: response.data
-//   }
-// }
-
 type LoadParams =
   | { binCode: string }
   | { productCode: string; quantity: number }
