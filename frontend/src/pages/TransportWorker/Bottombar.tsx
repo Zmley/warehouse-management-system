@@ -1,55 +1,81 @@
 import React from 'react'
-import { BottomNavigation, BottomNavigationAction } from '@mui/material'
-import ListAltIcon from '@mui/icons-material/ListAlt'
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
-import { useCart } from 'hooks/useCart'
-import { useNavigate } from 'react-router-dom'
-
+import { Box, Typography, Divider, IconButton } from '@mui/material'
+import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner'
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined'
 interface BottomBarProps {
-  onTaskListClick: () => void
+  onCreatePickTaskClick: () => void
   onCreateTaskClick: () => void
 }
 
 const BottomBar: React.FC<BottomBarProps> = ({
-  onTaskListClick,
+  onCreatePickTaskClick,
   onCreateTaskClick
 }) => {
-  const { isCartEmpty } = useCart()
-  const navigate = useNavigate()
-
-  const handleCreateClick = () => {
-    if (!isCartEmpty) {
-      navigate('/my-task')
-    } else {
-      onCreateTaskClick()
-    }
-  }
-
   return (
-    <BottomNavigation
-      showLabels
+    <Box
       sx={{
         position: 'fixed',
         bottom: 0,
         left: 0,
         right: 0,
-        backgroundColor: '#FFF',
-        boxShadow: '0px -2px 4px rgba(0, 0, 0, 0.1)'
+        height: '64px',
+        backgroundColor: '#ffffff',
+        boxShadow: '0px -2px 6px rgba(0, 0, 0, 0.08)',
+        display: 'flex',
+        zIndex: 1200
       }}
     >
-      <BottomNavigationAction
-        label='Task List'
-        icon={<ListAltIcon sx={{ fontSize: 24 }} />}
-        onClick={onTaskListClick}
-        sx={{ minWidth: '50%' }}
-      />
-      <BottomNavigationAction
-        label='Create new task'
-        icon={<AddCircleOutlineIcon sx={{ fontSize: 24 }} />}
-        onClick={handleCreateClick}
-        sx={{ minWidth: '50%' }}
-      />
-    </BottomNavigation>
+      {/* 左侧按钮 */}
+      <Box
+        onClick={onCreatePickTaskClick}
+        sx={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+          color: '#2563eb',
+          '&:hover': {
+            backgroundColor: '#e8f0fe'
+          }
+        }}
+      >
+        <IconButton sx={{ color: '#2563eb' }}>
+          <QrCodeScannerIcon />
+        </IconButton>
+        <Typography variant='caption' fontWeight={600}>
+          Create Pick Task
+        </Typography>
+      </Box>
+
+      {/* 分隔线 */}
+      <Divider orientation='vertical' flexItem sx={{ borderColor: '#ccc' }} />
+
+      {/* 右侧按钮 */}
+      <Box
+        onClick={onCreateTaskClick}
+        sx={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+          color: '#10b981',
+          '&:hover': {
+            backgroundColor: '#d1fae5'
+          }
+        }}
+      >
+        <IconButton sx={{ color: '#10b981' }}>
+          <Inventory2OutlinedIcon />
+        </IconButton>
+        <Typography variant='caption' fontWeight={600}>
+          Load Cargo
+        </Typography>
+      </Box>
+    </Box>
   )
 }
 

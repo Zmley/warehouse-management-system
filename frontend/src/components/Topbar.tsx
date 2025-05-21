@@ -1,4 +1,3 @@
-// src/components/TopBar.tsx
 import React from 'react'
 import { Box, IconButton, Typography } from '@mui/material'
 import { Menu as MenuIcon } from '@mui/icons-material'
@@ -19,23 +18,25 @@ const TopBar: React.FC<TopBarProps> = ({ userName }) => {
         left: 0,
         right: 0,
         zIndex: 1100,
+        height: 56,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '16px',
-        backgroundColor: '#FFF',
-        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)'
+        px: 2,
+        backgroundColor: '#fff',
+        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.08)'
       }}
     >
       <IconButton onClick={() => navigate('/profile')}>
-        <MenuIcon sx={{ fontSize: '28px', color: '#333' }} />
+        <MenuIcon sx={{ fontSize: 24, color: '#333' }} />
       </IconButton>
-
-      <Typography variant='h6' sx={{ fontWeight: 'bold', color: '#333' }}>
+      <Typography
+        variant='subtitle1'
+        sx={{ fontWeight: 600, color: '#333', flex: 1, textAlign: 'center' }}
+      >
         Hello, {userName}
       </Typography>
-
-      <Box sx={{ width: '48px' }} />
+      <Box sx={{ width: 40 }} /> {/* 占位保持文字居中 */}
     </Box>
   )
 }

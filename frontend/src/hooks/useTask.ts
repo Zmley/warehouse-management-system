@@ -1,45 +1,34 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTaskContext } from 'contexts/task'
 import {
   acceptTask as acceptTaskAPI,
-  cancelTask as cancelTaskAPI
+  cancelTask as cancelTaskAPI,
+  getTasks
 } from 'api/taskApi'
-
-export const useAutoRefresh = (
-  fetchFn: () => void,
-  intervalMs: number = 30000
-) => {
-  useEffect(() => {
-    fetchFn()
-
-    const interval = setInterval(() => {
-      fetchFn()
-    }, intervalMs)
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        fetchFn()
-      }
-    }
-
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-
-    return () => {
-      clearInterval(interval)
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
-    }
-  }, [])
-}
+import { Task } from 'types/task'
 
 export const useTask = () => {
-  const [loading, setLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const { fetchMyTask, fetchTasks } = useTaskContext()
+  const { fetchMyTask } = useTaskContext()
   const navigate = useNavigate()
+  const [tasks, setTasks] = useState<Task[]>([])
+
+  const fetchTasks = async () => {
+    try {
+      setIsLoading(true)
+      const result = await getTasks()
+      setTasks(result)
+    } catch (err) {
+      console.error('❌ Error loading tasks', err)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const acceptTask = async (taskID: string) => {
-    setLoading(true)
+    setIsLoading(true)
     setError(null)
     try {
       const res = await acceptTaskAPI(taskID)
@@ -53,7 +42,7 @@ export const useTask = () => {
       setError('❌ Failed to accept task')
       console.error(err)
     } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
   }
 
@@ -71,8 +60,9 @@ export const useTask = () => {
   return {
     acceptTask,
     cancelMyTask,
-    loading,
+    isLoading,
     error,
-    useAutoRefresh
+    tasks,
+    fetchTasks
   }
 }

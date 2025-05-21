@@ -6,8 +6,13 @@ import {
 } from './cart.service'
 import * as taskService from 'routes/tasks/task.service'
 
-import { hasActiveTask, updateTaskSourceBin } from 'routes/tasks/task.service'
+import {
+  getTaskByAccountID,
+  hasActiveTask,
+  updateTaskSourceBin
+} from 'routes/tasks/task.service'
 import { getBinByBinCode } from 'routes/bins/bin.service'
+import AppError from 'utils/appError'
 
 export const load = async (
   req: Request,
@@ -23,6 +28,23 @@ export const load = async (
     if (productCode) {
       result = await loadByProductCode(productCode, quantity, cartID)
     } else if (binCode) {
+      const currentTask = await getTaskByAccountID(accountID, warehouseID)
+
+      if (currentTask) {
+        const sourceBinCodes = currentTask.sourceBins.map(
+          (item: any) => item.bin?.binCode
+        )
+
+        if (!sourceBinCodes.includes(binCode)) {
+          throw new AppError(
+            403,
+            `❌ You can only load from assigned bins: ${sourceBinCodes.join(
+              ', '
+            )}`
+          )
+        }
+      }
+
       result = await loadByBinCode(binCode, cartID, accountID, warehouseID)
 
       const activeTask = await hasActiveTask(accountID)

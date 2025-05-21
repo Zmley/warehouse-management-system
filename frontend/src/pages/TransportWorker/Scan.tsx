@@ -73,17 +73,17 @@ const Scan = () => {
         return
       }
 
-      const isPickUp = await checkBinType(binCode)
-      if (isPickUp) {
-        await stopScanning()
-        const stream = (videoRef.current as HTMLVideoElement | null)?.srcObject
-        if (stream && stream instanceof MediaStream) {
-          stream.getTracks().forEach(track => track.stop())
-        }
-        const bin = await fetchBinByCode(binCode)
-        navigate('/create-task', { state: { bin } })
-        return
-      }
+      // const isPickUp = await checkBinType(binCode)
+      // if (isPickUp) {
+      //   await stopScanning()
+      //   const stream = (videoRef.current as HTMLVideoElement | null)?.srcObject
+      //   if (stream && stream instanceof MediaStream) {
+      //     stream.getTracks().forEach(track => track.stop())
+      //   }
+      //   const bin = await fetchBinByCode(binCode)
+      //   navigate('/create-task', { state: { bin } })
+      //   return
+      // }
 
       await loadCart({ binCode })
     } catch (err) {

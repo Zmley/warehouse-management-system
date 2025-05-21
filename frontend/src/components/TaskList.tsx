@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   Box,
   Typography,
@@ -9,19 +9,21 @@ import {
   Divider,
   CircularProgress
 } from '@mui/material'
-import { useTaskContext } from 'contexts/task'
-import { useAutoRefresh, useTask } from 'hooks/useTask'
+import { useTask } from 'hooks/useTask'
 import { Task } from 'types/task'
-
 import PullToRefresh from 'react-simple-pull-to-refresh'
 
 const TaskList: React.FC = () => {
-  const { tasks, fetchTasks } = useTaskContext()
-  const { acceptTask } = useTask()
+  const { tasks, fetchTasks, acceptTask, isLoading } = useTask()
 
   const [loadingTasks, setLoadingTasks] = useState<{
     [taskID: string]: boolean
   }>({})
+
+  useEffect(() => {
+    fetchTasks()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleAccept = async (taskID: string) => {
     setLoadingTasks(prev => ({ ...prev, [taskID]: true }))
@@ -35,8 +37,6 @@ const TaskList: React.FC = () => {
     }
   }
 
-  useAutoRefresh(fetchTasks)
-
   const handleManualRefresh = async () => {
     await fetchTasks()
   }
@@ -45,17 +45,21 @@ const TaskList: React.FC = () => {
     <PullToRefresh
       onRefresh={handleManualRefresh}
       refreshingContent={
-        <Box sx={{ textAlign: 'center', py: 2 }}>
-          <CircularProgress size={24} />
-          <Typography variant='caption' display='block'>
+        <Box sx={{ textAlign: 'center', py: 3 }}>
+          <CircularProgress size={28} thickness={5} />
+          <Typography variant='caption' display='block' sx={{ mt: 1 }}>
             Refreshing tasks...
           </Typography>
         </Box>
       }
     >
       <Box p={2} pb={10}>
-        {tasks.length === 0 ? (
-          <Typography color='text.secondary'>
+        {isLoading ? (
+          <Box display='flex' justifyContent='center' mt={4}>
+            <CircularProgress size={30} thickness={5} />
+          </Box>
+        ) : tasks.length === 0 ? (
+          <Typography color='text.secondary' textAlign='center'>
             No pending tasks found.
           </Typography>
         ) : (

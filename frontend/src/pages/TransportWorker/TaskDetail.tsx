@@ -1,4 +1,11 @@
-import { Box, Typography, Button, Grid, Card } from '@mui/material'
+import {
+  Box,
+  Typography,
+  Button,
+  Grid,
+  Card,
+  CircularProgress
+} from '@mui/material'
 import { QrCode } from 'lucide-react'
 import { useTaskContext } from 'contexts/task'
 import { useNavigate } from 'react-router-dom'
@@ -21,9 +28,7 @@ const TaskDetail: React.FC = () => {
         alignItems='center'
         height='100vh'
       >
-        <Typography variant='h6' color='error'>
-          loading
-        </Typography>
+        <CircularProgress size={32} thickness={4} />
       </Box>
     )
   }

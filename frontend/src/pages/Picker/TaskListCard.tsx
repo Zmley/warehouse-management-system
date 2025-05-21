@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   Box,
   Typography,
@@ -6,9 +6,11 @@ import {
   CardContent,
   Button,
   Grid,
-  Divider
+  Divider,
+  CircularProgress
 } from '@mui/material'
-import { usePickerTasks, useAutoRefresh } from 'hooks/usePickerTask'
+import PullToRefresh from 'react-simple-pull-to-refresh'
+import { usePickerTasks } from 'hooks/usePickerTask'
 import { TaskCategoryEnum } from 'types/task'
 
 interface Props {
@@ -16,34 +18,55 @@ interface Props {
 }
 
 const TaskListCard: React.FC<Props> = ({ status }) => {
-  const { cancelTask } = usePickerTasks()
-  const { tasks, fetchTasks } = usePickerTasks()
+  const { cancelTask, tasks, fetchTasks } = usePickerTasks()
 
+  const [hasFetched, setHasFetched] = useState(false)
   const [isLoadingTaskID, setIsLoadingTaskID] = useState<string | null>(null)
 
-  useAutoRefresh(fetchTasks)
+  useEffect(() => {
+    fetchTasks().then(() => setHasFetched(true))
+  }, [fetchTasks])
+
+  const handleManualRefresh = async () => {
+    await fetchTasks()
+  }
 
   const handleCancel = async (taskID: string) => {
     setIsLoadingTaskID(taskID)
     const result = await cancelTask(taskID)
     if (result) {
-      fetchTasks()
+      await fetchTasks()
     } else {
       alert('❌ Failed to cancel task')
     }
     setIsLoadingTaskID(null)
   }
 
+  const filteredTasks = tasks.filter(task => task.status === status)
+
   return (
-    <Box p={2}>
-      {tasks.length === 0 ? (
-        <Typography color='text.secondary'>
-          No {status.toLowerCase()} tasks found.
-        </Typography>
-      ) : (
-        tasks
-          .filter(task => task.status === status)
-          .map(task => (
+    <PullToRefresh
+      onRefresh={handleManualRefresh}
+      refreshingContent={
+        <Box sx={{ textAlign: 'center', py: 3 }}>
+          <CircularProgress size={28} thickness={5} />
+          <Typography variant='caption' display='block' sx={{ mt: 1 }}>
+            Refreshing tasks...
+          </Typography>
+        </Box>
+      }
+    >
+      <Box p={2}>
+        {!hasFetched ? (
+          <Box display='flex' justifyContent='center' mt={6}>
+            <CircularProgress />
+          </Box>
+        ) : filteredTasks.length === 0 ? (
+          <Typography color='text.secondary' textAlign='center'>
+            No {status.toLowerCase()} tasks found.
+          </Typography>
+        ) : (
+          filteredTasks.map(task => (
             <Card
               key={task.taskID}
               variant='outlined'
@@ -151,8 +174,9 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
               </CardContent>
             </Card>
           ))
-      )}
-    </Box>
+        )}
+      </Box>
+    </PullToRefresh>
   )
 }
 

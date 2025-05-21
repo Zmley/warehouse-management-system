@@ -53,15 +53,13 @@ const TransportWorkerContent: React.FC<{ userName: string }> = ({
           pt: '72px',
           pb: '80px',
           height: '100vh'
-          // overflowY: 'auto',
-          // WebkitOverflowScrolling: 'touch'
         }}
       >
         <PendingTaskList />
       </Box>
 
       <WokerBottombar
-        onTaskListClick={() => setTaskStatus(TaskCategoryEnum.PENDING)}
+        onCreatePickTaskClick={() => navigate('/picker-scan-bin')}
         onCreateTaskClick={() => navigate('/my-task/scan-qr')}
       />
     </Box>
