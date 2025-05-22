@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Box, Typography } from '@mui/material'
 import TopBar from 'components/Topbar'
 import WokerBottombar from './TransportWorker/Bottombar'
@@ -31,23 +31,22 @@ const TransportWorkerContent: React.FC<{ userName: string }> = ({
   userName
 }) => {
   const { isCartEmpty } = useCart()
-  const navigate = useNavigate()
-  const [taskStatus, setTaskStatus] = useState(TaskCategoryEnum.PENDING)
   const { userProfile } = useAuth()
+  const navigate = useNavigate()
 
-  if (!userProfile.currentTask && isCartEmpty) {
-  } else if (!isCartEmpty) {
-    navigate('/my-task')
-  } else if (userProfile.currentTask) {
-    navigate('/task-detail')
-  }
+  useEffect(() => {
+    if (userProfile.currentTask) {
+      navigate('/task-detail')
+    } else if (!isCartEmpty) {
+      navigate('/my-task')
+    }
+  }, [userProfile.currentTask, isCartEmpty, navigate])
 
   return (
     <Box
       sx={{ height: '100vh', backgroundColor: '#F7F9FC', overflow: 'hidden' }}
     >
       <TopBarFixed userName={userName} />
-
       <Box
         sx={{
           pt: '72px',
@@ -57,7 +56,6 @@ const TransportWorkerContent: React.FC<{ userName: string }> = ({
       >
         <PendingTaskList />
       </Box>
-
       <WokerBottombar
         onCreatePickTaskClick={() => navigate('/picker-scan-bin')}
         onCreateTaskClick={() => navigate('/my-task/scan-qr')}

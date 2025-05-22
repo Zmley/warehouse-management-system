@@ -14,7 +14,7 @@ import { useEffect } from 'react'
 
 const TaskDetail: React.FC = () => {
   const navigate = useNavigate()
-  const { myTask, fetchMyTask } = useTaskContext()
+  const { myTask, fetchMyTask, setMyTask } = useTaskContext()
   const { cancelMyTask } = useTask()
 
   useEffect(() => {
@@ -124,6 +124,14 @@ const TaskDetail: React.FC = () => {
             if (myTask?.taskID) {
               try {
                 await cancelMyTask(myTask.taskID)
+
+                console.log('test is mytask canceled')
+
+                // setMyTask(null)
+
+                setTimeout(() => {
+                  navigate('/')
+                }, 3000)
                 navigate('/')
               } catch (err) {}
             }
