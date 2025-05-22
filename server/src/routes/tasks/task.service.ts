@@ -399,7 +399,8 @@ export const getTasksByWarehouseID = async (
 
   const tasks = (await Task.findAll({
     where: whereClause,
-    include: includeClause
+    include: includeClause,
+    order: [['createdAt', 'DESC']]
   })) as unknown as TaskWithJoin[]
 
   if (!tasks.length) {
