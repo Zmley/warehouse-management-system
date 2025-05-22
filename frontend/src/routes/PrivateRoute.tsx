@@ -20,7 +20,7 @@ const PrivateRoutes: React.FC = () => {
   return (
     <Routes>
       <Route path='/' element={<Dashboard />} />
-      <Route path='/profile' element={<Profile />} />
+      {/* <Route path='/profile' element={<Profile />} /> */}
       <Route
         path='/my-task'
         element={
