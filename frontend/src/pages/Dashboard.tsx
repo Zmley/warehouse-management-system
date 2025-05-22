@@ -34,13 +34,13 @@ const TransportWorkerContent: React.FC<{ userName: string }> = ({
   const { userProfile } = useAuth()
   const navigate = useNavigate()
 
-  useEffect(() => {
-    if (userProfile.currentTask) {
-      navigate('/task-detail')
-    } else if (!isCartEmpty) {
-      navigate('/my-task')
-    }
-  }, [userProfile.currentTask, isCartEmpty, navigate])
+  // useEffect(() => {
+  //   if (userProfile.currentTask) {
+  //     navigate('/task-detail')
+  //   } else if (!isCartEmpty) {
+  //     navigate('/my-task')
+  //   }
+  // }, [userProfile.currentTask, isCartEmpty, navigate])
 
   return (
     <Box

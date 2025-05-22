@@ -4,7 +4,7 @@ import { getMyTask } from 'api/taskApi'
 
 export type TaskContextType = {
   myTask: Task | null
-  setMyTask: (task: Task) => void
+  setMyTask: (task: Task | null) => void
   fetchMyTask: () => Promise<Task | null>
 }
 

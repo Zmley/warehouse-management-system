@@ -4,7 +4,7 @@ import * as binService from 'routes/bins/bin.service'
 import AppError from 'utils/appError'
 import { UserRole } from 'constants/uerRole'
 import { TaskStatus } from 'constants/tasksStatus'
-import { getBinByProductCode } from 'routes/bins/bin.service'
+import { getPickBinByProductCode } from 'routes/bins/bin.service'
 import { checkIfPickerTaskPublished } from 'routes/tasks/task.service'
 
 export const acceptTask = async (
@@ -136,12 +136,19 @@ export const createTask = async (
       warehouseID
     } = req.body
 
-    await checkIfPickerTaskPublished(destinationBinCode, productCode)
-
     if (!sourceBinCode) {
-      const destinationBin = await getBinByProductCode(productCode, warehouseID)
+      await checkIfPickerTaskPublished(
+        warehouseID,
+        productCode,
+        destinationBinCode
+      )
+
+      const destinationBin = await getPickBinByProductCode(
+        productCode,
+        warehouseID
+      )
       const task = await taskService.binsToPick(
-        destinationBin[0]?.binCode,
+        destinationBin.binCode,
         accountID,
         warehouseID,
         productCode,

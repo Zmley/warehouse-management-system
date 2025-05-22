@@ -6,7 +6,6 @@ import UnloadSuccess from 'pages/Success'
 import { useContext, useEffect } from 'react'
 import { AuthContext } from 'contexts/auth'
 import Dashboard from 'pages/Dashboard'
-import TaskDetailPage from 'pages/TransportWorker/TaskDetail'
 import PickerScanPage from 'pages/Picker/Scan'
 import CreateTaskPage from 'pages/Picker/CreateTask'
 
@@ -34,8 +33,6 @@ const PrivateRoutes: React.FC = () => {
         <Route path='scan-qr' element={<ScanQRCode />} />
       </Route>
       <Route path='/success' element={<UnloadSuccess />} />
-
-      <Route path='/task-detail' element={<TaskDetailPage />} />
 
       <Route path='/picker-scan-bin' element={<PickerScanPage />} />
       <Route path='/create-task' element={<CreateTaskPage />} />

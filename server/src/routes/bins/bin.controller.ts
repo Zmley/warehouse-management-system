@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import * as binService from 'routes/bins/bin.service'
-import { getBinByProductCode } from 'routes/bins/bin.service'
+import { getPickBinByProductCode } from 'routes/bins/bin.service'
 
 export const getBin = async (
   req: Request,
@@ -142,7 +142,7 @@ export const getPickUpBin = async (
       })
     }
 
-    const bins = await getBinByProductCode(
+    const bins = await getPickBinByProductCode(
       String(productCode),
       String(warehouseID)
     )

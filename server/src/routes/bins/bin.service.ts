@@ -165,20 +165,21 @@ export const addBins = async (binList: BinUploadPayload[]) => {
   }
 }
 
-export const getBinByProductCode = async (
+export const getPickBinByProductCode = async (
   productCode: string,
   warehouseID: string
 ) => {
-  const bins = await Bin.findAll({
+  const bin = await Bin.findOne({
     where: {
       type: 'PICK_UP',
       warehouseID,
-      defaultProductCodes: productCode
-    },
-    order: [['binCode', 'ASC']]
+      defaultProductCodes: {
+        [Op.like]: `%${productCode}%`
+      }
+    }
   })
 
-  return bins
+  return bin
 }
 
 export const isPickUpBin = async (binCode: string): Promise<boolean> => {

@@ -34,7 +34,7 @@ export const useTask = () => {
       const res = await acceptTaskAPI(taskID)
       if (res?.task) {
         await fetchMyTask()
-        navigate('/task-detail')
+        // navigate('/task-detail')
       } else {
         setError('Task accept API did not return a task.')
       }

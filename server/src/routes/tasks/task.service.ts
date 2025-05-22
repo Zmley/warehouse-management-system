@@ -7,7 +7,10 @@ import { UserRole } from 'constants/uerRole'
 import { TaskWithJoin } from 'types/task'
 import { TaskStatus } from 'constants/tasksStatus'
 import { checkInventoryQuantity } from 'routes/inventory/inventory.service'
-import { getBinByBinCode } from 'routes/bins/bin.service'
+import {
+  getBinByBinCode
+  // getPickBinByProductCode
+} from 'routes/bins/bin.service'
 
 export const hasActiveTask = async (
   accountID: string
@@ -348,17 +351,16 @@ const getAdminWhereClause = (status: string, keyword: string) => {
 
 const mapTasks = (tasks: TaskWithJoin[]) => {
   return tasks.map(task => {
-    let sourceBins: (Inventory & { bin?: Bin })[] = []
-
-    if (task.sourceBin) {
-      sourceBins = [{ bin: task.sourceBin } as Inventory & { bin?: Bin }]
-    } else if (task.inventories?.length > 0) {
-      sourceBins = task.inventories
-    }
+    const inventories = task.inventories || []
 
     return {
       ...task.toJSON(),
-      sourceBins,
+
+      inventories: undefined,
+      sourceBin: undefined,
+
+      sourceBins: inventories,
+
       destinationBinCode: task.destinationBin?.binCode || '--'
     }
   })
@@ -408,14 +410,17 @@ export const getTasksByWarehouseID = async (
 }
 
 export const checkIfPickerTaskPublished = async (
-  binCode: string,
-  productCode: string
+  warehouseID: string,
+  productCode: string,
+  destinationBinCode: string
 ): Promise<void> => {
   try {
-    const bin = await getBinByBinCode(binCode)
+    // const bin = await getPickBinByProductCode(warehouseID, productCode)
+
+    const bin = await getBinByBinCode(destinationBinCode)
 
     if (!bin) {
-      throw new AppError(404, `❌ Bin with code ${binCode} not found.`)
+      throw new AppError(404, `❌ Bin with code ${bin.binCode} not found.`)
     }
 
     const existing = await Task.findOne({
@@ -429,12 +434,11 @@ export const checkIfPickerTaskPublished = async (
     if (existing) {
       throw new AppError(
         400,
-        `❌ Task for product ${productCode} in Pick up bin ${binCode} already exists.`
+        `❌ Task for product ${productCode} in Pick up bin ${bin.binCode} already exists.`
       )
     }
   } catch (err) {
     console.error('❌ Failed to check if task is published:', err)
     if (err instanceof AppError) throw err
-    throw new AppError(500, '❌ Could not verify existing task status.')
   }
 }
