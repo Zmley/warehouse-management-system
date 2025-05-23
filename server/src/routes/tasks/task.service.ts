@@ -7,10 +7,7 @@ import { UserRole } from 'constants/uerRole'
 import { TaskWithJoin } from 'types/task'
 import { TaskStatus } from 'constants/tasksStatus'
 import { checkInventoryQuantity } from 'routes/inventory/inventory.service'
-import {
-  getBinByBinCode
-  // getPickBinByProductCode
-} from 'routes/bins/bin.service'
+import { getBinByBinCode } from 'routes/bins/bin.service'
 
 export const hasActiveTask = async (
   accountID: string
@@ -190,8 +187,23 @@ export const getTaskByAccountID = async (
       attributes: ['binID', 'binCode']
     })
 
-    if (sourceBin) {
-      sourceBins = [{ bin: sourceBin }]
+    const matchingInventory = await Inventory.findOne({
+      where: {
+        binID: myCurrentTask.sourceBinID,
+        productCode: myCurrentTask.productCode
+      },
+      attributes: ['inventoryID', 'quantity', 'productCode']
+    })
+
+    if (sourceBin && matchingInventory) {
+      sourceBins = [
+        {
+          inventoryID: matchingInventory.inventoryID,
+          productCode: matchingInventory.productCode,
+          quantity: matchingInventory.quantity,
+          bin: sourceBin
+        }
+      ]
     }
   } else {
     const inventories = await Inventory.findAll({
@@ -206,7 +218,8 @@ export const getTaskByAccountID = async (
           },
           attributes: ['binID', 'binCode']
         }
-      ]
+      ],
+      attributes: ['inventoryID', 'productCode', 'quantity']
     })
 
     sourceBins = inventories
