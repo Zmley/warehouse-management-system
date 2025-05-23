@@ -35,21 +35,6 @@ const TaskInstruction: React.FC = () => {
         }}
       >
         <CardContent>
-          <Box display='flex' alignItems='center' mb={2}>
-            <AssignmentIcon sx={{ color: '#1565c0', mr: 1 }} />
-            <Typography variant='h6' fontWeight='bold'>
-              Current Task Instruction
-            </Typography>
-            <Chip
-              label='In Task'
-              size='small'
-              color='success'
-              sx={{ ml: 2, fontWeight: 500 }}
-            />
-          </Box>
-
-          <Divider sx={{ mb: 2 }} />
-
           <Box display='flex' flexDirection='column' gap={1}>
             <Typography fontSize={15}>
               <strong>Task ID:</strong> {myTask.taskID}

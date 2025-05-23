@@ -18,6 +18,7 @@ import { useBin } from 'hooks/useBin'
 import { ProductType } from 'types/product'
 import { useProduct } from 'hooks/useProduct'
 import AddToCartInline from 'pages/AddToCartInline'
+import { useLocation } from 'react-router-dom'
 
 const isAndroid = /Android/i.test(navigator.userAgent)
 
@@ -36,6 +37,10 @@ const Scan = () => {
 
   const { videoRef, startScanning, stopScanning } =
     useQRScanner(handleScanSuccess)
+
+  const location = useLocation()
+  const scanMode = location.state?.mode ?? 'load'
+  const unloadProductList = location.state?.unloadProductList ?? []
 
   async function handleScanSuccess(binCode: string) {
     if (hasScanned) return
@@ -68,24 +73,11 @@ const Scan = () => {
     }
 
     try {
-      if (!isCartEmpty) {
-        await unloadCart(binCode)
-        return
+      if (scanMode === 'unload') {
+        await unloadCart(binCode, unloadProductList)
+      } else {
+        await loadCart({ binCode })
       }
-
-      // const isPickUp = await checkBinType(binCode)
-      // if (isPickUp) {
-      //   await stopScanning()
-      //   const stream = (videoRef.current as HTMLVideoElement | null)?.srcObject
-      //   if (stream && stream instanceof MediaStream) {
-      //     stream.getTracks().forEach(track => track.stop())
-      //   }
-      //   const bin = await fetchBinByCode(binCode)
-      //   navigate('/create-task', { state: { bin } })
-      //   return
-      // }
-
-      await loadCart({ binCode })
     } catch (err) {
       console.error('❌ Error handling scan:', err)
       alert('❌ Operation failed. Please try again.')
@@ -326,7 +318,7 @@ const Scan = () => {
                 <AddToCartInline
                   product={scannedProduct}
                   onSuccess={() => {
-                    navigate('/my-task')
+                    navigate('/')
                   }}
                 />
               </Box>

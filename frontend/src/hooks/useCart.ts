@@ -3,6 +3,7 @@ import { useCartContext } from 'contexts/cart'
 import { load, unload } from 'api/cartApi'
 import { useNavigate } from 'react-router-dom'
 import { InventoryItem } from 'types/inventory'
+import { unloadInventory } from 'types/unloadInventory'
 
 export const useCart = () => {
   const navigate = useNavigate()
@@ -32,7 +33,7 @@ export const useCart = () => {
           setSourceBin(input.binCode)
         }
 
-        navigate('/my-task')
+        navigate('/')
         return { success: true }
       } else {
         const msg = response.data?.error || '❌ Failed to load to cart.'
@@ -46,13 +47,16 @@ export const useCart = () => {
     }
   }
 
-  const unloadCart = async (binCode: string) => {
+  const unloadCart = async (
+    binCode: string,
+    unloadProductList: unloadInventory[]
+  ) => {
     try {
-      const response = await unload(binCode, selectedToUnload)
+      const response = await unload(binCode, unloadProductList)
       if (response?.success) {
         const inventoriesLeftInCart = inventoriesInCar
           .map(item => {
-            const selected = selectedToUnload.find(
+            const selected = unloadProductList.find(
               s => s.inventoryID === item.inventoryID
             )
             if (selected) {
@@ -66,7 +70,6 @@ export const useCart = () => {
           .filter(Boolean)
 
         setInventoriesInCar(inventoriesLeftInCart as InventoryItem[])
-
         setError(null)
         navigate(inventoriesLeftInCart.length === 0 ? '/success' : '/my-task')
       } else {

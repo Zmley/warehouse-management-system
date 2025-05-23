@@ -15,10 +15,8 @@ import { useTaskContext } from 'contexts/task'
 
 const Cart = () => {
   const navigate = useNavigate()
-  const { inventoriesInCar, setSelectedToUnload } = useCartContext()
+  const { inventoriesInCar, setSelectedToUnload, sourceBin } = useCartContext()
   const { myTask, fetchMyTask } = useTaskContext()
-
-  const { sourceBin } = useCartContext()
 
   const defaultUnloadList = useMemo(() => {
     if (!inventoriesInCar.length) return []
@@ -47,12 +45,12 @@ const Cart = () => {
     useState(defaultUnloadList)
 
   useEffect(() => {
-    setInventoryListReadyToUnload(defaultUnloadList)
-  }, [defaultUnloadList])
-
-  useEffect(() => {
     fetchMyTask()
   }, [])
+
+  useEffect(() => {
+    setInventoryListReadyToUnload(defaultUnloadList)
+  }, [defaultUnloadList])
 
   const handleQuantityChange = (inventoryID: string, newQuantity: number) => {
     setInventoryListReadyToUnload(prev =>
@@ -85,27 +83,32 @@ const Cart = () => {
     selectedTotalQuantity > myTask.quantity
 
   return (
-    <Container maxWidth='sm'>
-      {myTask && <TaskInstruction />}
-
-      <Typography
-        variant='h6'
-        sx={{ fontWeight: 'bold', textAlign: 'center', my: 2 }}
-      >
-        Items Currently in Cart
+    <Container maxWidth='sm' sx={{ pt: 3, pb: 10 }}>
+      <Typography variant='h6' fontWeight='bold' textAlign='center' mb={2}>
+        🚚 Cart Summary
       </Typography>
+
+      {myTask && (
+        <Box mb={2}>
+          <TaskInstruction />
+        </Box>
+      )}
 
       <Card
         variant='outlined'
-        sx={{ borderRadius: '12px', backgroundColor: '#f9f9f9' }}
+        sx={{
+          borderRadius: 3,
+          backgroundColor: '#ffffff',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+        }}
       >
         <CardContent>
           {sourceBin && (
-            <Box sx={{ mb: 2, textAlign: 'center' }}>
+            <Box textAlign='center' mb={2}>
               <Typography variant='body2' fontWeight='bold'>
-                📥 Loaded From Bin:
+                📥 Loaded From Bin
               </Typography>
-              <Typography variant='h6' color='secondary'>
+              <Typography variant='subtitle1' color='primary'>
                 {sourceBin}
               </Typography>
             </Box>
@@ -120,18 +123,36 @@ const Cart = () => {
           />
 
           {overLimit && (
-            <Typography color='error' fontSize={14} textAlign='center' mt={2}>
-              ❌ Total selected quantity ({selectedTotalQuantity}) exceeds task
-              quantity ({myTask.quantity})
+            <Typography
+              color='error'
+              fontSize={14}
+              textAlign='center'
+              mt={2}
+              fontWeight='bold'
+            >
+              ❌ Selected quantity ({selectedTotalQuantity}) exceeds task limit
+              ({myTask.quantity})
             </Typography>
           )}
 
-          <Box sx={{ mt: 3 }}>
+          <Box mt={4} display='flex' gap={2} flexDirection='column'>
+            <Button
+              variant='contained'
+              color='secondary'
+              fullWidth
+              onClick={() =>
+                navigate('/my-task/scan-qr', { state: { mode: 'load' } })
+              }
+              sx={{ py: 1.4, fontWeight: 'bold', borderRadius: 2 }}
+            >
+              📦 Scan to Load
+            </Button>
+
             <Button
               variant='contained'
               color='primary'
-              fullWidth
               disabled={overLimit}
+              fullWidth
               onClick={() => {
                 const selectedToUnload = inventoryListReadyToUnload
                   .filter(item => item.selected)
@@ -139,13 +160,17 @@ const Cart = () => {
                     inventoryID,
                     quantity
                   }))
-
                 setSelectedToUnload(selectedToUnload)
-                navigate('scan-qr')
+                navigate('/my-task/scan-qr', {
+                  state: {
+                    mode: 'unload',
+                    unloadProductList: selectedToUnload
+                  }
+                })
               }}
-              sx={{ borderRadius: '12px', py: 1.2 }}
+              sx={{ py: 1.4, fontWeight: 'bold', borderRadius: 2 }}
             >
-              Scan to unload
+              🧾 Scan to Unload
             </Button>
           </Box>
         </CardContent>
