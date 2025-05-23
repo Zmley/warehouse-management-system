@@ -91,14 +91,6 @@ export const unloadByBinCode = async (
   }
 }
 
-// utils/binAccess.ts
-
-// import { getTaskByAccountID } from 'services/task.service'
-// import AppError from 'utils/appError'
-
-/**
- * 如果任务存在，验证指定 binCode 是否被允许访问
- */
 export const validateSourceBinAccess = async (
   accountID: string,
   warehouseID: string,
@@ -121,9 +113,6 @@ export const validateSourceBinAccess = async (
   }
 }
 
-/**
- * 如果任务存在，提取允许的 binID 列表
- */
 export const getAllowedBinIDs = async (
   accountID: string,
   warehouseID: string

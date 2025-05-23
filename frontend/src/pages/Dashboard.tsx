@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Box, Typography } from '@mui/material'
 import TopBar from 'components/Topbar'
 import WokerBottombar from './TransportWorker/Bottombar'
@@ -32,25 +32,29 @@ const TransportWorkerContent: React.FC<{ userName: string }> = ({
   userName
 }) => {
   const { isCartEmpty } = useCart()
-  const navigate = useNavigate()
+  const [view, setView] = useState<'cart' | 'task'>(
+    isCartEmpty ? 'task' : 'cart'
+  )
+
+  useEffect(() => {
+    if (!isCartEmpty) {
+      setView('cart')
+    }
+  }, [isCartEmpty])
 
   return (
     <Box
       sx={{ height: '100vh', backgroundColor: '#F7F9FC', overflow: 'hidden' }}
     >
       <TopBarFixed userName={userName} />
-      <Box
-        sx={{
-          pt: '72px',
-          pb: '80px',
-          height: '100vh'
-        }}
-      >
-        {isCartEmpty ? <PendingTaskList /> : <Cart />}
+
+      <Box sx={{ pt: '72px', pb: '80px', height: '100vh' }}>
+        {view === 'cart' ? <Cart /> : <PendingTaskList />}
       </Box>
+
       <WokerBottombar
-        onCreatePickTaskClick={() => navigate('/picker-scan-bin')}
-        onCreateTaskClick={() => navigate('/my-task/scan-qr')}
+        onCartClick={() => setView('cart')}
+        onTaskListClick={() => setView('task')}
       />
     </Box>
   )

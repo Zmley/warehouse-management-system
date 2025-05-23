@@ -6,6 +6,7 @@ import { InventoryUploadType } from 'types/inventory'
 import AppError from 'utils/appError'
 import { buildBinCodeToIDMap } from 'utils/bin.utils'
 import { getExistingInventoryPairs } from 'utils/inventory.utils'
+import Account from 'routes/accounts/accounts.model'
 
 export const getInventoriesByCartID = async (
   cartID: string
@@ -194,4 +195,18 @@ export const checkInventoryQuantity = async (
       `❌ Not enough inventory. Available: ${inventoryItem.quantity}, Required: ${requiredQuantity}`
     )
   }
+}
+
+export const hasInventoryInCart = async (
+  accountID: string
+): Promise<boolean> => {
+  const account = await Account.findByPk(accountID)
+  if (!account?.cartID) return false
+
+  const items = await Inventory.findAll({
+    where: { binID: account.cartID }
+  })
+
+  console.log('items ++++++++++', items, items.length > 0)
+  return items.length > 0
 }

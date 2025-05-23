@@ -1,15 +1,16 @@
 import React from 'react'
-import { Box, Typography, Divider, IconButton } from '@mui/material'
-import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner'
+import { Box, Typography, IconButton } from '@mui/material'
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined'
+import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined'
+
 interface BottomBarProps {
-  onCreatePickTaskClick: () => void
-  onCreateTaskClick: () => void
+  onCartClick: () => void
+  onTaskListClick: () => void
 }
 
 const BottomBar: React.FC<BottomBarProps> = ({
-  onCreatePickTaskClick,
-  onCreateTaskClick
+  onCartClick,
+  onTaskListClick
 }) => {
   return (
     <Box
@@ -25,9 +26,9 @@ const BottomBar: React.FC<BottomBarProps> = ({
         zIndex: 1200
       }}
     >
-      {/* 左侧按钮 */}
+      {/* Cart Button */}
       <Box
-        onClick={onCreatePickTaskClick}
+        onClick={onCartClick}
         sx={{
           flex: 1,
           display: 'flex',
@@ -42,19 +43,16 @@ const BottomBar: React.FC<BottomBarProps> = ({
         }}
       >
         <IconButton sx={{ color: '#2563eb' }}>
-          <QrCodeScannerIcon />
+          <Inventory2OutlinedIcon />
         </IconButton>
         <Typography variant='caption' fontWeight={600}>
-          Create Pick Task
+          Cart
         </Typography>
       </Box>
 
-      {/* 分隔线 */}
-      <Divider orientation='vertical' flexItem sx={{ borderColor: '#ccc' }} />
-
-      {/* 右侧按钮 */}
+      {/* Task Button */}
       <Box
-        onClick={onCreateTaskClick}
+        onClick={onTaskListClick}
         sx={{
           flex: 1,
           display: 'flex',
@@ -69,10 +67,10 @@ const BottomBar: React.FC<BottomBarProps> = ({
         }}
       >
         <IconButton sx={{ color: '#10b981' }}>
-          <Inventory2OutlinedIcon />
+          <AssignmentOutlinedIcon />
         </IconButton>
         <Typography variant='caption' fontWeight={600}>
-          Load Cargo
+          Tasks
         </Typography>
       </Box>
     </Box>

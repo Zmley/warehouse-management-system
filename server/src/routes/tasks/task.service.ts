@@ -6,7 +6,10 @@ import { Op, Sequelize, WhereOptions } from 'sequelize'
 import { UserRole } from 'constants/uerRole'
 import { TaskWithJoin } from 'types/task'
 import { TaskStatus } from 'constants/tasksStatus'
-import { checkInventoryQuantity } from 'routes/inventory/inventory.service'
+import {
+  checkInventoryQuantity,
+  hasInventoryInCart
+} from 'routes/inventory/inventory.service'
 import { getBinByBinCode } from 'routes/bins/bin.service'
 
 export const hasActiveTask = async (
@@ -65,10 +68,21 @@ export const acceptTaskByTaskID = async (accountID: string, taskID: string) => {
       throw new AppError(409, '❌ You already have an active task in progress.')
     }
 
+    const cartHasCargo = await hasInventoryInCart(accountID)
+    if (cartHasCargo) {
+      throw new AppError(
+        409,
+        '❌ Please unload your cart before accepting a new task.'
+      )
+    }
+
     const task = await Task.findOne({ where: { taskID } })
+    if (!task) {
+      throw new AppError(404, '❌ Task not found.')
+    }
 
     if (task.status !== 'PENDING') {
-      throw new AppError(400, '❌ Task is already in progress')
+      throw new AppError(400, '❌ Task is already in progress.')
     }
 
     task.accepterID = accountID

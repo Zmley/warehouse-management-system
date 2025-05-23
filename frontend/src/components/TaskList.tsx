@@ -7,7 +7,9 @@ import {
   Button,
   Grid,
   Divider,
-  CircularProgress
+  CircularProgress,
+  Snackbar,
+  Alert
 } from '@mui/material'
 import { useTask } from 'hooks/useTask'
 import { Task } from 'types/task'
@@ -18,12 +20,19 @@ import { QrCode } from 'lucide-react'
 
 const TaskList: React.FC = () => {
   const navigate = useNavigate()
-  const { tasks, fetchTasks, acceptTask, cancelMyTask, isLoading } = useTask()
+  const { tasks, fetchTasks, acceptTask, cancelMyTask, isLoading, error } =
+    useTask()
   const { myTask, setMyTask, fetchMyTask } = useTaskContext()
 
   const [loadingTasks, setLoadingTasks] = useState<{
     [taskID: string]: boolean
   }>({})
+
+  const [open, setOpen] = useState(false)
+
+  useEffect(() => {
+    if (error) setOpen(true)
+  }, [error])
 
   useEffect(() => {
     fetchTasks()
@@ -297,6 +306,22 @@ const TaskList: React.FC = () => {
             ))
           ))}
       </Box>
+
+      <Snackbar
+        open={open}
+        autoHideDuration={2000}
+        onClose={() => setOpen(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setOpen(false)}
+          severity='error'
+          variant='filled'
+          sx={{ width: '100%' }}
+        >
+          {error}
+        </Alert>
+      </Snackbar>
     </PullToRefresh>
   )
 }

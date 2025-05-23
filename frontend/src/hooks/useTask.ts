@@ -12,7 +12,6 @@ export const useTask = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const { fetchMyTask } = useTaskContext()
-  const navigate = useNavigate()
   const [tasks, setTasks] = useState<Task[]>([])
 
   const fetchTasks = async () => {
@@ -34,18 +33,21 @@ export const useTask = () => {
       const res = await acceptTaskAPI(taskID)
       if (res?.task) {
         await fetchMyTask()
-        // navigate('/task-detail')
       } else {
-        setError('Task accept API did not return a task.')
+        setError('❌ API did not return task object.')
       }
-    } catch (err) {
-      setError('❌ Failed to accept task')
-      console.error(err)
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.error ||
+        err?.response?.data?.message ||
+        err.message ||
+        '❌ Failed to accept task'
+      setError(msg)
+      console.error('❌ Accept task failed:', err)
     } finally {
       setIsLoading(false)
     }
   }
-
   const cancelMyTask = async (taskID: string) => {
     try {
       await cancelTaskAPI(taskID)
