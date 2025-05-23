@@ -36,6 +36,7 @@ const TransportWorkerContent: React.FC<{ userName: string }> = ({
     isCartEmpty ? 'task' : 'cart'
   )
 
+  // 自动根据是否有货物切换视图
   useEffect(() => {
     if (!isCartEmpty) {
       setView('cart')
@@ -49,7 +50,7 @@ const TransportWorkerContent: React.FC<{ userName: string }> = ({
       <TopBarFixed userName={userName} />
 
       <Box sx={{ pt: '72px', pb: '80px', height: '100vh' }}>
-        {view === 'cart' ? <Cart /> : <PendingTaskList />}
+        {view === 'cart' ? <Cart /> : <PendingTaskList setView={setView} />}
       </Box>
 
       <WokerBottombar

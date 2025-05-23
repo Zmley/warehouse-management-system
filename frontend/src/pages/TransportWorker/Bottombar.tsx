@@ -26,30 +26,6 @@ const BottomBar: React.FC<BottomBarProps> = ({
         zIndex: 1200
       }}
     >
-      {/* Cart Button */}
-      <Box
-        onClick={onCartClick}
-        sx={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: 'pointer',
-          color: '#2563eb',
-          '&:hover': {
-            backgroundColor: '#e8f0fe'
-          }
-        }}
-      >
-        <IconButton sx={{ color: '#2563eb' }}>
-          <Inventory2OutlinedIcon />
-        </IconButton>
-        <Typography variant='caption' fontWeight={600}>
-          Cart
-        </Typography>
-      </Box>
-
       {/* Task Button */}
       <Box
         onClick={onTaskListClick}
@@ -71,6 +47,30 @@ const BottomBar: React.FC<BottomBarProps> = ({
         </IconButton>
         <Typography variant='caption' fontWeight={600}>
           Tasks
+        </Typography>
+      </Box>
+
+      {/* Cart Button */}
+      <Box
+        onClick={onCartClick}
+        sx={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+          color: '#2563eb',
+          '&:hover': {
+            backgroundColor: '#e8f0fe'
+          }
+        }}
+      >
+        <IconButton sx={{ color: '#2563eb' }}>
+          <Inventory2OutlinedIcon />
+        </IconButton>
+        <Typography variant='caption' fontWeight={600}>
+          Cart
         </Typography>
       </Box>
     </Box>

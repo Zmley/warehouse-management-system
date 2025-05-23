@@ -1,59 +1,139 @@
 import React from 'react'
 import {
+  Box,
+  Typography,
   Card,
   CardContent,
-  Typography,
-  Box,
-  Chip,
-  Divider
+  Grid,
+  Divider,
+  Button,
+  Tooltip
 } from '@mui/material'
-import AssignmentIcon from '@mui/icons-material/Assignment'
 import { useTaskContext } from 'contexts/task'
+import { useCartContext } from 'contexts/cart'
+import { useTask } from 'hooks/useTask'
 
 const TaskInstruction: React.FC = () => {
-  const { myTask } = useTaskContext()
+  const { myTask, setMyTask } = useTaskContext()
+  const { inventoriesInCar } = useCartContext()
+  const { cancelMyTask } = useTask()
 
   if (!myTask) return null
 
-  return (
-    <Box sx={{ mt: 8, mx: 2 }}>
-      <Typography
-        variant='h5'
-        fontWeight='bold'
-        gutterBottom
-        sx={{ textAlign: 'center', mb: 3 }}
-      >
-        My Current Task
-      </Typography>
+  const isCancelable = inventoriesInCar.length === 0
 
-      <Card
-        variant='outlined'
-        sx={{
-          borderRadius: 3,
-          backgroundColor: '#e3f2fd',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-        }}
-      >
-        <CardContent>
-          <Box display='flex' flexDirection='column' gap={1}>
-            <Typography fontSize={15}>
-              <strong>Task ID:</strong> {myTask.taskID}
+  const handleCancel = async () => {
+    try {
+      await cancelMyTask(myTask.taskID)
+      setMyTask(null)
+    } catch (err) {
+      console.error('❌ Failed to cancel task', err)
+    }
+  }
+
+  return (
+    <Card
+      variant='outlined'
+      sx={{
+        mb: 3,
+        borderRadius: 4,
+        backgroundColor: '#f5faff',
+        boxShadow: '0 4px 10px rgba(0, 0, 0, 0.06)'
+      }}
+    >
+      <CardContent>
+        <Grid container spacing={2}>
+          <Grid item xs={12} textAlign='center'>
+            <Typography variant='caption' color='text.secondary'>
+              Source Bin
             </Typography>
-            <Typography fontSize={15}>
-              <strong>Product Code:</strong> {myTask.productCode}
+            <Box
+              sx={{
+                fontWeight: 'bold',
+                fontSize: 16,
+                wordBreak: 'break-word',
+                mt: 0.5
+              }}
+            >
+              {myTask.sourceBins?.length > 0
+                ? myTask.sourceBins.map((inv: any, index: number) => (
+                    <div key={index}>
+                      {inv.bin?.binCode ?? '--'}: {inv.quantity ?? '--'}
+                    </div>
+                  ))
+                : '--'}
+            </Box>
+          </Grid>
+
+          <Grid item xs={4} textAlign='center'>
+            <Typography variant='caption' color='text.secondary'>
+              Product
             </Typography>
-            <Typography fontSize={15}>
-              <strong>Quantity:</strong>{' '}
+            <Typography fontWeight='bold'>
+              {myTask.productCode || '--'}
+            </Typography>
+          </Grid>
+
+          <Grid item xs={4} textAlign='center'>
+            <Typography variant='caption' color='text.secondary'>
+              Quantity
+            </Typography>
+            <Typography fontWeight='bold'>
               {myTask.quantity === 0 ? 'ALL' : myTask.quantity ?? '--'}
             </Typography>
-            <Typography fontSize={15}>
-              <strong>Destination Bin:</strong>{' '}
+          </Grid>
+
+          <Grid item xs={4} textAlign='center'>
+            <Typography variant='caption' color='text.secondary'>
+              Target Bin
+            </Typography>
+            <Typography fontWeight='bold'>
               {myTask.destinationBinCode || '--'}
             </Typography>
-          </Box>
-        </CardContent>
-      </Card>
-    </Box>
+          </Grid>
+        </Grid>
+
+        <Divider sx={{ my: 2 }} />
+
+        <Box
+          display='flex'
+          justifyContent='space-between'
+          alignItems='center'
+          sx={{ mt: 1 }}
+        >
+          <Typography variant='caption' color='text.secondary'>
+            Create Date: {new Date(myTask.createdAt).toLocaleString()}
+          </Typography>
+
+          <Tooltip
+            title={
+              isCancelable
+                ? 'Cancel this task'
+                : '❌ You must unload your cart first'
+            }
+          >
+            <span>
+              <Button
+                variant='outlined'
+                color='error'
+                size='small'
+                disabled={!isCancelable}
+                onClick={handleCancel}
+                sx={{
+                  borderRadius: '8px',
+                  fontWeight: 600,
+                  textTransform: 'uppercase',
+                  height: 32,
+                  px: 2.5
+                }}
+              >
+                Cancel
+              </Button>
+            </span>
+          </Tooltip>
+        </Box>
+      </CardContent>
+    </Card>
   )
 }
 

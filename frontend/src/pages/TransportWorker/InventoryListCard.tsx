@@ -24,7 +24,6 @@ interface Props {
 }
 
 const InventoryListCard: React.FC<Props> = ({
-  taskType,
   inventories,
   selectedList,
   onQuantityChange,
@@ -48,19 +47,6 @@ const InventoryListCard: React.FC<Props> = ({
 
   return (
     <Box>
-      <Box
-        sx={{
-          backgroundColor: '#f0f4f7',
-          borderRadius: 3,
-          p: 2,
-          mb: 2
-        }}
-      >
-        <Typography fontWeight='bold'>Task Type # {taskType}</Typography>
-      </Box>
-
-      <Divider sx={{ mb: 2 }} />
-
       {selectedList.map(item => {
         const inv = inventories.find(i => i.inventoryID === item.inventoryID)
         return (

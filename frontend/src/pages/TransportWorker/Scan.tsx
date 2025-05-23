@@ -318,7 +318,7 @@ const Scan = () => {
                 <AddToCartInline
                   product={scannedProduct}
                   onSuccess={() => {
-                    navigate('/')
+                    navigate(-1)
                   }}
                 />
               </Box>
