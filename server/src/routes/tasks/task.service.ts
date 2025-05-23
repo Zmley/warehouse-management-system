@@ -11,6 +11,7 @@ import {
   hasInventoryInCart
 } from 'routes/inventory/inventory.service'
 import { getBinByBinCode } from 'routes/bins/bin.service'
+import Account from 'routes/accounts/accounts.model'
 
 export const hasActiveTask = async (
   accountID: string
@@ -480,4 +481,35 @@ export const checkIfPickerTaskPublished = async (
     console.error('❌ Failed to check if task is published:', err)
     if (err instanceof AppError) throw err
   }
+}
+
+export const releaseTask = async (
+  taskID: string,
+  accountID: string,
+  cartID: string
+) => {
+  const task = await Task.findOne({
+    where: { taskID, accepterID: accountID }
+  })
+
+  if (!task) {
+    throw new AppError(404, '❌ Task not found or not owned by user')
+  }
+
+  const itemsInCart = await Inventory.findAll({ where: { binID: cartID } })
+
+  if (!itemsInCart.length) {
+    throw new AppError(400, '❌ No items in cart to release')
+  }
+
+  // Move inventory to taskID bin (use taskID as temporary binID)
+  await Promise.all(
+    itemsInCart.map(item => item.update({ binID: task.taskID }))
+  )
+
+  task.status = TaskStatus.PENDING
+  task.accepterID = null
+  await task.save()
+
+  return task
 }

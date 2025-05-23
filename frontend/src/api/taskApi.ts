@@ -37,3 +37,8 @@ export const cancelPickerTask = async (taskID: string): Promise<Task> => {
   const response = await apiClient.post(`/tasks/${taskID}/cancel`)
   return response.data.task
 }
+
+export const releaseTask = async (taskID: string) => {
+  const res = await apiClient.patch(`/tasks/${taskID}/release`)
+  return res.data
+}

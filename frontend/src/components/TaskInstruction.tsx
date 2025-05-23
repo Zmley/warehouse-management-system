@@ -16,11 +16,11 @@ import { useTask } from 'hooks/useTask'
 const TaskInstruction: React.FC = () => {
   const { myTask, setMyTask } = useTaskContext()
   const { inventoriesInCar } = useCartContext()
-  const { cancelMyTask } = useTask()
+  const { cancelMyTask, releaseTask } = useTask()
 
   if (!myTask) return null
 
-  const isCancelable = inventoriesInCar.length === 0
+  const hasCargo = inventoriesInCar.length > 0
 
   const handleCancel = async () => {
     try {
@@ -28,6 +28,15 @@ const TaskInstruction: React.FC = () => {
       setMyTask(null)
     } catch (err) {
       console.error('❌ Failed to cancel task', err)
+    }
+  }
+
+  const handleRelease = async () => {
+    try {
+      await releaseTask(myTask.taskID)
+      setMyTask(null)
+    } catch (err) {
+      console.error('❌ Failed to release task', err)
     }
   }
 
@@ -95,21 +104,13 @@ const TaskInstruction: React.FC = () => {
 
         <Divider sx={{ my: 2 }} />
 
-        <Box
-          display='flex'
-          justifyContent='space-between'
-          alignItems='center'
-          sx={{ mt: 1 }}
-        >
-          <Typography variant='caption' color='text.secondary'>
-            Create Date: {new Date(myTask.createdAt).toLocaleString()}
-          </Typography>
-
+        <Box display='flex' justifyContent='flex-end' gap={2}>
+          {/* Cancel Button */}
           <Tooltip
             title={
-              isCancelable
-                ? 'Cancel this task'
-                : '❌ You must unload your cart first'
+              hasCargo
+                ? '❌ Cannot cancel after loading cargo'
+                : 'Cancel this task'
             }
           >
             <span>
@@ -117,7 +118,7 @@ const TaskInstruction: React.FC = () => {
                 variant='outlined'
                 color='error'
                 size='small'
-                disabled={!isCancelable}
+                disabled={hasCargo}
                 onClick={handleCancel}
                 sx={{
                   borderRadius: '8px',
@@ -128,6 +129,34 @@ const TaskInstruction: React.FC = () => {
                 }}
               >
                 Cancel
+              </Button>
+            </span>
+          </Tooltip>
+
+          {/* Release Button */}
+          <Tooltip
+            title={
+              hasCargo
+                ? 'Release this task to the aisle'
+                : '❌ Load cargo first to release'
+            }
+          >
+            <span>
+              <Button
+                variant='contained'
+                color='success'
+                size='small'
+                disabled={!hasCargo}
+                onClick={handleRelease}
+                sx={{
+                  borderRadius: '8px',
+                  fontWeight: 600,
+                  textTransform: 'uppercase',
+                  height: 32,
+                  px: 2.5
+                }}
+              >
+                Release
               </Button>
             </span>
           </Tooltip>

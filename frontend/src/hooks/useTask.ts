@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useTaskContext } from 'contexts/task'
 import {
   acceptTask as acceptTaskAPI,
   cancelTask as cancelTaskAPI,
+  releaseTask as releaseTaskAPI,
   getTasks
 } from 'api/taskApi'
 import { Task } from 'types/task'
@@ -59,12 +59,30 @@ export const useTask = () => {
     }
   }
 
+  const releaseTask = async (taskID: string) => {
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      await releaseTaskAPI(taskID)
+      await fetchMyTask()
+    } catch (err: any) {
+      const message =
+        err?.response?.data?.error || err.message || '❌ Failed to release task'
+      setError(message)
+      console.error(message)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return {
     acceptTask,
     cancelMyTask,
     isLoading,
     error,
     tasks,
-    fetchTasks
+    fetchTasks,
+    releaseTask
   }
 }

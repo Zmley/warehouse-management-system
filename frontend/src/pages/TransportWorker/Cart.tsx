@@ -86,19 +86,15 @@ const Cart = () => {
 
   return (
     <Container maxWidth='sm' sx={{ pt: 1, pb: 10 }}>
-      <Typography variant='h6' fontWeight='bold' textAlign='center' mb={2}>
+      {/* <Typography variant='h6' fontWeight='bold' textAlign='center' mb={2}>
         Cart
-      </Typography>
+      </Typography> */}
 
       {myTask && (
         <Box mb={2}>
           <TaskInstruction />
         </Box>
       )}
-
-      {/* <Typography variant='h6' fontWeight='bold' textAlign='center' mb={2}>
-        Cart
-      </Typography> */}
 
       <Card
         variant='outlined'
@@ -172,7 +168,7 @@ const Cart = () => {
               <Grid item xs={6}>
                 <Button
                   variant='contained'
-                  color='secondary'
+                  color='success'
                   startIcon={<QrCode2 />}
                   disabled={overLimit}
                   onClick={() => {
@@ -197,10 +193,7 @@ const Cart = () => {
                     fontSize: 16,
                     borderRadius: 2,
                     textTransform: 'none',
-                    boxShadow: '0px 3px 10px rgba(0,0,0,0.08)',
-                    '&:hover': {
-                      backgroundColor: '#059669'
-                    }
+                    boxShadow: '0px 3px 10px rgba(0,0,0,0.08)'
                   }}
                 >
                   Unload

@@ -182,3 +182,28 @@ export const createTask = async (
     next(error)
   }
 }
+
+export const releaseTask = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { taskID } = req.params
+    const { accountID, cartID } = res.locals
+
+    const releasedTask = await taskService.releaseTask(
+      taskID,
+      accountID,
+      cartID
+    )
+
+    res.status(200).json({
+      success: true,
+      message: '✅ Task released successfully',
+      task: releasedTask
+    })
+  } catch (error) {
+    next(error)
+  }
+}
