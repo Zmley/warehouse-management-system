@@ -190,12 +190,13 @@ export const releaseTask = async (
 ) => {
   try {
     const { taskID } = req.params
-    const { accountID, cartID } = res.locals
+    const { accountID, cartID, warehouseID } = res.locals
 
     const releasedTask = await taskService.releaseTask(
       taskID,
       accountID,
-      cartID
+      cartID,
+      warehouseID
     )
 
     res.status(200).json({

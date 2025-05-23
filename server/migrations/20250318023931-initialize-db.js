@@ -95,7 +95,7 @@ module.exports = {
         allowNull: false
       },
       type: {
-        type: Sequelize.ENUM('PICK_UP', 'INVENTORY', 'CART'),
+        type: Sequelize.ENUM('PICK_UP', 'INVENTORY', 'CART', 'AILSE'),
         allowNull: false
       },
       defaultProductCodes: {

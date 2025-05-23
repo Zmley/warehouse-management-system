@@ -483,10 +483,14 @@ export const checkIfPickerTaskPublished = async (
   }
 }
 
+import { v4 as uuidv4 } from 'uuid'
+import { BinType } from 'constants/binType'
+
 export const releaseTask = async (
   taskID: string,
   accountID: string,
-  cartID: string
+  cartID: string,
+  warehouseID: string
 ) => {
   const task = await Task.findOne({
     where: { taskID, accepterID: accountID }
@@ -502,13 +506,22 @@ export const releaseTask = async (
     throw new AppError(400, '❌ No items in cart to release')
   }
 
-  // Move inventory to taskID bin (use taskID as temporary binID)
+  // ✅ Step 1: Create a temporary "Aisle" bin
+  const tempAisleBin = await Bin.create({
+    binCode: `AISLE-${uuidv4().slice(0, 8)}`,
+    warehouseID: warehouseID,
+    type: BinType.AILSE
+  })
+
+  // ✅ Step 2: Move inventory to the new bin
   await Promise.all(
-    itemsInCart.map(item => item.update({ binID: task.taskID }))
+    itemsInCart.map(item => item.update({ binID: tempAisleBin.binID }))
   )
 
+  // ✅ Step 3: Update the task
   task.status = TaskStatus.PENDING
   task.accepterID = null
+  task.sourceBinID = tempAisleBin.binID
   await task.save()
 
   return task

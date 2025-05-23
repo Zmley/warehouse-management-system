@@ -1,5 +1,7 @@
 export enum BinType {
   PICK_UP = 'PICK_UP',
   INVENTORY = 'INVENTORY',
-  CART = 'CART'
+  CART = 'CART',
+
+  AILSE = 'AILSE'
 }

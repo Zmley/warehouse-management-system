@@ -30,7 +30,12 @@ Bin.init(
       unique: true
     },
     type: {
-      type: DataTypes.ENUM(BinType.PICK_UP, BinType.INVENTORY, BinType.CART),
+      type: DataTypes.ENUM(
+        BinType.PICK_UP,
+        BinType.INVENTORY,
+        BinType.CART,
+        BinType.AILSE
+      ),
       allowNull: false
     },
     defaultProductCodes: {

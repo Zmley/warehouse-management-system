@@ -45,7 +45,7 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
       await acceptTask(taskID)
       await fetchMyTask()
       await fetchTasks()
-      setView('cart') // ✅ 切换到 cart 页面
+      setView('cart')
     } catch (err) {
       console.error('Error accepting task:', err)
     } finally {
