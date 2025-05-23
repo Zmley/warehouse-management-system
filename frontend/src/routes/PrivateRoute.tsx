@@ -1,5 +1,4 @@
 import { Routes, Route, Outlet } from 'react-router-dom'
-import Profile from 'pages/Profile'
 import ScanQRCode from 'pages/TransportWorker/Scan'
 import Cart from 'pages/TransportWorker/Cart'
 import UnloadSuccess from 'pages/Success'

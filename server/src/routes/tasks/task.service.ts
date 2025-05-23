@@ -351,7 +351,19 @@ const getAdminWhereClause = (status: string, keyword: string) => {
 
 const mapTasks = (tasks: TaskWithJoin[]) => {
   return tasks.map(task => {
-    const inventories = task.inventories || []
+    let sourceBins: any[] = []
+
+    if (task.sourceBin) {
+      sourceBins = [
+        {
+          bin: task.sourceBin,
+          quantity: task.quantity,
+          productCode: task.productCode
+        }
+      ]
+    } else if (task.inventories?.length > 0) {
+      sourceBins = task.inventories
+    }
 
     return {
       ...task.toJSON(),
@@ -359,8 +371,7 @@ const mapTasks = (tasks: TaskWithJoin[]) => {
       inventories: undefined,
       sourceBin: undefined,
 
-      sourceBins: inventories,
-
+      sourceBins,
       destinationBinCode: task.destinationBin?.binCode || '--'
     }
   })
