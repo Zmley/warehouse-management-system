@@ -178,3 +178,51 @@ export const checkIfPickUpBin = async (
     next(error)
   }
 }
+
+export const updateDefaultProductCodes = async (req, res) => {
+  const { binID } = req.params
+  const { defaultProductCodes } = req.body
+
+  if (!binID) {
+    return res.status(400).json({ success: false, error: 'binID is required' })
+  }
+  if (!defaultProductCodes && defaultProductCodes !== '') {
+    return res
+      .status(400)
+      .json({ success: false, error: 'defaultProductCodes is required' })
+  }
+
+  try {
+    const updatedBin = await binService.updateDefaultProductCodes(
+      binID,
+      defaultProductCodes
+    )
+    if (!updatedBin) {
+      return res.status(404).json({ success: false, error: 'Bin not found' })
+    }
+    return res.json({ success: true, data: updatedBin })
+  } catch (error) {
+    console.error('Update bin defaultProductCodes error:', error)
+    return res
+      .status(500)
+      .json({ success: false, error: 'Internal server error' })
+  }
+}
+
+export const deleteBin = async (req: Request, res: Response) => {
+  const { binID } = req.params
+
+  try {
+    const result = await binService.deleteBinByBInID(binID)
+
+    if (!result) {
+      return res.status(404).json({ success: false, error: 'Bin not found' })
+    }
+
+    res.json({ success: true })
+  } catch (err: any) {
+    res
+      .status(500)
+      .json({ success: false, error: err.message || 'Failed to delete bin' })
+  }
+}

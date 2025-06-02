@@ -5,7 +5,8 @@ import {
   cancelTask,
   getTasks,
   createTask,
-  releaseTask
+  releaseTask,
+  updateTask
 } from './task.controller'
 import roleAllow from 'middlewares/roleAllow.middleware'
 import { UserRole } from 'constants/uerRole'
@@ -40,5 +41,7 @@ router.post(
 )
 
 router.patch('/:taskID/release', releaseTask)
+
+router.patch('/:taskID', updateTask)
 
 export default router

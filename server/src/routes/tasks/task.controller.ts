@@ -4,8 +4,10 @@ import * as binService from 'routes/bins/bin.service'
 import AppError from 'utils/appError'
 import { UserRole } from 'constants/uerRole'
 import { TaskStatus } from 'constants/tasksStatus'
-import { getPickBinByProductCode } from 'routes/bins/bin.service'
-import { checkIfPickerTaskPublished } from 'routes/tasks/task.service'
+import {
+  checkIfPickerTaskPublished,
+  updateTaskService
+} from 'routes/tasks/task.service'
 
 export const acceptTask = async (
   req: Request,
@@ -134,19 +136,17 @@ export const createTask = async (
       destinationBinCode,
       quantity,
       warehouseID
-    } = req.body
+    } = req.body.payload || req.body
+
+    console.log('test' + req.body)
 
     if (!sourceBinCode) {
-      await checkIfPickerTaskPublished(
+      const destinationBin = await checkIfPickerTaskPublished(
         warehouseID,
         productCode,
         destinationBinCode
       )
 
-      const destinationBin = await getPickBinByProductCode(
-        productCode,
-        warehouseID
-      )
       const task = await taskService.binsToPick(
         destinationBin.binCode,
         accountID,
@@ -206,5 +206,22 @@ export const releaseTask = async (
     })
   } catch (error) {
     next(error)
+  }
+}
+
+export const updateTask = async (req: Request, res: Response) => {
+  const { taskID } = req.params
+  const { status, sourceBinCode } = req.body
+
+  try {
+    if (!status || !sourceBinCode) {
+      return res.status(400).json({ error: 'Missing required fields' })
+    }
+
+    const updatedTask = await updateTaskService(taskID, status, sourceBinCode)
+    res.json({ success: true, task: updatedTask })
+  } catch (error) {
+    console.error('❌ Failed to update task:', error)
+    res.status(500).json({ error: 'Internal server error' })
   }
 }

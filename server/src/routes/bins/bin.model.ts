@@ -34,7 +34,7 @@ Bin.init(
         BinType.PICK_UP,
         BinType.INVENTORY,
         BinType.CART,
-        BinType.AILSE
+        BinType.AISLE
       ),
       allowNull: false
     },

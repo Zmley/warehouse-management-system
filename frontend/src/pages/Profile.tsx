@@ -9,6 +9,7 @@ import {
 } from '@mui/material'
 import { Close as CloseIcon, Logout as LogoutIcon } from '@mui/icons-material'
 import { useAuth } from 'hooks/useAuth'
+import { useTranslation } from 'react-i18next'
 
 interface ProfileDrawerProps {
   open: boolean
@@ -17,18 +18,32 @@ interface ProfileDrawerProps {
 
 const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ open, onClose }) => {
   const { userProfile, handleLogout } = useAuth()
+  const { t, i18n } = useTranslation()
+
+  const toggleLanguage = () => {
+    i18n.changeLanguage(i18n.language === 'en' ? 'zh' : 'en')
+  }
 
   return (
     <Drawer anchor='left' open={open} onClose={onClose}>
       <Box width={300} p={2} role='presentation'>
         <Box display='flex' alignItems='center' justifyContent='space-between'>
           <Typography variant='h6' fontWeight='bold'>
-            Profile
+            {t('profile.title')}
           </Typography>
           <IconButton onClick={onClose}>
             <CloseIcon />
           </IconButton>
         </Box>
+
+        <Button
+          onClick={toggleLanguage}
+          variant='outlined'
+          size='small'
+          sx={{ mt: 1, mb: 2 }}
+        >
+          {i18n.language === 'en' ? '中文' : 'English'}
+        </Button>
 
         <Box mt={2} display='flex' alignItems='center'>
           <Avatar src='/profile.jpg' sx={{ width: 60, height: 60, mr: 2 }} />
@@ -45,7 +60,7 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ open, onClose }) => {
         <Divider sx={{ my: 2 }} />
 
         <Typography fontSize={14} fontWeight='bold'>
-          Role:
+          {t('profile.role')}:
         </Typography>
         <Typography mb={1}>{userProfile?.role}</Typography>
 
@@ -60,7 +75,7 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ open, onClose }) => {
             onClose()
           }}
         >
-          Sign Out
+          {t('profile.signOut')}
         </Button>
       </Box>
     </Drawer>

@@ -35,7 +35,6 @@ const TransportWorkerContent: React.FC<{ userName: string }> = ({
     isCartEmpty ? 'task' : 'cart'
   )
 
-  // 自动根据是否有货物切换视图
   useEffect(() => {
     if (!isCartEmpty) {
       setView('cart')
@@ -63,19 +62,9 @@ const TransportWorkerContent: React.FC<{ userName: string }> = ({
 const Dashboard: React.FC = () => {
   const { userProfile } = useAuth()
   const isPicker = userProfile.role === 'PICKER'
-  const isAdmin = userProfile.role === 'ADMIN'
+  // const isAdmin = userProfile.role === 'ADMIN'
   const isTransportWorker = userProfile.role === 'TRANSPORT_WORKER'
   const [taskStatus, setTaskStatus] = useState(TaskCategoryEnum.PENDING)
-
-  if (isAdmin) {
-    return (
-      <Box sx={{ p: 4 }}>
-        <Typography variant='h6'>
-          Hello Admin, {userProfile.firstName}!
-        </Typography>
-      </Box>
-    )
-  }
 
   if (isPicker) {
     return (

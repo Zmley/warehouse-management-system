@@ -7,29 +7,27 @@ import {
   ToggleButtonGroup,
   ToggleButton
 } from '@mui/material'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import CancelIcon from '@mui/icons-material/Cancel'
 import useQRScanner from 'hooks/useQRScanner'
-import { useCartContext } from 'contexts/cart'
 import { useCart } from 'hooks/useCart'
 import AutocompleteTextField from 'utils/AutocompleteTextField'
 import { useBin } from 'hooks/useBin'
 import { ProductType } from 'types/product'
 import { useProduct } from 'hooks/useProduct'
-import AddToCartInline from 'pages/AddToCartInline'
-import { useLocation } from 'react-router-dom'
+import AddToCartInline from 'pages/TransportWorker/AddToCartInline'
+import { useTranslation } from 'react-i18next'
 
 const isAndroid = /Android/i.test(navigator.userAgent)
 
 const Scan = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [hasScanned, setHasScanned] = useState(false)
   const [mode, setMode] = useState<'scanner' | 'manual'>('scanner')
-
-  const { isCartEmpty } = useCartContext()
   const { loadCart, unloadCart, error } = useCart()
-  const { binCodes, fetchBinCodes, checkBinType, fetchBinByCode } = useBin()
+  const { binCodes, fetchBinCodes } = useBin()
   const { fetchProduct } = useProduct()
 
   const [scannedProduct, setScannedProduct] = useState<ProductType | null>(null)
@@ -59,11 +57,11 @@ const Scan = () => {
           }
           setScannedProduct(product)
         } else {
-          alert('❌ Product not found')
+          alert(t('scan.productNotFound'))
           setHasScanned(false)
         }
       } catch (err) {
-        alert('❌ Error fetching product')
+        alert(t('scan.fetchError'))
         console.error(err)
         setHasScanned(false)
       } finally {
@@ -79,8 +77,8 @@ const Scan = () => {
         await loadCart({ binCode })
       }
     } catch (err) {
-      console.error('❌ Error handling scan:', err)
-      alert('❌ Operation failed. Please try again.')
+      console.error(t('scan.operationError'), err)
+      alert(t('scan.operationError'))
     }
   }
 
@@ -97,20 +95,18 @@ const Scan = () => {
 
     return () => {
       stopScanning()
-      // eslint-disable-next-line react-hooks/exhaustive-deps
       const stream = (videoRef.current as HTMLVideoElement | null)?.srcObject
       if (stream && stream instanceof MediaStream) {
         stream.getTracks().forEach(track => track.stop())
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode])
 
   const [manualBinCode, setManualBinCode] = useState('')
   const availableBinCodes = [...binCodes]
 
   const handleManualSubmit = async () => {
-    if (!manualBinCode.trim()) return alert('❌ Please enter a bin code.')
+    if (!manualBinCode.trim()) return alert(t('scan.enterPrompt'))
     await handleScanSuccess(manualBinCode)
   }
 
@@ -152,11 +148,7 @@ const Scan = () => {
               exclusive
               onChange={(_, newMode) => {
                 if (!newMode) return
-                if (newMode === 'scanner') {
-                  startScanning()
-                } else {
-                  stopScanning()
-                }
+                newMode === 'scanner' ? startScanning() : stopScanning()
                 setMode(newMode)
               }}
               sx={{
@@ -186,9 +178,8 @@ const Scan = () => {
                   transition: 'all 0.2s ease'
                 }}
               >
-                📷 Scanner
+                {t('scan.modeScanner')}
               </ToggleButton>
-
               <ToggleButton
                 value='manual'
                 sx={{
@@ -205,7 +196,7 @@ const Scan = () => {
                   transition: 'all 0.2s ease'
                 }}
               >
-                🔠 Manual
+                {t('scan.modeManual')}
               </ToggleButton>
             </ToggleButtonGroup>
 
@@ -226,16 +217,11 @@ const Scan = () => {
               >
                 <video
                   ref={videoRef}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover'
-                  }}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   autoPlay
                   playsInline
                   muted
                 />
-
                 <Box
                   sx={{
                     position: 'absolute',
@@ -248,7 +234,6 @@ const Scan = () => {
                     zIndex: 10
                   }}
                 />
-
                 <Box
                   sx={{
                     position: 'absolute',
@@ -262,7 +247,6 @@ const Scan = () => {
                     zIndex: 11
                   }}
                 />
-
                 <Typography
                   variant='body2'
                   sx={{
@@ -280,23 +264,22 @@ const Scan = () => {
                     zIndex: 12
                   }}
                 >
-                  Please align the QR/Barcode inside the frame
+                  {t('scan.alignPrompt')}
                 </Typography>
-
                 <style>{`
-      @keyframes scanLine {
-        0% { top: 10%; }
-        50% { top: 80%; }
-        100% { top: 10%; }
-      }
-    `}</style>
+                  @keyframes scanLine {
+                    0% { top: 10%; }
+                    50% { top: 80%; }
+                    100% { top: 10%; }
+                  }
+                `}</style>
               </Box>
             )}
 
             {mode === 'manual' && (
               <Box sx={{ mt: 3 }}>
                 <AutocompleteTextField
-                  label='Enter Bin Code'
+                  label={t('scan.enterBinCode')}
                   value={manualBinCode}
                   onChange={setManualBinCode}
                   onSubmit={handleManualSubmit}
@@ -308,7 +291,7 @@ const Scan = () => {
                   sx={{ mt: 2 }}
                   onClick={handleManualSubmit}
                 >
-                  Submit
+                  {t('scan.submit')}
                 </Button>
               </Box>
             )}
@@ -317,9 +300,7 @@ const Scan = () => {
               <Box sx={{ mt: 4 }}>
                 <AddToCartInline
                   product={scannedProduct}
-                  onSuccess={() => {
-                    navigate(-1)
-                  }}
+                  onSuccess={() => navigate(-1)}
                 />
               </Box>
             )}
@@ -343,9 +324,8 @@ const Scan = () => {
                 }}
                 onClick={handleCancel}
               >
-                Cancel
+                {t('scan.cancel')}
               </Button>
-
               {error && (
                 <Typography color='error' sx={{ mt: 2, fontWeight: 500 }}>
                   {error}
@@ -355,7 +335,7 @@ const Scan = () => {
 
             {isLoadingProduct && (
               <Typography color='primary' sx={{ mt: 3, textAlign: 'center' }}>
-                Loading product info...
+                {t('scan.loadingProduct')}
               </Typography>
             )}
           </Container>

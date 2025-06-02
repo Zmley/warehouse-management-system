@@ -1,0 +1,74 @@
+{
+  "profile": {
+    "title": "Profile",
+    "signOut": "Sign Out"
+  },
+  "topbar": {
+    "greeting": "Hello, {{name}}",
+    "tooltip": "Pick up Task",
+    "pickButton": "Pick"
+  },
+   "bottombar": {
+    "tasks": "Tasks",
+    "cart": "Cart"
+  },
+    "taskList": {
+    "pullToRefresh": "↓ Pull down to refresh tasks",
+    "empty": "No pending tasks found.",
+    "sourceBin": "Source Bin",
+    "product": "Product",
+    "quantity": "Quantity",
+    "targetBin": "Target Bin",
+    "createDate": "Create Date",
+    "accept": "Accept",
+    "takeOver": "Take Over",
+    "loading": "Loading..."
+  },
+   "cart": {
+    "loadedFromBin": "Loaded From Bin",
+    "overLimit": "❌ Selected quantity ({{selected}}) exceeds task limit ({{limit}})",
+    "load": "Load",
+    "unload": "Unload"
+  },
+    "scan": {
+    "productNotFound": "❌ Product not found",
+    "fetchError": "❌ Error fetching product",
+    "operationError": "❌ Operation failed. Please try again.",
+    "enterPrompt": "❌ Please enter a bin code.",
+    "modeScanner": "Scanner",
+    "modeManual": "Manual",
+    "alignPrompt": "Please align the QR/Barcode inside the frame",
+    "enterBinCode": "Enter Bin Code",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "loadingProduct": "Loading product info..."
+  },
+    "inventory": {
+    "total": "Total",
+    "offload": "Offload",
+    "quantityExceed": "Quantity cannot exceed total ({{quantity}})"
+  }
+  ,
+    "addToCart": {
+    "invalidQuantity": "❌ Invalid quantity",
+    "addFailed": "❌ Failed to add",
+    "load": "Add"
+  },
+  
+  "taskInstruction": {
+    "sourceBin": "Source Bin",
+    "product": "Product",
+    "quantity": "Quantity",
+    "targetBin": "Target Bin",
+    "cancel": "Cancel",
+    "release": "Release",
+    "load": "Load",
+    "cannotCancelAfterLoad": "❌ Cannot cancel after loading cargo",
+    "cancelTooltip": "Cancel this task",
+    "mustLoadFirst": "❌ Load cargo first to release",
+    "releaseTooltip": "Release this task to the aisle",
+    "loadTooltip": "Load items from aisle bin"
+  }
+
+  
+}

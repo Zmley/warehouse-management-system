@@ -1,11 +1,10 @@
 import React, { useState } from 'react'
 import { Box, IconButton, Typography, Tooltip, Button } from '@mui/material'
 import { Menu as MenuIcon } from '@mui/icons-material'
-
 import DocumentScannerOutlinedIcon from '@mui/icons-material/DocumentScannerOutlined'
-
 import { useNavigate } from 'react-router-dom'
 import ProfileDrawer from 'pages/Profile'
+import { useTranslation } from 'react-i18next'
 
 interface TopBarProps {
   userName: string
@@ -14,6 +13,7 @@ interface TopBarProps {
 const TopBar: React.FC<TopBarProps> = ({ userName }) => {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const navigate = useNavigate()
+  const { t } = useTranslation()
 
   return (
     <>
@@ -43,11 +43,11 @@ const TopBar: React.FC<TopBarProps> = ({ userName }) => {
           variant='subtitle1'
           sx={{ fontWeight: 600, color: '#333', flex: 1, textAlign: 'center' }}
         >
-          Hello, {userName}
+          {t('topbar.greeting', { name: userName })}
         </Typography>
 
         {/* Right scan icon */}
-        <Tooltip title='Pick up Task'>
+        <Tooltip title={t('topbar.tooltip')}>
           <Button
             variant='text'
             onClick={() => navigate('/picker-scan-bin')}
@@ -63,7 +63,7 @@ const TopBar: React.FC<TopBarProps> = ({ userName }) => {
             }}
             startIcon={<DocumentScannerOutlinedIcon sx={{ fontSize: 20 }} />}
           >
-            Pick
+            {t('topbar.pickButton')}
           </Button>
         </Tooltip>
       </Box>

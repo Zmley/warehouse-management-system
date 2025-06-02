@@ -1,7 +1,8 @@
 import React from 'react'
-import { Box, Typography, IconButton } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined'
 import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined'
+import { useTranslation } from 'react-i18next'
 
 interface BottomBarProps {
   onCartClick: () => void
@@ -12,6 +13,8 @@ const BottomBar: React.FC<BottomBarProps> = ({
   onCartClick,
   onTaskListClick
 }) => {
+  const { t } = useTranslation()
+
   return (
     <Box
       sx={{
@@ -19,9 +22,9 @@ const BottomBar: React.FC<BottomBarProps> = ({
         bottom: 0,
         left: 0,
         right: 0,
-        height: '64px',
+        height: 64,
         backgroundColor: '#ffffff',
-        boxShadow: '0px -2px 6px rgba(0, 0, 0, 0.08)',
+        boxShadow: '0px -2px 10px rgba(0, 0, 0, 0.08)',
         display: 'flex',
         zIndex: 1200
       }}
@@ -36,17 +39,31 @@ const BottomBar: React.FC<BottomBarProps> = ({
           alignItems: 'center',
           justifyContent: 'center',
           cursor: 'pointer',
-          color: '#10b981',
+          transition: 'all 0.2s ease-in-out',
           '&:hover': {
-            backgroundColor: '#d1fae5'
+            backgroundColor: '#ecfdf5'
           }
         }}
       >
-        <IconButton sx={{ color: '#10b981' }}>
-          <AssignmentOutlinedIcon />
-        </IconButton>
-        <Typography variant='caption' fontWeight={600}>
-          Tasks
+        <Box
+          sx={{
+            backgroundColor: '#10b981',
+            borderRadius: '50%',
+            padding: 1.2,
+            mb: 0.5,
+            boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+        >
+          <AssignmentOutlinedIcon sx={{ color: '#ffffff', fontSize: 20 }} />
+        </Box>
+        <Typography
+          variant='caption'
+          sx={{ fontWeight: 600, fontSize: 12, color: '#10b981' }}
+        >
+          {t('bottombar.tasks')}
         </Typography>
       </Box>
 
@@ -60,17 +77,31 @@ const BottomBar: React.FC<BottomBarProps> = ({
           alignItems: 'center',
           justifyContent: 'center',
           cursor: 'pointer',
-          color: '#2563eb',
+          transition: 'all 0.2s ease-in-out',
           '&:hover': {
-            backgroundColor: '#e8f0fe'
+            backgroundColor: '#e0edff'
           }
         }}
       >
-        <IconButton sx={{ color: '#2563eb' }}>
-          <Inventory2OutlinedIcon />
-        </IconButton>
-        <Typography variant='caption' fontWeight={600}>
-          Cart
+        <Box
+          sx={{
+            backgroundColor: '#2563eb',
+            borderRadius: '50%',
+            padding: 1.2,
+            mb: 0.5,
+            boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+        >
+          <Inventory2OutlinedIcon sx={{ color: '#ffffff', fontSize: 20 }} />
+        </Box>
+        <Typography
+          variant='caption'
+          sx={{ fontWeight: 600, fontSize: 12, color: '#2563eb' }}
+        >
+          {t('bottombar.cart')}
         </Typography>
       </Box>
     </Box>

@@ -41,5 +41,5 @@ export interface Task {
 export interface CreateTaskPayload {
   destinationBinCode: string
   productCode: string
-  warehouseID: string
+  warehouseID?: string
 }

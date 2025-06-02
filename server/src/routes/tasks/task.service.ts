@@ -11,6 +11,8 @@ import {
   hasInventoryInCart
 } from 'routes/inventory/inventory.service'
 import { getBinByBinCode } from 'routes/bins/bin.service'
+import { v4 as uuidv4 } from 'uuid'
+import { BinType } from 'constants/binType'
 import Account from 'routes/accounts/accounts.model'
 
 export const hasActiveTask = async (
@@ -338,6 +340,13 @@ const getIncludeClause = (warehouseID: string) => {
           }
         }
       ]
+    },
+
+    {
+      model: Account,
+      as: 'accepter',
+      attributes: ['accountID', 'firstName', 'lastName'],
+      required: false
     }
   ]
 }
@@ -439,7 +448,7 @@ export const getTasksByWarehouseID = async (
   const tasks = (await Task.findAll({
     where: whereClause,
     include: includeClause,
-    order: [['createdAt', 'DESC']]
+    order: [['updatedAt', 'DESC']]
   })) as unknown as TaskWithJoin[]
 
   if (!tasks.length) {
@@ -453,14 +462,13 @@ export const checkIfPickerTaskPublished = async (
   warehouseID: string,
   productCode: string,
   destinationBinCode: string
-): Promise<void> => {
+) => {
   try {
-    // const bin = await getPickBinByProductCode(warehouseID, productCode)
-
-    const bin = await getBinByBinCode(destinationBinCode)
+    const binCode = destinationBinCode.trim().toUpperCase()
+    const bin = await getBinByBinCode(binCode)
 
     if (!bin) {
-      throw new AppError(404, `❌ Bin with code ${bin.binCode} not found.`)
+      throw new AppError(404, `❌ Bin with code ${binCode} not found.`)
     }
 
     const existing = await Task.findOne({
@@ -477,14 +485,14 @@ export const checkIfPickerTaskPublished = async (
         `❌ Task for product ${productCode} in Pick up bin ${bin.binCode} already exists.`
       )
     }
+
+    return bin
   } catch (err) {
     console.error('❌ Failed to check if task is published:', err)
     if (err instanceof AppError) throw err
+    throw new AppError(500, '❌ Unexpected error checking task publication')
   }
 }
-
-import { v4 as uuidv4 } from 'uuid'
-import { BinType } from 'constants/binType'
 
 export const releaseTask = async (
   taskID: string,
@@ -510,7 +518,7 @@ export const releaseTask = async (
   const tempAisleBin = await Bin.create({
     binCode: `AISLE-${uuidv4().slice(0, 8)}`,
     warehouseID: warehouseID,
-    type: BinType.AILSE
+    type: BinType.AISLE
   })
 
   // ✅ Step 2: Move inventory to the new bin
@@ -525,4 +533,36 @@ export const releaseTask = async (
   await task.save()
 
   return task
+}
+
+export const updateTaskService = async (
+  taskID: string,
+  status: string,
+  sourceBinCode: string
+) => {
+  const bin = await Bin.findOne({
+    where: { binCode: sourceBinCode }
+  })
+
+  if (!bin) {
+    throw new Error('Bin code not found')
+  }
+
+  const [affectedRows] = await Task.update(
+    {
+      status,
+      sourceBinID: bin.binID
+    },
+    {
+      where: { taskID },
+      returning: true
+    }
+  )
+
+  if (affectedRows === 0) {
+    throw new Error('Task not found or not updated')
+  }
+
+  const updatedTask = await Task.findOne({ where: { taskID } })
+  return updatedTask
 }

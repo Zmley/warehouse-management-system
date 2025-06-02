@@ -3,9 +3,12 @@ import Inventory from 'routes/inventory/inventory.model'
 import AppError from 'utils/appError'
 import { Op, WhereOptions } from 'sequelize'
 import { BinUploadPayload } from 'types/bin'
+import { BinType } from 'constants/binType'
 
 export const getBinByBinCode = async (binCode: string) => {
   try {
+    console.log('🔍 Fetching bin with code:', binCode)
+
     const bin = await Bin.findOne({
       where: {
         binCode
@@ -216,4 +219,19 @@ export const getBinsByBinCodes = async (
   })
 
   return bins
+}
+
+export const updateDefaultProductCodes = async (binID, defaultProductCodes) => {
+  const bin = await Bin.findByPk(binID)
+  if (!bin) return null
+
+  bin.defaultProductCodes = defaultProductCodes
+  await bin.save()
+
+  return bin
+}
+
+export const deleteBinByBInID = async (binID: string): Promise<boolean> => {
+  const result = await Bin.destroy({ where: { binID } })
+  return result > 0
 }

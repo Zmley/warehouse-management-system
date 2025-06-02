@@ -1,0 +1,73 @@
+{
+  "profile": {
+    "title": "个人资料",
+    "signOut": "退出登录"
+  },
+  "topbar": {
+    "greeting": "你好，{{name}}",
+    "tooltip": "领取任务",
+    "pickButton": "发布任务"
+  },
+   "bottombar": {
+    "tasks": "任务列表",
+    "cart": "叉车"
+  },
+   "taskList": {
+    "pullToRefresh": "↓ 下拉刷新任务",
+    "empty": "没有待处理的任务",
+    "sourceBin": "来源货位",
+    "product": "产品号码",
+    "quantity": "任务数量",
+    "targetBin": "目标货位",
+    "createDate": "创建时间",
+    "accept": "接受",
+    "takeOver": "接手",
+    "loading": "加载中..."
+  },
+    "cart": {
+    "loadedFromBin": "已从货位装载",
+    "overLimit": "❌ 选择的数量（{{selected}}）超过任务限制（{{limit}}）",
+    "load": "装载",
+    "unload": "卸载"
+  },
+  
+  "scan": {
+    "productNotFound": "❌ 未找到该产品",
+    "fetchError": "❌ 获取产品信息失败",
+    "operationError": "❌ 操作失败，请重试",
+    "enterPrompt": "❌ 请输入货架编码",
+    "modeScanner": "扫码模式",
+    "modeManual": "手动输入",
+    "alignPrompt": "请将二维码或条码对准扫描框",
+    "enterBinCode": "请输入货架编码",
+    "submit": "提交",
+    "cancel": "取消",
+    "loadingProduct": "正在加载产品信息..."
+  },
+  
+  "inventory": {
+    "total": "库存总数",
+    "offload": "卸载数量",
+    "quantityExceed": "数量不能超过库存总数 ({{quantity}})"
+  },
+
+    "addToCart": {
+    "invalidQuantity": "❌ 无效的数量",
+    "addFailed": "❌ 添加失败",
+    "load": "装货"
+  },
+    "taskInstruction": {
+    "sourceBin": "来源货位:库存数量",
+    "product": "产品号码", 
+    "quantity": "任务数量",
+    "targetBin": "目标货位",
+    "cancel": "取消",
+    "release": "暂放过道",
+    "load": "加载",
+    "cannotCancelAfterLoad": "❌ 已加载货物，无法取消任务",
+    "cancelTooltip": "取消此任务",
+    "mustLoadFirst": "❌ 请先加载货物再释放任务",
+    "releaseTooltip": "释放任务到巷道",
+    "loadTooltip": "从过道货位加载物品"
+  }
+}

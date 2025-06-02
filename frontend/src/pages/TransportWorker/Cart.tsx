@@ -14,8 +14,10 @@ import InventoryListCard from './InventoryListCard'
 import TaskInstruction from 'components/TaskInstruction'
 import { useTaskContext } from 'contexts/task'
 import { QrCode2 } from '@mui/icons-material'
+import { useTranslation } from 'react-i18next'
 
 const Cart = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { inventoriesInCar, setSelectedToUnload, sourceBin } = useCartContext()
   const { myTask, fetchMyTask } = useTaskContext()
@@ -86,10 +88,6 @@ const Cart = () => {
 
   return (
     <Container maxWidth='sm' sx={{ pt: 1, pb: 10 }}>
-      {/* <Typography variant='h6' fontWeight='bold' textAlign='center' mb={2}>
-        Cart
-      </Typography> */}
-
       {myTask && (
         <Box mb={2}>
           <TaskInstruction />
@@ -108,7 +106,7 @@ const Cart = () => {
           {sourceBin && (
             <Box textAlign='center' mb={2}>
               <Typography variant='body2' fontWeight='bold'>
-                Loaded From Bin
+                {t('cart.loadedFromBin')}
               </Typography>
               <Typography variant='subtitle1' color='primary'>
                 {sourceBin}
@@ -132,8 +130,11 @@ const Cart = () => {
               mt={2}
               fontWeight='bold'
             >
-              ❌ Selected quantity ({selectedTotalQuantity}) exceeds task limit
-              ({myTask.quantity})
+              ❌{' '}
+              {t('cart.overLimit', {
+                selected: selectedTotalQuantity,
+                limit: myTask.quantity
+              })}
             </Typography>
           )}
 
@@ -161,7 +162,7 @@ const Cart = () => {
                     }
                   }}
                 >
-                  Load
+                  {t('cart.load')}
                 </Button>
               </Grid>
 
@@ -196,7 +197,7 @@ const Cart = () => {
                     boxShadow: '0px 3px 10px rgba(0,0,0,0.08)'
                   }}
                 >
-                  Unload
+                  {t('cart.unload')}
                 </Button>
               </Grid>
             </Grid>
