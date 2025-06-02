@@ -10,7 +10,10 @@
   },
    "bottombar": {
     "tasks": "Tasks",
-    "cart": "Cart"
+    "cart": "Cart",
+        "publish": "Publish Task"
+
+
   },
     "taskList": {
     "pullToRefresh": "↓ Pull down to refresh tasks",
@@ -27,22 +30,30 @@
    "cart": {
     "loadedFromBin": "Loaded From Bin",
     "overLimit": "❌ Selected quantity ({{selected}}) exceeds task limit ({{limit}})",
-    "load": "Load",
+
+
+
+    "loadByBin": "Load By QRCode",
+        "loadByProduct": "Load By BarCode",
     "unload": "Unload"
   },
     "scan": {
-    "productNotFound": "❌ Product not found",
-    "fetchError": "❌ Error fetching product",
-    "operationError": "❌ Operation failed. Please try again.",
-    "enterPrompt": "❌ Please enter a bin code.",
-    "modeScanner": "Scanner",
-    "modeManual": "Manual",
-    "alignPrompt": "Please align the QR/Barcode inside the frame",
+     "scanBin": "Scan Bin QRCode",
+               "scanProduct": "Scan Product BarCode",
+
+    "modeScanner": "Scan QR Code",
+    "modeManual": "Manual Input",
+    "alignPrompt": "Please align the QR code within the frame",
+    "enterPrompt": "Please enter a bin code",
     "enterBinCode": "Enter Bin Code",
     "submit": "Submit",
     "cancel": "Cancel",
-    "loadingProduct": "Loading product info..."
+    "operationError": "❌ Operation failed. Please try again."
   },
+
+
+
+
     "inventory": {
     "total": "Total",
     "offload": "Offload",

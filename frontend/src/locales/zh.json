@@ -10,7 +10,9 @@
   },
    "bottombar": {
     "tasks": "任务列表",
-    "cart": "叉车"
+    "cart": "叉车",
+            "publish": "发布任务"
+
   },
    "taskList": {
     "pullToRefresh": "↓ 下拉刷新任务",
@@ -28,21 +30,26 @@
     "loadedFromBin": "已从货位装载",
     "overLimit": "❌ 选择的数量（{{selected}}）超过任务限制（{{limit}}）",
     "load": "装载",
-    "unload": "卸载"
+
+       "loadByBin": "装货(二维码)",
+        "loadByProduct": "装货(条形吗)",
+
+
+    "unload": "卸货"
   },
   
   "scan": {
-    "productNotFound": "❌ 未找到该产品",
-    "fetchError": "❌ 获取产品信息失败",
-    "operationError": "❌ 操作失败，请重试",
-    "enterPrompt": "❌ 请输入货架编码",
+     "scanBin": "扫描货架二维码",
+          "scanProduct": "扫描产品条形码",
+
     "modeScanner": "扫码模式",
     "modeManual": "手动输入",
-    "alignPrompt": "请将二维码或条码对准扫描框",
-    "enterBinCode": "请输入货架编码",
+    "alignPrompt": "请将码对准框内进行识别",
+    "enterPrompt": "请输入货架编号",
+    "enterBinCode": "输入货架编号",
     "submit": "提交",
     "cancel": "取消",
-    "loadingProduct": "正在加载产品信息..."
+    "operationError": "❌ 操作失败，请重试"
   },
   
   "inventory": {

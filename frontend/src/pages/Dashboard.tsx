@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Box, Typography } from '@mui/material'
+import { Box } from '@mui/material'
 import TopBar from 'components/Topbar'
 import WokerBottombar from './TransportWorker/Bottombar'
 import PickerBottombar from './Picker/Bottombar'
@@ -10,6 +10,7 @@ import { TaskCategoryEnum } from 'types/task'
 import { TransportWorkCartProvider } from 'contexts/cart'
 import { useCart } from 'hooks/useCart'
 import Cart from 'pages/TransportWorker/Cart'
+import { useNavigate } from 'react-router-dom'
 
 const TopBarFixed = ({ userName }: { userName: string }) => (
   <Box
@@ -35,6 +36,8 @@ const TransportWorkerContent: React.FC<{ userName: string }> = ({
     isCartEmpty ? 'task' : 'cart'
   )
 
+  const navigate = useNavigate()
+
   useEffect(() => {
     if (!isCartEmpty) {
       setView('cart')
@@ -54,6 +57,7 @@ const TransportWorkerContent: React.FC<{ userName: string }> = ({
       <WokerBottombar
         onCartClick={() => setView('cart')}
         onTaskListClick={() => setView('task')}
+        onPublishClick={() => navigate('/picker-scan-bin')}
       />
     </Box>
   )

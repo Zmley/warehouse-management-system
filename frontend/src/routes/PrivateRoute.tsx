@@ -1,5 +1,6 @@
-import { Routes, Route, Outlet } from 'react-router-dom'
-import ScanQRCode from 'pages/TransportWorker/Scan'
+import { Routes, Route } from 'react-router-dom'
+import ScanQRCode from 'pages/TransportWorker/ScanQRCode'
+import ScanbarCode from 'pages/TransportWorker/ScanBarCode'
 import UnloadSuccess from 'pages/Success'
 import { useContext, useEffect } from 'react'
 import { AuthContext } from 'contexts/auth'
@@ -19,10 +20,19 @@ const PrivateRoutes: React.FC = () => {
     <Routes>
       <Route path='/' element={<Dashboard />} />
       <Route
-        path='/my-task/scan-qr'
+        path='/my-task/scan-QRCode'
         element={
           <TransportWorkCartProvider>
             <ScanQRCode />
+          </TransportWorkCartProvider>
+        }
+      />
+
+      <Route
+        path='/my-task/scan-barCode'
+        element={
+          <TransportWorkCartProvider>
+            <ScanbarCode />
           </TransportWorkCartProvider>
         }
       />

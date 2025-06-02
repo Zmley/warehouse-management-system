@@ -15,6 +15,7 @@ import TaskInstruction from 'components/TaskInstruction'
 import { useTaskContext } from 'contexts/task'
 import { QrCode2 } from '@mui/icons-material'
 import { useTranslation } from 'react-i18next'
+import DocumentScanner from '@mui/icons-material/DocumentScanner'
 
 const Cart = () => {
   const { t } = useTranslation()
@@ -87,7 +88,7 @@ const Cart = () => {
     selectedTotalQuantity > myTask.quantity
 
   return (
-    <Container maxWidth='sm' sx={{ pt: 1, pb: 10 }}>
+    <Container maxWidth='sm' sx={{ pt: 0, pb: 10 }}>
       {myTask && (
         <Box mb={2}>
           <TaskInstruction />
@@ -139,31 +140,50 @@ const Cart = () => {
           )}
 
           <Box mt={3}>
-            <Grid container spacing={2}>
+            <Grid container spacing={1}>
               <Grid item xs={6}>
-                <Button
-                  variant='contained'
-                  color='primary'
-                  onClick={() =>
-                    navigate('/my-task/scan-qr', { state: { mode: 'load' } })
-                  }
-                  startIcon={<QrCode2 />}
-                  sx={{
-                    width: '100%',
-                    height: 60,
-                    fontWeight: 600,
-                    fontSize: 16,
-                    borderRadius: 2,
-                    textTransform: 'none',
-                    boxShadow: '0px 3px 10px rgba(0,0,0,0.08)',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      backgroundColor: '#1e40af'
+                <Box display='flex' flexDirection='column' height='100%'>
+                  <Button
+                    variant='contained'
+                    color='primary'
+                    onClick={() =>
+                      navigate('/my-task/scan-QRCode', {
+                        state: { mode: 'load' }
+                      })
                     }
-                  }}
-                >
-                  {t('cart.load')}
-                </Button>
+                    startIcon={<QrCode2 />}
+                    sx={{
+                      mb: 1,
+                      flex: 1,
+                      fontWeight: 600,
+                      fontSize: 14,
+                      textTransform: 'none',
+                      borderRadius: 2,
+                      height: 50
+                    }}
+                  >
+                    {t('cart.loadByBin')}
+                  </Button>
+
+                  <Button
+                    variant='contained'
+                    color='primary'
+                    onClick={() => navigate('/my-task/scan-barCode')}
+                    startIcon={
+                      <DocumentScanner sx={{ transform: 'rotate(90deg)' }} />
+                    }
+                    sx={{
+                      flex: 1,
+                      fontWeight: 600,
+                      fontSize: 14,
+                      textTransform: 'none',
+                      borderRadius: 2,
+                      height: 50
+                    }}
+                  >
+                    {t('cart.loadByProduct')}
+                  </Button>
+                </Box>
               </Grid>
 
               <Grid item xs={6}>
@@ -180,7 +200,7 @@ const Cart = () => {
                         quantity
                       }))
                     setSelectedToUnload(selectedToUnload)
-                    navigate('/my-task/scan-qr', {
+                    navigate('/my-task/scan-QRCode', {
                       state: {
                         mode: 'unload',
                         unloadProductList: selectedToUnload
@@ -189,12 +209,12 @@ const Cart = () => {
                   }}
                   sx={{
                     width: '100%',
-                    height: 60,
+                    height: '100%',
+                    minHeight: 110,
                     fontWeight: 600,
                     fontSize: 16,
-                    borderRadius: 2,
                     textTransform: 'none',
-                    boxShadow: '0px 3px 10px rgba(0,0,0,0.08)'
+                    borderRadius: 2
                   }}
                 >
                   {t('cart.unload')}

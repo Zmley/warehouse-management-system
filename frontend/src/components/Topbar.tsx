@@ -1,10 +1,14 @@
 import React, { useState } from 'react'
-import { Box, IconButton, Typography, Tooltip, Button } from '@mui/material'
+import {
+  Box,
+  IconButton,
+  Typography,
+  Switch,
+  FormControlLabel
+} from '@mui/material'
 import { Menu as MenuIcon } from '@mui/icons-material'
-import DocumentScannerOutlinedIcon from '@mui/icons-material/DocumentScannerOutlined'
-import { useNavigate } from 'react-router-dom'
-import ProfileDrawer from 'pages/Profile'
 import { useTranslation } from 'react-i18next'
+import ProfileDrawer from 'pages/Profile'
 
 interface TopBarProps {
   userName: string
@@ -12,8 +16,15 @@ interface TopBarProps {
 
 const TopBar: React.FC<TopBarProps> = ({ userName }) => {
   const [drawerOpen, setDrawerOpen] = useState(false)
-  const navigate = useNavigate()
-  const { t } = useTranslation()
+  const { i18n, t } = useTranslation()
+
+  const isZh = i18n.language === 'zh'
+
+  const handleLanguageToggle = () => {
+    const newLang = isZh ? 'en' : 'zh'
+    i18n.changeLanguage(newLang)
+    localStorage.setItem('i18nextLng', newLang)
+  }
 
   return (
     <>
@@ -41,31 +52,38 @@ const TopBar: React.FC<TopBarProps> = ({ userName }) => {
         {/* Center title */}
         <Typography
           variant='subtitle1'
-          sx={{ fontWeight: 600, color: '#333', flex: 1, textAlign: 'center' }}
+          sx={{
+            fontWeight: 600,
+            color: '#333',
+            flex: 1,
+            textAlign: 'center'
+          }}
         >
           {t('topbar.greeting', { name: userName })}
         </Typography>
 
-        {/* Right scan icon */}
-        <Tooltip title={t('topbar.tooltip')}>
-          <Button
-            variant='text'
-            onClick={() => navigate('/picker-scan-bin')}
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              color: '#2563eb',
+        {/* Right language toggle */}
+        <FormControlLabel
+          control={
+            <Switch
+              size='small'
+              checked={!isZh}
+              onChange={handleLanguageToggle}
+              color='primary'
+            />
+          }
+          label={isZh ? '中文' : 'English'}
+          labelPlacement='start'
+          sx={{
+            ml: 1,
+            mr: -1,
+            '& .MuiFormControlLabel-label': {
+              fontSize: 12,
               fontWeight: 600,
-              textTransform: 'none',
-              fontSize: 14,
-              minWidth: 'auto',
-              padding: 0
-            }}
-            startIcon={<DocumentScannerOutlinedIcon sx={{ fontSize: 20 }} />}
-          >
-            {t('topbar.pickButton')}
-          </Button>
-        </Tooltip>
+              color: '#2563eb'
+            }
+          }}
+        />
       </Box>
 
       <ProfileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
