@@ -98,35 +98,35 @@ const ScanProductQRCode = () => {
               }}
             />
 
-            {/* 外层虚线框 */}
+            {/* 条形码外框 */}
             <Box
               sx={{
                 position: 'absolute',
-                top: '15%',
+                top: '40%',
                 left: '10%',
                 width: '80%',
-                height: '70%',
+                height: '20%',
                 border: '2px dashed #1976d2',
-                borderRadius: 2,
+                borderRadius: 4,
                 zIndex: 10,
                 pointerEvents: 'none'
               }}
             />
 
-            {/* 中间扫描线 */}
+            {/* 横向扫描线 */}
             <Box
               sx={{
                 position: 'absolute',
                 top: '50%',
-                left: '10%',
-                width: '80%',
+                left: 0,
+                width: '100%',
                 height: '2px',
                 background:
-                  'linear-gradient(to right, #1976d2, #42a5f5, #1976d2)',
-                boxShadow: '0 0 10px rgba(25, 118, 210, 0.8)',
-                transform: 'translateY(-1px)',
+                  'linear-gradient(to right, transparent, #42a5f5, transparent)',
+                animation: 'scanLineX 2s infinite',
                 zIndex: 11,
-                pointerEvents: 'none'
+                pointerEvents: 'none',
+                transform: 'translateY(-50%)'
               }}
             />
 
@@ -144,6 +144,16 @@ const ScanProductQRCode = () => {
             >
               {t('scan.alignPrompt')}
             </Typography>
+
+            {/* 扫描动画样式 */}
+            <style>
+              {`
+                @keyframes scanLineX {
+                  0% { left: 0%; }
+                  50% { left: 100%; transform: translateX(-100%) translateY(-50%); }
+                  100% { left: 0%; }
+              `}
+            </style>
           </Box>
 
           {isLoadingProduct && (

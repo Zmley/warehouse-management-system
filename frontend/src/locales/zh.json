@@ -49,7 +49,11 @@
     "enterBinCode": "输入货架编号",
     "submit": "提交",
     "cancel": "取消",
-    "operationError": "❌ 操作失败，请重试"
+    "operationError": "❌ 操作失败，请重试",
+        "enterBinOrProduct" : "输入货架编号或产品条形码",
+                "title" : "扫描货架编号或产品条形码"
+
+
   },
   
   "inventory": {
@@ -76,5 +80,12 @@
     "mustLoadFirst": "❌ 请先加载货物再释放任务",
     "releaseTooltip": "释放任务到巷道",
     "loadTooltip": "从过道货位加载物品"
+  },
+
+    "productCard": {
+    "title": "产品信息",
+    "productCode": "产品编码",
+    "barCode": "条形码",
+    "boxType": "箱型"
   }
 }

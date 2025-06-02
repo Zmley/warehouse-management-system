@@ -33,7 +33,6 @@ const BottomBar: React.FC<BottomBarProps> = ({
         zIndex: 1200
       }}
     >
-      {/* Left: Task */}
       <Box
         onClick={onTaskListClick}
         sx={{
@@ -61,7 +60,6 @@ const BottomBar: React.FC<BottomBarProps> = ({
         </Typography>
       </Box>
 
-      {/* Center: Publish */}
       <Box
         sx={{
           display: 'flex',
@@ -104,7 +102,6 @@ const BottomBar: React.FC<BottomBarProps> = ({
         </Typography>
       </Box>
 
-      {/* Right: Cart */}
       <Box
         onClick={onCartClick}
         sx={{

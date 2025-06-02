@@ -39,7 +39,7 @@
   },
     "scan": {
      "scanBin": "Scan Bin QRCode",
-               "scanProduct": "Scan Product BarCode",
+    "scanProduct": "Scan Product BarCode",
 
     "modeScanner": "Scan QR Code",
     "modeManual": "Manual Input",
@@ -48,7 +48,15 @@
     "enterBinCode": "Enter Bin Code",
     "submit": "Submit",
     "cancel": "Cancel",
-    "operationError": "❌ Operation failed. Please try again."
+    "operationError": "❌ Operation failed. Please try again.",
+
+
+    "enterBinOrProduct" : "Enter Bin Code or Product BarCode",
+
+        "title" : "Scan Bin Code or Product BarCode"
+
+
+    
   },
 
 
@@ -79,6 +87,13 @@
     "mustLoadFirst": "❌ Load cargo first to release",
     "releaseTooltip": "Release this task to the aisle",
     "loadTooltip": "Load items from aisle bin"
+  },
+
+    "productCard": {
+    "title": "Product Info",
+    "productCode": "Product Code",
+    "barCode": "Bar Code",
+    "boxType": "Box Type"
   }
 
   
