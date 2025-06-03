@@ -94,6 +94,16 @@
     "productCode": "Product Code",
     "barCode": "Bar Code",
     "boxType": "Box Type"
+  },
+
+    "taskListCard": {
+ "cancel": "cancel",
+  "canceling": "canceling",
+
+    "completed": "completed",
+          "refreshing" : "refreshing"
+
+
   }
 
   

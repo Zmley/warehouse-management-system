@@ -66,9 +66,10 @@ const TransportWorkerContent: React.FC<{ userName: string }> = ({
 const Dashboard: React.FC = () => {
   const { userProfile } = useAuth()
   const isPicker = userProfile.role === 'PICKER'
-  // const isAdmin = userProfile.role === 'ADMIN'
   const isTransportWorker = userProfile.role === 'TRANSPORT_WORKER'
   const [taskStatus, setTaskStatus] = useState(TaskCategoryEnum.PENDING)
+
+  const navigate = useNavigate()
 
   if (isPicker) {
     return (
@@ -78,6 +79,7 @@ const Dashboard: React.FC = () => {
         <TopBarFixed
           userName={`${userProfile.firstName} ${userProfile.lastName}`}
         />
+
         <Box
           sx={{
             pt: '72px',
@@ -89,9 +91,14 @@ const Dashboard: React.FC = () => {
         >
           <PickerCreatedTaskList status={taskStatus} />
         </Box>
+
         <PickerBottombar
+          selectedView={
+            taskStatus === TaskCategoryEnum.PENDING ? 'task' : 'archived'
+          }
           onTaskListClick={() => setTaskStatus(TaskCategoryEnum.PENDING)}
           onArchivedClick={() => setTaskStatus(TaskCategoryEnum.COMPLETED)}
+          onCreateTaskClick={() => navigate('/picker-scan-bin')} // ✅ 这里才能正常用
         />
       </Box>
     )

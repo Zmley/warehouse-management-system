@@ -7,39 +7,62 @@ import {
   Button,
   Grid,
   Divider,
-  CircularProgress
+  CircularProgress,
+  Snackbar,
+  Alert
 } from '@mui/material'
 import PullToRefresh from 'react-simple-pull-to-refresh'
 import { usePickerTasks } from 'hooks/usePickerTask'
 import { TaskCategoryEnum } from 'types/task'
+import { useTranslation } from 'react-i18next'
 
 interface Props {
   status: TaskCategoryEnum
 }
 
 const TaskListCard: React.FC<Props> = ({ status }) => {
+  const { t } = useTranslation()
   const { cancelTask, tasks, fetchTasks } = usePickerTasks()
 
   const [hasFetched, setHasFetched] = useState(false)
   const [isLoadingTaskID, setIsLoadingTaskID] = useState<string | null>(null)
+  const [open, setOpen] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchTasks().then(() => setHasFetched(true))
-  }, [fetchTasks])
+    fetchTasks()
+      .then(() => setHasFetched(true))
+      .catch(err => {
+        setError(err.message || 'Error fetching tasks')
+        setOpen(true)
+      })
+  }, [])
 
   const handleManualRefresh = async () => {
-    await fetchTasks()
+    try {
+      await fetchTasks()
+    } catch (err: any) {
+      setError(err.message || 'Error refreshing tasks')
+      setOpen(true)
+    }
   }
 
   const handleCancel = async (taskID: string) => {
     setIsLoadingTaskID(taskID)
-    const result = await cancelTask(taskID)
-    if (result) {
-      await fetchTasks()
-    } else {
-      alert('❌ Failed to cancel task')
+    try {
+      const result = await cancelTask(taskID)
+      if (result) {
+        await fetchTasks()
+      } else {
+        setError(t('taskListCard.cancelFailed'))
+        setOpen(true)
+      }
+    } catch (err: any) {
+      setError(err.message || t('taskListCard.cancelFailed'))
+      setOpen(true)
+    } finally {
+      setIsLoadingTaskID(null)
     }
-    setIsLoadingTaskID(null)
   }
 
   const filteredTasks = tasks.filter(task => task.status === status)
@@ -51,19 +74,19 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
         <Box sx={{ textAlign: 'center', py: 3 }}>
           <CircularProgress size={28} thickness={5} />
           <Typography variant='caption' display='block' sx={{ mt: 1 }}>
-            Refreshing tasks...
+            {t('taskListCard.refreshing')}
           </Typography>
         </Box>
       }
     >
-      <Box p={2}>
+      <Box p={2} pb={10}>
         {!hasFetched ? (
           <Box display='flex' justifyContent='center' mt={6}>
             <CircularProgress />
           </Box>
         ) : filteredTasks.length === 0 ? (
           <Typography color='text.secondary' textAlign='center'>
-            No {status.toLowerCase()} tasks found.
+            {t('taskListCard.empty', { status })}
           </Typography>
         ) : (
           filteredTasks.map(task => (
@@ -72,92 +95,91 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
               variant='outlined'
               sx={{
                 mb: 3,
-                borderRadius: 4,
-                backgroundColor: '#f8faff',
-                boxShadow: '0 4px 10px rgba(0, 0, 0, 0.06)'
+                borderRadius: 3,
+                backgroundColor: '#eff6ff',
+                border: '1.5px solid #2563eb',
+                boxShadow: '0 2px 6px rgba(0, 0, 0, 0.05)'
               }}
             >
-              <CardContent>
-                <Typography fontWeight='bold' fontSize={13} mb={2}>
-                  Task ID # {task.taskID}
-                </Typography>
-
-                <Grid container spacing={2}>
-                  <Grid item xs={4}>
+              <CardContent sx={{ py: 1.5, px: 2 }}>
+                <Grid container spacing={1.5}>
+                  <Grid item xs={12} textAlign='center'>
                     <Typography variant='caption' color='text.secondary'>
-                      Source Bin
+                      {t('taskList.sourceBin')}
                     </Typography>
-                    <Box>
-                      {Array.isArray(task.sourceBins) &&
-                      task.sourceBins.length > 0 ? (
-                        task.sourceBins.map((item, idx) => (
-                          <Typography
-                            key={idx}
-                            fontWeight='bold'
-                            fontSize={16}
-                            component='span'
-                          >
-                            {typeof item === 'string'
-                              ? item
-                              : item.bin?.binCode || '--'}
-                            {idx < task.sourceBins.length - 1 && ' / '}
-                          </Typography>
-                        ))
-                      ) : (
-                        <Typography fontWeight='bold'>--</Typography>
-                      )}
+                    <Box sx={{ fontWeight: 'bold', fontSize: 15, mt: 0.5 }}>
+                      {task.sourceBins?.length > 0
+                        ? task.sourceBins
+                            .map((inv: any) => inv.bin?.binCode)
+                            .filter(Boolean)
+                            .join(' / ')
+                        : '--'}
                     </Box>
                   </Grid>
 
-                  <Grid item xs={4}>
+                  <Grid item xs={4} textAlign='center'>
                     <Typography variant='caption' color='text.secondary'>
-                      Product
+                      {t('taskList.product')}
                     </Typography>
-                    <Typography fontWeight='bold'>
+                    <Typography fontWeight='bold' fontSize={14}>
                       {task.productCode}
                     </Typography>
                   </Grid>
 
-                  <Grid item xs={4}>
+                  <Grid item xs={4} textAlign='center'>
                     <Typography variant='caption' color='text.secondary'>
-                      Target Bin
+                      {t('taskList.quantity')}
                     </Typography>
-                    <Typography fontWeight='bold'>
+                    <Typography fontWeight='bold' fontSize={14}>
+                      {task.quantity || 'ALL'}
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={4} textAlign='center'>
+                    <Typography variant='caption' color='text.secondary'>
+                      {t('taskList.targetBin')}
+                    </Typography>
+                    <Typography fontWeight='bold' fontSize={14}>
                       {task.destinationBinCode || '--'}
                     </Typography>
                   </Grid>
                 </Grid>
 
-                <Divider sx={{ my: 2 }} />
+                <Divider sx={{ my: 1.5 }} />
 
                 <Box
                   display='flex'
                   justifyContent='space-between'
                   alignItems='center'
                 >
-                  <Typography variant='caption' color='text.secondary'>
-                    Create Date: {new Date(task.createdAt).toLocaleString()}
+                  <Typography
+                    variant='caption'
+                    color='text.secondary'
+                    fontSize={12}
+                  >
+                    {t('taskList.createDate')}:{' '}
+                    {new Date(task.createdAt).toLocaleString()}
                   </Typography>
 
                   {status === 'PENDING' && (
                     <Button
-                      variant='outlined'
+                      variant='contained'
                       color='error'
                       onClick={() => handleCancel(task.taskID)}
                       disabled={isLoadingTaskID === task.taskID}
                       sx={{
-                        fontWeight: 600,
-                        px: 1.5,
-                        py: 0.8,
-                        textTransform: 'uppercase',
-                        borderRadius: 1.5,
                         fontSize: 11,
-                        minWidth: '72px'
+                        px: 2,
+                        py: 0.5,
+                        borderRadius: 2,
+                        textTransform: 'uppercase',
+                        fontWeight: 600,
+                        minHeight: 30
                       }}
                     >
                       {isLoadingTaskID === task.taskID
-                        ? 'Cancelling...'
-                        : 'Cancel'}
+                        ? t('taskListCard.cancelling')
+                        : t('taskListCard.cancel')}
                     </Button>
                   )}
 
@@ -167,7 +189,7 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
                       fontSize={12}
                       color='success.main'
                     >
-                      Completed
+                      {t('taskListCard.completed')}
                     </Typography>
                   )}
                 </Box>
@@ -176,6 +198,22 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
           ))
         )}
       </Box>
+
+      <Snackbar
+        open={open}
+        autoHideDuration={3000}
+        onClose={() => setOpen(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setOpen(false)}
+          severity='error'
+          variant='filled'
+          sx={{ width: '100%' }}
+        >
+          {error}
+        </Alert>
+      </Snackbar>
     </PullToRefresh>
   )
 }

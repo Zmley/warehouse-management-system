@@ -7,18 +7,23 @@ import AddCircleIcon from '@mui/icons-material/AddCircle'
 import ArchiveIcon from '@mui/icons-material/Archive'
 
 interface PickerBottomBarProps {
-  onTaskListClick?: () => void
-  onArchivedClick?: () => void
+  selectedView: 'task' | 'archived'
+  onTaskListClick: () => void
+  onCreateTaskClick: () => void
+  onArchivedClick: () => void
 }
 
-const Bottombar: React.FC<PickerBottomBarProps> = ({
+const PickerBottombar: React.FC<PickerBottomBarProps> = ({
+  selectedView,
   onTaskListClick,
+  onCreateTaskClick,
   onArchivedClick
 }) => {
   const navigate = useNavigate()
 
   return (
     <BottomNavigation
+      value={selectedView}
       showLabels
       sx={{
         position: 'fixed',
@@ -33,25 +38,28 @@ const Bottombar: React.FC<PickerBottomBarProps> = ({
       <BottomNavigationAction
         label='Task List'
         icon={<AssignmentIcon />}
-        onClick={onTaskListClick || (() => navigate('/task-list'))}
+        value='task'
+        onClick={onTaskListClick}
         sx={{ minWidth: '33.33%' }}
       />
 
       <BottomNavigationAction
         label='Create Task'
         icon={<AddCircleIcon />}
-        onClick={() => navigate('/picker-scan-bin')}
+        value=''
+        onClick={onCreateTaskClick || (() => navigate('/picker-scan-bin'))}
         sx={{ minWidth: '33.33%' }}
       />
 
       <BottomNavigationAction
         label='Archived Task'
         icon={<ArchiveIcon />}
-        onClick={onArchivedClick || (() => navigate('/archived-tasks'))}
+        value='archived'
+        onClick={onArchivedClick}
         sx={{ minWidth: '33.33%' }}
       />
     </BottomNavigation>
   )
 }
 
-export default Bottombar
+export default PickerBottombar

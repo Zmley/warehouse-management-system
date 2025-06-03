@@ -88,4 +88,17 @@
     "barCode": "条形码",
     "boxType": "箱型"
   }
+  ,
+
+
+  "taskListCard": {
+ "cancel": "取消",
+  "canceling": "正在取消",
+      "completed": "已完成",
+      "refreshing" : "正在刷新"
+
+  }
+
+
+
 }
