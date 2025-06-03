@@ -1,6 +1,7 @@
 import React from 'react'
 import { BottomNavigation, BottomNavigationAction } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 import AssignmentIcon from '@mui/icons-material/Assignment'
 import AddCircleIcon from '@mui/icons-material/AddCircle'
@@ -20,6 +21,7 @@ const PickerBottombar: React.FC<PickerBottomBarProps> = ({
   onArchivedClick
 }) => {
   const navigate = useNavigate()
+  const { t } = useTranslation()
 
   return (
     <BottomNavigation
@@ -36,7 +38,7 @@ const PickerBottombar: React.FC<PickerBottomBarProps> = ({
       }}
     >
       <BottomNavigationAction
-        label='Task List'
+        label={t('pickerBottomBar.taskList')}
         icon={<AssignmentIcon />}
         value='task'
         onClick={onTaskListClick}
@@ -44,7 +46,7 @@ const PickerBottombar: React.FC<PickerBottomBarProps> = ({
       />
 
       <BottomNavigationAction
-        label='Create Task'
+        label={t('pickerBottomBar.createTask')}
         icon={<AddCircleIcon />}
         value=''
         onClick={onCreateTaskClick || (() => navigate('/picker-scan-bin'))}
@@ -52,7 +54,7 @@ const PickerBottombar: React.FC<PickerBottomBarProps> = ({
       />
 
       <BottomNavigationAction
-        label='Archived Task'
+        label={t('pickerBottomBar.archivedTask')}
         icon={<ArchiveIcon />}
         value='archived'
         onClick={onArchivedClick}

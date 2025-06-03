@@ -95,9 +95,16 @@
  "cancel": "取消",
   "canceling": "正在取消",
       "completed": "已完成",
-      "refreshing" : "正在刷新"
+      "refreshing" : "正在刷新",
+            "empty" : "暂无新发布任务"
 
-  }
+  },
+
+  "pickerBottomBar": {
+  "taskList": "任务列表",
+  "createTask": "创建任务",
+  "archivedTask": "已完成任务"
+}
 
 
 

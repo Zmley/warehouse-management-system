@@ -101,10 +101,19 @@
   "canceling": "canceling",
 
     "completed": "completed",
-          "refreshing" : "refreshing"
+          "refreshing" : "refreshing",
+
+                      "empty" : "No pending tasks found."
 
 
-  }
+
+  },
+
+  "pickerBottomBar": {
+  "taskList": "Task List",
+  "createTask": "Create Task",
+  "archivedTask": "Archived Task"
+}
 
   
 }
