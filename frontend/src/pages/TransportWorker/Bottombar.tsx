@@ -1,5 +1,5 @@
 import React from 'react'
-import { Box, Typography } from '@mui/material'
+import { Box, Typography, IconButton } from '@mui/material'
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined'
 import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined'
 import AddIcon from '@mui/icons-material/Add'
@@ -33,6 +33,7 @@ const BottomBar: React.FC<BottomBarProps> = ({
         zIndex: 1200
       }}
     >
+      {/* Task List */}
       <Box
         onClick={onTaskListClick}
         sx={{
@@ -60,35 +61,32 @@ const BottomBar: React.FC<BottomBarProps> = ({
         </Typography>
       </Box>
 
+      {/* Publish Button (plus icon moved inside) */}
       <Box
         sx={{
+          flex: 1,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          mt: -4,
-          pointerEvents: 'auto'
+          justifyContent: 'center'
         }}
       >
-        <Box
+        <IconButton
           onClick={onPublishClick}
           sx={{
-            width: 64,
-            height: 64,
+            width: 48,
+            height: 48,
             borderRadius: '50%',
             background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
-            boxShadow: '0 8px 20px rgba(59,130,246,0.35)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            transition: 'all 0.3s ease',
+            boxShadow: '0 4px 12px rgba(59,130,246,0.35)',
+            color: '#fff',
             '&:hover': {
               background: 'linear-gradient(135deg, #2563eb, #1e40af)'
             }
           }}
         >
-          <AddIcon sx={{ color: '#fff', fontSize: 32 }} />
-        </Box>
+          <AddIcon sx={{ fontSize: 28 }} />
+        </IconButton>
         <Typography
           variant='caption'
           sx={{
@@ -102,6 +100,7 @@ const BottomBar: React.FC<BottomBarProps> = ({
         </Typography>
       </Box>
 
+      {/* Cart */}
       <Box
         onClick={onCartClick}
         sx={{
