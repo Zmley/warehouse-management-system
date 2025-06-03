@@ -11,8 +11,7 @@
    "bottombar": {
     "tasks": "任务列表",
     "cart": "叉车",
-            "publish": "发布任务"
-
+    "publish": "发布任务"
   },
    "taskList": {
     "pullToRefresh": "↓ 下拉刷新任务",
@@ -30,38 +29,29 @@
     "loadedFromBin": "已从货位装载",
     "overLimit": "❌ 选择的数量（{{selected}}）超过任务限制（{{limit}}）",
     "load": "装载",
-
-       "loadByBin": "装货(二维码)",
-        "loadByProduct": "装货(条形吗)",
-
-
+    "loadByBin": "装货(二维码)",
+    "loadByProduct": "装货(条形吗)",
     "unload": "卸货"
   },
-  
   "scan": {
-     "scanBin": "扫描货架二维码",
-          "scanProduct": "扫描产品条形码",
-
-    "modeScanner": "扫码模式",
-    "modeManual": "手动输入",
-    "alignPrompt": "请将码对准框内进行识别",
-    "enterPrompt": "请输入货架编号",
-    "enterBinCode": "输入货架编号",
-    "submit": "提交",
-    "cancel": "取消",
-    "operationError": "❌ 操作失败，请重试",
-        "enterBinOrProduct" : "输入货架编号或产品条形码",
-                "title" : "扫描货架编号或产品条形码"
-
-
-  },
-  
+  "scanBin": "扫描货架二维码",
+  "scanProduct": "扫描产品条形码",
+  "modeScanner": "扫码模式",
+  "modeManual": "手动输入",
+  "alignPrompt": "请将码对准框内进行识别",
+  "enterPrompt": "请输入货架编号",
+  "enterBinCode": "输入货架编号",
+  "submit": "提交",
+  "cancel": "取消",
+  "operationError": "❌ 操作失败，请重试",
+  "enterBinOrProduct" : "输入货架编号或产品条形码",
+  "title" : "扫描货架编号或产品条形码"
+  },  
   "inventory": {
     "total": "库存总数",
     "offload": "卸载数量",
     "quantityExceed": "数量不能超过库存总数 ({{quantity}})"
   },
-
     "addToCart": {
     "invalidQuantity": "❌ 无效的数量",
     "addFailed": "❌ 添加失败",
@@ -81,31 +71,22 @@
     "releaseTooltip": "释放任务到巷道",
     "loadTooltip": "从过道货位加载物品"
   },
-
     "productCard": {
     "title": "产品信息",
     "productCode": "产品编码",
     "barCode": "条形码",
     "boxType": "箱型"
-  }
-  ,
-
-
-  "taskListCard": {
- "cancel": "取消",
-  "canceling": "正在取消",
-      "completed": "已完成",
-      "refreshing" : "正在刷新",
-            "empty" : "暂无新发布任务"
-
   },
-
+"taskListCard": {
+ "cancel": "取消",
+ "canceling": "正在取消",
+ "completed": "已完成",
+ "refreshing" : "正在刷新",
+  "empty" : "暂无新发布任务"
+  },
   "pickerBottomBar": {
   "taskList": "任务列表",
   "createTask": "创建任务",
   "archivedTask": "已完成任务"
 }
-
-
-
 }

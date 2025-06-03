@@ -1,7 +1,7 @@
 {
   "profile": {
-    "title": "Profile",
-    "signOut": "Sign Out"
+  "title": "Profile",
+  "signOut": "Sign Out"
   },
   "topbar": {
     "greeting": "Hello, {{name}}",
@@ -11,9 +11,7 @@
    "bottombar": {
     "tasks": "Tasks",
     "cart": "Cart",
-        "publish": "Publish Task"
-
-
+    "publish": "Publish Task"
   },
     "taskList": {
     "pullToRefresh": "↓ Pull down to refresh tasks",
@@ -30,17 +28,13 @@
    "cart": {
     "loadedFromBin": "Loaded From Bin",
     "overLimit": "❌ Selected quantity ({{selected}}) exceeds task limit ({{limit}})",
-
-
-
     "loadByBin": "Load By QRCode",
-        "loadByProduct": "Load By BarCode",
+    "loadByProduct": "Load By BarCode",
     "unload": "Unload"
   },
     "scan": {
      "scanBin": "Scan Bin QRCode",
     "scanProduct": "Scan Product BarCode",
-
     "modeScanner": "Scan QR Code",
     "modeManual": "Manual Input",
     "alignPrompt": "Please align the QR code within the frame",
@@ -49,18 +43,9 @@
     "submit": "Submit",
     "cancel": "Cancel",
     "operationError": "❌ Operation failed. Please try again.",
-
-
     "enterBinOrProduct" : "Enter Bin Code or Product BarCode",
-
-        "title" : "Scan Bin Code or Product BarCode"
-
-
-    
+    "title" : "Scan Bin Code or Product BarCode"
   },
-
-
-
 
     "inventory": {
     "total": "Total",
@@ -96,17 +81,12 @@
     "boxType": "Box Type"
   },
 
-    "taskListCard": {
- "cancel": "cancel",
+  "taskListCard": {
+  "cancel": "cancel",
   "canceling": "canceling",
-
-    "completed": "completed",
-          "refreshing" : "refreshing",
-
-                      "empty" : "No pending tasks found."
-
-
-
+  "completed": "completed",
+  "refreshing" : "refreshing",
+  "empty" : "No pending tasks found."
   },
 
   "pickerBottomBar": {
@@ -114,6 +94,4 @@
   "createTask": "Create Task",
   "archivedTask": "Archived Task"
 }
-
-  
 }
