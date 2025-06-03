@@ -95,7 +95,8 @@ export const addInventories = async (
 
     res.status(200).json({
       success: true,
-      result
+      insertedCount: result.insertedCount,
+      updatedCount: result.updatedCount
     })
   } catch (error) {
     next(error)

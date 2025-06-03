@@ -115,8 +115,7 @@ export const addBins = async (
     res.status(200).json({
       success: true,
       insertedCount: result.insertedCount,
-      skippedCount: result.skipped.length,
-      duplicatedBinCodes: result.skipped.map(b => b.binCode)
+      updatedCount: result.updatedCount
     })
   } catch (err) {
     next(err)

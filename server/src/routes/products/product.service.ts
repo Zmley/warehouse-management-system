@@ -82,18 +82,24 @@ export const getProductsByWarehouseID = async (
 }
 
 export const addProducts = async (products: ProductUploadInput[]) => {
-  const skipped: ProductUploadInput[] = []
   let insertedCount = 0
+  let updatedCount = 0
 
   const tasks = products.map(item =>
-    LIMIT(() => handleProductInsertion(item, skipped, () => insertedCount++))
+    LIMIT(() =>
+      handleProductInsertion(
+        item,
+        () => insertedCount++,
+        () => updatedCount++
+      )
+    )
   )
 
   await Promise.all(tasks)
 
   return {
     insertedCount,
-    skippedCount: skipped.length
+    updatedCount
   }
 }
 
