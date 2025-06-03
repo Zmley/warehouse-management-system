@@ -166,7 +166,7 @@ const ScanProductQRCode = () => {
             <Box mt={4}>
               <AddToCartInline
                 product={scannedProduct}
-                onSuccess={() => navigate(-1)}
+                onSuccess={() => navigate('/')}
               />
             </Box>
           )}
