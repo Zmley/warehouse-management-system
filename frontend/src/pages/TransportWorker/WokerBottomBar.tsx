@@ -11,7 +11,7 @@ interface BottomBarProps {
   onPublishClick: () => void
 }
 
-const BottomBar: React.FC<BottomBarProps> = ({
+const WokerBottomBar: React.FC<BottomBarProps> = ({
   onCartClick,
   onTaskListClick,
   onPublishClick
@@ -131,4 +131,4 @@ const BottomBar: React.FC<BottomBarProps> = ({
   )
 }
 
-export default BottomBar
+export default WokerBottomBar
