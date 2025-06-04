@@ -90,19 +90,29 @@ export const getTasks = async (
 
     if (role === UserRole.ADMIN) {
       if (typeof queryWarehouseID !== 'string') {
+        res.status(400).json({
+          success: false,
+          message: '❌ Admin must provide a valid warehouseID in query params.'
+        })
         return
       }
       warehouseID = queryWarehouseID
+
       if (typeof rawStatus === 'string') {
         status = rawStatus
       }
     } else if (role === UserRole.PICKER) {
       warehouseID = localWarehouseID
-      //temporary using ALL
-      status = 'ALL'
+      status = 'ALL' // temporary
     } else if (role === UserRole.TRANSPORT_WORKER) {
       warehouseID = localWarehouseID
       status = TaskStatus.PENDING
+    } else {
+      res.status(403).json({
+        success: false,
+        message: '❌ Unauthorized role'
+      })
+      return
     }
 
     const tasksWithBinCodes = await taskService.getTasksByWarehouseID(

@@ -314,16 +314,15 @@ const getIncludeClause = (warehouseID: string) => {
     {
       model: Bin,
       as: 'destinationBin',
-      attributes: ['binID', 'binCode'],
-      required: false,
+      attributes: ['binID', 'binCode', 'warehouseID'],
+      required: true,
       where: { warehouseID }
     },
     {
       model: Bin,
       as: 'sourceBin',
-      attributes: ['binID', 'binCode'],
-      required: false,
-      where: { warehouseID }
+      attributes: ['binID', 'binCode', 'warehouseID'],
+      required: false
     },
     {
       model: Inventory,
@@ -333,15 +332,11 @@ const getIncludeClause = (warehouseID: string) => {
         {
           model: Bin,
           as: 'bin',
-          attributes: ['binID', 'binCode'],
-          where: {
-            warehouseID,
-            type: 'INVENTORY'
-          }
+          attributes: ['binID', 'binCode', 'warehouseID'],
+          required: false
         }
       ]
     },
-
     {
       model: Account,
       as: 'accepter',
