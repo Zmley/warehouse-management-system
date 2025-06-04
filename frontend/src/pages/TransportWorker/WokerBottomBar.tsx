@@ -119,7 +119,17 @@ const WokerBottomBar: React.FC<BottomBarProps> = ({
           '&:hover span': { color: '#1d4ed8' }
         }}
       >
-        <Inventory2OutlinedIcon sx={{ fontSize: 24, color: '#2563eb' }} />
+        <img
+          src='/forklift.svg'
+          alt='Forklift'
+          style={{
+            width: 32,
+            height: 32,
+            filter:
+              'invert(29%) sepia(92%) saturate(1675%) hue-rotate(211deg) brightness(93%) contrast(101%)'
+          }}
+        />
+
         <Typography
           variant='caption'
           sx={{ fontWeight: 600, fontSize: 12, color: '#2563eb', mt: 0.5 }}
