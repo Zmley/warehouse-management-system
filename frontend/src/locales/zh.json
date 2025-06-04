@@ -23,7 +23,13 @@
     "createDate": "创建时间",
     "accept": "接受",
     "takeOver": "接手",
-    "loading": "加载中..."
+    "loading": "加载中...",
+  "error": {
+    "❌ You already have an active task in progress.": "❌ 您已有一个进行中的任务",
+    "❌ Failed to accept task": "❌ 接受任务失败",
+    "unknown": "❌ 发生未知错误"
+  }
+
   },
     "cart": {
     "loadedFromBin": "已从货位装载",

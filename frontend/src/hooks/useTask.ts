@@ -26,15 +26,16 @@ export const useTask = () => {
     }
   }
 
-  const acceptTask = async (taskID: string) => {
+  const acceptTask = async (taskID: string): Promise<boolean> => {
     setIsLoading(true)
     setError(null)
     try {
       const res = await acceptTaskAPI(taskID)
-      if (res?.task) {
-        await fetchMyTask()
+      if (res?.success && res?.task) {
+        return true
       } else {
-        setError('❌ API did not return task object.')
+        setError(res?.error || '❌ Failed to accept task.')
+        return false
       }
     } catch (err: any) {
       const msg =
@@ -44,10 +45,12 @@ export const useTask = () => {
         '❌ Failed to accept task'
       setError(msg)
       console.error('❌ Accept task failed:', err)
+      return false
     } finally {
       setIsLoading(false)
     }
   }
+
   const cancelMyTask = async (taskID: string) => {
     try {
       await cancelTaskAPI(taskID)

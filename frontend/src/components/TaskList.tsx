@@ -43,12 +43,12 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
   const handleAccept = async (taskID: string) => {
     setLoadingTasks(prev => ({ ...prev, [taskID]: true }))
     try {
-      await acceptTask(taskID)
-      await fetchMyTask()
-      await fetchTasks()
-      setView('cart')
-    } catch (err) {
-      console.error('Error accepting task:', err)
+      const success = await acceptTask(taskID)
+      if (success) {
+        setView('cart')
+      } else {
+        setOpen(true)
+      }
     } finally {
       setLoadingTasks(prev => ({ ...prev, [taskID]: false }))
     }
@@ -210,7 +210,7 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
 
       <Snackbar
         open={open}
-        autoHideDuration={2000}
+        autoHideDuration={3000}
         onClose={() => setOpen(false)}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
@@ -220,7 +220,7 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
           variant='filled'
           sx={{ width: '100%' }}
         >
-          {error}
+          {error || t('taskList.error.unknown')}
         </Alert>
       </Snackbar>
     </PullToRefresh>
