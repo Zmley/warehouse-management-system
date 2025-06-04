@@ -333,7 +333,11 @@ const getIncludeClause = (warehouseID: string) => {
           model: Bin,
           as: 'bin',
           attributes: ['binID', 'binCode', 'warehouseID'],
-          required: false
+          required: true,
+          where: {
+            warehouseID,
+            type: 'INVENTORY'
+          }
         }
       ]
     },

@@ -44,7 +44,9 @@
     "cancel": "Cancel",
     "operationError": "❌ Operation failed. Please try again.",
     "enterBinOrProduct" : "Enter Bin Code or Product BarCode",
-    "title" : "Scan Bin Code or Product BarCode"
+    "title" : "Scan Bin Code or Product BarCode",
+         "enterProductCode": "enter Product Codee"
+
   },
 
     "inventory": {

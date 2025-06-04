@@ -6,13 +6,17 @@ import {
   Fade,
   ToggleButtonGroup,
   ToggleButton,
-  Paper
+  Paper,
+  Autocomplete,
+  TextField,
+  InputAdornment,
+  IconButton
 } from '@mui/material'
 import CancelIcon from '@mui/icons-material/Cancel'
+import SearchIcon from '@mui/icons-material/Search'
 import { useNavigate, useLocation } from 'react-router-dom'
 import useQRScanner from 'hooks/useQRScanner'
 import { useCart } from 'hooks/useCart'
-import AutocompleteTextField from 'utils/AutocompleteTextField'
 import { useBin } from 'hooks/useBin'
 import { useTranslation } from 'react-i18next'
 
@@ -32,6 +36,8 @@ const ScanTaskQRCode = () => {
   const { videoRef, startScanning, stopScanning } =
     useQRScanner(handleScanSuccess)
 
+  const [manualBinCode, setManualBinCode] = useState('')
+
   async function handleScanSuccess(binCode: string) {
     try {
       if (scanMode === 'unload') {
@@ -43,6 +49,13 @@ const ScanTaskQRCode = () => {
       alert(t('scan.operationError'))
     }
   }
+
+  const handleManualSubmit = async () => {
+    if (!manualBinCode.trim()) return alert(t('scan.enterPrompt'))
+    await handleScanSuccess(manualBinCode)
+  }
+
+  const handleCancel = () => navigate(-1)
 
   useEffect(() => {
     fetchBinCodes()
@@ -56,13 +69,15 @@ const ScanTaskQRCode = () => {
     }
   }, [mode])
 
-  const [manualBinCode, setManualBinCode] = useState('')
-  const handleManualSubmit = async () => {
-    if (!manualBinCode.trim()) return alert(t('scan.enterPrompt'))
-    await handleScanSuccess(manualBinCode)
+  const filterBinOptions = (
+    options: string[],
+    { inputValue }: { inputValue: string }
+  ) => {
+    if (!inputValue) return []
+    return options.filter(option =>
+      option.toLowerCase().startsWith(inputValue.toLowerCase())
+    )
   }
-
-  const handleCancel = () => navigate(-1)
 
   return (
     <Box
@@ -133,8 +148,6 @@ const ScanTaskQRCode = () => {
                   border: '2px solid #ddd'
                 }}
               />
-
-              {/* 扫描对准框 */}
               <Box
                 sx={{
                   position: 'absolute',
@@ -149,7 +162,6 @@ const ScanTaskQRCode = () => {
                   pointerEvents: 'none'
                 }}
               />
-
               <Typography
                 align='center'
                 sx={{
@@ -173,12 +185,37 @@ const ScanTaskQRCode = () => {
 
           {mode === 'manual' && (
             <Box mt={2}>
-              <AutocompleteTextField
-                label={t('scan.enterBinCode')}
-                value={manualBinCode}
-                onChange={setManualBinCode}
-                onSubmit={handleManualSubmit}
+              <Autocomplete
+                freeSolo
+                disableClearable
                 options={binCodes}
+                value={manualBinCode}
+                onInputChange={(_, newValue) => setManualBinCode(newValue)}
+                filterOptions={filterBinOptions}
+                noOptionsText='' // 空字符串时隐藏 "No Options"
+                renderInput={params => (
+                  <TextField
+                    {...params}
+                    label={t('scan.enterBinCode')}
+                    variant='outlined'
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        handleManualSubmit()
+                      }
+                    }}
+                    InputProps={{
+                      ...params.InputProps,
+                      endAdornment: (
+                        <InputAdornment position='end'>
+                          <IconButton onClick={handleManualSubmit}>
+                            <SearchIcon />
+                          </IconButton>
+                        </InputAdornment>
+                      )
+                    }}
+                  />
+                )}
               />
               <Button
                 variant='contained'
