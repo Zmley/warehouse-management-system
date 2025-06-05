@@ -1,5 +1,4 @@
 import { Request, Response } from 'express'
-
 import {
   InitiateAuthCommand,
   AuthFlowType,
@@ -8,13 +7,14 @@ import {
   AdminConfirmSignUpCommand
 } from '@aws-sdk/client-cognito-identity-provider'
 import { getCognitoErrorMessage } from './accounts.service'
-import Account from './accounts.model'
 import env from 'config/config'
 import Task from 'routes/tasks/task.model'
+import Account from 'routes/accounts/accounts.model'
 
 export const cognitoClient = new CognitoIdentityProviderClient({
   region: process.env.AWS_REGION!
 })
+//改pr你在aws.ts文件里也有一个cognitoClient，你看下能不能用同一个
 
 export const loginUser = async (req: Request, res: Response) => {
   const { email, password } = req.body

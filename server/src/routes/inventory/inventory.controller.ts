@@ -77,6 +77,7 @@ export const updateInventory = async (
       return res.status(200).json(updatedItem)
     } else {
       return res.status(404).json({ message: 'Inventory item not found' })
+      //改pr 这里不是更新东西吗 更新失败为什么要返回404
     }
   } catch (error) {
     next(error)

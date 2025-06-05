@@ -88,6 +88,7 @@ const Login: React.FC = () => {
           fullWidth
           sx={{
             backgroundColor: '#2272FF',
+            //改pr 你应该写一个theme provider 控制这些颜色，比如就直接写个color:primary就行了
             color: '#FFF',
             padding: '12px',
             borderRadius: '8px',

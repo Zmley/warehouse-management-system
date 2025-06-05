@@ -86,6 +86,10 @@ export const unload = async (
           message: `❌ You can only unload to your assigned destination bin: ${task.destinationBinCode}`
         })
         return
+        //改pr 为啥这里不是return   res.status(400).json({
+        //   success: false,
+        //   message: `❌ You can only unload to your assigned destination bin: ${task.destinationBinCode}`
+        // })
       }
 
       const result = await cartService.unloadByBinCode(

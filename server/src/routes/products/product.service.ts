@@ -1,4 +1,4 @@
-import { Product } from './product.model'
+import Product from 'routes/products/product.model'
 import { Op, Sequelize } from 'sequelize'
 import { Inventory } from 'routes/inventory/inventory.model'
 import { Bin } from 'routes/bins/bin.model'
@@ -10,6 +10,7 @@ import {
 import { ProductUploadInput } from 'types/product'
 import { BinType } from 'constants/binType'
 import AppError from 'utils/appError'
+
 
 export const getProductCodes = async (): Promise<string[]> => {
   const products = await Product.findAll({

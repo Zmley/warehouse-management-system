@@ -122,7 +122,6 @@ export const addBins = async (
   }
 }
 
-///
 
 export const getPickUpBin = async (
   req: Request,

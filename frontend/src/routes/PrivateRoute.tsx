@@ -14,7 +14,7 @@ const PrivateRoutes: React.FC = () => {
   const { getMe } = useContext(AuthContext)!
   useEffect(() => {
     getMe()
-  }, [])
+  }, [])//改pr，为什么不在context里执行这段
 
   return (
     <Routes>

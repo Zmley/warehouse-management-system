@@ -51,7 +51,7 @@ export const addProducts = async (
       return res
         .status(400)
         .json({ success: false, message: 'Invalid payload' })
-    }
+    }//改pr 放到上一层middleware里
 
     const result = await productService.addProducts(products)
 

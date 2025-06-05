@@ -6,10 +6,7 @@ import { Op, Sequelize, WhereOptions } from 'sequelize'
 import { UserRole } from 'constants/uerRole'
 import { TaskWithJoin } from 'types/task'
 import { TaskStatus } from 'constants/tasksStatus'
-import {
-  checkInventoryQuantity,
-  hasInventoryInCart
-} from 'routes/inventory/inventory.service'
+import { checkInventoryQuantity, hasInventoryInCart } from 'routes/inventory/inventory.service'
 import { getBinByBinCode } from 'routes/bins/bin.service'
 import { v4 as uuidv4 } from 'uuid'
 import { BinType } from 'constants/binType'
@@ -559,6 +556,5 @@ export const updateTaskService = async (
     throw new Error('Task not found or not updated')
   }
 
-  const updatedTask = await Task.findOne({ where: { taskID } })
-  return updatedTask
+  return await Task.findOne({ where: { taskID } })
 }
