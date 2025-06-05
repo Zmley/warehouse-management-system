@@ -1,8 +1,9 @@
 name: Deploy to S3
 
 on:
-  release:
-    types: [published]
+  push:
+    branches:
+      - new-feature-2
 
 jobs:
   deploy:
