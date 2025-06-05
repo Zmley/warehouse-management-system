@@ -8,11 +8,8 @@ import {
   handleProductInsertion
 } from 'utils/product.utils'
 import { ProductUploadInput } from 'types/product'
-import pLimit from 'p-limit'
 import { BinType } from 'constants/binType'
 import AppError from 'utils/appError'
-
-const LIMIT = pLimit(10)
 
 export const getProductCodes = async (): Promise<string[]> => {
   const products = await Product.findAll({
@@ -44,7 +41,7 @@ export const getProductsByWarehouseID = async (
         where: {
           warehouseID,
           type: {
-            [Op.in]: [BinType.INVENTORY, BinType.CART] // ✅ 正确：只统计这两种 bin
+            [Op.in]: [BinType.INVENTORY, BinType.CART]
           }
         }
       },
@@ -82,11 +79,14 @@ export const getProductsByWarehouseID = async (
 }
 
 export const addProducts = async (products: ProductUploadInput[]) => {
+  const { default: pLimit } = await import('p-limit')
+  const limit = pLimit(10)
+
   let insertedCount = 0
   let updatedCount = 0
 
   const tasks = products.map(item =>
-    LIMIT(() =>
+    limit(() =>
       handleProductInsertion(
         item,
         () => insertedCount++,
