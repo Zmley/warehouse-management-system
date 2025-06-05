@@ -212,12 +212,12 @@ export const getTaskByAccountID = async (
       attributes: ['inventoryID', 'quantity', 'productCode']
     })
 
-    if (sourceBin && matchingInventory) {
+    if (sourceBin) {
       sourceBins = [
         {
-          inventoryID: matchingInventory.inventoryID,
-          productCode: matchingInventory.productCode,
-          quantity: matchingInventory.quantity,
+          inventoryID: matchingInventory?.inventoryID || null,
+          productCode: myCurrentTask.productCode,
+          quantity: matchingInventory?.quantity || 0,
           bin: sourceBin
         }
       ]
@@ -513,19 +513,16 @@ export const releaseTask = async (
     throw new AppError(400, '❌ No items in cart to release')
   }
 
-  // ✅ Step 1: Create a temporary "Aisle" bin
   const tempAisleBin = await Bin.create({
     binCode: `AISLE-${uuidv4().slice(0, 8)}`,
     warehouseID: warehouseID,
     type: BinType.AISLE
   })
 
-  // ✅ Step 2: Move inventory to the new bin
   await Promise.all(
     itemsInCart.map(item => item.update({ binID: tempAisleBin.binID }))
   )
 
-  // ✅ Step 3: Update the task
   task.status = TaskStatus.PENDING
   task.accepterID = null
   task.sourceBinID = tempAisleBin.binID

@@ -56,7 +56,7 @@
 
   },  
   "inventory": {
-    "total": "库存总数",
+    "total": "叉车上总数",
     "offload": "卸载数量",
     "quantityExceed": "数量不能超过库存总数 ({{quantity}})"
   },

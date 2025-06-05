@@ -37,7 +37,18 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
 
   useEffect(() => {
     fetchTasks()
-    fetchMyTask()
+  }, [])
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchTasks()
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
   }, [])
 
   const handleAccept = async (taskID: string) => {
