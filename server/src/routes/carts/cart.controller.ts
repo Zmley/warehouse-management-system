@@ -14,11 +14,7 @@ import {
 import { getBinByBinCode } from 'routes/bins/bin.service'
 import AppError from 'utils/appError'
 
-interface SourceBinItem {
-  bin?: {
-    binCode?: string
-  }
-}
+import { SourceBinItem } from 'types/bin'
 
 export const load = async (
   req: Request,

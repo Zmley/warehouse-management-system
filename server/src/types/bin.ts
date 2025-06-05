@@ -14,3 +14,9 @@ export interface GetBinsParams {
   type?: string
   keyword?: string
 }
+
+export interface SourceBinItem {
+  bin?: {
+    binCode?: string
+  }
+}

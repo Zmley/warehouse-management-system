@@ -20,7 +20,7 @@ import DocumentScanner from '@mui/icons-material/DocumentScanner'
 const Cart = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { inventoriesInCar, setSelectedToUnload, sourceBin } = useCartContext()
+  const { inventoriesInCar, setSelectedToUnload } = useCartContext()
   const { myTask, fetchMyTask } = useTaskContext()
 
   const defaultUnloadList = useMemo(() => {
