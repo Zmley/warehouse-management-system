@@ -27,33 +27,6 @@ export const sanitizeProductItem = (item: ProductUploadInput) => {
   }
 }
 
-// export const handleProductInsertion = async (
-//   item: ProductUploadInput,
-//   skipped: ProductUploadInput[],
-//   incrementInserted: () => void
-// ) => {
-//   const { productCode, barCode, boxType } = sanitizeProductItem(item)
-
-//   if (!productCode) {
-//     skipped.push(item)
-//     return
-//   }
-
-//   try {
-//     await Product.create({ productCode, barCode, boxType })
-//     incrementInserted()
-//   } catch (error) {
-//     if (error.name === 'SequelizeUniqueConstraintError') {
-//       skipped.push(item)
-//     } else {
-//       throw new AppError(
-//         500,
-//         error instanceof Error ? error.message : 'Unknown error'
-//       )
-//     }
-//   }
-// }
-
 export const handleProductInsertion = async (
   item: ProductUploadInput,
   incrementInserted: () => void,

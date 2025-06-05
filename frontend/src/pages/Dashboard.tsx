@@ -98,7 +98,7 @@ const Dashboard: React.FC = () => {
           }
           onTaskListClick={() => setTaskStatus(TaskCategoryEnum.PENDING)}
           onArchivedClick={() => setTaskStatus(TaskCategoryEnum.COMPLETED)}
-          onCreateTaskClick={() => navigate('/picker-scan-bin')} // ✅ 这里才能正常用
+          onCreateTaskClick={() => navigate('/picker-scan-bin')}
         />
       </Box>
     )

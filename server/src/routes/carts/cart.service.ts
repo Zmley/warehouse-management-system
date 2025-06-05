@@ -2,8 +2,6 @@ import Inventory from 'routes/inventory/inventory.model'
 import Bin from 'routes/bins/bin.model'
 import AppError from 'utils/appError'
 import { getTaskByAccountID } from 'routes/tasks/task.service'
-// import { BinType } from 'constants/binType'
-// import { Op } from 'sequelize'
 
 const moveInventoriesToBin = async (
   inventories: { inventoryID: string; quantity: number }[],
