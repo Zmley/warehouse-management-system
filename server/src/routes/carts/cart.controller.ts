@@ -14,6 +14,12 @@ import {
 import { getBinByBinCode } from 'routes/bins/bin.service'
 import AppError from 'utils/appError'
 
+interface SourceBinItem {
+  bin?: {
+    binCode?: string
+  }
+}
+
 export const load = async (
   req: Request,
   res: Response,
@@ -32,7 +38,7 @@ export const load = async (
 
       if (currentTask) {
         const sourceBinCodes = currentTask.sourceBins.map(
-          (item: any) => item.bin?.binCode
+          (item: SourceBinItem) => item.bin?.binCode
         )
 
         if (!sourceBinCodes.includes(binCode)) {

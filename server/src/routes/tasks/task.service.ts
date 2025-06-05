@@ -387,7 +387,7 @@ const getAdminWhereClause = (status: string, keyword: string) => {
 
 const mapTasks = (tasks: TaskWithJoin[]) => {
   return tasks.map(task => {
-    let sourceBins: any[] = []
+    let sourceBins: unknown[] = []
 
     if (task.sourceBin) {
       sourceBins = [

@@ -104,17 +104,6 @@ const Cart = () => {
         }}
       >
         <CardContent>
-          {sourceBin && (
-            <Box textAlign='center' mb={2}>
-              <Typography variant='body2' fontWeight='bold'>
-                {t('cart.loadedFromBin')}
-              </Typography>
-              <Typography variant='subtitle1' color='primary'>
-                {sourceBin}
-              </Typography>
-            </Box>
-          )}
-
           <InventoryListCard
             taskType='Worker Self Performance'
             inventories={inventoriesInCar}

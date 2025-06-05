@@ -10,7 +10,6 @@ export const useCart = () => {
   const [error, setError] = useState<string | null>(null)
 
   const {
-    selectedToUnload,
     getMyCart,
     isCartEmpty,
     setInventoriesInCar,

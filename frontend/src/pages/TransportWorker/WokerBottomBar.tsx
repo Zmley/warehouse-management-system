@@ -1,6 +1,5 @@
 import React from 'react'
 import { Box, Typography, IconButton } from '@mui/material'
-import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined'
 import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined'
 import AddIcon from '@mui/icons-material/Add'
 import { useTranslation } from 'react-i18next'

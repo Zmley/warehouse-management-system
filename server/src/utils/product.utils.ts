@@ -41,7 +41,7 @@ export const handleProductInsertion = async (
   try {
     await Product.create({ productCode, barCode, boxType })
     incrementInserted()
-  } catch (error: any) {
+  } catch (error) {
     if (error.name === 'SequelizeUniqueConstraintError') {
       await Product.update({ barCode, boxType }, { where: { productCode } })
       incrementUpdated()

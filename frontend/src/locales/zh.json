@@ -72,7 +72,7 @@
     "targetBin": "目标货位",
     "cancel": "取消",
     "release": "暂放过道",
-    "load": "加载",
+    "load": "接手过道货物",
     "cannotCancelAfterLoad": "❌ 已加载货物，无法取消任务",
     "cancelTooltip": "取消此任务",
     "mustLoadFirst": "❌ 请先加载货物再释放任务",
