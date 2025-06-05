@@ -3,7 +3,6 @@ import * as cartService from './cart.service'
 import * as taskService from 'routes/tasks/task.service'
 import { getBinByBinCode } from 'routes/bins/bin.service'
 import AppError from 'utils/appError'
-
 import { SourceBinItem } from 'types/bin'
 
 export const load = async (
