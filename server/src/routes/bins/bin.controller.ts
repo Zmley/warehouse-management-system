@@ -122,7 +122,6 @@ export const addBins = async (
   }
 }
 
-
 export const getPickUpBin = async (
   req: Request,
   res: Response,
@@ -218,7 +217,7 @@ export const deleteBin = async (req: Request, res: Response) => {
     }
 
     res.json({ success: true })
-  } catch (err: any) {
+  } catch (err) {
     res
       .status(500)
       .json({ success: false, error: err.message || 'Failed to delete bin' })

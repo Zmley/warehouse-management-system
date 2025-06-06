@@ -11,7 +11,6 @@ import { ProductUploadInput } from 'types/product'
 import { BinType } from 'constants/binType'
 import AppError from 'utils/appError'
 
-
 export const getProductCodes = async (): Promise<string[]> => {
   const products = await Product.findAll({
     attributes: ['productCode'],

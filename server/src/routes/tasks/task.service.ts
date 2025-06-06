@@ -6,7 +6,10 @@ import { Op, Sequelize, WhereOptions } from 'sequelize'
 import { UserRole } from 'constants/uerRole'
 import { TaskWithJoin } from 'types/task'
 import { TaskStatus } from 'constants/tasksStatus'
-import { checkInventoryQuantity, hasInventoryInCart } from 'routes/inventory/inventory.service'
+import {
+  checkInventoryQuantity,
+  hasInventoryInCart
+} from 'routes/inventory/inventory.service'
 import { getBinByBinCode } from 'routes/bins/bin.service'
 import { v4 as uuidv4 } from 'uuid'
 import { BinType } from 'constants/binType'
