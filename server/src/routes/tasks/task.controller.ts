@@ -61,7 +61,7 @@ export const cancelTask = async (
 
     if (!taskID || !role || !accountID) {
       throw new AppError(400, 'Missing required parameters')
-    }//改pr 放到middleware
+    } //改pr 放到middleware
 
     const task = await taskService.cancelBytaskID(taskID, accountID, role)
 
