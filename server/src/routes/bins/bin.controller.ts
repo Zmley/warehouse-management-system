@@ -54,10 +54,6 @@ export const getBinCodes = async (
   try {
     const warehouseID = req.query.warehouseID as string
 
-    if (!warehouseID) {
-      return res.status(400).json('warehouseID is required')
-    }
-
     const data = await binService.getBinCodesInWarehouse(warehouseID)
 
     res.status(200).json({ success: true, data })
@@ -72,12 +68,9 @@ export const getBins = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { warehouseID, type, keyword, page = '1', limit = '10' } = req.query
+    const { type, keyword, page = '1', limit = '10' } = req.query
 
-    if (!warehouseID || typeof warehouseID !== 'string') {
-      res.status(400).json({ message: 'Missing or invalid warehouseID' })
-      return
-    }
+    const warehouseID = req.query.warehouseID as string
 
     const parsedPage = parseInt(page as string, 10)
     const parsedLimit = parseInt(limit as string, 10)

@@ -14,7 +14,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     <Card
       sx={{
         borderRadius: 4,
-        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+        boxShadow: '0 4px 12px #0000001A',
         p: 2,
         width: '100%',
         maxWidth: 400

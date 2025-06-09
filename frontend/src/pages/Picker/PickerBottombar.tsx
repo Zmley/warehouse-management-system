@@ -33,7 +33,7 @@ const PickerBottombar: React.FC<PickerBottomBarProps> = ({
         left: 0,
         right: 0,
         backgroundColor: '#FFF',
-        boxShadow: '0px -2px 4px rgba(0, 0, 0, 0.1)',
+        boxShadow: '0px -2px 4px #0000001A',
         zIndex: 100
       }}
     >

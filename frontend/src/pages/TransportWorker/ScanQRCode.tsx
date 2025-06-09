@@ -158,7 +158,7 @@ const ScanTaskQRCode = () => {
                   transform: 'translate(-50%, -50%)',
                   border: '2px dashed #1976d2',
                   borderRadius: 2,
-                  boxShadow: '0 0 12px rgba(25, 118, 210, 0.4) inset',
+                  boxShadow: 'inset 0 0 12px #1976D966',
                   pointerEvents: 'none'
                 }}
               />
@@ -172,7 +172,7 @@ const ScanTaskQRCode = () => {
                   fontSize: 14,
                   color: '#1976d2',
                   fontWeight: 'bold',
-                  backgroundColor: 'rgba(255,255,255,0.85)',
+                  backgroundColor: '#FFFFFFD9',
                   px: 1.5,
                   py: 0.5,
                   borderRadius: 1

@@ -3,7 +3,7 @@ name: Deploy Backend to EC2
 on:
   push:
     branches:
-      - new-feature-2
+      - new-feature-22
 
 jobs:
   deploy:

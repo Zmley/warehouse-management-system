@@ -31,7 +31,7 @@ const Login: React.FC = () => {
           padding: '30px',
           borderRadius: '12px',
           textAlign: 'center',
-          boxShadow: '0 4px 10px rgba(0,0,0,0.1)'
+          boxShadow: '0 4px 10px #0000001A'
         }}
       >
         <Typography

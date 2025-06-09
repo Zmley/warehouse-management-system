@@ -20,6 +20,7 @@ import { useProduct } from 'hooks/useProduct'
 import AddToCartInline from 'pages/TransportWorker/AddToCartInline'
 import { ProductType } from 'types/product'
 import { useTranslation } from 'react-i18next'
+import { isValidBarcode } from 'utils/barcode'
 
 const ScanProductQRCode = () => {
   const { t } = useTranslation()
@@ -55,7 +56,7 @@ const ScanProductQRCode = () => {
   }, [mode])
 
   async function handleScanSuccess(code: string) {
-    if (hasScanned || !/^\d{12}$/.test(code)) return
+    if (hasScanned || !isValidBarcode(code)) return
     setHasScanned(true)
     await handleFetchProduct(code)
   }

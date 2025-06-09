@@ -26,7 +26,7 @@ const WokerBottomBar: React.FC<BottomBarProps> = ({
         right: 0,
         height: 86,
         backgroundColor: '#ffffff',
-        boxShadow: '0px -2px 10px rgba(0, 0, 0, 0.08)',
+        boxShadow: '0px -2px 10px #00000014',
         display: 'flex',
         justifyContent: 'space-around',
         zIndex: 1200
@@ -77,7 +77,7 @@ const WokerBottomBar: React.FC<BottomBarProps> = ({
             height: 48,
             borderRadius: '50%',
             background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
-            boxShadow: '0 4px 12px rgba(59,130,246,0.35)',
+            boxShadow: '0 4px 12px #3B82F657',
             color: '#fff',
             '&:hover': {
               background: 'linear-gradient(135deg, #2563eb, #1e40af)'

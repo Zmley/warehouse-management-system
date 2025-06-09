@@ -10,13 +10,15 @@ import { setupAssociations } from 'models/associations'
 
 const app: Application = express()
 
+const corsOrigins = [
+  process.env.CORS_ORIGIN_ADMIN_LOCAL,
+  process.env.CORS_ORIGIN_ADMIN_PROD,
+  process.env.CORS_ORIGIN_WORKER_LOCAL,
+  process.env.CORS_ORIGIN_WORKER_PROD
+].filter(Boolean)
+
 const corsOptions = {
-  origin: [
-    'http://localhost:4100',
-    'http://localhost:5100',
-    'https://d1fhrig6l377fl.cloudfront.net',
-    'https://d1oxjk4yrjml18.cloudfront.net'
-  ],
+  origin: corsOrigins,
   //改pr 这些链接放到env里
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // The methods you want to allow
   credentials: true, // This allows session cookies to be sent back and forth

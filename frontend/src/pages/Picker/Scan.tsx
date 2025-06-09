@@ -117,7 +117,7 @@ const Scan = () => {
           mb: 3,
           borderRadius: '999px',
           backgroundColor: '#e2e8f0',
-          boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.05)',
+          boxShadow: 'inset 0 2px 5px #0000000D',
           p: '4px'
         }}
       >
@@ -146,7 +146,7 @@ const Scan = () => {
             overflow: 'hidden',
             mx: 'auto',
             border: '5px solid #1976d2',
-            boxShadow: '0 4px 20px rgba(25, 118, 210, 0.3)',
+            boxShadow: '0 4px 20px #1976D24D',
             backgroundColor: '#000'
           }}
         >
@@ -192,7 +192,7 @@ const Scan = () => {
               left: '50%',
               transform: 'translateX(-50%)',
               color: '#fff',
-              backgroundColor: 'rgba(0,0,0,0.4)',
+              backgroundColor: '#00000066',
               px: 1.5,
               py: 0.5,
               borderRadius: 1,

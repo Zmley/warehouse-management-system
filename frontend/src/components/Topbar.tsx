@@ -41,7 +41,7 @@ const TopBar: React.FC<TopBarProps> = ({ userName }) => {
           justifyContent: 'space-between',
           px: 2,
           backgroundColor: '#f9fafb',
-          boxShadow: '0px 1px 3px rgba(0,0,0,0.06)'
+          boxShadow: '0px 1px 3px #0000000F'
         }}
       >
         {/* Left menu icon */}

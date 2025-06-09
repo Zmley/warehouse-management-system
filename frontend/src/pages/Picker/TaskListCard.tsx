@@ -30,12 +30,17 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchTasks()
-      .then(() => setHasFetched(true))
-      .catch(err => {
+    const fetchData = async () => {
+      try {
+        await fetchTasks()
+        setHasFetched(true)
+      } catch (err: any) {
         setError(err.message || 'Error fetching tasks')
         setOpen(true)
-      })
+      }
+    }
+
+    fetchData()
   }, [])
 
   const handleManualRefresh = async () => {
@@ -98,7 +103,7 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
                 borderRadius: 3,
                 backgroundColor: '#eff6ff',
                 border: '1.5px solid #2563eb',
-                boxShadow: '0 2px 6px rgba(0, 0, 0, 0.05)'
+                boxShadow: '0 2px 6px #0000000D'
               }}
             >
               <CardContent sx={{ py: 1.5, px: 2 }}>

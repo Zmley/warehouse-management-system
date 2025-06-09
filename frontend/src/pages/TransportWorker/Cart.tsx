@@ -100,7 +100,7 @@ const Cart = () => {
         sx={{
           borderRadius: 3,
           backgroundColor: '#ffffff',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+          boxShadow: '0 2px 8px #0000000A'
         }}
       >
         <CardContent>

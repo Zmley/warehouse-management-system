@@ -38,11 +38,7 @@ export const useTask = () => {
         return false
       }
     } catch (err: any) {
-      const msg =
-        err?.response?.data?.error ||
-        err?.response?.data?.message ||
-        err.message ||
-        '❌ Failed to accept task'
+      const msg = err?.response?.data?.error || '❌ Failed to accept task'
       setError(msg)
       console.error('❌ Accept task failed:', err)
       return false

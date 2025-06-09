@@ -73,7 +73,7 @@ const TaskInstruction: React.FC = () => {
         mb: 3,
         borderRadius: 4,
         backgroundColor: '#f5faff',
-        boxShadow: '0 4px 10px rgba(0, 0, 0, 0.06)'
+        boxShadow: '0 4px 10px #0000000F'
       }}
     >
       <CardContent>

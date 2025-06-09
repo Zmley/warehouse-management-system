@@ -21,7 +21,7 @@ const TopBarFixed = ({ userName }: { userName: string }) => (
       right: 0,
       zIndex: 1200,
       backgroundColor: '#FFF',
-      boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)'
+      boxShadow: '0px 2px 4px #0000001A'
     }}
   >
     <TopBar userName={userName} />

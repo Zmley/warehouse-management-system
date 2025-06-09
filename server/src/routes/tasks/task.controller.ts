@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import * as taskService from 'routes/tasks/task.service'
 import * as binService from 'routes/bins/bin.service'
-import AppError from 'utils/appError'
 import { UserRole } from 'constants/uerRole'
 import { TaskStatus } from 'constants/tasksStatus'
 import {
@@ -59,10 +58,6 @@ export const cancelTask = async (
     const { taskID } = req.params
     const { role, accountID } = res.locals
 
-    if (!taskID || !role || !accountID) {
-      throw new AppError(400, 'Missing required parameters')
-    } //改pr 放到middleware
-
     const task = await taskService.cancelBytaskID(taskID, accountID, role)
 
     res.status(200).json({
@@ -103,7 +98,7 @@ export const getTasks = async (
       }
     } else if (role === UserRole.PICKER) {
       warehouseID = localWarehouseID
-      status = 'ALL' // temporary
+      status = 'ALL'
     } else if (role === UserRole.TRANSPORT_WORKER) {
       warehouseID = localWarehouseID
       status = TaskStatus.PENDING
@@ -146,9 +141,7 @@ export const createTask = async (
       destinationBinCode,
       quantity,
       warehouseID
-    } = req.body.payload || req.body
-
-    console.log('test' + req.body)
+    } = req.body.payload
 
     if (!sourceBinCode) {
       const destinationBin = await checkIfPickerTaskPublished(

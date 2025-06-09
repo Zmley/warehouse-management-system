@@ -117,7 +117,7 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
                   borderRadius: 3,
                   backgroundColor: cardBgColor,
                   border: `1.5px solid ${cardBorderColor}`,
-                  boxShadow: '0 2px 6px rgba(0, 0, 0, 0.05)'
+                  boxShadow: '0 2px 6px #0000000D'
                 }}
               >
                 <CardContent sx={{ py: 1.5, px: 2 }}>
