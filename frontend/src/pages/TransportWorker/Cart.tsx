@@ -4,6 +4,7 @@ import {
   Card,
   CardContent,
   Container,
+  Grid,
   Typography
 } from '@mui/material'
 import { useEffect, useMemo, useState } from 'react'
@@ -12,13 +13,15 @@ import { useCartContext } from 'contexts/cart'
 import InventoryListCard from './InventoryListCard'
 import TaskInstruction from 'components/TaskInstruction'
 import { useTaskContext } from 'contexts/task'
+import { QrCode2 } from '@mui/icons-material'
+import { useTranslation } from 'react-i18next'
+import DocumentScanner from '@mui/icons-material/DocumentScanner'
 
 const Cart = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { inventoriesInCar, setSelectedToUnload } = useCartContext()
   const { myTask, fetchMyTask } = useTaskContext()
-
-  const { sourceBin } = useCartContext()
 
   const defaultUnloadList = useMemo(() => {
     if (!inventoriesInCar.length) return []
@@ -47,12 +50,12 @@ const Cart = () => {
     useState(defaultUnloadList)
 
   useEffect(() => {
-    setInventoryListReadyToUnload(defaultUnloadList)
-  }, [defaultUnloadList])
-
-  useEffect(() => {
     fetchMyTask()
   }, [])
+
+  useEffect(() => {
+    setInventoryListReadyToUnload(defaultUnloadList)
+  }, [defaultUnloadList])
 
   const handleQuantityChange = (inventoryID: string, newQuantity: number) => {
     setInventoryListReadyToUnload(prev =>
@@ -85,32 +88,22 @@ const Cart = () => {
     selectedTotalQuantity > myTask.quantity
 
   return (
-    <Container maxWidth='sm'>
-      {myTask && <TaskInstruction />}
-
-      <Typography
-        variant='h6'
-        sx={{ fontWeight: 'bold', textAlign: 'center', my: 2 }}
-      >
-        Items Currently in Cart
-      </Typography>
+    <Container maxWidth='sm' sx={{ pt: 0, pb: 10 }}>
+      {myTask && (
+        <Box mb={2}>
+          <TaskInstruction />
+        </Box>
+      )}
 
       <Card
         variant='outlined'
-        sx={{ borderRadius: '12px', backgroundColor: '#f9f9f9' }}
+        sx={{
+          borderRadius: 3,
+          backgroundColor: '#ffffff',
+          boxShadow: '0 2px 8px #0000000A'
+        }}
       >
         <CardContent>
-          {sourceBin && (
-            <Box sx={{ mb: 2, textAlign: 'center' }}>
-              <Typography variant='body2' fontWeight='bold'>
-                📥 Loaded From Bin:
-              </Typography>
-              <Typography variant='h6' color='secondary'>
-                {sourceBin}
-              </Typography>
-            </Box>
-          )}
-
           <InventoryListCard
             taskType='Worker Self Performance'
             inventories={inventoriesInCar}
@@ -120,33 +113,103 @@ const Cart = () => {
           />
 
           {overLimit && (
-            <Typography color='error' fontSize={14} textAlign='center' mt={2}>
-              ❌ Total selected quantity ({selectedTotalQuantity}) exceeds task
-              quantity ({myTask.quantity})
+            <Typography
+              color='error'
+              fontSize={14}
+              textAlign='center'
+              mt={2}
+              fontWeight='bold'
+            >
+              ❌{' '}
+              {t('cart.overLimit', {
+                selected: selectedTotalQuantity,
+                limit: myTask.quantity
+              })}
             </Typography>
           )}
 
-          <Box sx={{ mt: 3 }}>
-            <Button
-              variant='contained'
-              color='primary'
-              fullWidth
-              disabled={overLimit}
-              onClick={() => {
-                const selectedToUnload = inventoryListReadyToUnload
-                  .filter(item => item.selected)
-                  .map(({ inventoryID, quantity }) => ({
-                    inventoryID,
-                    quantity
-                  }))
+          <Box mt={3}>
+            <Grid container spacing={1}>
+              <Grid item xs={6}>
+                <Box display='flex' flexDirection='column' height='100%'>
+                  <Button
+                    variant='contained'
+                    color='primary'
+                    onClick={() =>
+                      navigate('/my-task/scan-QRCode', {
+                        state: { mode: 'load' }
+                      })
+                    }
+                    startIcon={<QrCode2 />}
+                    sx={{
+                      mb: 1,
+                      flex: 1,
+                      fontWeight: 600,
+                      fontSize: 14,
+                      textTransform: 'none',
+                      borderRadius: 2,
+                      height: 50
+                    }}
+                  >
+                    {t('cart.loadByBin')}
+                  </Button>
 
-                setSelectedToUnload(selectedToUnload)
-                navigate('scan-qr')
-              }}
-              sx={{ borderRadius: '12px', py: 1.2 }}
-            >
-              Scan to unload
-            </Button>
+                  <Button
+                    variant='contained'
+                    color='primary'
+                    onClick={() => navigate('/my-task/scan-barCode')}
+                    startIcon={
+                      <DocumentScanner sx={{ transform: 'rotate(90deg)' }} />
+                    }
+                    sx={{
+                      flex: 1,
+                      fontWeight: 600,
+                      fontSize: 14,
+                      textTransform: 'none',
+                      borderRadius: 2,
+                      height: 50
+                    }}
+                  >
+                    {t('cart.loadByProduct')}
+                  </Button>
+                </Box>
+              </Grid>
+
+              <Grid item xs={6}>
+                <Button
+                  variant='contained'
+                  color='success'
+                  startIcon={<QrCode2 />}
+                  disabled={overLimit}
+                  onClick={() => {
+                    const selectedToUnload = inventoryListReadyToUnload
+                      .filter(item => item.selected)
+                      .map(({ inventoryID, quantity }) => ({
+                        inventoryID,
+                        quantity
+                      }))
+                    setSelectedToUnload(selectedToUnload)
+                    navigate('/my-task/scan-QRCode', {
+                      state: {
+                        mode: 'unload',
+                        unloadProductList: selectedToUnload
+                      }
+                    })
+                  }}
+                  sx={{
+                    width: '100%',
+                    height: '100%',
+                    minHeight: 110,
+                    fontWeight: 600,
+                    fontSize: 16,
+                    textTransform: 'none',
+                    borderRadius: 2
+                  }}
+                >
+                  {t('cart.unload')}
+                </Button>
+              </Grid>
+            </Grid>
           </Box>
         </CardContent>
       </Card>

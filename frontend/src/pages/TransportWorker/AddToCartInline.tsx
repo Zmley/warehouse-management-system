@@ -2,6 +2,7 @@ import { Box, Button, TextField, Typography } from '@mui/material'
 import { useState } from 'react'
 import { useCart } from 'hooks/useCart'
 import { ProductType } from 'types/product'
+import { useTranslation } from 'react-i18next'
 
 interface Props {
   product: ProductType
@@ -9,6 +10,7 @@ interface Props {
 }
 
 const AddToCartInline = ({ product, onSuccess }: Props) => {
+  const { t } = useTranslation()
   const { loadCart } = useCart()
   const [quantity, setQuantity] = useState('1')
   const [error, setError] = useState<string | null>(null)
@@ -16,7 +18,7 @@ const AddToCartInline = ({ product, onSuccess }: Props) => {
   const handleSubmit = async () => {
     const qty = parseInt(quantity, 10)
     if (isNaN(qty) || qty <= 0) {
-      setError('❌ Invalid quantity')
+      setError(t('addToCart.invalidQuantity'))
       return
     }
 
@@ -27,7 +29,7 @@ const AddToCartInline = ({ product, onSuccess }: Props) => {
     if (res.success) {
       onSuccess?.()
     } else {
-      setError(res.error || '❌ Failed to add')
+      setError(res.error || t('addToCart.addFailed'))
     }
   }
 
@@ -48,7 +50,7 @@ const AddToCartInline = ({ product, onSuccess }: Props) => {
         sx={{ width: 80 }}
       />
       <Button variant='contained' onClick={handleSubmit}>
-        Add
+        {t('addToCart.load')}
       </Button>
       {error && (
         <Typography color='error' fontSize={12}>

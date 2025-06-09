@@ -49,7 +49,7 @@ const Success: React.FC = () => {
             width: '100%',
             textAlign: 'center',
             backgroundColor: '#ffffff',
-            boxShadow: '0 8px 30px rgba(0, 0, 0, 0.1)'
+            boxShadow: '0 8px 30px #0000001A'
           }}
         >
           <CardContent>

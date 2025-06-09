@@ -2,16 +2,17 @@ import express from 'express'
 import { load, unload } from './cart.controller'
 import roleAllow from 'middlewares/roleAllow.middleware'
 import { UserRole } from 'constants/uerRole'
-import { validateLoadRequest } from 'middlewares/validateLoadRequest'
+import { validateLoad, validateUnload } from './cart.middleware'
 
 const router = express.Router()
 
+router.post('/load', roleAllow([UserRole.TRANSPORT_WORKER]), validateLoad, load)
+
 router.post(
-  '/load',
+  '/unload',
   roleAllow([UserRole.TRANSPORT_WORKER]),
-  validateLoadRequest,
-  load
+  validateUnload,
+  unload
 )
-router.post('/unload', roleAllow([UserRole.TRANSPORT_WORKER]), unload)
 
 export default router

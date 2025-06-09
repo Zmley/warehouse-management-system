@@ -1,45 +1,63 @@
-import React, { useState } from 'react'
-import { Box, Typography } from '@mui/material'
+import React, { useEffect, useState } from 'react'
+import { Box } from '@mui/material'
 import TopBar from 'components/Topbar'
-import WokerBottombar from './TransportWorker/Bottombar'
-import PickerBottombar from './Picker/Bottombar'
+import WokerBottombar from './TransportWorker/WokerBottomBar'
+import PickerBottombar from './Picker/PickerBottombar'
 import PendingTaskList from 'components/TaskList'
 import PickerCreatedTaskList from './Picker/TaskListCard'
 import { useAuth } from 'hooks/useAuth'
-import { useNavigate } from 'react-router-dom'
 import { TaskCategoryEnum } from 'types/task'
 import { TransportWorkCartProvider } from 'contexts/cart'
 import { useCart } from 'hooks/useCart'
+import Cart from 'pages/TransportWorker/Cart'
+import { useNavigate } from 'react-router-dom'
+
+const TopBarFixed = ({ userName }: { userName: string }) => (
+  <Box
+    sx={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      zIndex: 1200,
+      backgroundColor: '#FFF',
+      boxShadow: '0px 2px 4px #0000001A'
+    }}
+  >
+    <TopBar userName={userName} />
+  </Box>
+)
 
 const TransportWorkerContent: React.FC<{ userName: string }> = ({
   userName
 }) => {
   const { isCartEmpty } = useCart()
-  const navigate = useNavigate()
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [taskStatus, setTaskStatus] = useState(TaskCategoryEnum.PENDING)
-  const { userProfile } = useAuth()
+  const [view, setView] = useState<'cart' | 'task'>(
+    isCartEmpty ? 'task' : 'cart'
+  )
 
-  if (!userProfile.currentTask && isCartEmpty) {
-  } else if (!isCartEmpty) {
-    navigate('/my-task')
-  } else if (userProfile.currentTask) {
-    navigate('/task-detail')
-  }
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!isCartEmpty) {
+      setView('cart')
+    }
+  }, [isCartEmpty])
 
   return (
-    <Box sx={{ height: '100vh', backgroundColor: '#F7F9FC' }}>
-      <TopBar userName={userName} />
+    <Box
+      sx={{ height: '100vh', backgroundColor: '#F7F9FC', overflow: 'hidden' }}
+    >
+      <TopBarFixed userName={userName} />
 
-      <Box sx={{ flex: 1, p: 2, pb: 8 }}>
-        <PendingTaskList />
+      <Box sx={{ pt: '72px', pb: '80px', height: '100vh' }}>
+        {view === 'cart' ? <Cart /> : <PendingTaskList setView={setView} />}
       </Box>
 
       <WokerBottombar
-        onTaskListClick={() => {
-          setTaskStatus(TaskCategoryEnum.PENDING)
-        }}
-        onCreateTaskClick={() => navigate('/my-task/scan-qr')}
+        onCartClick={() => setView('cart')}
+        onTaskListClick={() => setView('task')}
+        onPublishClick={() => navigate('/picker-scan-bin')}
       />
     </Box>
   )
@@ -48,36 +66,39 @@ const TransportWorkerContent: React.FC<{ userName: string }> = ({
 const Dashboard: React.FC = () => {
   const { userProfile } = useAuth()
   const isPicker = userProfile.role === 'PICKER'
-  const isAdmin = userProfile.role === 'ADMIN'
   const isTransportWorker = userProfile.role === 'TRANSPORT_WORKER'
-
   const [taskStatus, setTaskStatus] = useState(TaskCategoryEnum.PENDING)
 
-  if (isAdmin) {
-    return (
-      <Box sx={{ p: 4 }}>
-        <Typography variant='h6'>
-          Hello Admin, {userProfile.firstName}!
-        </Typography>
-      </Box>
-    )
-  }
+  const navigate = useNavigate()
 
   if (isPicker) {
     return (
-      <Box sx={{ height: '100vh', backgroundColor: '#F7F9FC' }}>
-        <TopBar userName={`${userProfile.firstName} ${userProfile.lastName}`} />
-        <Box sx={{ flex: 1, p: 2, pb: 8 }}>
+      <Box
+        sx={{ height: '100vh', backgroundColor: '#F7F9FC', overflow: 'hidden' }}
+      >
+        <TopBarFixed
+          userName={`${userProfile.firstName} ${userProfile.lastName}`}
+        />
+
+        <Box
+          sx={{
+            pt: '72px',
+            pb: '80px',
+            height: '100vh',
+            overflowY: 'auto',
+            WebkitOverflowScrolling: 'touch'
+          }}
+        >
           <PickerCreatedTaskList status={taskStatus} />
         </Box>
 
         <PickerBottombar
-          onTaskListClick={() => {
-            setTaskStatus(TaskCategoryEnum.PENDING)
-          }}
-          onArchivedClick={() => {
-            setTaskStatus(TaskCategoryEnum.COMPLETED)
-          }}
+          selectedView={
+            taskStatus === TaskCategoryEnum.PENDING ? 'task' : 'archived'
+          }
+          onTaskListClick={() => setTaskStatus(TaskCategoryEnum.PENDING)}
+          onArchivedClick={() => setTaskStatus(TaskCategoryEnum.COMPLETED)}
+          onCreateTaskClick={() => navigate('/picker-scan-bin')}
         />
       </Box>
     )

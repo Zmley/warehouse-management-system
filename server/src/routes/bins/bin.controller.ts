@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import * as binService from 'routes/bins/bin.service'
-import { getBinByProductCode } from 'routes/bins/bin.service'
+import { getPickBinByProductCode } from 'routes/bins/bin.service'
 
 export const getBin = async (
   req: Request,
@@ -54,10 +54,6 @@ export const getBinCodes = async (
   try {
     const warehouseID = req.query.warehouseID as string
 
-    if (!warehouseID) {
-      return res.status(400).json('warehouseID is required')
-    }
-
     const data = await binService.getBinCodesInWarehouse(warehouseID)
 
     res.status(200).json({ success: true, data })
@@ -72,12 +68,9 @@ export const getBins = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { warehouseID, type, keyword, page = '1', limit = '10' } = req.query
+    const { type, keyword, page = '1', limit = '10' } = req.query
 
-    if (!warehouseID || typeof warehouseID !== 'string') {
-      res.status(400).json({ message: 'Missing or invalid warehouseID' })
-      return
-    }
+    const warehouseID = req.query.warehouseID as string
 
     const parsedPage = parseInt(page as string, 10)
     const parsedLimit = parseInt(limit as string, 10)
@@ -115,15 +108,12 @@ export const addBins = async (
     res.status(200).json({
       success: true,
       insertedCount: result.insertedCount,
-      skippedCount: result.skipped.length,
-      duplicatedBinCodes: result.skipped.map(b => b.binCode)
+      updatedCount: result.updatedCount
     })
   } catch (err) {
     next(err)
   }
 }
-
-///
 
 export const getPickUpBin = async (
   req: Request,
@@ -142,7 +132,7 @@ export const getPickUpBin = async (
       })
     }
 
-    const bins = await getBinByProductCode(
+    const bins = await getPickBinByProductCode(
       String(productCode),
       String(warehouseID)
     )
@@ -176,5 +166,53 @@ export const checkIfPickUpBin = async (
     })
   } catch (error) {
     next(error)
+  }
+}
+
+export const updateDefaultProductCodes = async (req, res) => {
+  const { binID } = req.params
+  const { defaultProductCodes } = req.body
+
+  if (!binID) {
+    return res.status(400).json({ success: false, error: 'binID is required' })
+  }
+  if (!defaultProductCodes && defaultProductCodes !== '') {
+    return res
+      .status(400)
+      .json({ success: false, error: 'defaultProductCodes is required' })
+  }
+
+  try {
+    const updatedBin = await binService.updateDefaultProductCodes(
+      binID,
+      defaultProductCodes
+    )
+    if (!updatedBin) {
+      return res.status(404).json({ success: false, error: 'Bin not found' })
+    }
+    return res.json({ success: true, data: updatedBin })
+  } catch (error) {
+    console.error('Update bin defaultProductCodes error:', error)
+    return res
+      .status(500)
+      .json({ success: false, error: 'Internal server error' })
+  }
+}
+
+export const deleteBin = async (req: Request, res: Response) => {
+  const { binID } = req.params
+
+  try {
+    const result = await binService.deleteBinByBInID(binID)
+
+    if (!result) {
+      return res.status(404).json({ success: false, error: 'Bin not found' })
+    }
+
+    res.json({ success: true })
+  } catch (err) {
+    res
+      .status(500)
+      .json({ success: false, error: err.message || 'Failed to delete bin' })
   }
 }

@@ -6,6 +6,8 @@ import { BinUploadPayload } from 'types/bin'
 
 export const getBinByBinCode = async (binCode: string) => {
   try {
+    console.log('🔍 Fetching bin with code:', binCode)
+
     const bin = await Bin.findOne({
       where: {
         binCode
@@ -125,60 +127,55 @@ export const getBins = async (
 }
 
 export const addBins = async (binList: BinUploadPayload[]) => {
-  const skipped: BinUploadPayload[] = []
   let insertedCount = 0
+  let updatedCount = 0
 
   const CHUNK_SIZE = 100
+
   for (let i = 0; i < binList.length; i += CHUNK_SIZE) {
     const chunk = binList.slice(i, i + CHUNK_SIZE)
 
-    const chunkResult = await Promise.all(
+    await Promise.all(
       chunk.map(async bin => {
-        try {
-          await Bin.create({
-            warehouseID: bin.warehouseID,
-            binCode: bin.binCode,
-            type: bin.type,
-            defaultProductCodes: bin.defaultProductCodes?.join(',') || null
-          })
-          return { success: true }
-        } catch (error) {
-          if (error.name === 'SequelizeUniqueConstraintError') {
-            skipped.push(bin)
-            return { success: false }
-          } else {
-            throw new AppError(
-              500,
-              error instanceof Error ? error.message : 'Unknown error'
-            )
-          }
+        const { warehouseID, binCode, type, defaultProductCodes } = bin
+        const joinedCodes = defaultProductCodes?.join(',') || null
+
+        const [record, created] = await Bin.findOrCreate({
+          where: { binCode, warehouseID },
+          defaults: { type, defaultProductCodes: joinedCodes }
+        })
+
+        if (created) {
+          insertedCount++
+        } else {
+          await record.update({ type, defaultProductCodes: joinedCodes })
+          updatedCount++
         }
       })
     )
-
-    insertedCount += chunkResult.filter(r => r.success).length
   }
 
   return {
     insertedCount,
-    skipped
+    updatedCount
   }
 }
 
-export const getBinByProductCode = async (
+export const getPickBinByProductCode = async (
   productCode: string,
   warehouseID: string
 ) => {
-  const bins = await Bin.findAll({
+  const bin = await Bin.findOne({
     where: {
       type: 'PICK_UP',
       warehouseID,
-      defaultProductCodes: productCode
-    },
-    order: [['binCode', 'ASC']]
+      defaultProductCodes: {
+        [Op.like]: `%${productCode}%`
+      }
+    }
   })
 
-  return bins
+  return bin
 }
 
 export const isPickUpBin = async (binCode: string): Promise<boolean> => {
@@ -215,4 +212,19 @@ export const getBinsByBinCodes = async (
   })
 
   return bins
+}
+
+export const updateDefaultProductCodes = async (binID, defaultProductCodes) => {
+  const bin = await Bin.findByPk(binID)
+  if (!bin) return null
+
+  bin.defaultProductCodes = defaultProductCodes
+  await bin.save()
+
+  return bin
+}
+
+export const deleteBinByBInID = async (binID: string): Promise<boolean> => {
+  const result = await Bin.destroy({ where: { binID } })
+  return result > 0
 }

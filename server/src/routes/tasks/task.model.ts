@@ -3,6 +3,7 @@ import { sequelize } from 'config/db'
 import Inventory from 'routes/inventory/inventory.model'
 import Bin from 'routes/bins/bin.model'
 import { TaskStatus } from 'constants/tasksStatus'
+import Account from 'routes/accounts/accounts.model'
 
 export class Task extends Model {
   public taskID!: string
@@ -99,6 +100,11 @@ Task.hasMany(Inventory, {
   foreignKey: 'productCode',
   sourceKey: 'productCode',
   as: 'inventories'
+})
+
+Task.belongsTo(Account, {
+  foreignKey: 'accepterID',
+  as: 'accepter'
 })
 
 export default Task

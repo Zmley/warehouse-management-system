@@ -1,0 +1,99 @@
+{
+  "profile": {
+  "title": "Profile",
+  "signOut": "Sign Out"
+  },
+  "topbar": {
+    "greeting": "Hello, {{name}}",
+    "tooltip": "Pick up Task",
+    "pickButton": "Pick"
+  },
+   "bottombar": {
+    "tasks": "Tasks",
+    "cart": "ForkLift",
+    "publish": "Publish Task"
+  },
+    "taskList": {
+    "pullToRefresh": "↓ Pull down to refresh tasks",
+    "empty": "No pending tasks found.",
+    "sourceBin": "Source Bin",
+    "product": "Product",
+    "quantity": "Quantity",
+    "targetBin": "Target Bin",
+    "createDate": "Create Date",
+    "accept": "Accept",
+    "takeOver": "Take Over",
+    "loading": "Loading..."
+  },
+   "cart": {
+    "loadedFromBin": "Loaded From Bin",
+    "overLimit": "❌ Selected quantity ({{selected}}) exceeds task limit ({{limit}})",
+    "loadByBin": "Load By QRCode",
+    "loadByProduct": "Load By BarCode",
+    "unload": "Unload"
+  },
+    "scan": {
+     "scanBin": "Scan Bin QRCode",
+    "scanProduct": "Scan Product BarCode",
+    "modeScanner": "Scan QR Code",
+    "modeManual": "Manual Input",
+    "alignPrompt": "Please align the QR code within the frame",
+    "enterPrompt": "Please enter a bin code",
+    "enterBinCode": "Enter Bin Code",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "operationError": "❌ Operation failed. Please try again.",
+    "enterBinOrProduct" : "Enter Bin Code or Product BarCode",
+    "title" : "Scan Bin Code or Product BarCode",
+         "enterProductCode": "enter Product Codee"
+
+  },
+
+    "inventory": {
+    "total": "Total",
+    "offload": "Offload",
+    "quantityExceed": "Quantity cannot exceed total ({{quantity}})"
+  }
+  ,
+    "addToCart": {
+    "invalidQuantity": "❌ Invalid quantity",
+    "addFailed": "❌ Failed to add",
+    "load": "Add"
+  },
+  
+  "taskInstruction": {
+    "sourceBin": "Source Bin",
+    "product": "Product",
+    "quantity": "Quantity",
+    "targetBin": "Target Bin",
+    "cancel": "Cancel",
+    "release": "Release",
+    "load": "Load",
+    "cannotCancelAfterLoad": "❌ Cannot cancel after loading cargo",
+    "cancelTooltip": "Cancel this task",
+    "mustLoadFirst": "❌ Load cargo first to release",
+    "releaseTooltip": "Release this task to the aisle",
+    "loadTooltip": "Load items from aisle bin"
+  },
+
+    "productCard": {
+    "title": "Product Info",
+    "productCode": "Product Code",
+    "barCode": "Bar Code",
+    "boxType": "Box Type"
+  },
+
+  "taskListCard": {
+  "cancel": "cancel",
+  "canceling": "canceling",
+  "completed": "completed",
+  "refreshing" : "refreshing",
+  "empty" : "No pending tasks found."
+  },
+
+  "pickerBottomBar": {
+  "taskList": "Task List",
+  "createTask": "Create Task",
+  "archivedTask": "Archived Task"
+}
+}

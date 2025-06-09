@@ -1,59 +1,49 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState } from 'react'
 import { useTaskContext } from 'contexts/task'
 import {
   acceptTask as acceptTaskAPI,
-  cancelTask as cancelTaskAPI
+  cancelTask as cancelTaskAPI,
+  releaseTask as releaseTaskAPI,
+  getTasks
 } from 'api/taskApi'
-
-export const useAutoRefresh = (
-  fetchFn: () => void,
-  intervalMs: number = 30000
-) => {
-  useEffect(() => {
-    fetchFn()
-
-    const interval = setInterval(() => {
-      fetchFn()
-    }, intervalMs)
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        fetchFn()
-      }
-    }
-
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-
-    return () => {
-      clearInterval(interval)
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
-    }
-  }, [])
-}
+import { Task } from 'types/task'
 
 export const useTask = () => {
-  const [loading, setLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const { fetchMyTask, fetchTasks } = useTaskContext()
-  const navigate = useNavigate()
+  const { fetchMyTask } = useTaskContext()
+  const [tasks, setTasks] = useState<Task[]>([])
 
-  const acceptTask = async (taskID: string) => {
-    setLoading(true)
+  const fetchTasks = async () => {
+    try {
+      setIsLoading(true)
+      const result = await getTasks()
+      setTasks(result)
+    } catch (err) {
+      console.error('❌ Error loading tasks', err)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const acceptTask = async (taskID: string): Promise<boolean> => {
+    setIsLoading(true)
     setError(null)
     try {
       const res = await acceptTaskAPI(taskID)
-      if (res?.task) {
-        await fetchMyTask()
-        navigate('/task-detail')
+      if (res?.success && res?.task) {
+        return true
       } else {
-        setError('Task accept API did not return a task.')
+        setError(res?.error || '❌ Failed to accept task.')
+        return false
       }
-    } catch (err) {
-      setError('❌ Failed to accept task')
-      console.error(err)
+    } catch (err: any) {
+      const msg = err?.response?.data?.error || '❌ Failed to accept task'
+      setError(msg)
+      console.error('❌ Accept task failed:', err)
+      return false
     } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
   }
 
@@ -68,11 +58,30 @@ export const useTask = () => {
     }
   }
 
+  const releaseTask = async (taskID: string) => {
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      await releaseTaskAPI(taskID)
+      await fetchMyTask()
+    } catch (err: any) {
+      const message =
+        err?.response?.data?.error || err.message || '❌ Failed to release task'
+      setError(message)
+      console.error(message)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return {
     acceptTask,
     cancelMyTask,
-    loading,
+    isLoading,
     error,
-    useAutoRefresh
+    tasks,
+    fetchTasks,
+    releaseTask
   }
 }

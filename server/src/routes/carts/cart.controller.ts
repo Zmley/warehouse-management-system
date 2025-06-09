@@ -1,13 +1,9 @@
 import { Request, Response, NextFunction } from 'express'
-import {
-  loadByBinCode,
-  loadByProductCode,
-  unloadByBinCode
-} from './cart.service'
+import * as cartService from './cart.service'
 import * as taskService from 'routes/tasks/task.service'
-
-import { hasActiveTask, updateTaskSourceBin } from 'routes/tasks/task.service'
 import { getBinByBinCode } from 'routes/bins/bin.service'
+import AppError from 'utils/appError'
+import { SourceBinItem } from 'types/bin'
 
 export const load = async (
   req: Request,
@@ -21,15 +17,44 @@ export const load = async (
     let result
 
     if (productCode) {
-      result = await loadByProductCode(productCode, quantity, cartID)
+      result = await cartService.loadByProductCode(
+        productCode,
+        quantity,
+        cartID
+      )
     } else if (binCode) {
-      result = await loadByBinCode(binCode, cartID, accountID, warehouseID)
+      const currentTask = await taskService.getTaskByAccountID(
+        accountID,
+        warehouseID
+      )
 
-      const activeTask = await hasActiveTask(accountID)
+      if (currentTask) {
+        const sourceBinCodes = currentTask.sourceBins.map(
+          (item: SourceBinItem) => item.bin?.binCode
+        )
+
+        if (!sourceBinCodes.includes(binCode)) {
+          throw new AppError(
+            403,
+            `❌ You can only load from assigned bins: ${sourceBinCodes.join(
+              ', '
+            )}`
+          )
+        }
+      }
+
+      result = await cartService.loadByBinCode(
+        binCode,
+        cartID,
+        accountID,
+        warehouseID
+      )
+
+      const activeTask = await taskService.hasActiveTask(accountID)
       if (activeTask?.status === 'IN_PROCESS') {
         const bin = await getBinByBinCode(binCode)
         if (bin?.binID) {
-          await updateTaskSourceBin(activeTask.taskID, bin.binID)
+          await taskService.updateTaskSourceBin(activeTask.taskID, bin.binID)
         }
       }
     }
@@ -63,7 +88,10 @@ export const unload = async (
         return
       }
 
-      const result = await unloadByBinCode(binCode, unloadProductList)
+      const result = await cartService.unloadByBinCode(
+        binCode,
+        unloadProductList
+      )
 
       const taskCompletionResult = await taskService.completeTask(task.taskID)
 
@@ -81,7 +109,10 @@ export const unload = async (
         updatedProducts: result
       })
     } else {
-      const result = await unloadByBinCode(binCode, unloadProductList)
+      const result = await cartService.unloadByBinCode(
+        binCode,
+        unloadProductList
+      )
 
       res.status(200).json({
         success: true,

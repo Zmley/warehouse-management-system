@@ -46,13 +46,6 @@ export const addProducts = async (
 ) => {
   try {
     const products: ProductUploadInput[] = req.body
-
-    if (!Array.isArray(products)) {
-      return res
-        .status(400)
-        .json({ success: false, message: 'Invalid payload' })
-    }
-
     const result = await productService.addProducts(products)
 
     return res.status(200).json({ success: true, result })
@@ -67,12 +60,9 @@ export const getProduct = async (
   next: NextFunction
 ) => {
   try {
-    const { barCode } = req.query
-    if (!barCode || typeof barCode !== 'string') {
-      throw new Error('❌ Missing or invalid barCode in query')
-    }
-
+    const barCode = req.query.barCode as string
     const product = await productService.getProductByBarCode(barCode)
+
     res.json({ success: true, product })
   } catch (err) {
     next(err)

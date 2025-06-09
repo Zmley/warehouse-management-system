@@ -27,7 +27,6 @@
       "components/*": ["components/*"],
       "config/*": ["config/*"]
     },
-
     "plugins": [{ "transform": "ts-optchain/transform" }]
   },
   "exclude": [

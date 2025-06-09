@@ -6,6 +6,7 @@ import { InventoryUploadType } from 'types/inventory'
 import AppError from 'utils/appError'
 import { buildBinCodeToIDMap } from 'utils/bin.utils'
 import { getExistingInventoryPairs } from 'utils/inventory.utils'
+import Account from 'routes/accounts/accounts.model'
 
 export const getInventoriesByCartID = async (
   cartID: string
@@ -111,15 +112,14 @@ export const updateByInventoryID = async (
 }
 
 export const addInventories = async (inventoryList: InventoryUploadType[]) => {
-  const skipped: InventoryUploadType[] = []
   let insertedCount = 0
+  let updatedCount = 0
 
   if (inventoryList.length === 0) {
-    return { insertedCount: 0, skipped }
+    return { insertedCount: 0, updatedCount: 0 }
   }
 
   const bins = await getBinsByBinCodes(inventoryList)
-
   const binCodeToBinID = buildBinCodeToIDMap(bins)
   const allBinIDs = bins.map(bin => bin.binID)
 
@@ -129,41 +129,34 @@ export const addInventories = async (inventoryList: InventoryUploadType[]) => {
     inventoryList.map(async item => {
       const cleanBinCode = item.binCode.trim()
       const cleanProductCode = item.productCode.trim().toUpperCase()
-
       const binID = binCodeToBinID.get(cleanBinCode)
 
-      if (!binID) {
-        skipped.push(item)
-        return
-      }
+      if (!binID) return
 
       const pairKey = `${binID}-${cleanProductCode}`
 
       if (existingPairs.has(pairKey)) {
-        skipped.push(item)
-        return
-      }
-
-      try {
+        // update quantity
+        await Inventory.update(
+          { quantity: item.quantity },
+          { where: { binID, productCode: cleanProductCode } }
+        )
+        updatedCount++
+      } else {
+        // insert new
         await Inventory.create({
           binID,
           productCode: cleanProductCode,
           quantity: item.quantity
         })
         insertedCount++
-      } catch (error) {
-        throw new AppError(
-          500,
-          error instanceof Error ? error.message : 'Unknown error'
-        )
       }
     })
   )
 
   return {
     insertedCount,
-    skippedCount: skipped.length,
-    skipped
+    updatedCount
   }
 }
 
@@ -194,4 +187,18 @@ export const checkInventoryQuantity = async (
       `❌ Not enough inventory. Available: ${inventoryItem.quantity}, Required: ${requiredQuantity}`
     )
   }
+}
+
+export const hasInventoryInCart = async (
+  accountID: string
+): Promise<boolean> => {
+  const account = await Account.findByPk(accountID)
+  if (!account?.cartID) return false
+
+  const items = await Inventory.findAll({
+    where: { binID: account.cartID }
+  })
+
+  console.log('items ++++++++++', items, items.length > 0)
+  return items.length > 0
 }

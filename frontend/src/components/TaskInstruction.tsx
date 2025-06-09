@@ -1,74 +1,210 @@
 import React from 'react'
 import {
+  Box,
+  Typography,
   Card,
   CardContent,
-  Typography,
-  Box,
-  Chip,
-  Divider
+  Grid,
+  Divider,
+  Button,
+  Tooltip
 } from '@mui/material'
-import AssignmentIcon from '@mui/icons-material/Assignment'
 import { useTaskContext } from 'contexts/task'
+import { useCartContext } from 'contexts/cart'
+import { useTask } from 'hooks/useTask'
+import { useCart } from 'hooks/useCart'
+import { useTranslation } from 'react-i18next'
 
 const TaskInstruction: React.FC = () => {
-  const { myTask } = useTaskContext()
+  const { t } = useTranslation()
+  const { myTask, setMyTask } = useTaskContext()
+  const { inventoriesInCar, getMyCart } = useCartContext()
+  const { cancelMyTask, releaseTask } = useTask()
+  const { loadCart } = useCart()
 
   if (!myTask) return null
 
+  const hasCargo = inventoriesInCar.length > 0
+  const firstSourceBin = myTask.sourceBins?.[0]
+  const binCode =
+    typeof firstSourceBin === 'object' &&
+    firstSourceBin !== null &&
+    'bin' in firstSourceBin
+      ? (firstSourceBin as any).bin?.binCode
+      : (firstSourceBin as any)?.binCode
+  const isAisleTask =
+    typeof binCode === 'string' && binCode.startsWith('AISLE-')
+
+  const handleCancel = async () => {
+    try {
+      await cancelMyTask(myTask.taskID)
+      setMyTask(null)
+    } catch (err) {
+      console.error('❌ Failed to cancel task', err)
+    }
+  }
+
+  const handleRelease = async () => {
+    try {
+      await releaseTask(myTask.taskID)
+      await getMyCart()
+      setMyTask(null)
+    } catch (err) {
+      console.error('❌ Failed to release task', err)
+    }
+  }
+
+  const handleLoadAisleTask = async () => {
+    if (!binCode) return
+    try {
+      const res = await loadCart({ binCode })
+      if (res.success) {
+        console.log('✅ Loaded successfully from aisle bin')
+      }
+    } catch (err) {
+      console.error('❌ Failed to load from aisle bin', err)
+    }
+  }
+
   return (
-    <Box sx={{ mt: 8, mx: 2 }}>
-      <Typography
-        variant='h5'
-        fontWeight='bold'
-        gutterBottom
-        sx={{ textAlign: 'center', mb: 3 }}
-      >
-        My Current Task
-      </Typography>
-
-      <Card
-        variant='outlined'
-        sx={{
-          borderRadius: 3,
-          backgroundColor: '#e3f2fd',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-        }}
-      >
-        <CardContent>
-          <Box display='flex' alignItems='center' mb={2}>
-            <AssignmentIcon sx={{ color: '#1565c0', mr: 1 }} />
-            <Typography variant='h6' fontWeight='bold'>
-              Current Task Instruction
+    <Card
+      variant='outlined'
+      sx={{
+        mb: 3,
+        borderRadius: 4,
+        backgroundColor: '#f5faff',
+        boxShadow: '0 4px 10px #0000000F'
+      }}
+    >
+      <CardContent>
+        <Grid container spacing={2}>
+          <Grid item xs={12} textAlign='center'>
+            <Typography variant='caption' color='text.secondary'>
+              {t('taskInstruction.sourceBin')}
             </Typography>
-            <Chip
-              label='In Task'
-              size='small'
-              color='success'
-              sx={{ ml: 2, fontWeight: 500 }}
-            />
-          </Box>
+            <Box sx={{ fontWeight: 'bold', fontSize: 16, mt: 0.5 }}>
+              {myTask.sourceBins?.length > 0
+                ? myTask.sourceBins.map((inv: any, index: number) => (
+                    <div key={index}>
+                      {inv.bin?.binCode ?? '--'}: {inv.quantity ?? '--'}
+                    </div>
+                  ))
+                : '--'}
+            </Box>
+          </Grid>
 
-          <Divider sx={{ mb: 2 }} />
+          <Grid item xs={4} textAlign='center'>
+            <Typography variant='caption' color='text.secondary'>
+              {t('taskInstruction.product')}
+            </Typography>
+            <Typography fontWeight='bold'>
+              {myTask.productCode || '--'}
+            </Typography>
+          </Grid>
 
-          <Box display='flex' flexDirection='column' gap={1}>
-            <Typography fontSize={15}>
-              <strong>Task ID:</strong> {myTask.taskID}
+          <Grid item xs={4} textAlign='center'>
+            <Typography variant='caption' color='text.secondary'>
+              {t('taskInstruction.quantity')}
             </Typography>
-            <Typography fontSize={15}>
-              <strong>Product Code:</strong> {myTask.productCode}
-            </Typography>
-            <Typography fontSize={15}>
-              <strong>Quantity:</strong>{' '}
+            <Typography fontWeight='bold'>
               {myTask.quantity === 0 ? 'ALL' : myTask.quantity ?? '--'}
             </Typography>
-            <Typography fontSize={15}>
-              <strong>Destination Bin:</strong>{' '}
+          </Grid>
+
+          <Grid item xs={4} textAlign='center'>
+            <Typography variant='caption' color='text.secondary'>
+              {t('taskInstruction.targetBin')}
+            </Typography>
+            <Typography fontWeight='bold'>
               {myTask.destinationBinCode || '--'}
             </Typography>
-          </Box>
-        </CardContent>
-      </Card>
-    </Box>
+          </Grid>
+        </Grid>
+
+        <Divider sx={{ my: 2 }} />
+
+        <Box display='flex' justifyContent='flex-end' gap={2} flexWrap='wrap'>
+          {/* Cancel Button */}
+          <Tooltip
+            title={
+              hasCargo
+                ? t('taskInstruction.cannotCancelAfterLoad')
+                : t('taskInstruction.cancelTooltip')
+            }
+          >
+            <span>
+              <Button
+                variant='outlined'
+                color='error'
+                size='small'
+                disabled={hasCargo}
+                onClick={handleCancel}
+                sx={{
+                  borderRadius: '8px',
+                  fontWeight: 600,
+                  textTransform: 'uppercase',
+                  height: 32,
+                  px: 2.5
+                }}
+              >
+                {t('taskInstruction.cancel')}
+              </Button>
+            </span>
+          </Tooltip>
+
+          {/* Release Button */}
+          <Tooltip
+            title={
+              hasCargo
+                ? t('taskInstruction.releaseTooltip')
+                : t('taskInstruction.mustLoadFirst')
+            }
+          >
+            <span>
+              <Button
+                variant='contained'
+                color='success'
+                size='small'
+                disabled={!hasCargo}
+                onClick={handleRelease}
+                sx={{
+                  borderRadius: '8px',
+                  fontWeight: 600,
+                  textTransform: 'uppercase',
+                  height: 32,
+                  px: 2.5
+                }}
+              >
+                {t('taskInstruction.release')}
+              </Button>
+            </span>
+          </Tooltip>
+
+          {/* Load Button */}
+          {isAisleTask && !hasCargo && (
+            <Tooltip title={t('taskInstruction.loadTooltip')}>
+              <span>
+                <Button
+                  variant='contained'
+                  color='primary'
+                  size='small'
+                  onClick={handleLoadAisleTask}
+                  sx={{
+                    borderRadius: '8px',
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    height: 32,
+                    px: 2.5
+                  }}
+                >
+                  {t('taskInstruction.load')}
+                </Button>
+              </span>
+            </Tooltip>
+          )}
+        </Box>
+      </CardContent>
+    </Card>
   )
 }
 

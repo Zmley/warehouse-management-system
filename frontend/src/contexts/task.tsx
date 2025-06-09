@@ -1,12 +1,10 @@
 import React, { createContext, useContext, useState } from 'react'
 import { Task } from 'types/task'
-import { getTasks, getMyTask } from 'api/taskApi'
+import { getMyTask } from 'api/taskApi'
 
 export type TaskContextType = {
-  tasks: Task[]
-  fetchTasks: () => void
   myTask: Task | null
-  setMyTask: (task: Task) => void
+  setMyTask: (task: Task | null) => void
   fetchMyTask: () => Promise<Task | null>
 }
 
@@ -23,17 +21,7 @@ export const useTaskContext = (): TaskContextType => {
 export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
   children
 }) => {
-  const [tasks, setTasks] = useState<Task[]>([])
   const [myTask, setMyTask] = useState<Task | null>(null)
-
-  const fetchTasks = async () => {
-    try {
-      const tasks = await getTasks()
-      setTasks(tasks)
-    } catch (error) {
-      console.error('Failed to fetch tasks:', error)
-    }
-  }
 
   const fetchMyTask = async (): Promise<Task | null> => {
     try {
@@ -46,11 +34,12 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }
 
+  //改pr 我感觉这写的有问题，应该是useEffect里执行fetchMyTask，然后page那里再const { myTask } = useTaskContext()
+  //我的页面是下拉刷新的， 需要手动调用   fetchMyTask
+
   return (
     <TaskContext.Provider
       value={{
-        tasks,
-        fetchTasks,
         myTask,
         setMyTask,
         fetchMyTask

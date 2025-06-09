@@ -29,13 +29,12 @@ export const sanitizeProductItem = (item: ProductUploadInput) => {
 
 export const handleProductInsertion = async (
   item: ProductUploadInput,
-  skipped: ProductUploadInput[],
-  incrementInserted: () => void
+  incrementInserted: () => void,
+  incrementUpdated: () => void
 ) => {
   const { productCode, barCode, boxType } = sanitizeProductItem(item)
 
   if (!productCode) {
-    skipped.push(item)
     return
   }
 
@@ -44,7 +43,8 @@ export const handleProductInsertion = async (
     incrementInserted()
   } catch (error) {
     if (error.name === 'SequelizeUniqueConstraintError') {
-      skipped.push(item)
+      await Product.update({ barCode, boxType }, { where: { productCode } })
+      incrementUpdated()
     } else {
       throw new AppError(
         500,

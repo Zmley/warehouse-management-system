@@ -23,16 +23,11 @@ export const getInventories = async (
   try {
     const { warehouseID, binID, page, limit = '20', keyword } = req.query
 
-    if (!warehouseID || typeof warehouseID !== 'string') {
-      res.status(400).json({ message: 'Missing or invalid warehouseID' })
-      return
-    }
-
-    const parsedPage = parseInt(page as string, 10)
-    const parsedLimit = parseInt(limit as string, 10)
+    const parsedPage = parseInt(page as string, 10) || 1
+    const parsedLimit = parseInt(limit as string, 10) || 20
 
     const { rows, count } = await inventoryService.getInventoriesByWarehouseID(
-      warehouseID,
+      warehouseID as string,
       typeof binID === 'string' ? binID : undefined,
       parsedPage,
       parsedLimit,
@@ -74,9 +69,11 @@ export const updateInventory = async (
     )
 
     if (updatedItem) {
-      return res.status(200).json(updatedItem)
+      return res.status(200).json({ success: true, updatedItem })
     } else {
-      return res.status(404).json({ message: 'Inventory item not found' })
+      return res
+        .status(404)
+        .json({ success: false, message: 'Inventory item not found' })
     }
   } catch (error) {
     next(error)
@@ -95,7 +92,8 @@ export const addInventories = async (
 
     res.status(200).json({
       success: true,
-      result
+      insertedCount: result.insertedCount,
+      updatedCount: result.updatedCount
     })
   } catch (error) {
     next(error)

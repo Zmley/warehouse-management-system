@@ -10,6 +10,13 @@ import {
 import roleAllow from 'middlewares/roleAllow.middleware'
 import { UserRole } from 'constants/uerRole'
 
+import {
+  validateAddInventories,
+  validateUpdateInventory,
+  validateDeleteInventory,
+  validateGetInventories
+} from './inventory.middleware'
+
 const router = express.Router()
 
 router.get(
@@ -18,14 +25,32 @@ router.get(
   getInventoriesInCart
 )
 
-// admin part
+router.get(
+  '/',
+  roleAllow([UserRole.ADMIN, UserRole.PICKER, UserRole.TRANSPORT_WORKER]),
+  validateGetInventories,
+  getInventories
+)
 
-router.get('/', getInventories)
+router.post(
+  '/',
+  roleAllow([UserRole.ADMIN]),
+  validateAddInventories,
+  addInventories
+)
 
-router.delete('/:inventoryID', roleAllow([UserRole.ADMIN]), deleteInventory)
+router.put(
+  '/:inventoryID',
+  roleAllow([UserRole.ADMIN]),
+  validateUpdateInventory,
+  updateInventory
+)
 
-router.put('/:inventoryID', updateInventory)
-
-router.post('/', roleAllow([UserRole.ADMIN]), addInventories)
+router.delete(
+  '/:inventoryID',
+  roleAllow([UserRole.ADMIN]),
+  validateDeleteInventory,
+  deleteInventory
+)
 
 export default router

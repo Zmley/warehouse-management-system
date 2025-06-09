@@ -1,143 +1,85 @@
-import React from 'react'
 import {
-  Container,
-  Typography,
+  Drawer,
   Box,
+  Typography,
   IconButton,
-  Button,
   Avatar,
-  Divider
+  Divider,
+  Button
 } from '@mui/material'
-import {
-  ArrowBack as ArrowBackIcon,
-  Logout as LogoutIcon
-} from '@mui/icons-material'
-import { useNavigate } from 'react-router-dom'
+import { Close as CloseIcon, Logout as LogoutIcon } from '@mui/icons-material'
 import { useAuth } from 'hooks/useAuth'
+import { useTranslation } from 'react-i18next'
 
-const Profile: React.FC = () => {
-  const navigate = useNavigate()
-  const { handleLogout, userProfile } = useAuth()
+interface ProfileDrawerProps {
+  open: boolean
+  onClose: () => void
+}
+
+const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ open, onClose }) => {
+  const { userProfile, handleLogout } = useAuth()
+  const { t, i18n } = useTranslation()
+
+  const toggleLanguage = () => {
+    i18n.changeLanguage(i18n.language === 'en' ? 'zh' : 'en')
+  }
 
   return (
-    <Container
-      maxWidth='sm'
-      sx={{
-        textAlign: 'center',
-        padding: '20px',
-        height: '100vh',
-        display: 'flex',
-        flexDirection: 'column'
-      }}
-    >
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-        <IconButton
-          onClick={() => navigate('/')}
-          sx={{ alignSelf: 'flex-start' }}
+    <Drawer anchor='left' open={open} onClose={onClose}>
+      <Box width={300} p={2} role='presentation'>
+        <Box display='flex' alignItems='center' justifyContent='space-between'>
+          <Typography variant='h6' fontWeight='bold'>
+            {t('profile.title')}
+          </Typography>
+          <IconButton onClick={onClose}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
+
+        <Button
+          onClick={toggleLanguage}
+          variant='outlined'
+          size='small'
+          sx={{ mt: 1, mb: 2 }}
         >
-          <ArrowBackIcon sx={{ fontSize: '28px', color: '#333' }} />
-        </IconButton>
-      </Box>
+          {i18n.language === 'en' ? '中文' : 'English'}
+        </Button>
 
-      <Typography
-        variant='h4'
-        sx={{
-          fontWeight: 'bold',
-          color: 'black',
-          textAlign: 'left',
-          marginBottom: '20px',
-          paddingLeft: '8px'
-        }}
-      >
-        Profile
-      </Typography>
+        <Box mt={2} display='flex' alignItems='center'>
+          <Avatar src='/profile.jpg' sx={{ width: 60, height: 60, mr: 2 }} />
+          <Box>
+            <Typography fontWeight='bold'>
+              {userProfile?.firstName} {userProfile?.lastName}
+            </Typography>
+            <Typography variant='body2' color='text.secondary'>
+              {userProfile?.email}
+            </Typography>
+          </Box>
+        </Box>
 
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          textAlign: 'left',
-          paddingLeft: '16px',
-          mb: 2
-        }}
-      >
-        <Avatar
-          src='/profile.jpg'
-          sx={{ width: 70, height: 70, marginRight: '12px' }}
-        />
-        <Typography variant='h6' sx={{ fontWeight: 'bold' }}>
-          {userProfile?.firstName} {userProfile?.lastName}
-        </Typography>
-      </Box>
+        <Divider sx={{ my: 2 }} />
 
-      <Box sx={{ textAlign: 'left', paddingLeft: '16px', width: '100%' }}>
-        <Typography sx={{ fontWeight: 'bold', color: '#666', mb: 0.5 }}>
-          Username
+        <Typography fontSize={14} fontWeight='bold'>
+          {t('profile.role')}:
         </Typography>
-        <Typography sx={{ color: '#2279B8', fontWeight: 'bold', mb: 1 }}>
-          {userProfile?.email}
-        </Typography>
-        <Divider sx={{ width: '80%', borderColor: '#DDD' }} />
+        <Typography mb={1}>{userProfile?.role}</Typography>
 
-        <Typography sx={{ fontWeight: 'bold', color: '#666', mt: 2, mb: 0.5 }}>
-          First Name
-        </Typography>
-        <Typography sx={{ color: '#2279B8', fontWeight: 'bold', mb: 1 }}>
-          {userProfile?.firstName}
-        </Typography>
-        <Divider sx={{ width: '80%', borderColor: '#DDD' }} />
+        <Divider sx={{ my: 2 }} />
 
-        <Typography sx={{ fontWeight: 'bold', color: '#666', mt: 2, mb: 0.5 }}>
-          Last Name
-        </Typography>
-        <Typography sx={{ color: '#2279B8', fontWeight: 'bold', mb: 1 }}>
-          {userProfile?.lastName}
-        </Typography>
-        <Divider sx={{ width: '80%', borderColor: '#DDD' }} />
-
-        <Typography sx={{ fontWeight: 'bold', color: '#666', mt: 2, mb: 0.5 }}>
-          Role
-        </Typography>
-        <Typography sx={{ color: '#2279B8', fontWeight: 'bold', mb: 1 }}>
-          {userProfile?.role}
-        </Typography>
-        <Divider sx={{ width: '80%', borderColor: '#DDD' }} />
-      </Box>
-
-      <Box
-        sx={{
-          position: 'absolute',
-          bottom: '30px',
-          left: '16px',
-          width: 'calc(100% - 32px)'
-        }}
-      >
         <Button
           variant='outlined'
+          fullWidth
+          startIcon={<LogoutIcon />}
           onClick={() => {
             handleLogout()
-            navigate('/')
-          }}
-          sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '14px 20px',
-            borderRadius: '30px',
-            fontSize: '16px',
-            fontWeight: 'bold',
-            borderColor: '#0779B8',
-            color: '#0779B8',
-            '&:hover': { backgroundColor: '#F7F7F7' },
-            width: '70%'
+            onClose()
           }}
         >
-          Sign Out
-          <LogoutIcon sx={{ fontSize: '20px' }} />
+          {t('profile.signOut')}
         </Button>
       </Box>
-    </Container>
+    </Drawer>
   )
 }
 
-export default Profile
+export default ProfileDrawer

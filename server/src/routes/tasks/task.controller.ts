@@ -1,11 +1,12 @@
 import { Request, Response, NextFunction } from 'express'
 import * as taskService from 'routes/tasks/task.service'
 import * as binService from 'routes/bins/bin.service'
-import AppError from 'utils/appError'
 import { UserRole } from 'constants/uerRole'
 import { TaskStatus } from 'constants/tasksStatus'
-import { getBinByProductCode } from 'routes/bins/bin.service'
-import { checkIfPickerTaskPublished } from 'routes/tasks/task.service'
+import {
+  checkIfPickerTaskPublished,
+  updateTaskService
+} from 'routes/tasks/task.service'
 
 export const acceptTask = async (
   req: Request,
@@ -57,10 +58,6 @@ export const cancelTask = async (
     const { taskID } = req.params
     const { role, accountID } = res.locals
 
-    if (!taskID || !role || !accountID) {
-      throw new AppError(400, 'Missing required parameters')
-    }
-
     const task = await taskService.cancelBytaskID(taskID, accountID, role)
 
     res.status(200).json({
@@ -88,19 +85,29 @@ export const getTasks = async (
 
     if (role === UserRole.ADMIN) {
       if (typeof queryWarehouseID !== 'string') {
+        res.status(400).json({
+          success: false,
+          message: '❌ Admin must provide a valid warehouseID in query params.'
+        })
         return
       }
       warehouseID = queryWarehouseID
+
       if (typeof rawStatus === 'string') {
         status = rawStatus
       }
     } else if (role === UserRole.PICKER) {
       warehouseID = localWarehouseID
-      //temporary using ALL
       status = 'ALL'
     } else if (role === UserRole.TRANSPORT_WORKER) {
       warehouseID = localWarehouseID
       status = TaskStatus.PENDING
+    } else {
+      res.status(403).json({
+        success: false,
+        message: '❌ Unauthorized role'
+      })
+      return
     }
 
     const tasksWithBinCodes = await taskService.getTasksByWarehouseID(
@@ -134,14 +141,17 @@ export const createTask = async (
       destinationBinCode,
       quantity,
       warehouseID
-    } = req.body
-
-    await checkIfPickerTaskPublished(destinationBinCode, productCode)
+    } = req.body.payload
 
     if (!sourceBinCode) {
-      const destinationBin = await getBinByProductCode(productCode, warehouseID)
+      const destinationBin = await checkIfPickerTaskPublished(
+        warehouseID,
+        productCode,
+        destinationBinCode
+      )
+
       const task = await taskService.binsToPick(
-        destinationBin[0]?.binCode,
+        destinationBin.binCode,
         accountID,
         warehouseID,
         productCode,
@@ -173,5 +183,48 @@ export const createTask = async (
     })
   } catch (error) {
     next(error)
+  }
+}
+
+export const releaseTask = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { taskID } = req.params
+    const { accountID, cartID, warehouseID } = res.locals
+
+    const releasedTask = await taskService.releaseTask(
+      taskID,
+      accountID,
+      cartID,
+      warehouseID
+    )
+
+    res.status(200).json({
+      success: true,
+      message: '✅ Task released successfully',
+      task: releasedTask
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const updateTask = async (req: Request, res: Response) => {
+  const { taskID } = req.params
+  const { status, sourceBinCode } = req.body
+
+  try {
+    if (!status || !sourceBinCode) {
+      return res.status(400).json({ error: 'Missing required fields' })
+    }
+
+    const updatedTask = await updateTaskService(taskID, status, sourceBinCode)
+    res.json({ success: true, task: updatedTask })
+  } catch (error) {
+    console.error('❌ Failed to update task:', error)
+    res.status(500).json({ error: 'Internal server error' })
   }
 }
