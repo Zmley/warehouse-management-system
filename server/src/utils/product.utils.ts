@@ -34,17 +34,26 @@ export const handleProductInsertion = async (
 ) => {
   const { productCode, barCode, boxType } = sanitizeProductItem(item)
 
-  if (!productCode) {
-    return
-  }
+  if (!productCode) return
 
   try {
     await Product.create({ productCode, barCode, boxType })
     incrementInserted()
   } catch (error) {
-    if (error.name === 'SequelizeUniqueConstraintError') {
-      await Product.update({ barCode, boxType }, { where: { productCode } })
-      incrementUpdated()
+    if (
+      error.name === 'SequelizeUniqueConstraintError' ||
+      error.original?.code === '23505'
+    ) {
+      const [affectedCount] = await Product.update(
+        { barCode, boxType },
+        { where: { productCode } }
+      )
+
+      if (affectedCount > 0) {
+        incrementUpdated()
+      } else {
+        throw new AppError(500, `⚠️ Failed to update product: ${productCode}`)
+      }
     } else {
       throw new AppError(
         500,
