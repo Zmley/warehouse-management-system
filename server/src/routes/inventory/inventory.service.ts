@@ -7,6 +7,7 @@ import AppError from 'utils/appError'
 import { buildBinCodeToIDMap } from 'utils/bin.utils'
 import { getExistingInventoryPairs } from 'utils/inventory.utils'
 import Account from 'routes/accounts/accounts.model'
+import pLimit from 'p-limit'
 
 export const getInventoriesByCartID = async (
   cartID: string
@@ -125,33 +126,34 @@ export const addInventories = async (inventoryList: InventoryUploadType[]) => {
 
   const existingPairs = await getExistingInventoryPairs(allBinIDs)
 
+  const limit = pLimit(5)
+
   await Promise.all(
-    inventoryList.map(async item => {
-      const cleanBinCode = item.binCode.trim()
-      const cleanProductCode = item.productCode.trim().toUpperCase()
-      const binID = binCodeToBinID.get(cleanBinCode)
+    inventoryList.map(item =>
+      limit(async () => {
+        const cleanBinCode = item.binCode.trim()
+        const cleanProductCode = item.productCode.trim().toUpperCase()
+        const binID = binCodeToBinID.get(cleanBinCode)
+        if (!binID) return
 
-      if (!binID) return
+        const pairKey = `${binID}-${cleanProductCode}`
 
-      const pairKey = `${binID}-${cleanProductCode}`
-
-      if (existingPairs.has(pairKey)) {
-        // update quantity
-        await Inventory.update(
-          { quantity: item.quantity },
-          { where: { binID, productCode: cleanProductCode } }
-        )
-        updatedCount++
-      } else {
-        // insert new
-        await Inventory.create({
-          binID,
-          productCode: cleanProductCode,
-          quantity: item.quantity
-        })
-        insertedCount++
-      }
-    })
+        if (existingPairs.has(pairKey)) {
+          await Inventory.update(
+            { quantity: item.quantity },
+            { where: { binID, productCode: cleanProductCode } }
+          )
+          updatedCount++
+        } else {
+          await Inventory.create({
+            binID,
+            productCode: cleanProductCode,
+            quantity: item.quantity
+          })
+          insertedCount++
+        }
+      })
+    )
   )
 
   return {

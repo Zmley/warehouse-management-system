@@ -12,22 +12,6 @@ export const validateAddInventories = (
     return next(new AppError(400, 'Invalid payload: must be an array'))
   }
 
-  for (const item of inventories) {
-    if (
-      typeof item !== 'object' ||
-      !item.productCode ||
-      !item.binID ||
-      typeof item.quantity !== 'number'
-    ) {
-      return next(
-        new AppError(
-          400,
-          'Each inventory item must have productCode, binID, and quantity'
-        )
-      )
-    }
-  }
-
   next()
 }
 
