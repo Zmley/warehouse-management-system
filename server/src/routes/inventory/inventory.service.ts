@@ -7,7 +7,6 @@ import AppError from 'utils/appError'
 import { buildBinCodeToIDMap } from 'utils/bin.utils'
 import { getExistingInventoryPairs } from 'utils/inventory.utils'
 import Account from 'routes/accounts/accounts.model'
-import pLimit from 'p-limit'
 
 export const getInventoriesByCartID = async (
   cartID: string
@@ -123,17 +122,19 @@ export const addInventories = async (inventoryList: InventoryUploadType[]) => {
   const bins = await getBinsByBinCodes(inventoryList)
   const binCodeToBinID = buildBinCodeToIDMap(bins)
   const allBinIDs = bins.map(bin => bin.binID)
-
   const existingPairs = await getExistingInventoryPairs(allBinIDs)
 
-  const limit = pLimit(5)
+  const BATCH_SIZE = 5
 
-  await Promise.all(
-    inventoryList.map(item =>
-      limit(async () => {
+  for (let i = 0; i < inventoryList.length; i += BATCH_SIZE) {
+    const batch = inventoryList.slice(i, i + BATCH_SIZE)
+
+    await Promise.all(
+      batch.map(async item => {
         const cleanBinCode = item.binCode.trim()
         const cleanProductCode = item.productCode.trim().toUpperCase()
         const binID = binCodeToBinID.get(cleanBinCode)
+
         if (!binID) return
 
         const pairKey = `${binID}-${cleanProductCode}`
@@ -154,7 +155,7 @@ export const addInventories = async (inventoryList: InventoryUploadType[]) => {
         }
       })
     )
-  )
+  }
 
   return {
     insertedCount,
