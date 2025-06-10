@@ -78,24 +78,30 @@ export const getProductsByWarehouseID = async (
   }
 }
 
-export const addProducts = async (products: ProductUploadInput[]) => {
-  const { default: pLimit } = await import('p-limit')
-  const limit = pLimit(10)
+export interface BoxUploadInput {
+  productCode: string
+  barCode: string
+  boxType: string
+}
 
+export const addProducts = async (products: ProductUploadInput[]) => {
   let insertedCount = 0
   let updatedCount = 0
 
-  const tasks = products.map(item =>
-    limit(() =>
-      handleProductInsertion(
-        item,
-        () => insertedCount++,
-        () => updatedCount++
+  const BATCH_SIZE = 10
+  for (let i = 0; i < products.length; i += BATCH_SIZE) {
+    const batch = products.slice(i, i + BATCH_SIZE)
+
+    await Promise.all(
+      batch.map(item =>
+        handleProductInsertion(
+          item,
+          () => insertedCount++,
+          () => updatedCount++
+        )
       )
     )
-  )
-
-  await Promise.all(tasks)
+  }
 
   return {
     insertedCount,
