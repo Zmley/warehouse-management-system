@@ -214,14 +214,50 @@ export const getBinsByBinCodes = async (
   return bins
 }
 
-export const updateDefaultProductCodes = async (binID, defaultProductCodes) => {
-  const bin = await Bin.findByPk(binID)
-  if (!bin) return null
+export const updateDefaultProductCodes = async (
+  binID: string,
+  defaultProductCodes: string
+) => {
+  const targetBin = await Bin.findByPk(binID)
+  if (!targetBin) return null
 
-  bin.defaultProductCodes = defaultProductCodes
-  await bin.save()
+  const warehouseID = targetBin.warehouseID
 
-  return bin
+  const incomingCodes = defaultProductCodes
+    .split(',')
+    .map(c => c.trim())
+    .filter(c => c)
+
+  for (const productCode of incomingCodes) {
+    const conflictingBin = await Bin.findOne({
+      where: {
+        binID: { [Op.ne]: binID },
+        warehouseID,
+        defaultProductCodes: {
+          [Op.like]: `%${productCode}%`
+        }
+      }
+    })
+
+    if (conflictingBin) {
+      const originalList = (conflictingBin.defaultProductCodes || '')
+        .split(',')
+        .map(c => c.trim())
+        .filter(c => c)
+
+      const newList = originalList.filter(c => c !== productCode)
+      await conflictingBin.update({
+        defaultProductCodes: newList.length > 0 ? newList.join(',') : null
+      })
+    }
+  }
+
+  const updated = await targetBin.update({
+    defaultProductCodes:
+      incomingCodes.length > 0 ? incomingCodes.join(',') : null
+  })
+
+  return updated
 }
 
 export const deleteBinByBInID = async (binID: string): Promise<boolean> => {
