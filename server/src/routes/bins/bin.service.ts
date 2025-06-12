@@ -1,7 +1,7 @@
 import Bin from './bin.model'
 import Inventory from 'routes/inventory/inventory.model'
 import AppError from 'utils/appError'
-import { Op, WhereOptions } from 'sequelize'
+import { Op, Sequelize, WhereOptions } from 'sequelize'
 import { BinUploadPayload } from 'types/bin'
 
 export const getBinByBinCode = async (binCode: string) => {
@@ -105,11 +105,15 @@ export const getBins = async (
   let whereCondition: WhereOptions = { ...baseWhere }
 
   if (keyword) {
+    const sanitizedKeyword = keyword.replace(/'/g, "''")
+
     whereCondition = {
       ...baseWhere,
       [Op.or]: [
-        { binCode: { [Op.iLike]: `%${keyword}%` } },
-        { defaultProductCodes: { [Op.iLike]: `%${keyword}%` } }
+        { binCode: keyword },
+        Sequelize.literal(
+          `'${sanitizedKeyword}' = ANY(string_to_array("defaultProductCodes", ','))`
+        )
       ]
     }
   }
