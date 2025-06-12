@@ -42,6 +42,7 @@ const ScanTaskQRCode = () => {
     try {
       if (scanMode === 'unload') {
         await unloadCart(binCode, unloadProductList)
+        navigate('/')
       } else {
         await loadCart({ binCode })
       }
