@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { BrowserMultiFormatReader } from '@zxing/browser'
 import { NotFoundException } from '@zxing/library'
 
-const useQRScanner = (onScanSuccess?: (binCode: string) => void) => {
+const useScanner = (onScanSuccess?: (binCode: string) => void) => {
   const [isScanning, setIsScanning] = useState(false)
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const barcodeReaderRef = useRef<BrowserMultiFormatReader | null>(null)
@@ -83,4 +83,4 @@ const useQRScanner = (onScanSuccess?: (binCode: string) => void) => {
   return { videoRef, isScanning, startScanning, stopScanning }
 }
 
-export default useQRScanner
+export default useScanner
