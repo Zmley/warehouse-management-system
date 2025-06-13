@@ -15,7 +15,7 @@ import {
 import CancelIcon from '@mui/icons-material/Cancel'
 import SearchIcon from '@mui/icons-material/Search'
 import { useNavigate, useLocation } from 'react-router-dom'
-import useQRScanner from 'hooks/useQRScanner'
+import useQRScanner from 'hooks/useScanner'
 import { useCart } from 'hooks/useCart'
 import { useBin } from 'hooks/useBin'
 import { useTranslation } from 'react-i18next'

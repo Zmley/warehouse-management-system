@@ -15,7 +15,7 @@ import {
 import CancelIcon from '@mui/icons-material/Cancel'
 import SearchIcon from '@mui/icons-material/Search'
 import { useNavigate } from 'react-router-dom'
-import useQRScanner from 'hooks/useQRScanner'
+import useQRScanner from 'hooks/useScanner'
 import { useProduct } from 'hooks/useProduct'
 import AddToCartInline from 'pages/TransportWorker/AddToCartInline'
 import { ProductType } from 'types/product'

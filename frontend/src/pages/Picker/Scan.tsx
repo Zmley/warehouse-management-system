@@ -7,7 +7,7 @@ import {
 } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import useQRScanner from 'hooks/useQRScanner'
+import useQRScanner from 'hooks/useScanner'
 import { useBin } from 'hooks/useBin'
 import { useProduct } from 'hooks/useProduct'
 import { ProductType } from 'types/product'
@@ -25,12 +25,15 @@ const Scan = () => {
   const [manualBinCode, setManualBinCode] = useState('')
 
   const { fetchBinByCode, fetchBinCodes, binCodes } = useBin()
-  const { fetchProduct } = useProduct()
+  const { fetchProduct, loadProducts } = useProduct()
+
+  const combinedOptions = [...binCodes]
 
   const handleScan = async (code: string) => {
-    if (/^\d{12}$/.test(code)) {
+    const trimmed = code.trim()
+    if (/^\d{12}$/.test(trimmed)) {
       try {
-        const fetchedProduct = await fetchProduct(code)
+        const fetchedProduct = await fetchProduct(trimmed)
         if (fetchedProduct) {
           setProduct(fetchedProduct)
         } else {
@@ -44,7 +47,7 @@ const Scan = () => {
     }
 
     try {
-      const bin = await fetchBinByCode(code)
+      const bin = await fetchBinByCode(trimmed)
       navigate('/create-task', { state: { bin } })
     } catch (err: any) {
       console.error(err)
@@ -58,9 +61,11 @@ const Scan = () => {
 
   useEffect(() => {
     fetchBinCodes()
+    loadProducts()
     if (!isAndroid && mode === 'scanner' && !isScanning) {
       startScanning()
     }
+
     const interval = setInterval(() => {
       const stream = (videoRef.current as HTMLVideoElement | null)?.srcObject
       if (stream instanceof MediaStream) {
@@ -68,6 +73,7 @@ const Scan = () => {
         clearInterval(interval)
       }
     }, 300)
+
     return () => {
       stopScanning()
       streamRef.current?.getTracks().forEach(track => track.stop())
@@ -221,7 +227,7 @@ const Scan = () => {
             value={manualBinCode}
             onChange={setManualBinCode}
             onSubmit={handleManualSubmit}
-            options={binCodes}
+            options={combinedOptions}
           />
           <Button
             variant='contained'
