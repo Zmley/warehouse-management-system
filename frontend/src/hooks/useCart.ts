@@ -52,6 +52,7 @@ export const useCart = () => {
   ) => {
     try {
       const response = await unload(binCode, unloadProductList)
+
       if (response?.success) {
         const inventoriesLeftInCart = inventoriesInCar
           .map(item => {

@@ -22,7 +22,7 @@ import { useTranslation } from 'react-i18next'
 
 const isAndroid = /Android/i.test(navigator.userAgent)
 
-const ScanTaskQRCode = () => {
+const ScanQRCode = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [mode, setMode] = useState<'scanner' | 'manual'>('scanner')
@@ -41,8 +41,11 @@ const ScanTaskQRCode = () => {
   async function handleScanSuccess(binCode: string) {
     try {
       if (scanMode === 'unload') {
-        await unloadCart(binCode, unloadProductList)
-        navigate('/')
+        const result = await unloadCart(binCode, unloadProductList)
+
+        if (result?.success) {
+          navigate('/success')
+        }
       } else {
         await loadCart({ binCode })
       }
@@ -262,4 +265,4 @@ const ScanTaskQRCode = () => {
   )
 }
 
-export default ScanTaskQRCode
+export default ScanQRCode

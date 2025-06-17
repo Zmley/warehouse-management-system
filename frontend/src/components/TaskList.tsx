@@ -117,7 +117,7 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
                 variant='outlined'
                 sx={{
                   mb: 2,
-                  height: 150,
+                  height: 155,
                   borderRadius: 3,
                   backgroundColor: cardBgColor,
                   border: `1.5px solid ${cardBorderColor}`,
