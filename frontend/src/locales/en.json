@@ -23,7 +23,10 @@
     "createDate": "Create Date",
     "accept": "Accept",
     "takeOver": "Take Over",
-    "loading": "Loading..."
+    "loading": "Loading...",
+      "outOfStock": "Out of Stock",
+      "canceling" : "canceling"
+
   },
    "cart": {
     "loadedFromBin": "Loaded From Bin",
@@ -85,7 +88,7 @@
 
   "taskListCard": {
   "cancel": "cancel",
-  "canceling": "canceling",
+  "cancelling": "canceling",
   "completed": "completed",
   "refreshing" : "refreshing",
   "empty" : "No pending tasks found."
@@ -95,5 +98,26 @@
   "taskList": "Task List",
   "createTask": "Create Task",
   "archivedTask": "Archived Task"
-}
+},
+
+
+  "createTask": {
+    "title": "Create A New Task",
+    "targetBin": "Target Bin",
+    "productCode": "Product Code",
+    "sourceBins": "Source Bins",
+    "qty": "Qty",
+    "noMatchingBins": "No matching bins",
+    "loading": "Creating Task...",
+    "create": "Create Task",
+    "outOfStock": "Create Out-of-Stock Task",
+    "cancel": "Cancel"
+  },
+
+    "success": {
+    "pickerTitle": "Pick-up Task Created!",
+    "defaultTitle": "Operation Completed!",
+    "description": "Everything went smoothly. You’ll be redirected shortly."
+  }
+
 }

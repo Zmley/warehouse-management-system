@@ -151,10 +151,6 @@ export const binsToPick = async (
     ]
   })
 
-  if (inventories.length === 0) {
-    throw new AppError(404, '❌ No bins have this product in this warehouse')
-  }
-
   const sourceBins = inventories.map(inv => ({
     binCode: (inv as { Bin?: { binCode?: string } }).Bin?.binCode || 'UNKNOWN'
   }))

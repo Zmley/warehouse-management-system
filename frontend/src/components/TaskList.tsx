@@ -93,6 +93,9 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
           </Typography>
         ) : (
           tasks.map((task: Task) => {
+            const isOutOfStock =
+              !task.sourceBins || task.sourceBins.length === 0
+
             const firstSourceBin = task.sourceBins?.[0]
             const binCode =
               typeof firstSourceBin === 'object' && 'bin' in firstSourceBin
@@ -134,12 +137,27 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
                           mt: 0.5
                         }}
                       >
-                        {task.sourceBins?.length > 0
-                          ? task.sourceBins
-                              .map((inv: any) => inv.bin?.binCode)
-                              .filter(Boolean)
-                              .join(' / ')
-                          : '--'}
+                        {task.sourceBins && task.sourceBins.length > 0 ? (
+                          task.sourceBins
+                            .map((inv: any) => inv.bin?.binCode)
+                            .filter(Boolean)
+                            .join(' / ')
+                        ) : (
+                          <Box
+                            display='flex'
+                            justifyContent='center'
+                            alignItems='center'
+                            gap={0.5}
+                          >
+                            <Typography
+                              fontSize={14}
+                              fontWeight='medium'
+                              sx={{ color: '#d32f2f' }}
+                            >
+                              {t('taskList.outOfStock')}
+                            </Typography>
+                          </Box>
+                        )}
                       </Box>
                     </Grid>
 
@@ -190,7 +208,7 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
                     <Button
                       variant='contained'
                       onClick={() => handleAccept(task.taskID)}
-                      disabled={loadingTasks[task.taskID]}
+                      disabled={isOutOfStock || loadingTasks[task.taskID]}
                       color={isAisleTask ? 'success' : 'primary'}
                       sx={{
                         fontSize: 11,
@@ -200,6 +218,7 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
                         textTransform: 'uppercase',
                         fontWeight: 600,
                         minHeight: 30,
+                        opacity: isOutOfStock ? 0.5 : 1,
                         '&:hover': {
                           backgroundColor: isAisleTask ? '#059669' : '#1e50c2'
                         }

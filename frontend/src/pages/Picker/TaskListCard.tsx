@@ -113,12 +113,27 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
                       {t('taskList.sourceBin')}
                     </Typography>
                     <Box sx={{ fontWeight: 'bold', fontSize: 15, mt: 0.5 }}>
-                      {task.sourceBins?.length > 0
-                        ? task.sourceBins
-                            .map((inv: any) => inv.bin?.binCode)
-                            .filter(Boolean)
-                            .join(' / ')
-                        : '--'}
+                      {task.sourceBins && task.sourceBins.length > 0 ? (
+                        task.sourceBins
+                          .map((inv: any) => inv.bin?.binCode)
+                          .filter(Boolean)
+                          .join(' / ')
+                      ) : (
+                        <Box
+                          display='flex'
+                          justifyContent='center'
+                          alignItems='center'
+                          gap={0.5}
+                        >
+                          <Typography
+                            fontSize={14}
+                            fontWeight='medium'
+                            sx={{ color: '#d32f2f' }}
+                          >
+                            {t('taskList.outOfStock')}
+                          </Typography>
+                        </Box>
+                      )}
                     </Box>
                   </Grid>
 
