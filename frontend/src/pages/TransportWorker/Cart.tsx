@@ -128,7 +128,7 @@ const Cart = () => {
               </Typography>
             )}
 
-            <Box mt={3} mb={2}>
+            <Box mt={1} mb={0}>
               <Grid container spacing={1}>
                 <Grid item xs={6}>
                   <Box display='flex' flexDirection='column' height='100%'>
