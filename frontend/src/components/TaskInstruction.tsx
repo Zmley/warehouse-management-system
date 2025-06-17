@@ -70,22 +70,24 @@ const TaskInstruction: React.FC = () => {
     <Card
       variant='outlined'
       sx={{
-        mb: 3,
-        borderRadius: 4,
+        mb: 2,
+        borderRadius: 2,
         backgroundColor: '#f5faff',
-        boxShadow: '0 4px 10px #0000000F'
+        boxShadow: '0 2px 4px #00000010',
+        px: 1.5,
+        py: 1
       }}
     >
-      <CardContent>
-        <Grid container spacing={2}>
+      <CardContent sx={{ py: 0, '&:last-child': { pb: 0 } }}>
+        <Grid container spacing={1}>
           <Grid item xs={12} textAlign='center'>
-            <Typography variant='caption' color='text.secondary'>
+            <Typography variant='caption' fontSize={12} color='text.secondary'>
               {t('taskInstruction.sourceBin')}
             </Typography>
-            <Box sx={{ fontWeight: 'bold', fontSize: 16, mt: 0.5 }}>
+            <Box sx={{ fontSize: 13, fontWeight: 600, mt: 0.5 }}>
               {myTask.sourceBins?.length > 0
                 ? myTask.sourceBins.map((inv: any, index: number) => (
-                    <div key={index}>
+                    <div key={index} style={{ lineHeight: 1.3 }}>
                       {inv.bin?.binCode ?? '--'}: {inv.quantity ?? '--'}
                     </div>
                   ))
@@ -94,37 +96,36 @@ const TaskInstruction: React.FC = () => {
           </Grid>
 
           <Grid item xs={4} textAlign='center'>
-            <Typography variant='caption' color='text.secondary'>
+            <Typography variant='caption' fontSize={12} color='text.secondary'>
               {t('taskInstruction.product')}
             </Typography>
-            <Typography fontWeight='bold'>
+            <Typography fontSize={13} fontWeight='bold'>
               {myTask.productCode || '--'}
             </Typography>
           </Grid>
 
           <Grid item xs={4} textAlign='center'>
-            <Typography variant='caption' color='text.secondary'>
+            <Typography variant='caption' fontSize={12} color='text.secondary'>
               {t('taskInstruction.quantity')}
             </Typography>
-            <Typography fontWeight='bold'>
+            <Typography fontSize={13} fontWeight='bold'>
               {myTask.quantity === 0 ? 'ALL' : myTask.quantity ?? '--'}
             </Typography>
           </Grid>
 
           <Grid item xs={4} textAlign='center'>
-            <Typography variant='caption' color='text.secondary'>
+            <Typography variant='caption' fontSize={12} color='text.secondary'>
               {t('taskInstruction.targetBin')}
             </Typography>
-            <Typography fontWeight='bold'>
+            <Typography fontSize={13} fontWeight='bold'>
               {myTask.destinationBinCode || '--'}
             </Typography>
           </Grid>
         </Grid>
 
-        <Divider sx={{ my: 2 }} />
+        <Divider sx={{ my: 1.2 }} />
 
-        <Box display='flex' justifyContent='flex-end' gap={2} flexWrap='wrap'>
-          {/* Cancel Button */}
+        <Box display='flex' justifyContent='flex-end' gap={1} flexWrap='wrap'>
           <Tooltip
             title={
               hasCargo
@@ -140,11 +141,11 @@ const TaskInstruction: React.FC = () => {
                 disabled={hasCargo}
                 onClick={handleCancel}
                 sx={{
-                  borderRadius: '8px',
+                  height: 28,
+                  px: 1.5,
+                  fontSize: 11,
                   fontWeight: 600,
-                  textTransform: 'uppercase',
-                  height: 32,
-                  px: 2.5
+                  borderRadius: 1
                 }}
               >
                 {t('taskInstruction.cancel')}
@@ -152,7 +153,6 @@ const TaskInstruction: React.FC = () => {
             </span>
           </Tooltip>
 
-          {/* Release Button */}
           <Tooltip
             title={
               hasCargo
@@ -168,11 +168,11 @@ const TaskInstruction: React.FC = () => {
                 disabled={!hasCargo}
                 onClick={handleRelease}
                 sx={{
-                  borderRadius: '8px',
+                  height: 28,
+                  px: 1.5,
+                  fontSize: 11,
                   fontWeight: 600,
-                  textTransform: 'uppercase',
-                  height: 32,
-                  px: 2.5
+                  borderRadius: 1
                 }}
               >
                 {t('taskInstruction.release')}
@@ -180,7 +180,6 @@ const TaskInstruction: React.FC = () => {
             </span>
           </Tooltip>
 
-          {/* Load Button */}
           {isAisleTask && !hasCargo && (
             <Tooltip title={t('taskInstruction.loadTooltip')}>
               <span>
@@ -190,11 +189,11 @@ const TaskInstruction: React.FC = () => {
                   size='small'
                   onClick={handleLoadAisleTask}
                   sx={{
-                    borderRadius: '8px',
+                    height: 28,
+                    px: 1.5,
+                    fontSize: 11,
                     fontWeight: 600,
-                    textTransform: 'uppercase',
-                    height: 32,
-                    px: 2.5
+                    borderRadius: 1
                   }}
                 >
                   {t('taskInstruction.load')}

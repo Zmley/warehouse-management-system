@@ -117,24 +117,29 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
                 variant='outlined'
                 sx={{
                   mb: 2,
+                  height: 150,
                   borderRadius: 3,
                   backgroundColor: cardBgColor,
                   border: `1.5px solid ${cardBorderColor}`,
                   boxShadow: '0 2px 6px #0000000D'
                 }}
               >
-                <CardContent sx={{ py: 1.5, px: 2 }}>
-                  <Grid container spacing={1.5}>
+                <CardContent sx={{ py: 1, px: 1.5 }}>
+                  <Grid container spacing={1}>
                     <Grid item xs={12} textAlign='center'>
-                      <Typography variant='caption' color='text.secondary'>
+                      <Typography
+                        variant='caption'
+                        color='text.secondary'
+                        fontSize={11}
+                      >
                         {t('taskList.sourceBin')}
                       </Typography>
                       <Box
                         sx={{
                           fontWeight: 'bold',
-                          fontSize: 15,
+                          fontSize: 13,
                           wordBreak: 'break-word',
-                          mt: 0.5
+                          mt: 0.3
                         }}
                       >
                         {task.sourceBins && task.sourceBins.length > 0 ? (
@@ -146,11 +151,11 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
                           <Box
                             display='flex'
                             justifyContent='center'
-                            alignItems='center'
+                            alignItems='flex-start'
                             gap={0.5}
                           >
                             <Typography
-                              fontSize={14}
+                              fontSize={12}
                               fontWeight='medium'
                               sx={{ color: '#d32f2f' }}
                             >
@@ -162,34 +167,46 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
                     </Grid>
 
                     <Grid item xs={4} textAlign='center'>
-                      <Typography variant='caption' color='text.secondary'>
+                      <Typography
+                        variant='caption'
+                        color='text.secondary'
+                        fontSize={11}
+                      >
                         {t('taskList.product')}
                       </Typography>
-                      <Typography fontWeight='bold' fontSize={14}>
+                      <Typography fontWeight='bold' fontSize={13}>
                         {task.productCode}
                       </Typography>
                     </Grid>
 
                     <Grid item xs={4} textAlign='center'>
-                      <Typography variant='caption' color='text.secondary'>
+                      <Typography
+                        variant='caption'
+                        color='text.secondary'
+                        fontSize={11}
+                      >
                         {t('taskList.quantity')}
                       </Typography>
-                      <Typography fontWeight='bold' fontSize={14}>
+                      <Typography fontWeight='bold' fontSize={13}>
                         {task.quantity || 'ALL'}
                       </Typography>
                     </Grid>
 
                     <Grid item xs={4} textAlign='center'>
-                      <Typography variant='caption' color='text.secondary'>
+                      <Typography
+                        variant='caption'
+                        color='text.secondary'
+                        fontSize={11}
+                      >
                         {t('taskList.targetBin')}
                       </Typography>
-                      <Typography fontWeight='bold' fontSize={14}>
+                      <Typography fontWeight='bold' fontSize={13}>
                         {task.destinationBinCode || '--'}
                       </Typography>
                     </Grid>
                   </Grid>
 
-                  <Divider sx={{ my: 1.5 }} />
+                  <Divider sx={{ my: 1 }} />
 
                   <Box
                     display='flex'
@@ -199,7 +216,7 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
                     <Typography
                       variant='caption'
                       color='text.secondary'
-                      fontSize={12}
+                      fontSize={11}
                     >
                       {t('taskList.createDate')}:{' '}
                       {new Date(task.createdAt).toLocaleString()}
