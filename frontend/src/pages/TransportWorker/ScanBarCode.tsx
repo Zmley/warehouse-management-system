@@ -22,7 +22,7 @@ import { ProductType } from 'types/product'
 import { useTranslation } from 'react-i18next'
 import { isValidBarcode } from 'utils/barcode'
 
-const ScanProductQRCode = () => {
+const ScanBarCode = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [mode, setMode] = useState<'scanner' | 'manual'>('scanner')
@@ -313,4 +313,4 @@ const ScanProductQRCode = () => {
   )
 }
 
-export default ScanProductQRCode
+export default ScanBarCode
