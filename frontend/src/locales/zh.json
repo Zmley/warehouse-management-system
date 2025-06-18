@@ -24,8 +24,8 @@
     "accept": "接受",
     "takeOver": "接手",
     "loading": "加载中...",
-              "outOfStock": "缺货",
-                    "canceling" : "取消中",
+    "outOfStock": "缺货",
+    "canceling" : "取消中",
 
 
             
@@ -43,9 +43,9 @@
     "loadByBin": "装货(二维码)",
     "loadByProduct": "装货(条形吗)",
     "unload": "卸货",
-        "startLoad" :  "装货",
-        "chooseLoadMode" : "选择扫描类型",
-                    "unloadDirectTo" : "一键卸货到"
+    "startLoad" :  "装货",
+    "chooseLoadMode" : "选择扫描类型",
+    "unloadDirectTo" : "一键卸货到"
 
 
 
@@ -72,7 +72,7 @@
     "total": "叉车上总数",
     "offload": "卸载数量",
     "quantityExceed": "数量不能超过库存总数 ({{quantity}})",
-                          "currentCargoInForklift" : "叉车内货物"
+    "currentCargoInForklift" : "叉车内货物"
 
 
   },

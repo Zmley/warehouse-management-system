@@ -58,12 +58,11 @@ const InventoryListCard: React.FC<Props> = ({
       </Box>
       <Divider sx={{ my: 1.2 }} />
 
-      {/* 滚动区域容器 */}
       <Box
         sx={{
-          maxHeight: 320, // 约4个item的高度
+          maxHeight: 320,
           overflowY: selectedList.length > 4 ? 'auto' : 'visible',
-          pr: 1 // 避免滚动条遮住内容
+          pr: 1
         }}
       >
         {selectedList.map(item => {
