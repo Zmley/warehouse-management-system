@@ -12,21 +12,21 @@ import DocumentScanner from '@mui/icons-material/DocumentScanner'
 const Cart = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { inventoriesInCar, setSelectedToUnload } = useCartContext()
+  const { inventoriesInCart, setSelectedToUnload } = useCartContext()
   const { myTask, fetchMyTask } = useTaskContext()
 
   const defaultUnloadList = useMemo(() => {
-    if (!inventoriesInCar.length) return []
+    if (!inventoriesInCart.length) return []
 
     if (!myTask || myTask.productCode === 'ALL') {
-      return inventoriesInCar.map(item => ({
+      return inventoriesInCart.map(item => ({
         inventoryID: item.inventoryID,
         quantity: item.quantity,
         selected: true
       }))
     }
 
-    return inventoriesInCar.map(item => ({
+    return inventoriesInCart.map(item => ({
       inventoryID: item.inventoryID,
       quantity:
         item.productCode === myTask.productCode
@@ -36,7 +36,7 @@ const Cart = () => {
           : item.quantity,
       selected: item.productCode === myTask.productCode
     }))
-  }, [inventoriesInCar, myTask])
+  }, [inventoriesInCart, myTask])
 
   const [inventoryListReadyToUnload, setInventoryListReadyToUnload] =
     useState(defaultUnloadList)
@@ -106,7 +106,7 @@ const Cart = () => {
           <CardContent>
             <InventoryListCard
               taskType='Worker Self Performance'
-              inventories={inventoriesInCar}
+              inventories={inventoriesInCart}
               selectedList={inventoryListReadyToUnload}
               onQuantityChange={handleQuantityChange}
               onSelectionChange={handleSelectionChange}

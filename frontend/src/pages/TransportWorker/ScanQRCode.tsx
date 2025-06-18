@@ -41,11 +41,7 @@ const ScanQRCode = () => {
   async function handleScanSuccess(binCode: string) {
     try {
       if (scanMode === 'unload') {
-        const result = await unloadCart(binCode, unloadProductList)
-
-        if (result?.success) {
-          navigate('/success')
-        }
+        await unloadCart(binCode, unloadProductList)
       } else {
         await loadCart({ binCode })
       }

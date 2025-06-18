@@ -9,14 +9,14 @@ import { getInventoriesInCart } from 'api/cartApi'
 import { InventoryItem } from 'types/inventory'
 
 interface CartContextType {
-  inventoriesInCar: InventoryItem[]
+  inventoriesInCart: InventoryItem[]
   isCartEmpty: boolean
   selectedToUnload: { inventoryID: string; quantity: number }[]
   setSelectedToUnload: (
     list: { inventoryID: string; quantity: number }[]
   ) => void
   getMyCart: () => Promise<void>
-  setInventoriesInCar: (list: InventoryItem[]) => void
+  setInventoriesInCart: (list: InventoryItem[]) => void
   sourceBin: string | null
   setSourceBin: (code: string | null) => void
 }
@@ -36,12 +36,14 @@ export const TransportWorkCartProvider = ({
 }: {
   children: ReactNode
 }) => {
-  const [inventoriesInCar, setInventoriesInCar] = useState<InventoryItem[]>([])
+  const [inventoriesInCart, setInventoriesInCart] = useState<InventoryItem[]>(
+    []
+  )
   const [selectedToUnload, setSelectedToUnload] = useState<
     { inventoryID: string; quantity: number }[]
   >([])
 
-  const isCartEmpty = inventoriesInCar.length === 0
+  const isCartEmpty = inventoriesInCart.length === 0
 
   const [sourceBin, setSourceBin] = useState<string | null>(() => {
     return localStorage.getItem('sourceBinCode') || null
@@ -52,7 +54,7 @@ export const TransportWorkCartProvider = ({
       const response = await getInventoriesInCart()
       const list = response.inventories || []
 
-      setInventoriesInCar(list)
+      setInventoriesInCart(list)
     } catch (error) {
       console.error('❌ Failed to fetch cart:', error)
     }
@@ -66,11 +68,11 @@ export const TransportWorkCartProvider = ({
     <CartContext.Provider
       value={{
         getMyCart,
-        inventoriesInCar,
+        inventoriesInCart,
         isCartEmpty,
         selectedToUnload,
         setSelectedToUnload,
-        setInventoriesInCar,
+        setInventoriesInCart,
         sourceBin,
         setSourceBin
       }}

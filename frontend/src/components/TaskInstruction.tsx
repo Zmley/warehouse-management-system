@@ -18,13 +18,13 @@ import { useTranslation } from 'react-i18next'
 const TaskInstruction: React.FC = () => {
   const { t } = useTranslation()
   const { myTask, setMyTask } = useTaskContext()
-  const { inventoriesInCar, getMyCart } = useCartContext()
+  const { inventoriesInCart, getMyCart } = useCartContext()
   const { cancelMyTask, releaseTask } = useTask()
   const { loadCart } = useCart()
 
   if (!myTask) return null
 
-  const hasCargo = inventoriesInCar.length > 0
+  const hasCargo = inventoriesInCart.length > 0
   const firstSourceBin = myTask.sourceBins?.[0]
   const binCode =
     typeof firstSourceBin === 'object' &&
@@ -84,15 +84,23 @@ const TaskInstruction: React.FC = () => {
             <Typography variant='caption' fontSize={12} color='text.secondary'>
               {t('taskInstruction.sourceBin')}
             </Typography>
-            <Box sx={{ fontSize: 13, fontWeight: 600, mt: 0.5 }}>
-              {myTask.sourceBins?.length > 0
-                ? myTask.sourceBins.map((inv: any, index: number) => (
-                    <div key={index} style={{ lineHeight: 1.3 }}>
-                      {inv.bin?.binCode ?? '--'}: {inv.quantity ?? '--'}
-                    </div>
-                  ))
-                : '--'}
-            </Box>
+
+            {myTask.sourceBins?.length > 0 ? (
+              myTask.sourceBins.map((inv: any, index: number) => (
+                <Typography
+                  key={index}
+                  fontSize={13}
+                  fontWeight={600}
+                  lineHeight={1.3}
+                >
+                  {inv.bin?.binCode ?? '--'}: {inv.quantity ?? '--'}
+                </Typography>
+              ))
+            ) : (
+              <Typography fontSize={13} fontWeight={600}>
+                --
+              </Typography>
+            )}
           </Grid>
 
           <Grid item xs={4} textAlign='center'>

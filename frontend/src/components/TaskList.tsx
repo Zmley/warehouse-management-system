@@ -145,7 +145,6 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
                         {task.sourceBins && task.sourceBins.length > 0 ? (
                           task.sourceBins
                             .map((inv: any) => inv.bin?.binCode)
-                            .filter(Boolean)
                             .join(' / ')
                         ) : (
                           <Box
