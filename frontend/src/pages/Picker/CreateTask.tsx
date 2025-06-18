@@ -8,15 +8,17 @@ import {
   Paper,
   RadioGroup,
   FormControlLabel,
-  Radio
+  Radio,
+  CircularProgress
 } from '@mui/material'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { usePickerTasks } from 'hooks/usePickerTask'
 import { useBin } from 'hooks/useBin'
 import { Bin } from 'types/bin'
-import { CircularProgress } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 
 const CreateTask = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
   const bin: Bin = location.state?.bin
@@ -50,15 +52,11 @@ const CreateTask = () => {
   }, [productCode, fetchBinCodesByProductCode])
 
   const handleSubmit = async () => {
-    if (!productCode || !bin?.binCode || sourceError) {
-      alert('Please check source availability.')
-      return
-    }
-    const task = await createTask(bin.binCode, productCode)
+    if (!productCode || !bin?.binCode) return
 
+    const task = await createTask(bin.binCode, productCode)
     if (task) {
       navigate('/success')
-    } else {
     }
   }
 
@@ -89,7 +87,7 @@ const CreateTask = () => {
             gutterBottom
             align='center'
           >
-            Create A New Task
+            {t('createTask.title')}
           </Typography>
 
           {/* ✅ Target Bin */}
@@ -99,7 +97,9 @@ const CreateTask = () => {
             alignItems='center'
             my={2}
           >
-            <Typography fontWeight='bold'>Target Bin</Typography>
+            <Typography fontWeight='bold'>
+              {t('createTask.targetBin')}
+            </Typography>
             <Paper
               variant='outlined'
               sx={{
@@ -116,7 +116,7 @@ const CreateTask = () => {
           {/* ✅ Product Code */}
           <Box my={2}>
             <Typography fontWeight='bold' gutterBottom>
-              Product Code
+              {t('createTask.productCode')}
             </Typography>
             {productOptions.length > 1 ? (
               <RadioGroup
@@ -162,7 +162,7 @@ const CreateTask = () => {
             my={2}
           >
             <Typography fontWeight='bold' sx={{ mt: 0.5 }}>
-              Source Bins
+              {t('createTask.sourceBins')}
             </Typography>
             <Paper
               variant='outlined'
@@ -179,12 +179,14 @@ const CreateTask = () => {
                   <CircularProgress size={20} />
                 </Box>
               ) : sourceError ? (
-                <Typography fontWeight='bold'>No matching bins</Typography>
+                <Typography fontWeight='bold'>
+                  {t('createTask.noMatchingBins')}
+                </Typography>
               ) : sourceBins.length ? (
                 <Box>
                   {sourceBins.map(({ binCode, quantity }) => (
                     <Typography key={binCode} fontSize={14}>
-                      {binCode} (Qty: {quantity})
+                      {binCode} ({t('createTask.qty')}: {quantity})
                     </Typography>
                   ))}
                 </Box>
@@ -199,7 +201,7 @@ const CreateTask = () => {
             variant='contained'
             color='primary'
             fullWidth
-            disabled={!productCode || sourceError || loading}
+            disabled={!productCode || loading}
             onClick={handleSubmit}
             sx={{
               borderRadius: '12px',
@@ -209,7 +211,11 @@ const CreateTask = () => {
               mb: 2
             }}
           >
-            {loading ? 'Creating Task...' : 'Create Task'}
+            {loading
+              ? t('createTask.loading')
+              : sourceError
+              ? t('createTask.outOfStock')
+              : t('createTask.create')}
           </Button>
 
           <Button
@@ -225,8 +231,9 @@ const CreateTask = () => {
               py: 1
             }}
           >
-            ❌ Cancel
+            ❌ {t('createTask.cancel')}
           </Button>
+
           {error && (
             <Typography
               color='error'

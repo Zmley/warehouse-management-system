@@ -12,8 +12,8 @@ export const useCart = () => {
   const {
     getMyCart,
     isCartEmpty,
-    setInventoriesInCar,
-    inventoriesInCar,
+    setInventoriesInCart,
+    inventoriesInCart,
     sourceBin,
     setSourceBin
   } = useCartContext()
@@ -51,26 +51,25 @@ export const useCart = () => {
     unloadProductList: unloadInventory[]
   ) => {
     try {
-      const response = await unload(binCode, unloadProductList)
-      if (response?.success) {
-        const inventoriesLeftInCart = inventoriesInCar
-          .map(item => {
-            const selected = unloadProductList.find(
-              s => s.inventoryID === item.inventoryID
-            )
-            if (selected) {
-              const remainingQty = item.quantity - Number(selected.quantity)
-              return remainingQty > 0
-                ? { ...item, quantity: remainingQty }
-                : null
-            }
-            return item
-          })
-          .filter(Boolean)
+      setError(null)
 
-        setInventoriesInCar(inventoriesLeftInCart as InventoryItem[])
-        setError(null)
-        navigate(inventoriesLeftInCart.length === 0 ? '/success' : '/my-task')
+      const response = await unload(binCode, unloadProductList)
+
+      if (response?.success) {
+        const inventoriesLeftInCart = inventoriesInCart.map(item => {
+          const selected = unloadProductList.find(
+            s => s.inventoryID === item.inventoryID
+          )
+          if (selected) {
+            const remainingQty = item.quantity - Number(selected.quantity)
+            return remainingQty > 0 ? { ...item, quantity: remainingQty } : null
+          }
+          return item
+        })
+
+        setInventoriesInCart(inventoriesLeftInCart as InventoryItem[])
+
+        navigate('/success')
       } else {
         setError(response?.data?.error || '❌ Failed to unload cart.')
       }

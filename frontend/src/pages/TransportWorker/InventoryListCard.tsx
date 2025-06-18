@@ -49,64 +49,64 @@ const InventoryListCard: React.FC<Props> = ({
   }
 
   return (
-    <Box>
+    <Box sx={{ maxHeight: '45vh', overflowY: 'auto', pr: 1 }}>
       {selectedList.map(item => {
         const inv = inventories.find(i => i.inventoryID === item.inventoryID)
         return (
           <Box
             key={item.inventoryID}
             sx={{
-              mt: 2,
-              p: 1,
-              borderRadius: 2,
-              backgroundColor: item.selected ? '#e9f1f7' : 'transparent',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              mb: 1
+              py: 0.5,
+              px: 1,
+              mb: 1,
+              borderRadius: 1.5,
+              backgroundColor: item.selected ? '#e6f2fa' : '#f9f9f9',
+              border: '1px solid #e0e0e0',
+              fontSize: 12
             }}
           >
+            {/* Checkbox */}
+            <Checkbox
+              size='small'
+              checked={item.selected}
+              onChange={() => onSelectionChange(item.inventoryID)}
+              sx={{ p: 0.5, mr: 1 }}
+            />
+
             {/* Product Info */}
-            <Box
-              sx={{ display: 'flex', flexDirection: 'column', width: '50%' }}
-            >
-              <Typography fontSize={14} fontWeight='bold'>
-                #{inv?.productCode}
-              </Typography>
-              <Typography fontSize={12}>
-                {t('inventory.total')} <strong>{inv?.quantity}</strong>
+            <Box sx={{ flex: 1, minWidth: 90 }}>
+              <Typography fontSize={13}>#{inv?.productCode}</Typography>
+              <Typography fontSize={11} color='text.secondary'>
+                {t('inventory.total')} {inv?.quantity}
               </Typography>
             </Box>
 
-            {/* Offload Input and Checkbox */}
-            <Box
+            {/* Label */}
+            <Typography fontSize={11} sx={{ mx: 1 }}>
+              {t('inventory.offload')}
+            </Typography>
+
+            {/* Quantity input */}
+            <TextField
+              size='small'
+              type='number'
+              value={item.quantity}
+              disabled={item.selected}
+              onChange={e =>
+                handleInputChange(item.inventoryID, e.target.value)
+              }
               sx={{
-                display: 'flex',
-                alignItems: 'center',
-                width: '60%',
-                justifyContent: 'space-between'
-              }}
-            >
-              <Typography fontSize={12} sx={{ mr: 3 }}>
-                {t('inventory.offload')}
-              </Typography>
-              <TextField
-                size='small'
-                type='number'
-                value={item.quantity}
-                sx={{ width: 120 }}
-                disabled={item.selected}
-                onChange={e =>
-                  handleInputChange(item.inventoryID, e.target.value)
+                width: 70,
+                '& .MuiInputBase-input': {
+                  fontSize: 12,
+                  py: 0.5
                 }
-                inputProps={{ min: 0 }}
-              />
-              <Checkbox
-                checked={item.selected}
-                onChange={() => onSelectionChange(item.inventoryID)}
-                sx={{ ml: 2 }}
-              />
-            </Box>
+              }}
+              inputProps={{ min: 0 }}
+            />
           </Box>
         )
       })}

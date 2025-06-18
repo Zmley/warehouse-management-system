@@ -9,8 +9,10 @@ import {
 } from '@mui/material'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import { AuthContext } from 'contexts/auth'
+import { useTranslation } from 'react-i18next'
 
 const Success: React.FC = () => {
+  const { t } = useTranslation()
   const { userProfile } = useContext(AuthContext)!
   const [visible, setVisible] = useState(true)
 
@@ -56,11 +58,11 @@ const Success: React.FC = () => {
             <CheckCircleIcon sx={{ fontSize: 64, color: '#2e7d32', mb: 2 }} />
             <Typography variant='h5' fontWeight='bold' gutterBottom>
               {role === 'PICKER'
-                ? 'Pick-up Task Created!'
-                : 'Operation Completed!'}
+                ? t('success.pickerTitle')
+                : t('success.defaultTitle')}
             </Typography>
             <Typography variant='body1' color='text.secondary' sx={{ mb: 2 }}>
-              Everything went smoothly. You’ll be redirected shortly.
+              {t('success.description')}
             </Typography>
             <CircularProgress
               size={24}

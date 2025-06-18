@@ -22,7 +22,7 @@ import { useTranslation } from 'react-i18next'
 
 const isAndroid = /Android/i.test(navigator.userAgent)
 
-const ScanTaskQRCode = () => {
+const ScanQRCode = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [mode, setMode] = useState<'scanner' | 'manual'>('scanner')
@@ -33,16 +33,12 @@ const ScanTaskQRCode = () => {
   const scanMode = location.state?.mode ?? 'load'
   const unloadProductList = location.state?.unloadProductList ?? []
 
-  const { videoRef, startScanning, stopScanning } =
-    useQRScanner(handleScanSuccess)
-
   const [manualBinCode, setManualBinCode] = useState('')
 
-  async function handleScanSuccess(binCode: string) {
+  const handleScanSuccess = async (binCode: string) => {
     try {
       if (scanMode === 'unload') {
         await unloadCart(binCode, unloadProductList)
-        navigate('/')
       } else {
         await loadCart({ binCode })
       }
@@ -50,6 +46,9 @@ const ScanTaskQRCode = () => {
       alert(t('scan.operationError'))
     }
   }
+
+  const { videoRef, startScanning, stopScanning } =
+    useQRScanner(handleScanSuccess)
 
   const handleManualSubmit = async () => {
     if (!manualBinCode.trim()) return alert(t('scan.enterPrompt'))
@@ -193,7 +192,7 @@ const ScanTaskQRCode = () => {
                 value={manualBinCode}
                 onInputChange={(_, newValue) => setManualBinCode(newValue)}
                 filterOptions={filterBinOptions}
-                noOptionsText='' // 空字符串时隐藏 "No Options"
+                noOptionsText=''
                 renderInput={params => (
                   <TextField
                     {...params}
@@ -262,4 +261,4 @@ const ScanTaskQRCode = () => {
   )
 }
 
-export default ScanTaskQRCode
+export default ScanQRCode
