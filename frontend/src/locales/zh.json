@@ -42,7 +42,10 @@
     "load": "装载",
     "loadByBin": "装货(二维码)",
     "loadByProduct": "装货(条形吗)",
-    "unload": "卸货"
+    "unload": "卸货",
+        "startLoad" :  "装货",
+        "chooseLoadMode" : "选择扫描类型"
+
   },
   "scan": {
   "scanBin": "扫描货架二维码",

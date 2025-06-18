@@ -24,7 +24,7 @@ const WokerBottomBar: React.FC<BottomBarProps> = ({
         bottom: 0,
         left: 0,
         right: 0,
-        height: 86,
+        height: 75,
         backgroundColor: '#ffffff',
         boxShadow: '0px -2px 10px #00000014',
         display: 'flex',

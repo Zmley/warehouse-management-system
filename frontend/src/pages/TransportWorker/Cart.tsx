@@ -1,4 +1,12 @@
-import { Box, Button, Card, CardContent, Grid, Typography } from '@mui/material'
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Grid,
+  Typography,
+  Drawer
+} from '@mui/material'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCartContext } from 'contexts/cart'
@@ -14,6 +22,7 @@ const Cart = () => {
   const navigate = useNavigate()
   const { inventoriesInCart, setSelectedToUnload } = useCartContext()
   const { myTask, fetchMyTask } = useTaskContext()
+  const [drawerOpen, setDrawerOpen] = useState(false)
 
   const defaultUnloadList = useMemo(() => {
     if (!inventoriesInCart.length) return []
@@ -87,7 +96,6 @@ const Cart = () => {
       overflow='hidden'
       bgcolor='#f5f5f5'
     >
-      {/* Scrollable content */}
       <Box flex={1} overflow='auto' px={2} pt={0}>
         {myTask && (
           <Box mb={2}>
@@ -99,7 +107,7 @@ const Cart = () => {
           variant='outlined'
           sx={{
             borderRadius: 3,
-            backgroundColor: '#ffffff',
+            backgroundColor: '#fff',
             boxShadow: '0 2px 8px #0000000A'
           }}
         >
@@ -131,48 +139,22 @@ const Cart = () => {
             <Box mt={1} mb={0}>
               <Grid container spacing={1}>
                 <Grid item xs={6}>
-                  <Box display='flex' flexDirection='column' height='100%'>
-                    <Button
-                      variant='contained'
-                      color='primary'
-                      onClick={() =>
-                        navigate('/my-task/scan-QRCode', {
-                          state: { mode: 'load' }
-                        })
-                      }
-                      startIcon={<QrCode2 />}
-                      sx={{
-                        mb: 1,
-                        flex: 1,
-                        fontWeight: 600,
-                        fontSize: 14,
-                        textTransform: 'none',
-                        borderRadius: 2,
-                        height: 50
-                      }}
-                    >
-                      {t('cart.loadByBin')}
-                    </Button>
-
-                    <Button
-                      variant='contained'
-                      color='primary'
-                      onClick={() => navigate('/my-task/scan-barCode')}
-                      startIcon={
-                        <DocumentScanner sx={{ transform: 'rotate(90deg)' }} />
-                      }
-                      sx={{
-                        flex: 1,
-                        fontWeight: 600,
-                        fontSize: 14,
-                        textTransform: 'none',
-                        borderRadius: 2,
-                        height: 50
-                      }}
-                    >
-                      {t('cart.loadByProduct')}
-                    </Button>
-                  </Box>
+                  <Button
+                    variant='contained'
+                    color='primary'
+                    onClick={() => setDrawerOpen(true)}
+                    startIcon={<QrCode2 />}
+                    sx={{
+                      width: '100%',
+                      height: 80,
+                      fontWeight: 600,
+                      fontSize: 16,
+                      textTransform: 'none',
+                      borderRadius: 2
+                    }}
+                  >
+                    {t('cart.startLoad')}
+                  </Button>
                 </Grid>
 
                 <Grid item xs={6}>
@@ -198,8 +180,7 @@ const Cart = () => {
                     }}
                     sx={{
                       width: '100%',
-                      height: '100%',
-                      minHeight: 110,
+                      height: 80,
                       fontWeight: 600,
                       fontSize: 16,
                       textTransform: 'none',
@@ -214,6 +195,63 @@ const Cart = () => {
           </CardContent>
         </Card>
       </Box>
+
+      <Drawer
+        anchor='bottom'
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        PaperProps={{
+          sx: { borderTopLeftRadius: 16, borderTopRightRadius: 16, p: 2 }
+        }}
+      >
+        <Typography variant='h6' textAlign='center' mb={2}>
+          {t('cart.chooseLoadMode')}
+        </Typography>
+        <Grid container spacing={2}>
+          <Grid item xs={6}>
+            <Button
+              variant='contained'
+              color='primary'
+              fullWidth
+              onClick={() => {
+                navigate('/my-task/scan-QRCode', { state: { mode: 'load' } })
+                setDrawerOpen(false)
+              }}
+              startIcon={<QrCode2 />}
+              sx={{
+                fontWeight: 600,
+                fontSize: 16,
+                borderRadius: 2,
+                height: 50
+              }}
+            >
+              {t('cart.loadByBin')}
+            </Button>
+          </Grid>
+          <Grid item xs={6}>
+            <Button
+              variant='contained'
+              color='primary'
+              fullWidth
+              onClick={() => {
+                navigate('/my-task/scan-barCode')
+                setDrawerOpen(false)
+              }}
+              startIcon={
+                <DocumentScanner sx={{ transform: 'rotate(90deg)' }} />
+              }
+              sx={{
+                fontWeight: 600,
+                fontSize: 16,
+                borderRadius: 2,
+                height: 50
+              }}
+            >
+              {t('cart.loadByProduct')}
+            </Button>
+          </Grid>
+        </Grid>
+      </Drawer>
     </Box>
   )
 }

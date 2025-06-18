@@ -49,7 +49,7 @@ const InventoryListCard: React.FC<Props> = ({
   }
 
   return (
-    <Box sx={{ maxHeight: '45vh', overflowY: 'auto', pr: 1 }}>
+    <Box>
       {selectedList.map(item => {
         const inv = inventories.find(i => i.inventoryID === item.inventoryID)
         return (

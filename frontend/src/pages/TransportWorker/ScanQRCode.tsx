@@ -32,7 +32,6 @@ const ScanQRCode = () => {
   const location = useLocation()
   const scanMode = location.state?.mode ?? 'load'
   const unloadProductList = location.state?.unloadProductList ?? []
-
   const [manualBinCode, setManualBinCode] = useState('')
 
   const handleScanSuccess = async (binCode: string) => {

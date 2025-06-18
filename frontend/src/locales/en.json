@@ -33,7 +33,10 @@
     "overLimit": "❌ Selected quantity ({{selected}}) exceeds task limit ({{limit}})",
     "loadByBin": "Load By QRCode",
     "loadByProduct": "Load By BarCode",
-    "unload": "Unload"
+    "unload": "Unload",
+    "startLoad" :  "startLoad",
+            "chooseLoadMode" : "choose Load Mode"
+
   },
     "scan": {
      "scanBin": "Scan Bin QRCode",
