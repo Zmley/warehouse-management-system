@@ -33,12 +33,9 @@ const ScanQRCode = () => {
   const scanMode = location.state?.mode ?? 'load'
   const unloadProductList = location.state?.unloadProductList ?? []
 
-  const { videoRef, startScanning, stopScanning } =
-    useQRScanner(handleScanSuccess)
-
   const [manualBinCode, setManualBinCode] = useState('')
 
-  async function handleScanSuccess(binCode: string) {
+  const handleScanSuccess = async (binCode: string) => {
     try {
       if (scanMode === 'unload') {
         await unloadCart(binCode, unloadProductList)
@@ -49,6 +46,9 @@ const ScanQRCode = () => {
       alert(t('scan.operationError'))
     }
   }
+
+  const { videoRef, startScanning, stopScanning } =
+    useQRScanner(handleScanSuccess)
 
   const handleManualSubmit = async () => {
     if (!manualBinCode.trim()) return alert(t('scan.enterPrompt'))
