@@ -35,8 +35,8 @@
     "loadByProduct": "Load By BarCode",
     "unload": "Unload",
     "startLoad" :  "startLoad",
-            "chooseLoadMode" : "choose Load Mode"
-
+            "chooseLoadMode" : "choose Load Mode",
+  "unloadDirectTo": "Unload directly to"
   },
     "scan": {
      "scanBin": "Scan Bin QRCode",
@@ -58,7 +58,9 @@
     "inventory": {
     "total": "Total",
     "offload": "Offload",
-    "quantityExceed": "Quantity cannot exceed total ({{quantity}})"
+    "quantityExceed": "Quantity cannot exceed total ({{quantity}})",
+      "currentCargoInForklift" : "current Cargo In Forklift"
+
   }
   ,
     "addToCart": {

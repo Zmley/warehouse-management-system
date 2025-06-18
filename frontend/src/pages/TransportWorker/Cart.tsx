@@ -16,6 +16,7 @@ import { useTaskContext } from 'contexts/task'
 import { QrCode2 } from '@mui/icons-material'
 import { useTranslation } from 'react-i18next'
 import DocumentScanner from '@mui/icons-material/DocumentScanner'
+import { useCart } from 'hooks/useCart'
 
 const Cart = () => {
   const { t } = useTranslation()
@@ -23,6 +24,8 @@ const Cart = () => {
   const { inventoriesInCart, setSelectedToUnload } = useCartContext()
   const { myTask, fetchMyTask } = useTaskContext()
   const [drawerOpen, setDrawerOpen] = useState(false)
+
+  const { unloadCart } = useCart()
 
   const defaultUnloadList = useMemo(() => {
     if (!inventoriesInCart.length) return []
@@ -143,7 +146,6 @@ const Cart = () => {
                     variant='contained'
                     color='primary'
                     onClick={() => setDrawerOpen(true)}
-                    startIcon={<QrCode2 />}
                     sx={{
                       width: '100%',
                       height: 80,
@@ -161,9 +163,8 @@ const Cart = () => {
                   <Button
                     variant='contained'
                     color='success'
-                    startIcon={<QrCode2 />}
                     disabled={overLimit}
-                    onClick={() => {
+                    onClick={async () => {
                       const selectedToUnload = inventoryListReadyToUnload
                         .filter(item => item.selected)
                         .map(({ inventoryID, quantity }) => ({
@@ -171,12 +172,20 @@ const Cart = () => {
                           quantity
                         }))
                       setSelectedToUnload(selectedToUnload)
-                      navigate('/my-task/scan-QRCode', {
-                        state: {
-                          mode: 'unload',
-                          unloadProductList: selectedToUnload
-                        }
-                      })
+
+                      if (myTask?.destinationBinCode) {
+                        await unloadCart(
+                          myTask.destinationBinCode,
+                          selectedToUnload
+                        )
+                      } else {
+                        navigate('/my-task/scan-QRCode', {
+                          state: {
+                            mode: 'unload',
+                            unloadProductList: selectedToUnload
+                          }
+                        })
+                      }
                     }}
                     sx={{
                       width: '100%',
@@ -184,10 +193,29 @@ const Cart = () => {
                       fontWeight: 600,
                       fontSize: 16,
                       textTransform: 'none',
-                      borderRadius: 2
+                      borderRadius: 2,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      lineHeight: 1.2,
+                      px: 1
                     }}
                   >
-                    {t('cart.unload')}
+                    {myTask?.destinationBinCode ? (
+                      <>
+                        <Typography fontWeight={600} fontSize={16}>
+                          {t('cart.unloadDirectTo')}
+                        </Typography>
+                        <Typography fontWeight={600} fontSize={16}>
+                          {myTask.destinationBinCode}
+                        </Typography>
+                      </>
+                    ) : (
+                      <Typography fontWeight={600} fontSize={16}>
+                        {t('cart.unload')}
+                      </Typography>
+                    )}
                   </Button>
                 </Grid>
               </Grid>

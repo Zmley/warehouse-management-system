@@ -32,7 +32,7 @@ export const useCart = () => {
           setSourceBin(input.binCode)
         }
 
-        navigate('/')
+        navigate('/success')
         return { success: true }
       } else {
         const msg = response.data?.error || '❌ Failed to load to cart.'
@@ -56,16 +56,20 @@ export const useCart = () => {
       const response = await unload(binCode, unloadProductList)
 
       if (response?.success) {
-        const inventoriesLeftInCart = inventoriesInCart.map(item => {
-          const selected = unloadProductList.find(
-            s => s.inventoryID === item.inventoryID
-          )
-          if (selected) {
-            const remainingQty = item.quantity - Number(selected.quantity)
-            return remainingQty > 0 ? { ...item, quantity: remainingQty } : null
-          }
-          return item
-        })
+        const inventoriesLeftInCart = inventoriesInCart
+          .map(item => {
+            const selected = unloadProductList.find(
+              s => s.inventoryID === item.inventoryID
+            )
+            if (selected) {
+              const remainingQty = item.quantity - Number(selected.quantity)
+              return remainingQty > 0
+                ? { ...item, quantity: remainingQty }
+                : null
+            }
+            return item
+          })
+          .filter(Boolean)
 
         setInventoriesInCart(inventoriesLeftInCart as InventoryItem[])
 

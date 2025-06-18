@@ -44,7 +44,12 @@
     "loadByProduct": "装货(条形吗)",
     "unload": "卸货",
         "startLoad" :  "装货",
-        "chooseLoadMode" : "选择扫描类型"
+        "chooseLoadMode" : "选择扫描类型",
+                    "unloadDirectTo" : "一键卸货到"
+
+
+
+
 
   },
   "scan": {
@@ -66,7 +71,9 @@
   "inventory": {
     "total": "叉车上总数",
     "offload": "卸载数量",
-    "quantityExceed": "数量不能超过库存总数 ({{quantity}})"
+    "quantityExceed": "数量不能超过库存总数 ({{quantity}})",
+                          "currentCargoInForklift" : "叉车内货物"
+
 
   },
     "addToCart": {
@@ -122,8 +129,8 @@
   ,
     "success": {
     "pickerTitle": "拣货任务已创建！",
-    "defaultTitle": "操作已完成！",
-    "description": "一切顺利，正在为您跳转..."
+    "defaultTitle": "操作成功！",
+    "description": "正在为您跳转至叉车..."
   }
 
 

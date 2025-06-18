@@ -26,7 +26,7 @@ const Success: React.FC = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       handleClose()
-    }, 500)
+    }, 1000)
     return () => clearTimeout(timer)
   }, [])
 
