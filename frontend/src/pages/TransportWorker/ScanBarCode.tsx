@@ -32,6 +32,8 @@ const ScanProductQRCode = () => {
   const [manualCode, setManualCode] = useState('')
   const { fetchProduct, productCodes, loadProducts } = useProduct()
 
+  const isAndroid = /Android/i.test(navigator.userAgent)
+
   const { videoRef, startScanning, stopScanning } =
     useQRScanner(handleScanSuccess)
 
@@ -203,6 +205,21 @@ const ScanProductQRCode = () => {
               >
                 {t('scan.alignPrompt')}
               </Typography>
+
+              {isAndroid && (
+                <Typography
+                  align='center'
+                  sx={{
+                    mt: 1.5,
+                    fontSize: 13,
+                    color: '#888',
+                    fontStyle: 'italic'
+                  }}
+                >
+                  {t('scan.androidHint')}
+                </Typography>
+              )}
+
               <style>
                 {`
                   @keyframes scanLineX {
