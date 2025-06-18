@@ -192,7 +192,7 @@ const ScanQRCode = () => {
                 value={manualBinCode}
                 onInputChange={(_, newValue) => setManualBinCode(newValue)}
                 filterOptions={filterBinOptions}
-                noOptionsText='' // 空字符串时隐藏 "No Options"
+                noOptionsText=''
                 renderInput={params => (
                   <TextField
                     {...params}
