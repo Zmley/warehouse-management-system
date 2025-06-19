@@ -22,6 +22,7 @@ const Scan = () => {
   const navigate = useNavigate()
   const [product, setProduct] = useState<ProductType | null>(null)
   const [manualBinCode, setManualBinCode] = useState('')
+  const [androidScanStarted, setAndroidScanStarted] = useState(false)
 
   const { fetchBinByCode, fetchBinCodes, binCodes } = useBin()
   const { fetchProduct, loadProducts } = useProduct()
@@ -83,6 +84,11 @@ const Scan = () => {
     }
   }, [mode])
 
+  const handleStartAndroidScan = () => {
+    startScanning()
+    setAndroidScanStarted(true)
+  }
+
   const handleCancel = () => {
     stopScanning()
     const stream = (videoRef.current as HTMLVideoElement | null)?.srcObject
@@ -119,8 +125,12 @@ const Scan = () => {
         onChange={(_, newMode) => {
           if (!newMode) return
           setMode(newMode)
-          if (newMode === 'scanner') startScanning()
-          else stopScanning()
+          if (newMode === 'scanner') {
+            if (!isAndroid()) startScanning()
+            setAndroidScanStarted(false)
+          } else {
+            stopScanning()
+          }
         }}
         sx={{
           mb: 3,
@@ -145,99 +155,111 @@ const Scan = () => {
       </ToggleButtonGroup>
 
       {mode === 'scanner' && (
-        <Box
-          sx={{
-            position: 'relative',
-            width: '100%',
-            maxWidth: '400px',
-            height: '260px',
-            borderRadius: '16px',
-            overflow: 'hidden',
-            mx: 'auto',
-            border: '5px solid #1976d2',
-            boxShadow: '0 4px 20px #1976D24D',
-            backgroundColor: '#000'
-          }}
-        >
-          <video
-            ref={videoRef}
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            autoPlay
-            playsInline
-            muted
-          />
-
-          <Box
-            sx={{
-              position: 'absolute',
-              top: '10%',
-              left: '10%',
-              width: '80%',
-              height: '80%',
-              border: '2px dashed #00e676',
-              borderRadius: '12px',
-              zIndex: 10
-            }}
-          />
-
-          <Box
-            sx={{
-              position: 'absolute',
-              top: '10%',
-              left: '10%',
-              width: '80%',
-              height: '2px',
-              background: 'linear-gradient(to right, #00e676, transparent)',
-              animation: 'scanLine 2s infinite',
-              zIndex: 11
-            }}
-          />
-
-          <Typography
-            variant='body2'
-            sx={{
-              position: 'absolute',
-              bottom: '8px',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              color: '#fff',
-              backgroundColor: '#00000066',
-              px: 1.5,
-              py: 0.5,
-              borderRadius: 1,
-              fontWeight: 'bold',
-              fontSize: '0.8rem',
-              zIndex: 12
-            }}
-          >
-            {t('scan.alignPrompt')}
-          </Typography>
-
-          {isAndroid() && (
-            <Typography
-              variant='caption'
-              sx={{
-                mt: 1,
-                color: '#ccc',
-                fontStyle: 'italic',
-                textAlign: 'center',
-                position: 'absolute',
-                bottom: '-18px',
-                width: '100%'
-              }}
+        <>
+          {isAndroid() && !androidScanStarted && (
+            <Button
+              variant='contained'
+              onClick={handleStartAndroidScan}
+              sx={{ mb: 2, maxWidth: 400, width: '100%' }}
             >
-              {t('scan.androidHint')}
-            </Typography>
+              {t('scan.startCamera')}
+            </Button>
           )}
 
-          <style>{`
-            @keyframes scanLine {
-              0% { top: 10%; }
-              50% { top: 80%; }
-              100% { top: 10%; }
-            }
-          `}</style>
-        </Box>
+          <Box
+            sx={{
+              position: 'relative',
+              width: '100%',
+              maxWidth: '400px',
+              height: '260px',
+              borderRadius: '16px',
+              overflow: 'hidden',
+              mx: 'auto',
+              border: '5px solid #1976d2',
+              boxShadow: '0 4px 20px #1976D24D',
+              backgroundColor: '#000'
+            }}
+          >
+            <video
+              ref={videoRef}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              autoPlay
+              playsInline
+              muted
+            />
+
+            <Box
+              sx={{
+                position: 'absolute',
+                top: '10%',
+                left: '10%',
+                width: '80%',
+                height: '80%',
+                border: '2px dashed #00e676',
+                borderRadius: '12px',
+                zIndex: 10
+              }}
+            />
+
+            <Box
+              sx={{
+                position: 'absolute',
+                top: '10%',
+                left: '10%',
+                width: '80%',
+                height: '2px',
+                background: 'linear-gradient(to right, #00e676, transparent)',
+                animation: 'scanLine 2s infinite',
+                zIndex: 11
+              }}
+            />
+
+            <Typography
+              variant='body2'
+              sx={{
+                position: 'absolute',
+                bottom: '8px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                color: '#fff',
+                backgroundColor: '#00000066',
+                px: 1.5,
+                py: 0.5,
+                borderRadius: 1,
+                fontWeight: 'bold',
+                fontSize: '0.8rem',
+                zIndex: 12
+              }}
+            >
+              {t('scan.alignPrompt')}
+            </Typography>
+
+            {isAndroid() && (
+              <Typography
+                variant='caption'
+                sx={{
+                  mt: 1,
+                  color: '#ccc',
+                  fontStyle: 'italic',
+                  textAlign: 'center',
+                  position: 'absolute',
+                  bottom: '-18px',
+                  width: '100%'
+                }}
+              >
+                {t('scan.androidHint')}
+              </Typography>
+            )}
+
+            <style>{`
+              @keyframes scanLine {
+                0% { top: 10%; }
+                50% { top: 80%; }
+                100% { top: 10%; }
+              }
+            `}</style>
+          </Box>
+        </>
       )}
 
       {mode === 'manual' && (

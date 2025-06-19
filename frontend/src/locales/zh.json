@@ -65,7 +65,9 @@
   "operationError": "❌ 操作失败，请重试",
   "enterBinOrProduct" : "输入货架编号或产品条形码",
   "title" : "扫描货架编号或产品条形码",
-  "enterProductCode": "输入产品号码"
+  "enterProductCode": "输入产品号码",
+  "scan.startCamera": "点击开启摄像头"
+
 
   },  
   "inventory": {
