@@ -13,7 +13,7 @@ import {
 } from '@mui/material'
 import PullToRefresh from 'react-simple-pull-to-refresh'
 import { usePickerTasks } from 'hooks/usePickerTask'
-import { TaskCategoryEnum } from 'constant/index'
+import { TaskCategoryEnum } from 'constants/index'
 import { useTranslation } from 'react-i18next'
 
 interface Props {
