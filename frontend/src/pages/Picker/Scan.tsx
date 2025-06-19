@@ -15,13 +15,12 @@ import ProductCard from './ProductCard'
 import AutocompleteTextField from 'utils/AutocompleteTextField'
 import { useTranslation } from 'react-i18next'
 
-const isAndroid = /Android/i.test(navigator.userAgent)
+import { isAndroid } from 'utils/platform'
 
 const Scan = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [product, setProduct] = useState<ProductType | null>(null)
-  const [mode, setMode] = useState<'scanner' | 'manual'>('scanner')
   const [manualBinCode, setManualBinCode] = useState('')
   const [androidScanStarted, setAndroidScanStarted] = useState(false)
 
@@ -29,6 +28,10 @@ const Scan = () => {
   const { fetchProduct, loadProducts } = useProduct()
 
   const combinedOptions = [...binCodes]
+
+  const [mode, setMode] = useState<'scanner' | 'manual'>(
+    isAndroid() ? 'manual' : 'scanner'
+  )
 
   const handleScan = async (code: string) => {
     const trimmed = code.trim()
@@ -63,7 +66,7 @@ const Scan = () => {
   useEffect(() => {
     fetchBinCodes()
     loadProducts()
-    if (!isAndroid && mode === 'scanner' && !isScanning) {
+    if (!isAndroid() && mode === 'scanner' && !isScanning) {
       startScanning()
     }
 
@@ -138,16 +141,16 @@ const Scan = () => {
         }}
       >
         <ToggleButton
-          value='scanner'
-          sx={{ px: 3, py: 1, borderRadius: '999px', fontWeight: 'bold' }}
-        >
-          {t('scan.modeScanner')}
-        </ToggleButton>
-        <ToggleButton
           value='manual'
           sx={{ px: 3, py: 1, borderRadius: '999px', fontWeight: 'bold' }}
         >
           {t('scan.modeManual')}
+        </ToggleButton>
+        <ToggleButton
+          value='scanner'
+          sx={{ px: 3, py: 1, borderRadius: '999px', fontWeight: 'bold' }}
+        >
+          {t('scan.modeScanner')}
         </ToggleButton>
       </ToggleButtonGroup>
 
