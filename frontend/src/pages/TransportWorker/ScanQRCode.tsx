@@ -20,7 +20,8 @@ import { useCart } from 'hooks/useCart'
 import { useBin } from 'hooks/useBin'
 import { useTranslation } from 'react-i18next'
 import { isAndroid } from 'utils/platform'
-import { ScanMode } from 'types/cart'
+
+// const isAndroid = /Android/i.test(navigator.userAgent)
 
 const ScanQRCode = () => {
   const { t } = useTranslation()
@@ -30,13 +31,14 @@ const ScanQRCode = () => {
   const { binCodes, fetchBinCodes } = useBin()
 
   const location = useLocation()
-  const scanMode: ScanMode = location.state?.mode ?? ScanMode.LOAD
+  const scanMode = location.state?.mode ?? 'load'
   const unloadProductList = location.state?.unloadProductList ?? []
+
   const [manualBinCode, setManualBinCode] = useState('')
 
   const handleScanSuccess = async (binCode: string) => {
     try {
-      if (scanMode === ScanMode.UNLOAD) {
+      if (scanMode === 'unload') {
         await unloadCart(binCode, unloadProductList)
       } else {
         await loadCart({ binCode })
@@ -58,7 +60,7 @@ const ScanQRCode = () => {
 
   useEffect(() => {
     fetchBinCodes()
-    if (!isAndroid) mode === 'scanner' ? startScanning() : stopScanning()
+    if (!isAndroid()) mode === 'scanner' ? startScanning() : stopScanning()
     return () => {
       stopScanning()
       const stream = (videoRef.current as HTMLVideoElement | null)?.srcObject
