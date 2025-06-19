@@ -61,7 +61,11 @@ const ScanQRCode = () => {
 
   useEffect(() => {
     fetchBinCodes()
-    if (!isAndroid()) mode === 'scanner' ? startScanning() : stopScanning()
+    if (mode === 'scanner') {
+      startScanning()
+    } else {
+      stopScanning()
+    }
     return () => {
       stopScanning()
       const stream = (videoRef.current as HTMLVideoElement | null)?.srcObject
