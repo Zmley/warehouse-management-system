@@ -20,7 +20,7 @@ import { useCart } from 'hooks/useCart'
 import { useBin } from 'hooks/useBin'
 import { useTranslation } from 'react-i18next'
 import { isAndroid } from 'utils/platform'
-import { ScanMode } from 'constant'
+import { ScanMode } from 'constants/index'
 
 const ScanQRCode = () => {
   const { t } = useTranslation()

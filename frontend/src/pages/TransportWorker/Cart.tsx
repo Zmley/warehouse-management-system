@@ -17,7 +17,7 @@ import { QrCode2 } from '@mui/icons-material'
 import { useTranslation } from 'react-i18next'
 import DocumentScanner from '@mui/icons-material/DocumentScanner'
 import { useCart } from 'hooks/useCart'
-import { ScanMode } from 'constant/index'
+import { ScanMode } from 'constants/index'
 
 const Cart = () => {
   const { t } = useTranslation()
