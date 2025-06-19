@@ -10,6 +10,7 @@ import {
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import { AuthContext } from 'contexts/auth'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 
 const Success: React.FC = () => {
   const { t } = useTranslation()
@@ -18,9 +19,11 @@ const Success: React.FC = () => {
 
   const role = userProfile?.role
 
+  const navigate = useNavigate()
+
   const handleClose = () => {
     setVisible(false)
-    window.location.href = '/'
+    navigate('/', { replace: true, state: { view: 'cart' } })
   }
 
   useEffect(() => {

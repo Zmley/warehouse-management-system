@@ -25,6 +25,7 @@ const Cart = () => {
   const { inventoriesInCart, setSelectedToUnload } = useCartContext()
   const { myTask, fetchMyTask } = useTaskContext()
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [confirmUnloadDrawer, setConfirmUnloadDrawer] = useState(false)
 
   const { unloadCart } = useCart()
 
@@ -91,6 +92,28 @@ const Cart = () => {
     myTask?.quantity !== undefined &&
     myTask?.quantity !== 0 &&
     selectedTotalQuantity > myTask.quantity
+
+  const noSelectedItems =
+    inventoryListReadyToUnload.filter(item => item.selected).length === 0
+
+  const handleUnloadConfirm = async () => {
+    const selectedToUnload = inventoryListReadyToUnload
+      .filter(item => item.selected)
+      .map(({ inventoryID, quantity }) => ({ inventoryID, quantity }))
+
+    setSelectedToUnload(selectedToUnload)
+
+    if (myTask?.destinationBinCode) {
+      await unloadCart(myTask.destinationBinCode, selectedToUnload)
+    } else {
+      navigate('/my-task/scan-QRCode', {
+        state: {
+          mode: ScanMode.UNLOAD,
+          unloadProductList: selectedToUnload
+        }
+      })
+    }
+  }
 
   return (
     <Box
@@ -164,22 +187,20 @@ const Cart = () => {
                   <Button
                     variant='contained'
                     color='success'
-                    disabled={overLimit}
-                    onClick={async () => {
-                      const selectedToUnload = inventoryListReadyToUnload
-                        .filter(item => item.selected)
-                        .map(({ inventoryID, quantity }) => ({
-                          inventoryID,
-                          quantity
-                        }))
-                      setSelectedToUnload(selectedToUnload)
-
+                    disabled={overLimit || noSelectedItems}
+                    onClick={() => {
                       if (myTask?.destinationBinCode) {
-                        await unloadCart(
-                          myTask.destinationBinCode,
-                          selectedToUnload
-                        )
+                        setConfirmUnloadDrawer(true)
                       } else {
+                        const selectedToUnload = inventoryListReadyToUnload
+                          .filter(item => item.selected)
+                          .map(({ inventoryID, quantity }) => ({
+                            inventoryID,
+                            quantity
+                          }))
+
+                        setSelectedToUnload(selectedToUnload)
+
                         navigate('/my-task/scan-QRCode', {
                           state: {
                             mode: ScanMode.UNLOAD,
@@ -207,9 +228,6 @@ const Cart = () => {
                       <>
                         <Typography fontWeight={600} fontSize={16}>
                           {t('cart.unloadDirectTo')}
-                        </Typography>
-                        <Typography fontWeight={600} fontSize={16}>
-                          {myTask.destinationBinCode}
                         </Typography>
                       </>
                     ) : (
@@ -282,6 +300,39 @@ const Cart = () => {
             </Button>
           </Grid>
         </Grid>
+      </Drawer>
+
+      <Drawer
+        anchor='bottom'
+        open={confirmUnloadDrawer}
+        onClose={() => setConfirmUnloadDrawer(false)}
+        PaperProps={{
+          sx: {
+            borderTopLeftRadius: 16,
+            borderTopRightRadius: 16,
+            p: 3,
+            height: 200
+          }
+        }}
+      >
+        <Typography textAlign='center' mb={2} fontWeight='bold'>
+          {t('cart.confirmUnloadTo')}
+        </Typography>
+        <Typography textAlign='center' mb={2} fontSize={18}>
+          {myTask?.destinationBinCode}
+        </Typography>
+        <Button
+          variant='contained'
+          color='success'
+          fullWidth
+          sx={{ height: 100, borderRadius: 2, fontWeight: 600, fontSize: 16 }}
+          onClick={async () => {
+            await handleUnloadConfirm()
+            setConfirmUnloadDrawer(false)
+          }}
+        >
+          {t('cart.confirmNow')}
+        </Button>
       </Drawer>
     </Box>
   )

@@ -10,7 +10,7 @@ import { TaskCategoryEnum } from 'constants/index'
 import { TransportWorkCartProvider } from 'contexts/cart'
 import { useCart } from 'hooks/useCart'
 import Cart from 'pages/TransportWorker/Cart'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 const TopBarFixed = ({ userName }: { userName: string }) => (
   <Box
@@ -32,9 +32,12 @@ const TransportWorkerContent: React.FC<{ userName: string }> = ({
   userName
 }) => {
   const { isCartEmpty } = useCart()
-  const [view, setView] = useState<'cart' | 'task'>(
-    isCartEmpty ? 'task' : 'cart'
-  )
+  const location = useLocation()
+
+  const defaultView =
+    location.state?.view === 'cart' ? 'cart' : isCartEmpty ? 'task' : 'cart'
+
+  const [view, setView] = useState<'cart' | 'task'>(defaultView)
 
   const navigate = useNavigate()
 
