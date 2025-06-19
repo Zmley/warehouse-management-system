@@ -44,8 +44,12 @@
     "loadByProduct": "装货(条形吗)",
     "unload": "卸货",
     "startLoad" :  "装货",
-    "chooseLoadMode" : "选择扫描类型",
-    "unloadDirectTo" : "一键卸货到"
+    "chooseMode" : "选择扫描类型",
+    "unloadDirectTo" : "一键卸货",
+  
+    "confirmUnloadTo": "请确认卸货货位为",
+    "confirmUnloadDescription": "请确认您当前的位置是否是正确的目标货位。",
+    "confirmNow": "确认并卸货"
 
 
 

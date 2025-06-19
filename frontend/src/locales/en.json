@@ -35,8 +35,15 @@
     "loadByProduct": "Load By BarCode",
     "unload": "Unload",
     "startLoad" :  "startLoad",
-    "chooseLoadMode" : "choose Load Mode",
-    "unloadDirectTo": "Unload directly to"
+    "chooseMode" : "choose Load Mode",
+    "unloadDirectTo": "Unload directly to",
+
+
+    "confirmUnloadTitle": "Confirm Destination Bin",
+    "confirmUnloadDescription": "Please confirm whether you are at the correct destination bin.",
+
+        "confirmNow": "CONFIRM NOW"
+
   },
     "scan": {
      "scanBin": "Scan Bin QRCode",
