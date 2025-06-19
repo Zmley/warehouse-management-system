@@ -131,16 +131,16 @@ const Scan = () => {
         }}
       >
         <ToggleButton
-          value='scanner'
-          sx={{ px: 3, py: 1, borderRadius: '999px', fontWeight: 'bold' }}
-        >
-          {t('scan.modeScanner')}
-        </ToggleButton>
-        <ToggleButton
           value='manual'
           sx={{ px: 3, py: 1, borderRadius: '999px', fontWeight: 'bold' }}
         >
           {t('scan.modeManual')}
+        </ToggleButton>
+        <ToggleButton
+          value='scanner'
+          sx={{ px: 3, py: 1, borderRadius: '999px', fontWeight: 'bold' }}
+        >
+          {t('scan.modeScanner')}
         </ToggleButton>
       </ToggleButtonGroup>
 

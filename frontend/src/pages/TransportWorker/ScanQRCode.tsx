@@ -30,12 +30,10 @@ const ScanQRCode = () => {
 
   const location = useLocation()
   const scanMode: ScanMode = location.state?.mode ?? ScanMode.LOAD
-
   const unloadProductList = location.state?.unloadProductList ?? []
 
   const [manualBinCode, setManualBinCode] = useState('')
-
-  const [mode, setMode] = useState<'scanner' | 'manual'>(
+  const [mode, setMode] = useState<'manual' | 'scanner'>(
     isAndroid() ? 'manual' : 'scanner'
   )
 
@@ -136,8 +134,8 @@ const ScanQRCode = () => {
               }
             }}
           >
-            <ToggleButton value='scanner'>{t('scan.modeScanner')}</ToggleButton>
             <ToggleButton value='manual'>{t('scan.modeManual')}</ToggleButton>
+            <ToggleButton value='scanner'>{t('scan.modeScanner')}</ToggleButton>
           </ToggleButtonGroup>
 
           {mode === 'scanner' && (

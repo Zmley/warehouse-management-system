@@ -150,8 +150,8 @@ const ScanBarCode = () => {
               }
             }}
           >
-            <ToggleButton value='scanner'>{t('scan.modeScanner')}</ToggleButton>
             <ToggleButton value='manual'>{t('scan.modeManual')}</ToggleButton>
+            <ToggleButton value='scanner'>{t('scan.modeScanner')}</ToggleButton>
           </ToggleButtonGroup>
 
           {mode === 'scanner' && (
