@@ -35,7 +35,7 @@
     "loadByProduct": "Load By BarCode",
     "unload": "Unload",
     "startLoad" :  "startLoad",
-    "chooseMode" : "choose Load Mode",
+    "chooseLoadMode" : "choose Load Mode",
     "unloadDirectTo": "Unload directly to",
 
 

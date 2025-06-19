@@ -1,53 +1,71 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   Box,
   Button,
   Typography,
   Fade,
-  Paper,
   ToggleButtonGroup,
   ToggleButton,
-  TextField,
+  Paper,
   Autocomplete,
+  TextField,
   InputAdornment,
   IconButton
 } from '@mui/material'
 import CancelIcon from '@mui/icons-material/Cancel'
 import SearchIcon from '@mui/icons-material/Search'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import useQRScanner from 'hooks/useScanner'
-import { useProduct } from 'hooks/useProduct'
-import AddToCartInline from 'pages/TransportWorker/AddToCartInline'
-import { ProductType } from 'types/product'
+import { useCart } from 'hooks/useCart'
+import { useBin } from 'hooks/useBin'
 import { useTranslation } from 'react-i18next'
-import { isValidBarcode } from 'utils/barcode'
 import { isAndroid } from 'utils/platform'
+import { ScanMode } from 'constants/index'
 
-const ScanBarCode = () => {
+const ScanQRCode = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const [mode, setMode] = useState<'scanner' | 'manual'>('scanner')
-  const [hasScanned, setHasScanned] = useState(false)
-  const [scannedProduct, setScannedProduct] = useState<ProductType | null>(null)
-  const [isLoadingProduct, setIsLoadingProduct] = useState(false)
-  const [manualCode, setManualCode] = useState('')
-  const [androidScanStarted, setAndroidScanStarted] = useState(false)
+  const { loadCart, unloadCart, error } = useCart()
+  const { binCodes, fetchBinCodes } = useBin()
 
-  const { fetchProduct, productCodes, loadProducts } = useProduct()
+  const location = useLocation()
+  const scanMode: ScanMode = location.state?.mode ?? ScanMode.LOAD
+  const unloadProductList = location.state?.unloadProductList ?? []
+
+  const [manualBinCode, setManualBinCode] = useState('')
+  const [mode, setMode] = useState<'manual' | 'scanner'>(
+    isAndroid() ? 'manual' : 'scanner'
+  )
+
+  const handleScanSuccess = async (binCode: string) => {
+    try {
+      if (scanMode === ScanMode.UNLOAD) {
+        await unloadCart(binCode, unloadProductList)
+      } else {
+        await loadCart({ binCode })
+      }
+    } catch (err) {
+      alert(t('scan.operationError'))
+    }
+  }
+
   const { videoRef, startScanning, stopScanning } =
     useQRScanner(handleScanSuccess)
 
-  useEffect(() => {
-    loadProducts()
-  }, [])
+  const handleManualSubmit = async () => {
+    if (!manualBinCode.trim()) return alert(t('scan.enterPrompt'))
+    await handleScanSuccess(manualBinCode)
+  }
+
+  const handleCancel = () => navigate(-1)
 
   useEffect(() => {
-    if (!isAndroid()) {
-      mode === 'scanner' ? startScanning() : stopScanning()
+    fetchBinCodes()
+    if (mode === 'scanner') {
+      startScanning()
     } else {
       stopScanning()
     }
-
     return () => {
       stopScanning()
       const stream = (videoRef.current as HTMLVideoElement | null)?.srcObject
@@ -57,41 +75,7 @@ const ScanBarCode = () => {
     }
   }, [mode])
 
-  const handleStartAndroidScan = () => {
-    setAndroidScanStarted(true)
-    startScanning()
-  }
-
-  async function handleScanSuccess(code: string) {
-    if (hasScanned || !isValidBarcode(code)) return
-    setHasScanned(true)
-    await handleFetchProduct(code)
-  }
-
-  async function handleFetchProduct(code: string) {
-    setIsLoadingProduct(true)
-    try {
-      const product = await fetchProduct(code)
-      if (product) {
-        setScannedProduct(product)
-        stopScanning()
-        const stream = (videoRef.current as HTMLVideoElement | null)?.srcObject
-        if (stream && stream instanceof MediaStream) {
-          stream.getTracks().forEach(track => track.stop())
-        }
-      } else {
-        alert(t('scan.productNotFound'))
-        setHasScanned(false)
-      }
-    } catch (err) {
-      alert(t('scan.fetchError'))
-      setHasScanned(false)
-    } finally {
-      setIsLoadingProduct(false)
-    }
-  }
-
-  const filterOptions = (
+  const filterBinOptions = (
     options: string[],
     { inputValue }: { inputValue: string }
   ) => {
@@ -129,20 +113,15 @@ const ScanBarCode = () => {
             align='center'
             gutterBottom
           >
-            {t('scan.scanProduct')}
+            {t('scan.scanBin')}
           </Typography>
 
           <ToggleButtonGroup
             value={mode}
             exclusive
             onChange={(_, newMode) => {
-              if (newMode) {
-                setMode(newMode)
-                if (isAndroid()) {
-                  stopScanning()
-                  setAndroidScanStarted(false)
-                }
-              }
+              if (!newMode) return
+              setMode(newMode)
             }}
             sx={{
               display: 'flex',
@@ -164,95 +143,50 @@ const ScanBarCode = () => {
           </ToggleButtonGroup>
 
           {mode === 'scanner' && (
-            <>
-              {isAndroid() && !androidScanStarted && (
-                <Button
-                  variant='contained'
-                  fullWidth
-                  onClick={handleStartAndroidScan}
-                  sx={{ mb: 2 }}
-                >
-                  {t('scan.startCamera')}
-                </Button>
-              )}
-              <Box position='relative' width='100%' height='240px' mt={1.5}>
-                <video
-                  ref={videoRef}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    borderRadius: 12,
-                    border: '2px solid #ddd'
-                  }}
-                />
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    top: '40%',
-                    left: '10%',
-                    width: '80%',
-                    height: '20%',
-                    border: '2px dashed #1976d2',
-                    borderRadius: 4,
-                    zIndex: 10,
-                    pointerEvents: 'none'
-                  }}
-                />
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: 0,
-                    width: '100%',
-                    height: '2px',
-                    background:
-                      'linear-gradient(to right, transparent, #42a5f5, transparent)',
-                    animation: 'scanLineX 2s infinite',
-                    zIndex: 11,
-                    pointerEvents: 'none',
-                    transform: 'translateY(-50%)'
-                  }}
-                />
-                <Typography
-                  align='center'
-                  sx={{
-                    position: 'absolute',
-                    bottom: -28,
-                    width: '100%',
-                    fontSize: 14,
-                    color: '#333',
-                    fontWeight: 'bold'
-                  }}
-                >
-                  {t('scan.alignPrompt')}
-                </Typography>
-
-                {isAndroid() && (
-                  <Typography
-                    align='center'
-                    sx={{
-                      mt: 1.5,
-                      fontSize: 13,
-                      color: '#888',
-                      fontStyle: 'italic'
-                    }}
-                  >
-                    {t('scan.androidHint')}
-                  </Typography>
-                )}
-
-                <style>
-                  {`
-                    @keyframes scanLineX {
-                      0% { left: 0%; }
-                      50% { left: 100%; transform: translateX(-100%) translateY(-50%); }
-                      100% { left: 0%; }
-                    }
-                  `}
-                </style>
-              </Box>
-            </>
+            <Box position='relative' width='100%' height='240px'>
+              <video
+                ref={videoRef}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  borderRadius: 12,
+                  border: '2px solid #ddd'
+                }}
+              />
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  width: '60%',
+                  height: '60%',
+                  transform: 'translate(-50%, -50%)',
+                  border: '2px dashed #1976d2',
+                  borderRadius: 2,
+                  boxShadow: 'inset 0 0 12px #1976D966',
+                  pointerEvents: 'none'
+                }}
+              />
+              <Typography
+                align='center'
+                sx={{
+                  position: 'absolute',
+                  top: 'calc(50% + 32%)',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  fontSize: 14,
+                  color: '#1976d2',
+                  fontWeight: 'bold',
+                  backgroundColor: '#FFFFFFD9',
+                  px: 1.5,
+                  py: 0.5,
+                  borderRadius: 1
+                }}
+              >
+                {t('scan.alignPrompt')}
+              </Typography>
+            </Box>
           )}
 
           {mode === 'manual' && (
@@ -260,29 +194,27 @@ const ScanBarCode = () => {
               <Autocomplete
                 freeSolo
                 disableClearable
-                options={productCodes}
-                value={manualCode}
-                onInputChange={(_, newValue) => setManualCode(newValue)}
-                filterOptions={filterOptions}
+                options={binCodes}
+                value={manualBinCode}
+                onInputChange={(_, newValue) => setManualBinCode(newValue)}
+                filterOptions={filterBinOptions}
                 noOptionsText=''
                 renderInput={params => (
                   <TextField
                     {...params}
-                    label={t('scan.enterProductCode')}
+                    label={t('scan.enterBinCode')}
                     variant='outlined'
                     onKeyDown={e => {
                       if (e.key === 'Enter') {
                         e.preventDefault()
-                        handleFetchProduct(manualCode)
+                        handleManualSubmit()
                       }
                     }}
                     InputProps={{
                       ...params.InputProps,
                       endAdornment: (
                         <InputAdornment position='end'>
-                          <IconButton
-                            onClick={() => handleFetchProduct(manualCode)}
-                          >
+                          <IconButton onClick={handleManualSubmit}>
                             <SearchIcon />
                           </IconButton>
                         </InputAdornment>
@@ -291,21 +223,14 @@ const ScanBarCode = () => {
                   />
                 )}
               />
-            </Box>
-          )}
-
-          {isLoadingProduct && (
-            <Typography color='primary' mt={2} align='center'>
-              {t('scan.loadingProduct')}
-            </Typography>
-          )}
-
-          {scannedProduct && (
-            <Box mt={4}>
-              <AddToCartInline
-                product={scannedProduct}
-                onSuccess={() => navigate('/')}
-              />
+              <Button
+                variant='contained'
+                onClick={handleManualSubmit}
+                fullWidth
+                sx={{ mt: 2 }}
+              >
+                {t('scan.submit')}
+              </Button>
             </Box>
           )}
 
@@ -326,14 +251,20 @@ const ScanBarCode = () => {
                 borderColor: '#d32f2f'
               }
             }}
-            onClick={() => navigate(-1)}
+            onClick={handleCancel}
           >
             {t('scan.cancel')}
           </Button>
+
+          {error && (
+            <Typography color='error' mt={2} align='center'>
+              {error}
+            </Typography>
+          )}
         </Paper>
       </Fade>
     </Box>
   )
 }
 
-export default ScanBarCode
+export default ScanQRCode
