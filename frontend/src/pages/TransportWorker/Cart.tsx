@@ -17,6 +17,7 @@ import { QrCode2 } from '@mui/icons-material'
 import { useTranslation } from 'react-i18next'
 import DocumentScanner from '@mui/icons-material/DocumentScanner'
 import { useCart } from 'hooks/useCart'
+import { ScanMode } from 'types/cart'
 
 const Cart = () => {
   const { t } = useTranslation()
@@ -181,7 +182,7 @@ const Cart = () => {
                       } else {
                         navigate('/my-task/scan-QRCode', {
                           state: {
-                            mode: 'unload',
+                            mode: ScanMode.UNLOAD,
                             unloadProductList: selectedToUnload
                           }
                         })

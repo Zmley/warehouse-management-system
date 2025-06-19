@@ -4,3 +4,8 @@ export interface InventoryItem {
   productCode: string
   quantity: number
 }
+
+export interface unloadInventory {
+  inventoryID: string
+  quantity: number
+}

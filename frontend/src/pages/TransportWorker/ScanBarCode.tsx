@@ -21,6 +21,7 @@ import AddToCartInline from 'pages/TransportWorker/AddToCartInline'
 import { ProductType } from 'types/product'
 import { useTranslation } from 'react-i18next'
 import { isValidBarcode } from 'utils/barcode'
+import { isAndroid } from 'utils/platform'
 
 const ScanBarCode = () => {
   const { t } = useTranslation()
@@ -31,8 +32,6 @@ const ScanBarCode = () => {
   const [isLoadingProduct, setIsLoadingProduct] = useState(false)
   const [manualCode, setManualCode] = useState('')
   const { fetchProduct, productCodes, loadProducts } = useProduct()
-
-  const isAndroid = /Android/i.test(navigator.userAgent)
 
   const { videoRef, startScanning, stopScanning } =
     useQRScanner(handleScanSuccess)
@@ -206,7 +205,7 @@ const ScanBarCode = () => {
                 {t('scan.alignPrompt')}
               </Typography>
 
-              {isAndroid && (
+              {isAndroid() && (
                 <Typography
                   align='center'
                   sx={{

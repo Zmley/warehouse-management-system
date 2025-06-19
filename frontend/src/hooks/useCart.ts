@@ -3,7 +3,7 @@ import { useCartContext } from 'contexts/cart'
 import { load, unload } from 'api/cartApi'
 import { useNavigate } from 'react-router-dom'
 import { InventoryItem } from 'types/inventory'
-import { unloadInventory } from 'types/unloadInventory'
+import { unloadInventory } from 'types/inventory'
 
 export const useCart = () => {
   const navigate = useNavigate()
