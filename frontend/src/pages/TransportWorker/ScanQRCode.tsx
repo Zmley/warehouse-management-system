@@ -20,6 +20,7 @@ import { useCart } from 'hooks/useCart'
 import { useBin } from 'hooks/useBin'
 import { useTranslation } from 'react-i18next'
 import { isAndroid } from 'utils/platform'
+import { ScanMode } from 'constant'
 
 const ScanQRCode = () => {
   const { t } = useTranslation()
@@ -29,14 +30,15 @@ const ScanQRCode = () => {
   const { binCodes, fetchBinCodes } = useBin()
 
   const location = useLocation()
-  const scanMode = location.state?.mode ?? 'load'
+  const scanMode: ScanMode = location.state?.mode ?? ScanMode.LOAD
+
   const unloadProductList = location.state?.unloadProductList ?? []
 
   const [manualBinCode, setManualBinCode] = useState('')
 
   const handleScanSuccess = async (binCode: string) => {
     try {
-      if (scanMode === 'unload') {
+      if (scanMode === ScanMode.UNLOAD) {
         await unloadCart(binCode, unloadProductList)
       } else {
         await loadCart({ binCode })

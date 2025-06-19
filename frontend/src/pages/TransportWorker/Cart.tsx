@@ -243,7 +243,9 @@ const Cart = () => {
               color='primary'
               fullWidth
               onClick={() => {
-                navigate('/my-task/scan-QRCode', { state: { mode: 'load' } })
+                navigate('/my-task/scan-QRCode', {
+                  state: { mode: ScanMode.LOAD }
+                })
                 setDrawerOpen(false)
               }}
               startIcon={<QrCode2 />}
