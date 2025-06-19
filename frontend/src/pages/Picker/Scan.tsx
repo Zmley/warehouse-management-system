@@ -126,7 +126,7 @@ const Scan = () => {
           if (!newMode) return
           setMode(newMode)
           if (newMode === 'scanner') {
-            if (!isAndroid) startScanning()
+            if (!isAndroid()) startScanning()
             setAndroidScanStarted(false)
           } else {
             stopScanning()
@@ -156,7 +156,7 @@ const Scan = () => {
 
       {mode === 'scanner' && (
         <>
-          {isAndroid && !androidScanStarted && (
+          {isAndroid() && !androidScanStarted && (
             <Button
               variant='contained'
               onClick={handleStartAndroidScan}
@@ -234,7 +234,7 @@ const Scan = () => {
               {t('scan.alignPrompt')}
             </Typography>
 
-            {isAndroid && (
+            {isAndroid() && (
               <Typography
                 variant='caption'
                 sx={{
