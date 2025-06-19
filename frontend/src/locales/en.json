@@ -24,8 +24,8 @@
     "accept": "Accept",
     "takeOver": "Take Over",
     "loading": "Loading...",
-      "outOfStock": "Out of Stock",
-      "canceling" : "canceling"
+    "outOfStock": "Out of Stock",
+    "canceling" : "canceling"
 
   },
    "cart": {
@@ -33,7 +33,10 @@
     "overLimit": "❌ Selected quantity ({{selected}}) exceeds task limit ({{limit}})",
     "loadByBin": "Load By QRCode",
     "loadByProduct": "Load By BarCode",
-    "unload": "Unload"
+    "unload": "Unload",
+    "startLoad" :  "startLoad",
+    "chooseLoadMode" : "choose Load Mode",
+    "unloadDirectTo": "Unload directly to"
   },
     "scan": {
      "scanBin": "Scan Bin QRCode",
@@ -48,14 +51,16 @@
     "operationError": "❌ Operation failed. Please try again.",
     "enterBinOrProduct" : "Enter Bin Code or Product BarCode",
     "title" : "Scan Bin Code or Product BarCode",
-         "enterProductCode": "enter Product Codee"
+    "enterProductCode": "enter Product Codee"
 
   },
 
     "inventory": {
     "total": "Total",
     "offload": "Offload",
-    "quantityExceed": "Quantity cannot exceed total ({{quantity}})"
+    "quantityExceed": "Quantity cannot exceed total ({{quantity}})",
+    "currentCargoInForklift" : "current Cargo In Forklift"
+
   }
   ,
     "addToCart": {

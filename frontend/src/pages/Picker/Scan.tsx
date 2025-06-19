@@ -210,6 +210,23 @@ const Scan = () => {
             {t('scan.alignPrompt')}
           </Typography>
 
+          {isAndroid && (
+            <Typography
+              variant='caption'
+              sx={{
+                mt: 1,
+                color: '#ccc',
+                fontStyle: 'italic',
+                textAlign: 'center',
+                position: 'absolute',
+                bottom: '-18px',
+                width: '100%'
+              }}
+            >
+              {t('scan.androidHint')}
+            </Typography>
+          )}
+
           <style>{`
             @keyframes scanLine {
               0% { top: 10%; }
