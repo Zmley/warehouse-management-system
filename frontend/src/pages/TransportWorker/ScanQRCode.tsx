@@ -21,8 +21,6 @@ import { useBin } from 'hooks/useBin'
 import { useTranslation } from 'react-i18next'
 import { isAndroid } from 'utils/platform'
 
-// const isAndroid = /Android/i.test(navigator.userAgent)
-
 const ScanQRCode = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
