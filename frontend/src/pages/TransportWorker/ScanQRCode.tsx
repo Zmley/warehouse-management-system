@@ -25,7 +25,6 @@ import { ScanMode } from 'constants/index'
 const ScanQRCode = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const [mode, setMode] = useState<'scanner' | 'manual'>('scanner')
   const { loadCart, unloadCart, error } = useCart()
   const { binCodes, fetchBinCodes } = useBin()
 
@@ -35,6 +34,10 @@ const ScanQRCode = () => {
   const unloadProductList = location.state?.unloadProductList ?? []
 
   const [manualBinCode, setManualBinCode] = useState('')
+
+  const [mode, setMode] = useState<'scanner' | 'manual'>(
+    isAndroid() ? 'manual' : 'scanner'
+  )
 
   const handleScanSuccess = async (binCode: string) => {
     try {
