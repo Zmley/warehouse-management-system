@@ -1,3 +1,4 @@
+// ScanQRCode.tsx
 import React, { useEffect, useState } from 'react'
 import {
   Box,
@@ -10,7 +11,8 @@ import {
   Autocomplete,
   TextField,
   InputAdornment,
-  IconButton
+  IconButton,
+  CircularProgress
 } from '@mui/material'
 import CancelIcon from '@mui/icons-material/Cancel'
 import SearchIcon from '@mui/icons-material/Search'
@@ -22,7 +24,11 @@ import { useTranslation } from 'react-i18next'
 import { isAndroid } from 'utils/platform'
 import { ScanMode } from 'constants/index'
 
-const ScanQRCode = () => {
+interface Props {
+  onRequestClose?: () => void
+}
+
+const ScanQRCode: React.FC<Props> = ({ onRequestClose }) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { loadCart, unloadCart, error } = useCart()
@@ -36,6 +42,8 @@ const ScanQRCode = () => {
   const [mode, setMode] = useState<'manual' | 'scanner'>(
     isAndroid() ? 'manual' : 'scanner'
   )
+  const [showCamera, setShowCamera] = useState(true)
+  const [isStoppingCamera, setIsStoppingCamera] = useState(false)
 
   const handleScanSuccess = async (binCode: string) => {
     try {
@@ -57,14 +65,42 @@ const ScanQRCode = () => {
     await handleScanSuccess(manualBinCode)
   }
 
-  const handleCancel = () => {
-    // 停止扫描器
-    stopScanning()
+  const handleCancel = async () => {
+    setShowCamera(false)
+    setIsStoppingCamera(true)
 
-    // 等待资源释放后跳转
+    try {
+      await stopScanning()
+
+      const video = videoRef.current
+      if (video) {
+        if (video.srcObject instanceof MediaStream) {
+          video.srcObject.getTracks().forEach(track => {
+            try {
+              track.stop()
+            } catch (e) {
+              console.warn('track.stop() failed:', e)
+            }
+          })
+          video.srcObject = null
+        }
+
+        video.pause?.()
+        video.removeAttribute('src')
+        video.load?.()
+      }
+    } catch (err) {
+      console.warn('stopScanning or camera cleanup failed:', err)
+    }
+
     setTimeout(() => {
-      navigate('/', { replace: true, state: { view: 'cart' } })
-    }, 2000) // 2 秒是保险时间
+      setIsStoppingCamera(false)
+      if (onRequestClose) {
+        onRequestClose()
+      } else {
+        navigate('/', { replace: true, state: { view: 'cart' } })
+      }
+    }, 2500)
   }
 
   useEffect(() => {
@@ -76,7 +112,7 @@ const ScanQRCode = () => {
     }
     return () => {
       stopScanning()
-      const stream = (videoRef.current as HTMLVideoElement | null)?.srcObject
+      const stream = videoRef.current?.srcObject
       if (stream && stream instanceof MediaStream) {
         stream.getTracks().forEach(track => track.stop())
       }
@@ -127,23 +163,12 @@ const ScanQRCode = () => {
           <ToggleButtonGroup
             value={mode}
             exclusive
-            onChange={(_, newMode) => {
-              if (!newMode) return
-              setMode(newMode)
-            }}
+            onChange={(_, newMode) => newMode && setMode(newMode)}
             sx={{
               display: 'flex',
               justifyContent: 'center',
               width: '100%',
-              mb: 3,
-              '& .MuiToggleButton-root': {
-                fontWeight: 'bold',
-                px: 3
-              },
-              '& .Mui-selected': {
-                backgroundColor: '#1976d2 !important',
-                color: '#fff'
-              }
+              mb: 3
             }}
           >
             <ToggleButton value='manual'>{t('scan.modeManual')}</ToggleButton>
@@ -151,49 +176,72 @@ const ScanQRCode = () => {
           </ToggleButtonGroup>
 
           {mode === 'scanner' && (
-            <Box position='relative' width='100%' height='240px'>
-              <video
-                ref={videoRef}
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  borderRadius: 12,
-                  border: '2px solid #ddd'
-                }}
-              />
-              <Box
-                sx={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: '50%',
-                  width: '60%',
-                  height: '60%',
-                  transform: 'translate(-50%, -50%)',
-                  border: '2px dashed #1976d2',
-                  borderRadius: 2,
-                  boxShadow: 'inset 0 0 12px #1976D966',
-                  pointerEvents: 'none'
-                }}
-              />
-              <Typography
-                align='center'
-                sx={{
-                  position: 'absolute',
-                  top: 'calc(50% + 32%)',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  fontSize: 14,
-                  color: '#1976d2',
-                  fontWeight: 'bold',
-                  backgroundColor: '#FFFFFFD9',
-                  px: 1.5,
-                  py: 0.5,
-                  borderRadius: 1
-                }}
+            <Box>
+              {showCamera ? (
+                <Box position='relative' width='100%' height='240px'>
+                  <video
+                    ref={videoRef}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      borderRadius: 12,
+                      border: '2px solid #ddd'
+                    }}
+                  />
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      width: '60%',
+                      height: '60%',
+                      transform: 'translate(-50%, -50%)',
+                      border: '2px dashed #1976d2',
+                      borderRadius: 2
+                    }}
+                  />
+                  <Typography
+                    align='center'
+                    sx={{
+                      position: 'absolute',
+                      top: 'calc(50% + 32%)',
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      fontSize: 14,
+                      color: '#1976d2',
+                      backgroundColor: '#FFFFFFD9',
+                      px: 1.5,
+                      py: 0.5,
+                      borderRadius: 1
+                    }}
+                  >
+                    {t('scan.alignPrompt')}
+                  </Typography>
+                </Box>
+              ) : (
+                <Typography align='center' mt={1} color='text.secondary'>
+                  📷 {t('scan.cameraOff') || 'Camera off.'}
+                </Typography>
+              )}
+
+              <Button
+                variant='outlined'
+                fullWidth
+                color='warning'
+                disabled={isStoppingCamera}
+                onClick={handleCancel}
+                sx={{ mt: 2, borderRadius: 2, fontWeight: 'bold' }}
               >
-                {t('scan.alignPrompt')}
-              </Typography>
+                {isStoppingCamera ? (
+                  <>
+                    <CircularProgress size={20} sx={{ mr: 1 }} />
+                    {t('scan.stopping') || 'Stopping...'}
+                  </>
+                ) : (
+                  t('scan.stopCamera') || 'Stop Camera'
+                )}
+              </Button>
             </Box>
           )}
 
@@ -206,18 +254,11 @@ const ScanQRCode = () => {
                 value={manualBinCode}
                 onInputChange={(_, newValue) => setManualBinCode(newValue)}
                 filterOptions={filterBinOptions}
-                noOptionsText=''
                 renderInput={params => (
                   <TextField
                     {...params}
                     label={t('scan.enterBinCode')}
-                    variant='outlined'
-                    onKeyDown={e => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault()
-                        handleManualSubmit()
-                      }
-                    }}
+                    onKeyDown={e => e.key === 'Enter' && handleManualSubmit()}
                     InputProps={{
                       ...params.InputProps,
                       endAdornment: (
@@ -252,14 +293,10 @@ const ScanQRCode = () => {
               borderRadius: 2,
               fontWeight: 'bold',
               fontSize: 15,
-              py: 1.2,
-              borderWidth: 2,
-              '&:hover': {
-                backgroundColor: '#ffe5e5',
-                borderColor: '#d32f2f'
-              }
+              py: 1.2
             }}
             onClick={handleCancel}
+            disabled={isStoppingCamera}
           >
             {t('scan.cancel')}
           </Button>
