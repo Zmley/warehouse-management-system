@@ -1,13 +1,19 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { BarcodeScanner } from 'dynamsoft-barcode-reader-bundle'
 import { useNavigate } from 'react-router-dom'
 import { useBin } from 'hooks/useBin'
-// import './App.css'
+import { useProduct } from 'hooks/useProduct'
+import { ProductType } from 'types/product'
+import ProductCard from './ProductCard'
 
 const Scan = () => {
   const scannerRef = useRef<any>(null)
   const navigate = useNavigate()
   const { fetchBinByCode } = useBin()
+  const { fetchProduct } = useProduct()
+
+  const [product, setProduct] = useState<ProductType | null>(null)
+  const [showScanner, setShowScanner] = useState(true)
 
   useEffect(() => {
     const config = {
@@ -27,15 +33,37 @@ const Scan = () => {
       scannerRef.current = scanner
 
       const result = await scanner.launch()
+      const barcodeText = result.barcodeResults?.[0]?.text?.trim()
 
-      const barcodeText = result.barcodeResults?.[0]?.text
       if (!barcodeText) {
         alert('未识别到条码')
         return
       }
 
-      const bin = await fetchBinByCode(barcodeText.trim())
-      navigate('/create-task', { state: { bin } })
+      if (/^\d{12}$/.test(barcodeText)) {
+        // 是产品码，显示产品
+        try {
+          const fetched = await fetchProduct(barcodeText)
+          if (fetched) {
+            setProduct(fetched)
+            setShowScanner(false) // 隐藏摄像头
+          } else {
+            alert('未找到该产品')
+          }
+        } catch (err) {
+          console.error('查询产品失败:', err)
+          alert('查询产品失败')
+        }
+      } else {
+        // 是二维码 → 跳转创建任务
+        try {
+          const bin = await fetchBinByCode(barcodeText)
+          navigate('/create-task', { state: { bin } })
+        } catch (err) {
+          console.error('Bin查找失败:', err)
+          alert('无效的Bin码')
+        }
+      }
     }
 
     init()
@@ -55,10 +83,23 @@ const Scan = () => {
   return (
     <div className='barcode-scanner-hello-world-page'>
       <div className='barcode-scanner-title'></div>
-      <div
-        className='barcode-scanner-view'
-        style={{ height: 'calc(100vh - 220px)', width: '100%' }}
-      ></div>
+
+      {/* 摄像头区域 */}
+      {showScanner && (
+        <div
+          className='barcode-scanner-view'
+          style={{ height: 'calc(100vh - 220px)', width: '100%' }}
+        />
+      )}
+
+      {/* 产品信息显示区域 */}
+      {!showScanner && product && (
+        <div style={{ padding: 16 }}>
+          <ProductCard product={product} />
+        </div>
+      )}
+
+      {/* 取消按钮 */}
       <div style={{ marginTop: 20, textAlign: 'center' }}>
         <button
           onClick={handleCancel}
