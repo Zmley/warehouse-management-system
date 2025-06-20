@@ -57,8 +57,15 @@ const ScanQRCode = () => {
     await handleScanSuccess(manualBinCode)
   }
 
-  const handleCancel = () =>
-    navigate('/', { replace: true, state: { view: 'cart' } })
+  const handleCancel = () => {
+    // 停止扫描器
+    stopScanning()
+
+    // 等待资源释放后跳转
+    setTimeout(() => {
+      navigate('/', { replace: true, state: { view: 'cart' } })
+    }, 2000) // 2 秒是保险时间
+  }
 
   useEffect(() => {
     fetchBinCodes()
