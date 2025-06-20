@@ -26,15 +26,12 @@ import { isAndroid } from 'utils/platform'
 const ScanBarCode = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const [mode, setMode] = useState<'scanner' | 'manual'>('scanner')
   const [hasScanned, setHasScanned] = useState(false)
   const [scannedProduct, setScannedProduct] = useState<ProductType | null>(null)
   const [isLoadingProduct, setIsLoadingProduct] = useState(false)
   const [manualCode, setManualCode] = useState('')
   const { fetchProduct, productCodes, loadProducts } = useProduct()
-
-  const [mode, setMode] = useState<'scanner' | 'manual'>(
-    isAndroid() ? 'manual' : 'scanner'
-  )
 
   const { videoRef, startScanning, stopScanning } =
     useQRScanner(handleScanSuccess)
@@ -150,8 +147,8 @@ const ScanBarCode = () => {
               }
             }}
           >
-            <ToggleButton value='manual'>{t('scan.modeManual')}</ToggleButton>
             <ToggleButton value='scanner'>{t('scan.modeScanner')}</ToggleButton>
+            <ToggleButton value='manual'>{t('scan.modeManual')}</ToggleButton>
           </ToggleButtonGroup>
 
           {mode === 'scanner' && (
@@ -305,7 +302,9 @@ const ScanBarCode = () => {
                 borderColor: '#d32f2f'
               }
             }}
-            onClick={() => navigate(-1)}
+            onClick={() =>
+              navigate('/', { replace: true, state: { view: 'cart' } })
+            }
           >
             {t('scan.cancel')}
           </Button>

@@ -57,7 +57,8 @@ const ScanQRCode = () => {
     await handleScanSuccess(manualBinCode)
   }
 
-  const handleCancel = () => navigate(-1)
+  const handleCancel = () =>
+    navigate('/', { replace: true, state: { view: 'cart' } })
 
   useEffect(() => {
     fetchBinCodes()
