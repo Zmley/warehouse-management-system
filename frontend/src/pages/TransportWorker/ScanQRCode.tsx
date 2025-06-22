@@ -14,7 +14,6 @@ import {
   IconButton,
   CircularProgress
 } from '@mui/material'
-import CancelIcon from '@mui/icons-material/Cancel'
 import SearchIcon from '@mui/icons-material/Search'
 import { useNavigate, useLocation } from 'react-router-dom'
 import useQRScanner from 'hooks/useScanner'
@@ -65,7 +64,7 @@ const ScanQRCode: React.FC<Props> = ({ onRequestClose }) => {
     await handleScanSuccess(manualBinCode)
   }
 
-  const handleCancel = async () => {
+  const handleStopCamera = async () => {
     setShowCamera(false)
     setIsStoppingCamera(true)
 
@@ -73,18 +72,15 @@ const ScanQRCode: React.FC<Props> = ({ onRequestClose }) => {
       await stopScanning()
 
       const video = videoRef.current
-      if (video) {
-        if (video.srcObject instanceof MediaStream) {
-          video.srcObject.getTracks().forEach(track => {
-            try {
-              track.stop()
-            } catch (e) {
-              console.warn('track.stop() failed:', e)
-            }
-          })
-          video.srcObject = null
-        }
-
+      if (video && video.srcObject instanceof MediaStream) {
+        video.srcObject.getTracks().forEach(track => {
+          try {
+            track.stop()
+          } catch (e) {
+            console.warn('track.stop() failed:', e)
+          }
+        })
+        video.srcObject = null
         video.pause?.()
         video.removeAttribute('src')
         video.load?.()
@@ -110,6 +106,7 @@ const ScanQRCode: React.FC<Props> = ({ onRequestClose }) => {
     } else {
       stopScanning()
     }
+
     return () => {
       stopScanning()
       const stream = videoRef.current?.srcObject
@@ -230,7 +227,7 @@ const ScanQRCode: React.FC<Props> = ({ onRequestClose }) => {
                 fullWidth
                 color='warning'
                 disabled={isStoppingCamera}
-                onClick={handleCancel}
+                onClick={handleStopCamera}
                 sx={{ mt: 2, borderRadius: 2, fontWeight: 'bold' }}
               >
                 {isStoppingCamera ? (
@@ -282,24 +279,6 @@ const ScanQRCode: React.FC<Props> = ({ onRequestClose }) => {
               </Button>
             </Box>
           )}
-
-          <Button
-            startIcon={<CancelIcon />}
-            variant='outlined'
-            color='error'
-            fullWidth
-            sx={{
-              mt: 4,
-              borderRadius: 2,
-              fontWeight: 'bold',
-              fontSize: 15,
-              py: 1.2
-            }}
-            onClick={handleCancel}
-            disabled={isStoppingCamera}
-          >
-            {t('scan.cancel')}
-          </Button>
 
           {error && (
             <Typography color='error' mt={2} align='center'>
