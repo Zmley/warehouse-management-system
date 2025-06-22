@@ -11,7 +11,6 @@ import { TransportWorkCartProvider } from 'contexts/cart'
 import { useCart } from 'hooks/useCart'
 import Cart from 'pages/TransportWorker/Cart'
 import { useLocation, useNavigate } from 'react-router-dom'
-import ScanQRCode from 'pages/TransportWorker/ScanQRCode'
 
 const TopBarFixed = ({ userName }: { userName: string }) => (
   <Box
