@@ -98,6 +98,7 @@ const ScanQRCode: React.FC<Props> = ({ onRequestClose }) => {
         onRequestClose()
       } else {
         navigate('/', { replace: true, state: { view: 'cart' } })
+        window.location.reload()
       }
     })
   }
