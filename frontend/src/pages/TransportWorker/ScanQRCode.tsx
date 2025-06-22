@@ -48,10 +48,8 @@ const ScanQRCode: React.FC<Props> = ({ onRequestClose }) => {
     try {
       if (scanMode === ScanMode.UNLOAD) {
         await unloadCart(binCode, unloadProductList)
-        window.location.reload()
       } else {
         await loadCart({ binCode })
-        window.location.reload()
       }
     } catch (err) {
       alert(t('scan.operationError'))
@@ -100,7 +98,6 @@ const ScanQRCode: React.FC<Props> = ({ onRequestClose }) => {
         onRequestClose()
       } else {
         navigate('/', { replace: true, state: { view: 'cart' } })
-        window.location.reload()
       }
     })
   }
