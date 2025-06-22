@@ -40,8 +40,6 @@ const TransportWorkerContent: React.FC<{ userName: string }> = ({
 
   const [view, setView] = useState<'cart' | 'task' | 'scan'>(defaultView)
 
-  const navigate = useNavigate()
-
   useEffect(() => {
     if (!isCartEmpty) {
       setView('cart')
