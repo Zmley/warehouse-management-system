@@ -25,9 +25,10 @@ import { ScanMode } from 'constants/index'
 
 interface Props {
   onRequestClose?: () => void
+  onSuccess?: () => void
 }
 
-const ScanQRCode: React.FC<Props> = ({ onRequestClose }) => {
+const ScanQRCode: React.FC<Props> = ({ onRequestClose, onSuccess }) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { loadCart, unloadCart, error } = useCart()
@@ -50,6 +51,10 @@ const ScanQRCode: React.FC<Props> = ({ onRequestClose }) => {
         await unloadCart(binCode, unloadProductList)
       } else {
         await loadCart({ binCode })
+      }
+
+      if (onSuccess) {
+        onSuccess() // ✅ 扫描成功后通知父组件跳转视图
       }
     } catch (err) {
       alert(t('scan.operationError'))

@@ -11,6 +11,7 @@ import { TransportWorkCartProvider } from 'contexts/cart'
 import { useCart } from 'hooks/useCart'
 import Cart from 'pages/TransportWorker/Cart'
 import { useLocation, useNavigate } from 'react-router-dom'
+import ScanQRCode from 'pages/TransportWorker/ScanQRCode'
 
 const TopBarFixed = ({ userName }: { userName: string }) => (
   <Box
@@ -37,7 +38,7 @@ const TransportWorkerContent: React.FC<{ userName: string }> = ({
   const defaultView =
     location.state?.view === 'cart' ? 'cart' : isCartEmpty ? 'task' : 'cart'
 
-  const [view, setView] = useState<'cart' | 'task'>(defaultView)
+  const [view, setView] = useState<'cart' | 'task' | 'scan'>(defaultView)
 
   const navigate = useNavigate()
 
@@ -54,13 +55,20 @@ const TransportWorkerContent: React.FC<{ userName: string }> = ({
       <TopBarFixed userName={userName} />
 
       <Box sx={{ pt: '72px', pb: '80px', height: '100vh' }}>
-        {view === 'cart' ? <Cart /> : <PendingTaskList setView={setView} />}
+        {view === 'cart' && <Cart />}
+        {view === 'task' && <PendingTaskList setView={setView} />}
+        {view === 'scan' && (
+          <ScanQRCode
+            onRequestClose={() => setView('cart')} // ✅ 点击取消摄像头后返回
+            onSuccess={() => setView('cart')} // ✅ 扫描成功后返回
+          />
+        )}
       </Box>
 
       <WokerBottombar
         onCartClick={() => setView('cart')}
         onTaskListClick={() => setView('task')}
-        onPublishClick={() => navigate('/picker-scan-bin')}
+        onPublishClick={() => setView('scan')} // ✅ 改为切换到scan
       />
     </Box>
   )
