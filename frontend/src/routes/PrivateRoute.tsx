@@ -10,7 +10,6 @@ import CreateTaskPage from 'pages/Picker/CreateTask'
 
 import { TransportWorkCartProvider } from 'contexts/cart'
 import ScannedProductPage from 'pages/Picker/ScannedProductPage'
-import RefreshBridge from 'pages/TransportWorker/RefreshBridge'
 
 const PrivateRoutes: React.FC = () => {
   const { getMe } = useContext(AuthContext)!
@@ -45,8 +44,6 @@ const PrivateRoutes: React.FC = () => {
       <Route path='/create-task' element={<CreateTaskPage />} />
 
       <Route path='/product-info' element={<ScannedProductPage />} />
-
-      <Route path='/refresh-bridge' element={<RefreshBridge />} />
     </Routes>
   )
 }
