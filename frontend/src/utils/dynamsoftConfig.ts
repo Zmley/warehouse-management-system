@@ -8,3 +8,5 @@ export const dynamsoftConfig = {
       'https://cdn.jsdelivr.net/npm/dynamsoft-barcode-reader-bundle@10.5.3000/dist/'
   }
 }
+
+//test
