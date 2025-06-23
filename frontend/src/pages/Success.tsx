@@ -32,6 +32,7 @@ const Success: React.FC = () => {
     const timer = setTimeout(() => {
       handleClose()
     }, 1000)
+
     return () => clearTimeout(timer)
   }, [])
 
