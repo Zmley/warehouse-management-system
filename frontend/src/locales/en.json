@@ -51,15 +51,32 @@
     "modeScanner": "Scan QR Code",
     "modeManual": "Manual Input",
     "alignPrompt": "Please align the QR code within the frame",
-    "enterPrompt": "Please enter a bin code",
     "enterBinCode": "Enter Bin Code",
-    "submit": "Submit",
-    "cancel": "Cancel",
+
     "operationError": "❌ Operation failed. Please try again.",
     "enterBinOrProduct" : "Enter Bin Code or Product BarCode",
-    "title" : "Scan Bin Code or Product BarCode",
     "enterProductCode": "enter Product Codee",
-      "scan.startCamera": "turn on the camera"
+      "scan.startCamera": "turn on the camera",
+
+
+
+
+
+          "title": "Scan Barcode or Enter Manually",
+    "notRecognized": "Barcode not recognized",
+    "productNotFound": "Product not found",
+    "productError": "Failed to fetch product",
+    "invalidBinCode": "Invalid Bin code",
+    "enterPrompt": "Please enter a value",
+    "inputLabel": "Enter barcode or Bin code",
+    "submit": "Submit",
+    "switchToManual": "Switch to Manual Input",
+    "cancel": "Cancel & Return"
+
+
+
+
+ 
 
 
   },

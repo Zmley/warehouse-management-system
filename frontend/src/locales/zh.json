@@ -53,6 +53,9 @@
 
 
 
+  
+
+
 
 
   },
@@ -62,15 +65,26 @@
   "modeScanner": "扫码模式",
   "modeManual": "手动输入",
   "alignPrompt": "请将码对准框内进行识别",
-  "enterPrompt": "请输入货架编号",
   "enterBinCode": "输入货架编号",
-  "submit": "提交",
-  "cancel": "取消",
   "operationError": "❌ 操作失败，请重试",
   "enterBinOrProduct" : "输入货架编号或产品条形码",
-  "title" : "扫描货架编号或产品条形码",
   "enterProductCode": "输入产品号码",
-  "scan.startCamera": "点击开启摄像头"
+  "scan.startCamera": "点击开启摄像头",
+
+
+
+
+             "title": "扫码识别或手动输入",
+    "notRecognized": "未识别到条码",
+    "productNotFound": "未找到该产品",
+    "productError": "查询产品失败",
+    "invalidBinCode": "无效的Bin码",
+    "enterPrompt": "请输入内容",
+    "inputLabel": "请输入条码或Bin码",
+    "submit": "提交",
+    "switchToManual": "切换为手动输入",
+    "cancel": "取消返回"
+
 
 
   },  
