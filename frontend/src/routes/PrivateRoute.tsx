@@ -1,6 +1,5 @@
 import { Routes, Route } from 'react-router-dom'
 import ScanQRCode from 'pages/TransportWorker/ScanQRCode'
-import ScanbarCode from 'pages/TransportWorker/ScanBarCode'
 import UnloadSuccess from 'pages/Success'
 import { useContext, useEffect } from 'react'
 import { AuthContext } from 'contexts/auth'
@@ -15,7 +14,7 @@ const PrivateRoutes: React.FC = () => {
   const { getMe } = useContext(AuthContext)!
   useEffect(() => {
     getMe()
-  }, []) //改pr，为什么不在context里执行这段，(应登陆page 和 dashbord page 用的一个页面，bowen 之前写这是想固定private route 执行 getMe)
+  }, [])
 
   return (
     <Routes>
@@ -25,15 +24,6 @@ const PrivateRoutes: React.FC = () => {
         element={
           <TransportWorkCartProvider>
             <ScanQRCode />
-          </TransportWorkCartProvider>
-        }
-      />
-
-      <Route
-        path='/my-task/scan-barCode'
-        element={
-          <TransportWorkCartProvider>
-            <ScanbarCode />
           </TransportWorkCartProvider>
         }
       />

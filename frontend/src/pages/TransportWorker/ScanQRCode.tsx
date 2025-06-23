@@ -1,50 +1,91 @@
-// ScanQRCode.tsx
-import React, { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { BarcodeScanner } from 'dynamsoft-barcode-reader-bundle'
+import { useNavigate, useLocation } from 'react-router-dom'
 import {
   Box,
   Button,
   Typography,
-  Fade,
-  ToggleButtonGroup,
-  ToggleButton,
-  Paper,
-  Autocomplete,
   TextField,
+  Autocomplete,
   InputAdornment,
-  IconButton,
-  CircularProgress
+  IconButton
 } from '@mui/material'
 import SearchIcon from '@mui/icons-material/Search'
-import { useNavigate, useLocation } from 'react-router-dom'
-import useQRScanner from 'hooks/useScanner'
+import { useTranslation } from 'react-i18next'
+
 import { useCart } from 'hooks/useCart'
 import { useBin } from 'hooks/useBin'
-import { useTranslation } from 'react-i18next'
-import { isAndroid } from 'utils/platform'
+import { useProduct } from 'hooks/useProduct'
+import { dynamsoftConfig } from 'utils/dynamsoftConfig'
 import { ScanMode } from 'constants/index'
+import AddToCartInline from 'pages/TransportWorker/AddToCartInline'
+import { ProductType } from 'types/product'
 
-interface Props {
-  onRequestClose?: () => void
-}
-
-const ScanQRCode: React.FC<Props> = ({ onRequestClose }) => {
+const ScanCode = () => {
   const { t } = useTranslation()
+  const scannerRef = useRef<any>(null)
   const navigate = useNavigate()
-  const { loadCart, unloadCart, error } = useCart()
-  const { binCodes, fetchBinCodes } = useBin()
-
   const location = useLocation()
+  const { loadCart, unloadCart, error: cartError } = useCart()
+  const { fetchBinCodes, binCodes } = useBin()
+  const { fetchProduct, productCodes, loadProducts } = useProduct()
+
   const scanMode: ScanMode = location.state?.mode ?? ScanMode.LOAD
   const unloadProductList = location.state?.unloadProductList ?? []
 
-  const [manualBinCode, setManualBinCode] = useState('')
-  const [mode, setMode] = useState<'manual' | 'scanner'>(
-    isAndroid() ? 'manual' : 'scanner'
-  )
-  const [showCamera, setShowCamera] = useState(true)
-  const [isStoppingCamera, setIsStoppingCamera] = useState(false)
+  const [manualMode, setManualMode] = useState(false)
+  const [manualInput, setManualInput] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [scannedProduct, setScannedProduct] = useState<ProductType | null>(null)
 
-  const handleScanSuccess = async (binCode: string) => {
+  useEffect(() => {
+    fetchBinCodes()
+    loadProducts()
+  }, [])
+
+  useEffect(() => {
+    if (manualMode) return
+
+    const init = async () => {
+      try {
+        const scanner = new BarcodeScanner(dynamsoftConfig)
+        scannerRef.current = scanner
+        const result = await scanner.launch()
+        const scannedText = result.barcodeResults?.[0]?.text?.trim()
+        if (!scannedText) {
+          setError(t('scan.notRecognized'))
+          return
+        }
+
+        if (isProductCode(scannedText)) {
+          const product = await fetchProduct(scannedText)
+          if (product) {
+            setScannedProduct(product)
+          } else {
+            setError(t('scan.productNotFound'))
+          }
+        } else {
+          await handleScan(scannedText)
+        }
+      } catch (err) {
+        console.error('Scan error:', err)
+        setError(t('scan.operationError'))
+      }
+    }
+
+    init()
+
+    return () => {
+      if (scannerRef.current?.hide) scannerRef.current.hide()
+    }
+  }, [manualMode])
+
+  const isProductCode = (code: string) => {
+    return /^\d{8,}$/.test(code) // 假设产品码为纯数字 8 位以上
+  }
+
+  const handleScan = async (binCode: string) => {
+    setError(null)
     try {
       if (scanMode === ScanMode.UNLOAD) {
         await unloadCart(binCode, unloadProductList)
@@ -52,71 +93,18 @@ const ScanQRCode: React.FC<Props> = ({ onRequestClose }) => {
         await loadCart({ binCode })
       }
     } catch (err) {
-      alert(t('scan.operationError'))
+      console.error('操作失败:', err)
+      setError(t('scan.operationError'))
     }
   }
-
-  const { videoRef, startScanning, stopScanning } =
-    useQRScanner(handleScanSuccess)
 
   const handleManualSubmit = async () => {
-    if (!manualBinCode.trim()) return alert(t('scan.enterPrompt'))
-    await handleScanSuccess(manualBinCode)
+    if (!manualInput.trim()) {
+      setError(t('scan.enterPrompt'))
+      return
+    }
+    await handleScan(manualInput.trim())
   }
-
-  const handleStopCamera = async () => {
-    setShowCamera(false)
-    setIsStoppingCamera(true)
-
-    try {
-      await stopScanning()
-
-      const video = videoRef.current
-      if (video && video.srcObject instanceof MediaStream) {
-        video.srcObject.getTracks().forEach(track => {
-          try {
-            track.stop()
-          } catch (e) {
-            console.warn('track.stop() failed:', e)
-          }
-        })
-
-        video.srcObject = null
-        video.pause?.()
-        video.removeAttribute('src')
-        video.load?.()
-        videoRef.current?.remove()
-      }
-    } catch (err) {
-      console.warn('stopScanning or camera cleanup failed:', err)
-    }
-
-    setTimeout(() => {
-      setIsStoppingCamera(false)
-      if (onRequestClose) {
-        onRequestClose()
-      } else {
-        navigate('/', { replace: true, state: { view: 'cart' } })
-      }
-    })
-  }
-
-  useEffect(() => {
-    fetchBinCodes()
-    if (mode === 'scanner') {
-      startScanning()
-    } else {
-      stopScanning()
-    }
-
-    return () => {
-      stopScanning()
-      const stream = videoRef.current?.srcObject
-      if (stream && stream instanceof MediaStream) {
-        stream.getTracks().forEach(track => track.stop())
-      }
-    }
-  }, [mode])
 
   const filterBinOptions = (
     options: string[],
@@ -128,170 +116,136 @@ const ScanQRCode: React.FC<Props> = ({ onRequestClose }) => {
     )
   }
 
+  const handleCancel = () => {
+    if (scannerRef.current?.hide) {
+      scannerRef.current.hide()
+    }
+    navigate('/')
+    setTimeout(() => {
+      window.location.reload()
+    }, 0)
+  }
   return (
     <Box
       sx={{
-        height: '100vh',
+        minHeight: '100vh',
         backgroundColor: '#f9f9f9',
         display: 'flex',
+        flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
         px: 2
       }}
     >
-      <Fade in timeout={600}>
-        <Paper
-          elevation={6}
+      <Typography variant='h5' mb={2} fontWeight='bold'>
+        {t('scan.scanBin')}
+      </Typography>
+
+      {!manualMode && !scannedProduct && (
+        <Box
           sx={{
-            p: 3,
-            borderRadius: 4,
-            width: '100%',
-            maxWidth: 420,
-            backgroundColor: '#fff'
+            height: 500,
+            width: '90%',
+            maxWidth: 500,
+            borderRadius: 3,
+            overflow: 'hidden',
+            border: '2px solid #ccc',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginBottom: 2
           }}
-        >
-          <Typography
-            variant='h5'
-            fontWeight='bold'
-            align='center'
-            gutterBottom
-          >
-            {t('scan.scanBin')}
-          </Typography>
+          className='barcode-scanner-view'
+        />
+      )}
 
-          <ToggleButtonGroup
-            value={mode}
-            exclusive
-            onChange={(_, newMode) => newMode && setMode(newMode)}
-            sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              width: '100%',
-              mb: 3
-            }}
-          >
-            <ToggleButton value='manual'>{t('scan.modeManual')}</ToggleButton>
-            <ToggleButton value='scanner'>{t('scan.modeScanner')}</ToggleButton>
-          </ToggleButtonGroup>
-
-          {mode === 'scanner' && (
-            <Box>
-              {showCamera ? (
-                <Box position='relative' width='100%' height='240px'>
-                  <video
-                    key={showCamera ? 'camera-on' : 'camera-off'}
-                    ref={videoRef}
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                      borderRadius: 12,
-                      border: '2px solid #ddd'
-                    }}
-                  />
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      top: '50%',
-                      left: '50%',
-                      width: '60%',
-                      height: '60%',
-                      transform: 'translate(-50%, -50%)',
-                      border: '2px dashed #1976d2',
-                      borderRadius: 2
-                    }}
-                  />
-                  <Typography
-                    align='center'
-                    sx={{
-                      position: 'absolute',
-                      top: 'calc(50% + 32%)',
-                      left: '50%',
-                      transform: 'translateX(-50%)',
-                      fontSize: 14,
-                      color: '#1976d2',
-                      backgroundColor: '#FFFFFFD9',
-                      px: 1.5,
-                      py: 0.5,
-                      borderRadius: 1
-                    }}
-                  >
-                    {t('scan.alignPrompt')}
-                  </Typography>
-                </Box>
-              ) : (
-                <Typography align='center' mt={1} color='text.secondary'>
-                  📷 {t('scan.cameraOff') || 'Camera off.'}
-                </Typography>
-              )}
-
-              <Button
-                variant='outlined'
-                fullWidth
-                color='warning'
-                disabled={isStoppingCamera}
-                onClick={handleStopCamera}
-                sx={{ mt: 2, borderRadius: 2, fontWeight: 'bold' }}
-              >
-                {isStoppingCamera ? (
-                  <>
-                    <CircularProgress size={20} sx={{ mr: 1 }} />
-                    {t('scan.stopping') || 'Stopping...'}
-                  </>
-                ) : (
-                  t('scan.cancel') || 'cancel'
-                )}
-              </Button>
-            </Box>
-          )}
-
-          {mode === 'manual' && (
-            <Box mt={2}>
-              <Autocomplete
-                freeSolo
-                disableClearable
-                options={binCodes}
-                value={manualBinCode}
-                onInputChange={(_, newValue) => setManualBinCode(newValue)}
-                filterOptions={filterBinOptions}
-                renderInput={params => (
-                  <TextField
-                    {...params}
-                    label={t('scan.enterBinCode')}
-                    onKeyDown={e => e.key === 'Enter' && handleManualSubmit()}
-                    InputProps={{
-                      ...params.InputProps,
-                      endAdornment: (
-                        <InputAdornment position='end'>
-                          <IconButton onClick={handleManualSubmit}>
-                            <SearchIcon />
-                          </IconButton>
-                        </InputAdornment>
-                      )
-                    }}
-                  />
-                )}
+      {manualMode && (
+        <Box sx={{ width: '100%', maxWidth: 420 }}>
+          <Autocomplete
+            freeSolo
+            disableClearable
+            options={[...binCodes, ...productCodes]}
+            value={manualInput}
+            onInputChange={(_, newValue) => setManualInput(newValue)}
+            filterOptions={filterBinOptions}
+            renderInput={params => (
+              <TextField
+                {...params}
+                label={t('scan.enterBinCode')}
+                onKeyDown={e => e.key === 'Enter' && handleManualSubmit()}
+                InputProps={{
+                  ...params.InputProps,
+                  endAdornment: (
+                    <InputAdornment position='end'>
+                      <IconButton onClick={handleManualSubmit}>
+                        <SearchIcon />
+                      </IconButton>
+                    </InputAdornment>
+                  )
+                }}
               />
-              <Button
-                variant='contained'
-                onClick={handleManualSubmit}
-                fullWidth
-                sx={{ mt: 2 }}
-              >
-                {t('scan.submit')}
-              </Button>
-            </Box>
-          )}
+            )}
+          />
+          <Button
+            variant='contained'
+            onClick={handleManualSubmit}
+            fullWidth
+            sx={{ mt: 2 }}
+          >
+            {t('scan.submit')}
+          </Button>
+        </Box>
+      )}
 
-          {error && (
-            <Typography color='error' mt={2} align='center'>
-              {error}
-            </Typography>
-          )}
-        </Paper>
-      </Fade>
+      {scannedProduct && (
+        <Box sx={{ mt: 4, width: '100%', maxWidth: 500 }}>
+          <AddToCartInline
+            product={scannedProduct}
+            onSuccess={() => {
+              setScannedProduct(null)
+              navigate('/')
+            }}
+          />
+        </Box>
+      )}
+
+      {!manualMode && !scannedProduct && (
+        <Button
+          variant='outlined'
+          onClick={() => {
+            setManualMode(true)
+            if (scannerRef.current?.hide) {
+              scannerRef.current.hide()
+            }
+          }}
+          sx={{ mt: 3, mb: 2 }}
+        >
+          {t('scan.switchToManual')}
+        </Button>
+      )}
+
+      <Button
+        onClick={handleCancel}
+        sx={{
+          backgroundColor: '#e53935',
+          color: 'white',
+          px: 4,
+          py: 1,
+          borderRadius: 2,
+          fontWeight: 'bold',
+          mt: 1
+        }}
+      >
+        {t('scan.cancel')}
+      </Button>
+
+      {(error || cartError) && (
+        <Typography color='error' mt={2} fontWeight='bold' textAlign='center'>
+          {error || cartError}
+        </Typography>
+      )}
     </Box>
   )
 }
 
-export default ScanQRCode
+export default ScanCode
