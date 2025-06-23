@@ -45,7 +45,6 @@ const Scan = () => {
       const barcodeText = result.barcodeResults?.[0]?.text?.trim()
 
       if (!barcodeText) {
-        alert(t('scan.notRecognized'))
         return
       }
 
