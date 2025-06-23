@@ -1,8 +1,10 @@
 export const dynamsoftConfig = {
   license: process.env.REACT_APP_DYNAMSOFT_LICENSE!,
   container: '.barcode-scanner-view',
-  uiPath: process.env.REACT_APP_DYNAMSOFT_UI_PATH!,
+  uiPath:
+    'https://cdn.jsdelivr.net/npm/dynamsoft-barcode-reader-bundle@10.5.3000/dist/',
   engineResourcePaths: {
-    rootDirectory: process.env.REACT_APP_DYNAMSOFT_RESOURCE_ROOT!
+    rootDirectory:
+      'https://cdn.jsdelivr.net/npm/dynamsoft-barcode-reader-bundle@10.5.3000/dist/'
   }
 }
