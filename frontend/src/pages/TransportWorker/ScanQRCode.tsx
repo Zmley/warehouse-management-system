@@ -97,7 +97,7 @@ const ScanQRCode: React.FC<Props> = ({ onRequestClose }) => {
       if (onRequestClose) {
         onRequestClose()
       } else {
-        navigate('/', { replace: true, state: { view: 'cart' } })
+        navigate('/refresh-bridge', { replace: true, state: { view: 'cart' } })
         window.location.reload()
       }
     })
