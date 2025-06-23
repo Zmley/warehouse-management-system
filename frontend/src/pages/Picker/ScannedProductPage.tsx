@@ -24,7 +24,7 @@ const ScannedProductPage = () => {
             cursor: 'pointer'
           }}
         >
-          返回首页
+          返回 首页
         </button>
       </div>
     )
