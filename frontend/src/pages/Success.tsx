@@ -24,7 +24,6 @@ const Success: React.FC = () => {
   const handleClose = () => {
     setVisible(false)
     navigate('/', { replace: true, state: { view: 'cart' } })
-    window.location.reload()
   }
 
   useEffect(() => {
