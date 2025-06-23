@@ -5,6 +5,7 @@ import { useBin } from 'hooks/useBin'
 import { useProduct } from 'hooks/useProduct'
 import { ProductType } from 'types/product'
 import ProductCard from './ProductCard'
+import { dynamsoftConfig } from 'utils/dynamsoftConfig'
 
 const Scan = () => {
   const scannerRef = useRef<any>(null)
@@ -16,20 +17,8 @@ const Scan = () => {
   const [showScanner, setShowScanner] = useState(true)
 
   useEffect(() => {
-    const config = {
-      license:
-        'DLS2eyJoYW5kc2hha2VDb2RlIjoiMTA0MTYzMjYwLVRYbFhaV0pRY205cSIsIm1haW5TZXJ2ZXJVUkwiOiJodHRwczovL21kbHMuZHluYW1zb2Z0b25saW5lLmNvbSIsIm9yZ2FuaXphdGlvbklEIjoiMTA0MTYzMjYwIiwic3RhbmRieVNlcnZlclVSTCI6Imh0dHBzOi8vc2Rscy5keW5hbXNvZnRvbmxpbmUuY29tIiwiY2hlY2tDb2RlIjoxMTQyNzEzNDB9',
-      container: '.barcode-scanner-view',
-      uiPath:
-        'https://cdn.jsdelivr.net/npm/dynamsoft-barcode-reader-bundle@10.5.3000/dist/',
-      engineResourcePaths: {
-        rootDirectory:
-          'https://cdn.jsdelivr.net/npm/dynamsoft-barcode-reader-bundle@10.5.3000/dist/'
-      }
-    }
-
     const init = async () => {
-      const scanner = new BarcodeScanner(config)
+      const scanner = new BarcodeScanner(dynamsoftConfig)
       scannerRef.current = scanner
 
       const result = await scanner.launch()
@@ -41,12 +30,11 @@ const Scan = () => {
       }
 
       if (/^\d{12}$/.test(barcodeText)) {
-        // 是产品码，显示产品
         try {
           const fetched = await fetchProduct(barcodeText)
           if (fetched) {
             setProduct(fetched)
-            setShowScanner(false) // 隐藏摄像头
+            setShowScanner(false)
           } else {
             alert('未找到该产品')
           }
@@ -84,7 +72,6 @@ const Scan = () => {
     <div className='barcode-scanner-hello-world-page'>
       <div className='barcode-scanner-title'></div>
 
-      {/* 摄像头区域 */}
       {showScanner && (
         <div
           className='barcode-scanner-view'
@@ -92,14 +79,12 @@ const Scan = () => {
         />
       )}
 
-      {/* 产品信息显示区域 */}
       {!showScanner && product && (
         <div style={{ padding: 16 }}>
           <ProductCard product={product} />
         </div>
       )}
 
-      {/* 取消按钮 */}
       <div style={{ marginTop: 20, textAlign: 'center' }}>
         <button
           onClick={handleCancel}

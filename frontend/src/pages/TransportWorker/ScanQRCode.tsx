@@ -81,12 +81,11 @@ const ScanQRCode: React.FC<Props> = ({ onRequestClose }) => {
           }
         })
 
-        // ✅ Safari fix
         video.srcObject = null
         video.pause?.()
         video.removeAttribute('src')
         video.load?.()
-        videoRef.current?.remove() // ✅ 强制移除 video 元素
+        videoRef.current?.remove()
       }
     } catch (err) {
       console.warn('stopScanning or camera cleanup failed:', err)
@@ -180,7 +179,7 @@ const ScanQRCode: React.FC<Props> = ({ onRequestClose }) => {
               {showCamera ? (
                 <Box position='relative' width='100%' height='240px'>
                   <video
-                    key={showCamera ? 'camera-on' : 'camera-off'} // 防止复用 DOM 节点
+                    key={showCamera ? 'camera-on' : 'camera-off'}
                     ref={videoRef}
                     style={{
                       width: '100%',
