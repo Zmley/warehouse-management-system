@@ -25,6 +25,7 @@ const Success: React.FC = () => {
     setVisible(false)
     navigate('/', { replace: true, state: { view: 'cart' } })
     window.location.reload()
+    //TEST
   }
 
   useEffect(() => {
