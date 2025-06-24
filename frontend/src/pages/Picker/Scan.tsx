@@ -42,11 +42,16 @@ const Scan = () => {
       scannerRef.current = scanner
 
       const result = await scanner.launch()
-      const barcodeText = result.barcodeResults?.[0]?.text?.trim()
+      const barcodeResult = result.barcodeResults?.[0]
 
-      if (!barcodeText) {
-        return
-      }
+      if (!barcodeResult || !barcodeResult.text) return
+
+      const barcodeText = barcodeResult.text.trim()
+      const format =
+        (barcodeResult as any).barcodeFormatString || 'Unknown Format'
+
+      console.log('📦 Scanned Content:', barcodeText)
+      console.log('🔍 Format Type:', format)
 
       await processBarcode(barcodeText)
     }
