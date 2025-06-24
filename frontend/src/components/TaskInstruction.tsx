@@ -18,8 +18,8 @@ import { useTranslation } from 'react-i18next'
 const TaskInstruction: React.FC = () => {
   const { t } = useTranslation()
   const { myTask, setMyTask } = useTaskContext()
-  const { inventoriesInCart, getMyCart } = useCartContext()
-  const { cancelMyTask, releaseTask } = useTask()
+  const { inventoriesInCart } = useCartContext()
+  const { cancelMyTask } = useTask()
   const { loadCart } = useCart()
 
   if (!myTask) return null
@@ -41,16 +41,6 @@ const TaskInstruction: React.FC = () => {
       setMyTask(null)
     } catch (err) {
       console.error('❌ Failed to cancel task', err)
-    }
-  }
-
-  const handleRelease = async () => {
-    try {
-      await releaseTask(myTask.taskID)
-      await getMyCart()
-      setMyTask(null)
-    } catch (err) {
-      console.error('❌ Failed to release task', err)
     }
   }
 
@@ -168,24 +158,7 @@ const TaskInstruction: React.FC = () => {
                 : t('taskInstruction.mustLoadFirst')
             }
           >
-            <span>
-              <Button
-                variant='contained'
-                color='success'
-                size='small'
-                disabled={!hasCargo}
-                onClick={handleRelease}
-                sx={{
-                  height: 28,
-                  px: 1.5,
-                  fontSize: 11,
-                  fontWeight: 600,
-                  borderRadius: 1
-                }}
-              >
-                {t('taskInstruction.release')}
-              </Button>
-            </span>
+            <span></span>
           </Tooltip>
 
           {isAisleTask && !hasCargo && (
