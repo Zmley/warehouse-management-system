@@ -20,6 +20,7 @@ import { dynamsoftConfig } from 'utils/dynamsoftConfig'
 import { ScanMode } from 'constants/index'
 import AddToCartInline from 'pages/TransportWorker/AddToCartInline'
 import { ProductType } from 'types/product'
+import { LicenseManager } from 'dynamsoft-barcode-reader-bundle'
 
 const ScanCode = () => {
   const { t } = useTranslation()
@@ -37,6 +38,21 @@ const ScanCode = () => {
   const [manualInput, setManualInput] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [scannedProduct, setScannedProduct] = useState<ProductType | null>(null)
+
+  useEffect(() => {
+    const initLicense = async () => {
+      try {
+        await LicenseManager.initLicense(
+          process.env.REACT_APP_DYNAMSOFT_LICENSE!
+        )
+        console.log('✅ License initialized')
+      } catch (err) {
+        console.error('❌ License initialization failed:', err)
+      }
+    }
+
+    initLicense()
+  }, [])
 
   useEffect(() => {
     fetchBinCodes()
