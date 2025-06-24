@@ -62,7 +62,7 @@
 
 
 
-          "title": "Scan Barcode or QRcode",
+          "title": "Scan Barcode(check information) or QRcode(Creat Task)",
     "notRecognized": "Barcode not recognized",
     "productNotFound": "Product not found",
     "productError": "Failed to fetch product",

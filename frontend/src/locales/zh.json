@@ -74,7 +74,7 @@
 
 
 
-    "title": "扫码捡货二维码发布任务或扫描产品条形码查看信息",
+    "title": "扫捡货二维码(发布任务)或扫描产品条形码(产品信息)",
     "notRecognized": "未识别到条码",
     "productNotFound": "未找到该产品",
     "productError": "查询产品失败",

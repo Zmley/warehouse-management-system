@@ -139,6 +139,7 @@ const ScanCode = () => {
       }}
     >
       <Typography
+        fontSize='18px'
         variant='h5'
         mb={2}
         fontWeight='bold'

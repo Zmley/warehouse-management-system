@@ -12,7 +12,8 @@ import {
   TextField,
   Autocomplete,
   InputAdornment,
-  IconButton
+  IconButton,
+  Typography
 } from '@mui/material'
 import SearchIcon from '@mui/icons-material/Search'
 import { useTranslation } from 'react-i18next'
@@ -122,7 +123,12 @@ const Scan = () => {
         px: 2
       }}
     >
-      <h2 style={{ marginBottom: 20 }}>{t('scan.title')}</h2>
+      <Typography
+        sx={{ mt: 1, mb: 2, fontSize: '14px', textAlign: 'center' }}
+        fontWeight='bold'
+      >
+        {t('scan.title')}
+      </Typography>
 
       {showScanner && !manualMode && (
         <Box
