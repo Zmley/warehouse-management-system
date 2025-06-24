@@ -118,5 +118,26 @@ export const getProductByBarCode = async (barCode: string) => {
     throw new AppError(404, `❌ Product with barCode ${barCode} not found`)
   }
 
-  return product
+  const productCode = product.productCode
+
+  const candidateBins = await Bin.findAll({
+    where: {
+      defaultProductCodes: {
+        [Op.like]: `%${productCode}%`
+      }
+    },
+    attributes: ['binCode', 'defaultProductCodes']
+  })
+
+  const matchedBin = candidateBins.find(bin => {
+    const codes = bin.defaultProductCodes?.split(',').map(c => c.trim()) || []
+    return codes.includes(productCode)
+  })
+
+  const binCode = matchedBin?.binCode ?? null
+
+  return {
+    ...product.toJSON(),
+    binCode
+  }
 }

@@ -180,7 +180,7 @@ const Scan = () => {
         </Box>
       )}
 
-      {!manualMode && (
+      {!manualMode && !product && (
         <Button
           variant='outlined'
           onClick={() => {

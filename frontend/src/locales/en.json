@@ -114,7 +114,9 @@
     "title": "Product Info",
     "productCode": "Product Code",
     "barCode": "Bar Code",
-    "boxType": "Box Type"
+    "boxType": "Box Type",
+        "pickBinCode": "pickBinCode"
+
   },
 
   "taskListCard": {

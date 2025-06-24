@@ -119,7 +119,8 @@
     "title": "产品信息",
     "productCode": "产品编码",
     "barCode": "条形码",
-    "boxType": "箱型"
+    "boxType": "箱型",
+    "pickBinCode": "捡货区托盘号"
   },
 "taskListCard": {
  "cancel": "取消",
