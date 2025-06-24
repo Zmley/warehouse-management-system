@@ -46,7 +46,7 @@
 
   },
     "scan": {
-     "scanBin": "Scan Bin QRCode",
+     "scanBin": "Scan Code",
     "scanProduct": "Scan Product BarCode",
     "modeScanner": "Scan QR Code",
     "modeManual": "Manual Input",
@@ -62,7 +62,7 @@
 
 
 
-          "title": "Scan Barcode or Enter Manually",
+          "title": "Scan Barcode or QRcode",
     "notRecognized": "Barcode not recognized",
     "productNotFound": "Product not found",
     "productError": "Failed to fetch product",
@@ -71,7 +71,11 @@
     "inputLabel": "Enter barcode or Bin code",
     "submit": "Submit",
     "switchToManual": "Switch to Manual Input",
-    "cancel": "Cancel & Return"
+    "cancel": "Cancel & Return",
+
+
+     "scanBinCode": "unload: Scan the BinCode",
+  "scanProductCode": "load: scan the product barCode or QRcode"
 
 
 

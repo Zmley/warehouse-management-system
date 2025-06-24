@@ -125,6 +125,7 @@ const ScanCode = () => {
       window.location.reload()
     }, 0)
   }
+
   return (
     <Box
       sx={{
@@ -137,8 +138,15 @@ const ScanCode = () => {
         px: 2
       }}
     >
-      <Typography variant='h5' mb={2} fontWeight='bold'>
-        {t('scan.scanBin')}
+      <Typography
+        variant='h5'
+        mb={2}
+        fontWeight='bold'
+        sx={{ mt: 1, textAlign: 'center' }}
+      >
+        {scanMode === ScanMode.UNLOAD
+          ? t('scan.scanBinCode')
+          : t('scan.scanProductCode')}{' '}
       </Typography>
 
       {!manualMode && !scannedProduct && (
