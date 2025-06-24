@@ -3,7 +3,7 @@ name: Deploy Backend to EC2
 on:
   push:
     branches:
-      - dynamicSoft-scanner1
+      - dynamicSoft-scanner
 
 jobs:
   deploy:
