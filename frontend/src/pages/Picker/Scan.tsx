@@ -108,7 +108,7 @@ const Scan = () => {
   return (
     <Box
       sx={{
-        minHeight: '100vh',
+        minHeight: '50vh',
         backgroundColor: '#f9f9f9',
         display: 'flex',
         flexDirection: 'column',
@@ -122,7 +122,7 @@ const Scan = () => {
       {showScanner && !manualMode && (
         <Box
           sx={{
-            height: 500,
+            height: 300,
             width: 500,
             borderRadius: 3,
             overflow: 'hidden',

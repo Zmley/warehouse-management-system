@@ -128,7 +128,7 @@ const ScanCode = () => {
   return (
     <Box
       sx={{
-        minHeight: '100vh',
+        minHeight: '50vh',
         backgroundColor: '#f9f9f9',
         display: 'flex',
         flexDirection: 'column',
@@ -144,7 +144,7 @@ const ScanCode = () => {
       {!manualMode && !scannedProduct && (
         <Box
           sx={{
-            height: 500,
+            height: 300,
             width: '90%',
             maxWidth: 500,
             borderRadius: 3,
@@ -198,7 +198,7 @@ const ScanCode = () => {
       )}
 
       {scannedProduct && (
-        <Box sx={{ mt: 4, width: '100%', maxWidth: 500 }}>
+        <Box sx={{ mt: 1, width: '100%', maxWidth: 500 }}>
           <AddToCartInline
             product={scannedProduct}
             onSuccess={() => {
