@@ -5,11 +5,14 @@ import {
   TextField,
   Button,
   InputAdornment,
-  IconButton
+  IconButton,
+  Autocomplete
 } from '@mui/material'
 import { useNavigate, useLocation } from 'react-router-dom'
 import SearchIcon from '@mui/icons-material/Search'
 import { useCart } from 'hooks/useCart'
+import { useBin } from 'hooks/useBin'
+import { useProduct } from 'hooks/useProduct'
 import { ScanMode } from 'constants/index'
 
 // Dynamsoft 是通过 script 全局引入的
@@ -28,12 +31,19 @@ const ScanBasic = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const { loadCart, unloadCart, error } = useCart()
+  const { fetchBinCodes, binCodes } = useBin()
+  const { loadProducts, productCodes } = useProduct()
 
   const scanMode: ScanMode = location.state?.mode || ScanMode.LOAD
   const unloadProductList = location.state?.unloadProductList || []
 
   const [manualMode, setManualMode] = useState(false)
   const [manualInput, setManualInput] = useState('')
+
+  useEffect(() => {
+    fetchBinCodes()
+    loadProducts()
+  }, [])
 
   useEffect(() => {
     if (manualMode) return
@@ -75,7 +85,7 @@ const ScanBasic = () => {
                   await cameraEnhancer.close()
                   navigate('/', { state: { openCart: true } })
                 } else {
-                  scannedRef.current = false // 允许重新扫
+                  scannedRef.current = false
                 }
               } catch (err) {
                 console.error('❌ 扫码操作失败:', err)
@@ -127,6 +137,8 @@ const ScanBasic = () => {
     navigate('/')
   }
 
+  const filterOptions = [...binCodes, ...productCodes]
+
   return (
     <Box sx={{ p: 2 }}>
       <Typography variant='h6' mb={2} textAlign='center'>
@@ -163,22 +175,31 @@ const ScanBasic = () => {
         </>
       ) : (
         <Box sx={{ width: '100%', maxWidth: 420, mx: 'auto' }}>
-          <TextField
-            label='Enter Bin Code'
+          <Autocomplete
+            freeSolo
+            disableClearable
+            options={filterOptions}
             value={manualInput}
-            onChange={e => setManualInput(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && handleManualSubmit()}
-            fullWidth
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position='end'>
-                  <IconButton onClick={handleManualSubmit}>
-                    <SearchIcon />
-                  </IconButton>
-                </InputAdornment>
-              )
-            }}
+            onInputChange={(_, value) => setManualInput(value)}
+            renderInput={params => (
+              <TextField
+                {...params}
+                label='Enter Bin Code / Product Code'
+                onKeyDown={e => e.key === 'Enter' && handleManualSubmit()}
+                InputProps={{
+                  ...params.InputProps,
+                  endAdornment: (
+                    <InputAdornment position='end'>
+                      <IconButton onClick={handleManualSubmit}>
+                        <SearchIcon />
+                      </IconButton>
+                    </InputAdornment>
+                  )
+                }}
+              />
+            )}
           />
+
           <Button
             variant='contained'
             fullWidth
