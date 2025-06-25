@@ -1,276 +1,92 @@
-import { useEffect, useRef, useState } from 'react'
-import { BarcodeScanner } from 'dynamsoft-barcode-reader-bundle'
-import { useNavigate, useLocation } from 'react-router-dom'
-import {
-  Box,
-  Button,
-  Typography,
-  TextField,
-  Autocomplete,
-  InputAdornment,
-  IconButton
-} from '@mui/material'
-import SearchIcon from '@mui/icons-material/Search'
-import { useTranslation } from 'react-i18next'
+// ScanBasic.tsx
+import { useEffect, useRef } from 'react'
+import { Box, Typography } from '@mui/material'
 
-import { useCart } from 'hooks/useCart'
-import { useBin } from 'hooks/useBin'
-import { useProduct } from 'hooks/useProduct'
-import { dynamsoftConfig } from 'utils/dynamsoftConfig'
-import { ScanMode } from 'constants/index'
-import AddToCartInline from 'pages/TransportWorker/AddToCartInline'
-import { ProductType } from 'types/product'
-import { LicenseManager } from 'dynamsoft-barcode-reader-bundle'
+// Dynamsoft is attached to the global window object by the SDK script
+declare global {
+  interface Window {
+    Dynamsoft: any
+  }
+}
 
-const ScanCode = () => {
-  const { t } = useTranslation()
+const license =
+  'DLS2eyJoYW5kc2hha2VDb2RlIjoiMTA0MTYzMjYwLVRYbFhaV0pRY205cSIsIm1haW5TZXJ2ZXJVUkwiOiJodHRwczovL21kbHMuZHluYW1zb2Z0b25saW5lLmNvbSIsIm9yZ2FuaXphdGlvbklEIjoiMTA0MTYzMjYwIiwic3RhbmRieVNlcnZlclVSTCI6Imh0dHBzOi8vc2Rscy5keW5hbXNvZnRvbmxpbmUuY29tIiwiY2hlY2tDb2RlIjoxMTQyNzEzNDB9'
+
+const ScanBasic = () => {
   const scannerRef = useRef<any>(null)
-  const navigate = useNavigate()
-  const location = useLocation()
-  const { loadCart, unloadCart, error: cartError } = useCart()
-  const { fetchBinCodes, binCodes } = useBin()
-  const { fetchProduct, productCodes, loadProducts } = useProduct()
-
-  const scanMode: ScanMode = location.state?.mode ?? ScanMode.LOAD
-  const unloadProductList = location.state?.unloadProductList ?? []
-
-  const [manualMode, setManualMode] = useState(false)
-  const [manualInput, setManualInput] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [scannedProduct, setScannedProduct] = useState<ProductType | null>(null)
 
   useEffect(() => {
-    const initLicense = async () => {
+    const loadAndInit = async () => {
       try {
-        await LicenseManager.initLicense(
-          'DLS2eyJoYW5kc2hha2VDb2RlIjoiMTA0MTYzMjYwLVRYbFhaV0pRY205cSIsIm1haW5TZXJ2ZXJVUkwiOiJodHRwczovL21kbHMuZHluYW1zb2Z0b25saW5lLmNvbSIsIm9yZ2FuaXphdGlvbklEIjoiMTA0MTYzMjYwIiwic3RhbmRieVNlcnZlclVSTCI6Imh0dHBzOi8vc2Rscy5keW5hbXNvZnRvbmxpbmUuY29tIiwiY2hlY2tDb2RlIjoxMTQyNzEzNDB9'
-        )
-        console.log('✅ License initialized')
-      } catch (err) {
-        console.error('❌ License initialization failed:', err)
-      }
-    }
+        const { Dynamsoft } = window
 
-    initLicense()
-  }, [])
+        // 1. 初始化 license
+        await Dynamsoft.License.LicenseManager.initLicense(license)
 
-  useEffect(() => {
-    fetchBinCodes()
-    loadProducts()
-  }, [])
+        // 2. 加载必要模块
+        await Dynamsoft.Core.CoreModule.loadWasm(['DBR'])
 
-  useEffect(() => {
-    if (manualMode) return
+        // 3. 创建 UI 和增强器
+        const cameraView = await Dynamsoft.DCE.CameraView.createInstance()
+        const cameraEnhancer =
+          await Dynamsoft.DCE.CameraEnhancer.createInstance(cameraView)
+        document
+          .getElementById('scanner-view')
+          ?.append(cameraView.getUIElement())
 
-    const init = async () => {
-      try {
-        const scanner = new BarcodeScanner(dynamsoftConfig)
-        scannerRef.current = scanner
-        const result = await scanner.launch()
-        const scannedText = result.barcodeResults?.[0]?.text?.trim()
-        if (!scannedText) {
-          setError(t('scan.notRecognized'))
-          return
-        }
+        // 4. 创建路由器
+        const router = await Dynamsoft.CVR.CaptureVisionRouter.createInstance()
+        await router.setInput(cameraEnhancer)
 
-        if (isProductCode(scannedText)) {
-          const product = await fetchProduct(scannedText)
-          if (product) {
-            setScannedProduct(product)
-          } else {
-            setError(t('scan.productNotFound'))
+        // 5. 设置回调
+        const receiver = new Dynamsoft.CVR.CapturedResultReceiver()
+        receiver.onCapturedResultReceived = (result: any) => {
+          for (const item of result.items) {
+            if (item.type === 'barcode') {
+              const text = item.barcodeResult.barcodeText
+              console.log('✅ Scanned:', text)
+              alert('Scanned: ' + text)
+            }
           }
-        } else {
-          await handleScan(scannedText)
         }
+        router.addResultReceiver(receiver)
+
+        // 6. 打开摄像头并开始扫码
+        await cameraEnhancer.open()
+        await router.startCapturing('ReadBarcodes_SpeedFirst')
+
+        scannerRef.current = { cameraEnhancer, router }
       } catch (err) {
-        console.error('Scan error:', err)
-        setError(t('scan.operationError'))
+        console.error('❌ Failed to init scanner:', err)
       }
     }
 
-    init()
+    loadAndInit()
 
     return () => {
-      if (scannerRef.current?.hide) scannerRef.current.hide()
+      scannerRef.current?.router?.stopCapturing()
+      scannerRef.current?.cameraEnhancer?.close()
     }
-  }, [manualMode])
-
-  const isProductCode = (code: string) => {
-    return /^\d{8,}$/.test(code) // 假设产品码为纯数字 8 位以上
-  }
-
-  const handleScan = async (binCode: string) => {
-    setError(null)
-    try {
-      if (scanMode === ScanMode.UNLOAD) {
-        await unloadCart(binCode, unloadProductList)
-      } else {
-        await loadCart({ binCode })
-      }
-    } catch (err) {
-      console.error('操作失败:', err)
-      setError(t('scan.operationError'))
-    }
-  }
-
-  const handleManualSubmit = async () => {
-    if (!manualInput.trim()) {
-      setError(t('scan.enterPrompt'))
-      return
-    }
-    await handleScan(manualInput.trim())
-  }
-
-  const filterBinOptions = (
-    options: string[],
-    { inputValue }: { inputValue: string }
-  ) => {
-    if (!inputValue) return []
-    return options.filter(option =>
-      option.toLowerCase().startsWith(inputValue.toLowerCase())
-    )
-  }
-
-  const handleCancel = () => {
-    if (scannerRef.current?.hide) {
-      scannerRef.current.hide()
-    }
-    navigate('/')
-    setTimeout(() => {
-      window.location.reload()
-    }, 0)
-  }
+  }, [])
 
   return (
-    <Box
-      sx={{
-        minHeight: '50vh',
-        backgroundColor: '#f9f9f9',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        px: 2
-      }}
-    >
-      <Typography
-        fontSize='18px'
-        variant='h5'
-        mb={2}
-        fontWeight='bold'
-        sx={{ mt: 1, textAlign: 'center' }}
-      >
-        {scanMode === ScanMode.UNLOAD
-          ? t('scan.scanBinCode')
-          : t('scan.scanProductCode')}{' '}
+    <Box sx={{ p: 2 }}>
+      <Typography variant='h6' mb={2}>
+        📷 Scan Barcode
       </Typography>
-
-      {!manualMode && !scannedProduct && (
-        <Box
-          sx={{
-            height: 300,
-            width: '90%',
-            maxWidth: 500,
-            borderRadius: 3,
-            overflow: 'hidden',
-            border: '2px solid #ccc',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            marginBottom: 2
-          }}
-          className='barcode-scanner-view'
-        />
-      )}
-
-      {manualMode && (
-        <Box sx={{ width: '100%', maxWidth: 420 }}>
-          <Autocomplete
-            freeSolo
-            disableClearable
-            options={[...binCodes, ...productCodes]}
-            value={manualInput}
-            onInputChange={(_, newValue) => setManualInput(newValue)}
-            filterOptions={filterBinOptions}
-            renderInput={params => (
-              <TextField
-                {...params}
-                label={t('scan.enterBinCode')}
-                onKeyDown={e => e.key === 'Enter' && handleManualSubmit()}
-                InputProps={{
-                  ...params.InputProps,
-                  endAdornment: (
-                    <InputAdornment position='end'>
-                      <IconButton onClick={handleManualSubmit}>
-                        <SearchIcon />
-                      </IconButton>
-                    </InputAdornment>
-                  )
-                }}
-              />
-            )}
-          />
-          <Button
-            variant='contained'
-            onClick={handleManualSubmit}
-            fullWidth
-            sx={{ mt: 2 }}
-          >
-            {t('scan.submit')}
-          </Button>
-        </Box>
-      )}
-
-      {scannedProduct && (
-        <Box sx={{ mt: 1, width: '100%', maxWidth: 500 }}>
-          <AddToCartInline
-            product={scannedProduct}
-            onSuccess={() => {
-              setScannedProduct(null)
-              navigate('/')
-            }}
-          />
-        </Box>
-      )}
-
-      {!manualMode && !scannedProduct && (
-        <Button
-          variant='outlined'
-          onClick={() => {
-            setManualMode(true)
-            if (scannerRef.current?.hide) {
-              scannerRef.current.hide()
-            }
-          }}
-          sx={{ mt: 3, mb: 2 }}
-        >
-          {t('scan.switchToManual')}
-        </Button>
-      )}
-
-      <Button
-        onClick={handleCancel}
+      <Box
+        id='scanner-view'
         sx={{
-          backgroundColor: '#e53935',
-          color: 'white',
-          px: 4,
-          py: 1,
+          width: '100%',
+          maxWidth: 500,
+          height: 300,
+          border: '2px solid #ccc',
           borderRadius: 2,
-          fontWeight: 'bold',
-          mt: 1
+          overflow: 'hidden'
         }}
-      >
-        {t('scan.cancel')}
-      </Button>
-
-      {(error || cartError) && (
-        <Typography color='error' mt={2} fontWeight='bold' textAlign='center'>
-          {error || cartError}
-        </Typography>
-      )}
+      />
     </Box>
   )
 }
 
-export default ScanCode
+export default ScanBasic
