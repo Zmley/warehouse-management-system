@@ -1,21 +1,25 @@
 import { useEffect, useRef, useState } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import {
   Box,
+  Button,
   Typography,
   TextField,
-  Button,
+  Autocomplete,
   InputAdornment,
-  IconButton,
-  Autocomplete
+  IconButton
 } from '@mui/material'
-import { useNavigate, useLocation } from 'react-router-dom'
 import SearchIcon from '@mui/icons-material/Search'
+import { useTranslation } from 'react-i18next'
+
 import { useCart } from 'hooks/useCart'
 import { useBin } from 'hooks/useBin'
 import { useProduct } from 'hooks/useProduct'
 import { ScanMode } from 'constants/index'
+import AddToCartInline from 'pages/TransportWorker/AddToCartInline'
+import { ProductType } from 'types/product'
 
-// Dynamsoft 是通过 script 全局引入的
+// Dynamsoft Scanner globals
 declare global {
   interface Window {
     Dynamsoft: any
@@ -25,20 +29,23 @@ declare global {
 const license =
   'DLS2eyJoYW5kc2hha2VDb2RlIjoiMTA0MTYzMjYwLVRYbFhaV0pRY205cSIsIm1haW5TZXJ2ZXJVUkwiOiJodHRwczovL21kbHMuZHluYW1zb2Z0b25saW5lLmNvbSIsIm9yZ2FuaXphdGlvbklEIjoiMTA0MTYzMjYwIiwic3RhbmRieVNlcnZlclVSTCI6Imh0dHBzOi8vc2Rscy5keW5hbXNvZnRvbmxpbmUuY29tIiwiY2hlY2tDb2RlIjoxMTQyNzEzNDB9'
 
-const ScanBasic = () => {
+const ScanCode = () => {
+  const { t } = useTranslation()
   const scannerRef = useRef<any>(null)
   const scannedRef = useRef(false)
   const navigate = useNavigate()
   const location = useLocation()
-  const { loadCart, unloadCart, error } = useCart()
+  const { loadCart, unloadCart, error: cartError } = useCart()
   const { fetchBinCodes, binCodes } = useBin()
-  const { loadProducts, productCodes } = useProduct()
+  const { fetchProduct, productCodes, loadProducts } = useProduct()
 
-  const scanMode: ScanMode = location.state?.mode || ScanMode.LOAD
-  const unloadProductList = location.state?.unloadProductList || []
+  const scanMode: ScanMode = location.state?.mode ?? ScanMode.LOAD
+  const unloadProductList = location.state?.unloadProductList ?? []
 
   const [manualMode, setManualMode] = useState(false)
   const [manualInput, setManualInput] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [scannedProduct, setScannedProduct] = useState<ProductType | null>(null)
 
   useEffect(() => {
     fetchBinCodes()
@@ -74,24 +81,28 @@ const ScanBasic = () => {
             if (text) {
               scannedRef.current = true
 
-              try {
-                const res =
-                  scanMode === ScanMode.UNLOAD
-                    ? await unloadCart(text, unloadProductList)
-                    : await loadCart({ binCode: text })
-
-                if (res.success) {
-                  await router.stopCapturing()
-                  await cameraEnhancer.close()
-                  navigate('/', { state: { openCart: true } })
+              if (/^\d{8,}$/.test(text)) {
+                const product = await fetchProduct(text)
+                if (product) {
+                  setScannedProduct(product)
                 } else {
-                  scannedRef.current = false
+                  setError(t('scan.productNotFound'))
                 }
-              } catch (err) {
-                console.error('❌ 扫码操作失败:', err)
-                scannedRef.current = false
+              } else {
+                try {
+                  if (scanMode === ScanMode.UNLOAD) {
+                    await unloadCart(text, unloadProductList)
+                  } else {
+                    await loadCart({ binCode: text })
+                  }
+                } catch (err) {
+                  console.error('操作失败:', err)
+                  setError(t('scan.operationError'))
+                }
               }
 
+              await router.stopCapturing()
+              await cameraEnhancer.close()
               break
             }
           }
@@ -104,6 +115,7 @@ const ScanBasic = () => {
         scannerRef.current = { router, cameraEnhancer }
       } catch (err) {
         console.error('❌ Scanner init failed:', err)
+        setError(t('scan.operationError'))
       }
     }
 
@@ -113,78 +125,109 @@ const ScanBasic = () => {
       scannerRef.current?.router?.stopCapturing()
       scannerRef.current?.cameraEnhancer?.close()
     }
-  }, [navigate, loadCart, unloadCart, scanMode, unloadProductList, manualMode])
+  }, [manualMode])
 
   const handleManualSubmit = async () => {
-    if (!manualInput.trim()) return
-    try {
-      const res =
-        scanMode === ScanMode.UNLOAD
-          ? await unloadCart(manualInput.trim(), unloadProductList)
-          : await loadCart({ binCode: manualInput.trim() })
-
-      if (res.success) {
-        navigate('/', { state: { openCart: true } })
-      }
-    } catch (err) {
-      console.error('❌ 手动操作失败:', err)
+    if (!manualInput.trim()) {
+      setError(t('scan.enterPrompt'))
+      return
     }
+
+    const input = manualInput.trim()
+
+    if (/^\d{8,}$/.test(input)) {
+      const product = await fetchProduct(input)
+      if (product) {
+        setScannedProduct(product)
+      } else {
+        setError(t('scan.productNotFound'))
+      }
+    } else {
+      try {
+        if (scanMode === ScanMode.UNLOAD) {
+          await unloadCart(input, unloadProductList)
+        } else {
+          await loadCart({ binCode: input })
+        }
+      } catch (err) {
+        console.error('操作失败:', err)
+        setError(t('scan.operationError'))
+      }
+    }
+  }
+
+  const filterBinOptions = (
+    options: string[],
+    { inputValue }: { inputValue: string }
+  ) => {
+    if (!inputValue) return []
+    return options.filter(option =>
+      option.toLowerCase().startsWith(inputValue.toLowerCase())
+    )
   }
 
   const handleCancel = () => {
     scannerRef.current?.router?.stopCapturing()
     scannerRef.current?.cameraEnhancer?.close()
     navigate('/')
+    setTimeout(() => window.location.reload(), 0)
   }
 
-  const filterOptions = [...binCodes, ...productCodes]
-
   return (
-    <Box sx={{ p: 2 }}>
-      <Typography variant='h6' mb={2} textAlign='center'>
-        {scanMode === ScanMode.UNLOAD ? '📤 Scan to Unload' : '📦 Scan to Load'}
+    <Box
+      sx={{
+        minHeight: '50vh',
+        backgroundColor: '#f9f9f9',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        px: 2
+      }}
+    >
+      <Typography
+        fontSize='18px'
+        variant='h5'
+        mb={2}
+        fontWeight='bold'
+        sx={{ mt: 1, textAlign: 'center' }}
+      >
+        {scanMode === ScanMode.UNLOAD
+          ? t('scan.scanBinCode')
+          : t('scan.scanProductCode')}{' '}
       </Typography>
 
-      {!manualMode ? (
-        <>
-          <Box
-            id='scanner-view'
-            sx={{
-              width: '100%',
-              maxWidth: 500,
-              height: 320,
-              border: '2px solid #ccc',
-              borderRadius: 2,
-              overflow: 'hidden',
-              mx: 'auto'
-            }}
-          />
+      {!manualMode && !scannedProduct && (
+        <Box
+          id='scanner-view'
+          sx={{
+            height: 300,
+            width: '90%',
+            maxWidth: 500,
+            borderRadius: 3,
+            overflow: 'hidden',
+            border: '2px solid #ccc',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginBottom: 2
+          }}
+        />
+      )}
 
-          <Button
-            fullWidth
-            variant='outlined'
-            onClick={() => {
-              setManualMode(true)
-              scannerRef.current?.router?.stopCapturing()
-              scannerRef.current?.cameraEnhancer?.close()
-            }}
-            sx={{ mt: 3 }}
-          >
-            Switch to Manual Input
-          </Button>
-        </>
-      ) : (
-        <Box sx={{ width: '100%', maxWidth: 420, mx: 'auto' }}>
+      {manualMode && (
+        <Box sx={{ width: '100%', maxWidth: 420 }}>
           <Autocomplete
             freeSolo
             disableClearable
-            options={filterOptions}
+            options={[...binCodes, ...productCodes]}
             value={manualInput}
-            onInputChange={(_, value) => setManualInput(value)}
+            onInputChange={(_, newValue) => setManualInput(newValue)}
+            filterOptions={filterBinOptions}
             renderInput={params => (
               <TextField
                 {...params}
-                label='Enter Bin Code / Product Code'
+                label={t('scan.enterBinCode')}
                 onKeyDown={e => e.key === 'Enter' && handleManualSubmit()}
                 InputProps={{
                   ...params.InputProps,
@@ -199,48 +242,65 @@ const ScanBasic = () => {
               />
             )}
           />
-
           <Button
             variant='contained'
+            onClick={handleManualSubmit}
             fullWidth
             sx={{ mt: 2 }}
-            onClick={handleManualSubmit}
           >
-            Confirm
+            {t('scan.submit')}
           </Button>
         </Box>
+      )}
+
+      {scannedProduct && (
+        <Box sx={{ mt: 1, width: '100%', maxWidth: 500 }}>
+          <AddToCartInline
+            product={scannedProduct}
+            onSuccess={() => {
+              setScannedProduct(null)
+              navigate('/')
+            }}
+          />
+        </Box>
+      )}
+
+      {!manualMode && !scannedProduct && (
+        <Button
+          variant='outlined'
+          onClick={() => {
+            setManualMode(true)
+            scannerRef.current?.router?.stopCapturing()
+            scannerRef.current?.cameraEnhancer?.close()
+          }}
+          sx={{ mt: 3, mb: 2 }}
+        >
+          {t('scan.switchToManual')}
+        </Button>
       )}
 
       <Button
         onClick={handleCancel}
         sx={{
-          mt: 3,
           backgroundColor: '#e53935',
           color: 'white',
           px: 4,
           py: 1,
           borderRadius: 2,
           fontWeight: 'bold',
-          display: 'block',
-          mx: 'auto'
+          mt: 1
         }}
       >
-        Cancel
+        {t('scan.cancel')}
       </Button>
 
-      {error && (
-        <Typography
-          color='error'
-          mt={2}
-          textAlign='center'
-          fontWeight='bold'
-          fontSize='16px'
-        >
-          {error}
+      {(error || cartError) && (
+        <Typography color='error' mt={2} fontWeight='bold' textAlign='center'>
+          {error || cartError}
         </Typography>
       )}
     </Box>
   )
 }
 
-export default ScanBasic
+export default ScanCode
