@@ -27,7 +27,7 @@ const ScanBasic = () => {
   const scannedRef = useRef(false)
   const navigate = useNavigate()
   const location = useLocation()
-  const { loadCart, unloadCart } = useCart()
+  const { loadCart, unloadCart, error } = useCart()
 
   const scanMode: ScanMode = location.state?.mode || ScanMode.LOAD
   const unloadProductList = location.state?.unloadProductList || []
@@ -65,18 +65,23 @@ const ScanBasic = () => {
               scannedRef.current = true
 
               try {
-                if (scanMode === ScanMode.UNLOAD) {
-                  await unloadCart(text, unloadProductList)
+                const res =
+                  scanMode === ScanMode.UNLOAD
+                    ? await unloadCart(text, unloadProductList)
+                    : await loadCart({ binCode: text })
+
+                if (res.success) {
+                  await router.stopCapturing()
+                  await cameraEnhancer.close()
+                  navigate('/', { state: { openCart: true } })
                 } else {
-                  await loadCart({ binCode: text })
+                  scannedRef.current = false // 允许重新扫
                 }
               } catch (err) {
-                console.error('❌ 操作失败:', err)
+                console.error('❌ 扫码操作失败:', err)
+                scannedRef.current = false
               }
 
-              await router.stopCapturing()
-              await cameraEnhancer.close()
-              navigate('/', { state: { openCart: true } })
               break
             }
           }
@@ -103,20 +108,28 @@ const ScanBasic = () => {
   const handleManualSubmit = async () => {
     if (!manualInput.trim()) return
     try {
-      if (scanMode === ScanMode.UNLOAD) {
-        await unloadCart(manualInput.trim(), unloadProductList)
-      } else {
-        await loadCart({ binCode: manualInput.trim() })
+      const res =
+        scanMode === ScanMode.UNLOAD
+          ? await unloadCart(manualInput.trim(), unloadProductList)
+          : await loadCart({ binCode: manualInput.trim() })
+
+      if (res.success) {
+        navigate('/', { state: { openCart: true } })
       }
     } catch (err) {
       console.error('❌ 手动操作失败:', err)
     }
-    navigate('/', { state: { openCart: true } })
+  }
+
+  const handleCancel = () => {
+    scannerRef.current?.router?.stopCapturing()
+    scannerRef.current?.cameraEnhancer?.close()
+    navigate('/')
   }
 
   return (
     <Box sx={{ p: 2 }}>
-      <Typography variant='h6' mb={2}>
+      <Typography variant='h6' mb={2} textAlign='center'>
         {scanMode === ScanMode.UNLOAD ? '📤 Scan to Unload' : '📦 Scan to Load'}
       </Typography>
 
@@ -175,6 +188,35 @@ const ScanBasic = () => {
             Confirm
           </Button>
         </Box>
+      )}
+
+      <Button
+        onClick={handleCancel}
+        sx={{
+          mt: 3,
+          backgroundColor: '#e53935',
+          color: 'white',
+          px: 4,
+          py: 1,
+          borderRadius: 2,
+          fontWeight: 'bold',
+          display: 'block',
+          mx: 'auto'
+        }}
+      >
+        Cancel
+      </Button>
+
+      {error && (
+        <Typography
+          color='error'
+          mt={2}
+          textAlign='center'
+          fontWeight='bold'
+          fontSize='16px'
+        >
+          {error}
+        </Typography>
       )}
     </Box>
   )
