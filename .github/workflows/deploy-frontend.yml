@@ -3,7 +3,7 @@ name: Deploy to S3
 on:
   push:
     branches:
-      - dynamicSoft-scanner
+      - dynamicSoft-scanner2
 
 jobs:
   deploy:
