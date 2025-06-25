@@ -1,11 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { BarcodeScanner } from 'dynamsoft-barcode-reader-bundle'
 import { useNavigate } from 'react-router-dom'
 import { useBin } from 'hooks/useBin'
 import { useProduct } from 'hooks/useProduct'
 import { ProductType } from 'types/product'
 import ProductCard from './ProductCard'
-import { dynamsoftConfig } from 'utils/dynamsoftConfig'
 import {
   Box,
   Button,
@@ -18,9 +16,19 @@ import {
 import SearchIcon from '@mui/icons-material/Search'
 import { useTranslation } from 'react-i18next'
 
+// Dynamsoft Global
+const license =
+  'DLS2eyJoYW5kc2hha2VDb2RlIjoiMTA0MTYzMjYwLVRYbFhaV0pRY205cSIsIm1haW5TZXJ2ZXJVUkwiOiJodHRwczovL21kbHMuZHluYW1zb2Z0b25saW5lLmNvbSIsIm9yZ2FuaXphdGlvbklEIjoiMTA0MTYzMjYwIiwic3RhbmRieVNlcnZlclVSTCI6Imh0dHBzOi8vc2Rscy5keW5hbXNvZnRvbmxpbmUuY29tIiwiY2hlY2tDb2RlIjoxMTQyNzEzNDB9'
+declare global {
+  interface Window {
+    Dynamsoft: any
+  }
+}
+
 const Scan = () => {
   const { t } = useTranslation()
   const scannerRef = useRef<any>(null)
+  const scannedRef = useRef(false)
   const navigate = useNavigate()
   const { fetchBinByCode, binCodes, fetchBinCodes } = useBin()
   const { fetchProduct, productCodes, loadProducts } = useProduct()
@@ -39,30 +47,53 @@ const Scan = () => {
     if (manualMode) return
 
     const init = async () => {
-      const scanner = new BarcodeScanner(dynamsoftConfig)
-      scannerRef.current = scanner
+      try {
+        const { Dynamsoft } = window
+        await Dynamsoft.License.LicenseManager.initLicense(license)
+        await Dynamsoft.Core.CoreModule.loadWasm(['DBR'])
 
-      const result = await scanner.launch()
-      const barcodeResult = result.barcodeResults?.[0]
+        const cameraView = await Dynamsoft.DCE.CameraView.createInstance()
+        const cameraEnhancer =
+          await Dynamsoft.DCE.CameraEnhancer.createInstance(cameraView)
 
-      if (!barcodeResult || !barcodeResult.text) return
+        document
+          .querySelector('.barcode-scanner-view')
+          ?.append(cameraView.getUIElement())
 
-      const barcodeText = barcodeResult.text.trim()
-      const format =
-        (barcodeResult as any).barcodeFormatString || 'Unknown Format'
+        const router = await Dynamsoft.CVR.CaptureVisionRouter.createInstance()
+        await router.setInput(cameraEnhancer)
 
-      console.log('📦 Scanned Content:', barcodeText)
-      console.log('🔍 Format Type:', format)
+        const receiver = new Dynamsoft.CVR.CapturedResultReceiver()
+        receiver.onCapturedResultReceived = async (result: any) => {
+          if (scannedRef.current) return
 
-      await processBarcode(barcodeText)
+          for (const item of result.items) {
+            const text = item.text?.trim()
+            if (text) {
+              scannedRef.current = true
+              await processBarcode(text)
+              await router.stopCapturing()
+              await cameraEnhancer.close()
+              break
+            }
+          }
+        }
+
+        router.addResultReceiver(receiver)
+        await cameraEnhancer.open()
+        await router.startCapturing('ReadBarcodes_SpeedFirst')
+
+        scannerRef.current = { router, cameraEnhancer }
+      } catch (err) {
+        console.error('❌ Scanner init failed:', err)
+      }
     }
 
     init()
 
     return () => {
-      if (scannerRef.current?.hide) {
-        scannerRef.current.hide()
-      }
+      scannerRef.current?.router?.stopCapturing()
+      scannerRef.current?.cameraEnhancer?.close()
     }
   }, [manualMode])
 
@@ -74,11 +105,10 @@ const Scan = () => {
           setProduct(fetched)
           setShowScanner(false)
         } else {
-          alert(t('scan.productNotFound'))
+          console.log(t('scan.productNotFound'))
         }
       } catch (err) {
         console.error('查询产品失败:', err)
-        alert(t('scan.productError'))
       }
     } else {
       try {
@@ -86,13 +116,12 @@ const Scan = () => {
         navigate('/create-task', { state: { bin } })
       } catch (err) {
         console.error('Bin查找失败:', err)
-        alert(t('scan.invalidBinCode'))
       }
     }
   }
 
   const handleManualSubmit = async () => {
-    if (!manualInput.trim()) return alert(t('scan.enterPrompt'))
+    if (!manualInput.trim()) return
     await processBarcode(manualInput.trim())
   }
 
@@ -107,6 +136,8 @@ const Scan = () => {
   }
 
   const handleCancel = () => {
+    scannerRef.current?.router?.stopCapturing()
+    scannerRef.current?.cameraEnhancer?.close()
     navigate('/')
     window.location.reload()
   }
@@ -197,9 +228,8 @@ const Scan = () => {
           onClick={() => {
             setManualMode(true)
             setShowScanner(false)
-            if (scannerRef.current?.hide) {
-              scannerRef.current.hide()
-            }
+            scannerRef.current?.router?.stopCapturing()
+            scannerRef.current?.cameraEnhancer?.close()
           }}
           sx={{ mt: 3, mb: 2 }}
         >
