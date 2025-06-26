@@ -5,7 +5,6 @@ import {
   cancelTask,
   getTasks,
   createTask,
-  releaseTask,
   updateTask
 } from './task.controller'
 import roleAllow from 'middlewares/roleAllow.middleware'
@@ -17,7 +16,6 @@ import {
   validateCreateTask,
   validateGetMyTask,
   validateGetTasks,
-  validateReleaseTask,
   validateUpdateTask
 } from 'routes/tasks/task.middleware'
 
@@ -59,8 +57,6 @@ router.post(
   validateCreateTask,
   createTask
 )
-
-router.patch('/:taskID/release', validateReleaseTask, releaseTask)
 
 router.patch('/:taskID', validateUpdateTask, updateTask)
 

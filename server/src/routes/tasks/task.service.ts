@@ -11,8 +11,6 @@ import {
   hasInventoryInCart
 } from 'routes/inventory/inventory.service'
 import { getBinByBinCode } from 'routes/bins/bin.service'
-import { v4 as uuidv4 } from 'uuid'
-import { BinType } from 'constants/binType'
 import Account from 'routes/accounts/accounts.model'
 
 export const hasActiveTask = async (
@@ -154,6 +152,11 @@ export const binsToPick = async (
   const sourceBins = inventories.map(inv => ({
     binCode: (inv as { Bin?: { binCode?: string } }).Bin?.binCode || 'UNKNOWN'
   }))
+
+  console.log(
+    `🚨 🚨 🚨 Creating task for product ${destinationBin.binID} to   ${destinationBin} pick from bins:`,
+    sourceBins
+  )
 
   const task = await Task.create({
     destinationBinID: destinationBin.binID,
@@ -453,78 +456,97 @@ export const getTasksByWarehouseID = async (
   return mapTasks(tasks)
 }
 
-export const checkIfPickerTaskPublished = async (
-  warehouseID: string,
+// export const checkIfPickerTaskPublished = async (
+//   productCode: string,
+//   destinationBinCode: string
+// ) => {
+//   try {
+//     const bin = await getBinByBinCode(destinationBinCode)
+
+//     if (!bin) {
+//       throw new AppError(
+//         404,
+//         `❌ Bin with code ${destinationBinCode} not found.`
+//       )
+//     }
+
+//     const existing = await Task.findOne({
+//       where: {
+//         destinationBinID: bin.binID,
+//         productCode,
+//         status: [TaskStatus.PENDING, TaskStatus.IN_PROCESS]
+//       }
+//     })
+
+//     if (existing) {
+//       throw new AppError(
+//         400,
+//         `❌ Task for product ${productCode} in Pick up bin ${bin.binCode} already exists or inprocess.`
+//       )
+//     }
+
+//     return bin
+//   } catch (err) {
+//     console.error('❌ Failed to check if task is published:', err)
+//     if (err instanceof AppError) throw err
+//     throw new AppError(500, '❌ Unexpected error checking task publication')
+//   }
+// }
+
+/**
+ * 检查是否存在重复任务（PENDING/IN_PROCESS）
+ * Admin任务传 sourceBinCode；Picker任务不传
+ * @throws AppError if task exists
+ */
+export const checkIfTaskDuplicate = async (
   productCode: string,
-  destinationBinCode: string
+  destinationBinCode: string,
+  sourceBinCode?: string
 ) => {
   try {
-    const binCode = destinationBinCode.trim().toUpperCase()
-    const bin = await getBinByBinCode(binCode)
-
-    if (!bin) {
-      throw new AppError(404, `❌ Bin with code ${binCode} not found.`)
-    }
-
-    const existing = await Task.findOne({
-      where: {
-        destinationBinID: bin.binID,
-        productCode,
-        status: 'PENDING'
-      }
-    })
-
-    if (existing) {
+    const destinationBin = await getBinByBinCode(destinationBinCode)
+    if (!destinationBin) {
       throw new AppError(
-        400,
-        `❌ Task for product ${productCode} in Pick up bin ${bin.binCode} already exists.`
+        404,
+        `❌ Bin with code ${destinationBinCode} not found.`
       )
     }
 
-    return bin
-  } catch (err) {
-    console.error('❌ Failed to check if task is published:', err)
+    let sourceBinID: string | undefined
+    if (sourceBinCode) {
+      const sourceBin = await getBinByBinCode(sourceBinCode)
+      if (!sourceBin) {
+        throw new AppError(404, `❌ Bin with code ${sourceBinCode} not found.`)
+      }
+      sourceBinID = sourceBin.binID
+    }
+
+    const where: WhereOptions = {
+      productCode,
+      destinationBinID: destinationBin.binID,
+      status: [TaskStatus.PENDING, TaskStatus.IN_PROCESS]
+    }
+
+    if (sourceBinID) {
+      where.sourceBinID = sourceBinID
+    }
+
+    const existing = await Task.findOne({ where })
+
+    if (existing) {
+      const msg = sourceBinID
+        ? `❌ Task already exists for product ${productCode} from source ${sourceBinCode} to destination ${destinationBinCode}.`
+        : `❌ Task for product ${productCode} in Pick up bin ${destinationBinCode} already exists.`
+
+      throw new AppError(400, msg)
+    }
+
+    return destinationBin
+  } catch (err: unknown) {
+    console.error('❌ Task duplicate check failed:', err)
     if (err instanceof AppError) throw err
-    throw new AppError(500, '❌ Unexpected error checking task publication')
+    throw new AppError(500, '❌ Unexpected error during task duplication check')
   }
-}
-
-export const releaseTask = async (
-  taskID: string,
-  accountID: string,
-  cartID: string,
-  warehouseID: string
-) => {
-  const task = await Task.findOne({
-    where: { taskID, accepterID: accountID }
-  })
-
-  if (!task) {
-    throw new AppError(404, '❌ Task not found or not owned by user')
-  }
-
-  const itemsInCart = await Inventory.findAll({ where: { binID: cartID } })
-
-  if (!itemsInCart.length) {
-    throw new AppError(400, '❌ No items in cart to release')
-  }
-
-  const tempAisleBin = await Bin.create({
-    binCode: `AISLE-${uuidv4().slice(0, 8)}`,
-    warehouseID: warehouseID,
-    type: BinType.AISLE
-  })
-
-  await Promise.all(
-    itemsInCart.map(item => item.update({ binID: tempAisleBin.binID }))
-  )
-
-  task.status = TaskStatus.PENDING
-  task.accepterID = null
-  task.sourceBinID = tempAisleBin.binID
-  await task.save()
-
-  return task
 }
 
 export const updateTaskService = async (

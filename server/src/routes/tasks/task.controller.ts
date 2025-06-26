@@ -3,10 +3,7 @@ import * as taskService from 'routes/tasks/task.service'
 import * as binService from 'routes/bins/bin.service'
 import { UserRole } from 'constants/uerRole'
 import { TaskStatus } from 'constants/tasksStatus'
-import {
-  checkIfPickerTaskPublished,
-  updateTaskService
-} from 'routes/tasks/task.service'
+import { updateTaskService } from 'routes/tasks/task.service'
 
 export const acceptTask = async (
   req: Request,
@@ -128,6 +125,63 @@ export const getTasks = async (
   }
 }
 
+// export const createTask = async (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ) => {
+//   try {
+//     const { accountID } = res.locals
+//     const {
+//       productCode,
+//       sourceBinCode,
+//       destinationBinCode,
+//       quantity,
+//       warehouseID
+//     } = req.body.payload
+
+//     if (!sourceBinCode) {
+//       const destinationBin = await checkIfPickerTaskPublished(
+//         productCode,
+//         destinationBinCode
+//       )
+
+//       const task = await taskService.binsToPick(
+//         destinationBin.binCode,
+//         accountID,
+//         warehouseID,
+//         productCode,
+//         quantity
+//       )
+
+//       return res.status(201).json({
+//         success: true,
+//         message: '✅ Task created using destination bin from productCode',
+//         task
+//       })
+//     }
+
+//     const sourceBin = await binService.getBinByBinCode(sourceBinCode)
+//     const destinationBin = await binService.getBinByBinCode(destinationBinCode)
+
+//     const task = await taskService.binToBin(
+//       sourceBin.binID,
+//       destinationBin.binID,
+//       productCode,
+//       accountID,
+//       quantity
+//     )
+
+//     return res.status(200).json({
+//       success: true,
+//       message: '✅ Task created successfully',
+//       task
+//     })
+//   } catch (error) {
+//     next(error)
+//   }
+// }
+
 export const createTask = async (
   req: Request,
   res: Response,
@@ -143,10 +197,16 @@ export const createTask = async (
       warehouseID
     } = req.body.payload
 
+    // ✅ 统一先检查是否重复
+    await taskService.checkIfTaskDuplicate(
+      productCode,
+      destinationBinCode,
+      sourceBinCode
+    )
+
+    // ✅ binsToPick 模式（没有指定 sourceBinCode）
     if (!sourceBinCode) {
-      const destinationBin = await checkIfPickerTaskPublished(
-        warehouseID,
-        productCode,
+      const destinationBin = await binService.getBinByBinCode(
         destinationBinCode
       )
 
@@ -165,6 +225,7 @@ export const createTask = async (
       })
     }
 
+    // ✅ binToBin 模式
     const sourceBin = await binService.getBinByBinCode(sourceBinCode)
     const destinationBin = await binService.getBinByBinCode(destinationBinCode)
 
@@ -180,32 +241,6 @@ export const createTask = async (
       success: true,
       message: '✅ Task created successfully',
       task
-    })
-  } catch (error) {
-    next(error)
-  }
-}
-
-export const releaseTask = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { taskID } = req.params
-    const { accountID, cartID, warehouseID } = res.locals
-
-    const releasedTask = await taskService.releaseTask(
-      taskID,
-      accountID,
-      cartID,
-      warehouseID
-    )
-
-    res.status(200).json({
-      success: true,
-      message: '✅ Task released successfully',
-      task: releasedTask
     })
   } catch (error) {
     next(error)
