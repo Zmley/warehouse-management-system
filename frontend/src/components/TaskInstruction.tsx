@@ -76,16 +76,24 @@ const TaskInstruction: React.FC = () => {
             </Typography>
 
             {myTask.sourceBins?.length > 0 ? (
-              myTask.sourceBins.map((inv: any, index: number) => (
-                <Typography
-                  key={index}
-                  fontSize={13}
-                  fontWeight={600}
-                  lineHeight={1.3}
-                >
-                  {inv.bin?.binCode ?? '--'}: {inv.quantity ?? '--'}
-                </Typography>
-              ))
+              <Box
+                display='grid'
+                gridTemplateColumns='repeat(auto-fit, minmax(120px, 1fr))'
+                gap={0.5}
+                mt={0.5}
+                justifyContent='center'
+              >
+                {myTask.sourceBins.map((inv: any, index: number) => (
+                  <Typography
+                    key={index}
+                    fontSize={13}
+                    fontWeight={600}
+                    textAlign='center'
+                  >
+                    {inv.bin?.binCode ?? '--'}: {inv.quantity ?? '--'}
+                  </Typography>
+                ))}
+              </Box>
             ) : (
               <Typography fontSize={13} fontWeight={600}>
                 --
