@@ -9,8 +9,7 @@ import {
   Divider,
   CircularProgress,
   Snackbar,
-  Alert,
-  Tooltip
+  Alert
 } from '@mui/material'
 import { useTask } from 'hooks/useTask'
 import { Task } from 'types/task'
