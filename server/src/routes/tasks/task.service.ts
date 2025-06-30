@@ -12,6 +12,7 @@ import {
 } from 'routes/inventory/inventory.service'
 import { getBinByBinCode } from 'routes/bins/bin.service'
 import Account from 'routes/accounts/accounts.model'
+import { sequelize } from 'config/db'
 
 export const hasActiveTask = async (
   accountID: string
@@ -578,4 +579,96 @@ export const updateTaskService = async (
   }
 
   return await Task.findOne({ where: { taskID } })
+}
+
+export const finishedTaskByAdmin = async (
+  taskID: string,
+  sourceBinCode: string
+): Promise<{ message: string }> => {
+  const task = await Task.findByPk(taskID)
+  if (!task) throw new AppError(404, '❌ Task not found')
+
+  if (task.status === 'COMPLETED') {
+    throw new AppError(400, '❌ Task is already completed')
+  }
+
+  const sourceBin = await Bin.findOne({ where: { binCode: sourceBinCode } })
+  if (!sourceBin) throw new AppError(404, '❌ Source bin not found')
+
+  const destinationBin = await Bin.findByPk(task.destinationBinID)
+  if (!destinationBin) throw new AppError(404, '❌ Destination bin not found')
+
+  const inventory = await Inventory.findOne({
+    where: {
+      binID: sourceBin.binID,
+      productCode: task.productCode
+    }
+  })
+
+  if (!inventory) {
+    throw new AppError(
+      404,
+      `❌ No inventory of product ${task.productCode} in bin ${sourceBinCode}`
+    )
+  }
+
+  const quantityToMove =
+    task.quantity === 0 ? inventory.quantity : task.quantity
+
+  await sequelize.transaction(async t => {
+    if (destinationBin.type === 'PICK_UP') {
+      // ✅ 出库
+      if (quantityToMove >= inventory.quantity) {
+        await inventory.destroy({ transaction: t })
+      } else {
+        await inventory.update(
+          { quantity: inventory.quantity - quantityToMove },
+          { transaction: t }
+        )
+      }
+    } else {
+      // ✅ 仓内转运
+      const [destInventory, created] = await Inventory.findOrCreate({
+        where: {
+          binID: destinationBin.binID,
+          productCode: task.productCode
+        },
+        defaults: {
+          quantity: quantityToMove
+        },
+        transaction: t
+      })
+
+      if (!created) {
+        await destInventory.update(
+          { quantity: destInventory.quantity + quantityToMove },
+          { transaction: t }
+        )
+      }
+
+      if (quantityToMove >= inventory.quantity) {
+        await inventory.destroy({ transaction: t })
+      } else {
+        await inventory.update(
+          { quantity: inventory.quantity - quantityToMove },
+          { transaction: t }
+        )
+      }
+    }
+
+    // ✅ 更新任务为 COMPLETED，并写入实际 quantity
+    await task.update(
+      {
+        status: 'COMPLETED',
+        sourceBinCode,
+        sourceBinID: sourceBin.binID,
+        quantity: quantityToMove
+      },
+      { transaction: t }
+    )
+  })
+
+  return {
+    message: '✅ Task completed, inventory updated, and task quantity set.'
+  }
 }

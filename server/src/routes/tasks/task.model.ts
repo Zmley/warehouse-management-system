@@ -12,7 +12,7 @@ export class Task extends Model {
   public accepterID!: string
   public creatorID!: string
   public productCode!: string
-  public quantity!: string
+  public quantity!: number
   public status!: TaskStatus | string
   public createdAt!: Date
   public updatedAt!: Date | null

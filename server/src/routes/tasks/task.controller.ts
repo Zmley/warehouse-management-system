@@ -3,7 +3,11 @@ import * as taskService from 'routes/tasks/task.service'
 import * as binService from 'routes/bins/bin.service'
 import { UserRole } from 'constants/uerRole'
 import { TaskStatus } from 'constants/tasksStatus'
-import { updateTaskService } from 'routes/tasks/task.service'
+import {
+  finishedTaskByAdmin,
+  updateTaskService
+} from 'routes/tasks/task.service'
+import Task from './task.model'
 
 export const acceptTask = async (
   req: Request,
@@ -247,19 +251,53 @@ export const createTask = async (
   }
 }
 
+// export const updateTask = async (req: Request, res: Response) => {
+//   const { taskID } = req.params
+//   const { status, sourceBinCode } = req.body
+
+//   try {
+//     const updatedTask = await updateTaskService(taskID, status, sourceBinCode)
+//     res.json({ success: true, task: updatedTask })
+//   } catch (error) {
+//     console.error('❌ Failed to update task:', error)
+//     res.status(500).json({ error: 'Internal server error' })
+//   }
+// }
+
 export const updateTask = async (req: Request, res: Response) => {
   const { taskID } = req.params
   const { status, sourceBinCode } = req.body
 
   try {
-    if (!status || !sourceBinCode) {
-      return res.status(400).json({ error: 'Missing required fields' })
+    const existingTask = await Task.findByPk(taskID)
+
+    if (!existingTask) {
+      return res.status(404).json({ error: 'Task not found' })
     }
 
-    const updatedTask = await updateTaskService(taskID, status, sourceBinCode)
-    res.json({ success: true, task: updatedTask })
+    const originalStatus = existingTask.status
+
+    let updatedTask
+
+    // ✅ 如果是缺货情况（不涉及真实库存变动）
+    const isVirtualBin =
+      sourceBinCode === 'Transfer-in' || sourceBinCode === 'Out of Stock'
+
+    if (
+      originalStatus === 'PENDING' &&
+      status === 'COMPLETED' &&
+      !isVirtualBin
+    ) {
+      // 👉 正常完成任务，同时处理库存
+      updatedTask = await finishedTaskByAdmin(taskID, sourceBinCode)
+    } else {
+      // 👉 普通状态更新或虚拟任务完成
+      updatedTask = await updateTaskService(taskID, status, sourceBinCode)
+    }
+
+    return res.json({ success: true, task: updatedTask })
   } catch (error) {
     console.error('❌ Failed to update task:', error)
-    res.status(500).json({ error: 'Internal server error' })
+    return res.status(500).json({ error: 'Internal server error' })
   }
 }
