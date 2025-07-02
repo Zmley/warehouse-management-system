@@ -1,6 +1,6 @@
 import { DataTypes, Model } from 'sequelize'
 import { sequelize } from 'config/db'
-import { UserRole } from 'constants/uerRole'
+import { UserRole } from 'constants/index'
 
 export class Account extends Model {
   public accountID!: string

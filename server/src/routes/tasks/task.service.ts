@@ -3,9 +3,8 @@ import Inventory from 'routes/inventory/inventory.model'
 import Bin from 'routes/bins/bin.model'
 import AppError from 'utils/appError'
 import { Op, Sequelize, WhereOptions } from 'sequelize'
-import { UserRole } from 'constants/uerRole'
+import { UserRole, TaskStatus } from 'constants/index'
 import { TaskWithJoin } from 'types/task'
-import { TaskStatus } from 'constants/tasksStatus'
 import {
   checkInventoryQuantity,
   hasInventoryInCart
@@ -88,8 +87,6 @@ export const validateTaskAcceptance = async (
   if (task.status !== TaskStatus.PENDING) {
     throw new AppError(400, '❌ Task is already in progress.')
   }
-
-  return task
 }
 
 export const checkBinAvailability = async (sourceBinID: string) => {

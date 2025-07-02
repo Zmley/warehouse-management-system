@@ -1,13 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
+import { UserRole, TaskStatus } from 'constants/index'
 import * as taskService from 'routes/tasks/task.service'
 import * as binService from 'routes/bins/bin.service'
-import { UserRole } from 'constants/uerRole'
-import { TaskStatus } from 'constants/tasksStatus'
-import {
-  completeTaskByAdmin,
-  updateTaskByTaskID,
-  validateTaskAcceptance
-} from 'routes/tasks/task.service'
 import Task from './task.model'
 import AppError from 'utils/appError'
 
@@ -20,9 +14,9 @@ export const acceptTask = async (
     const accountID = res.locals.accountID
     const { taskID } = req.params
 
-    await validateTaskAcceptance(accountID, taskID)
+    await taskService.validateTaskAcceptance(accountID, taskID)
 
-    const task = await updateTaskByTaskID({
+    const task = await taskService.updateTaskByTaskID({
       taskID,
       status: TaskStatus.IN_PROCESS,
       accepterID: accountID
@@ -70,7 +64,10 @@ export const cancelTask = async (
     let task
 
     if (role === UserRole.ADMIN || role === UserRole.PICKER) {
-      task = await updateTaskByTaskID({ taskID, status: TaskStatus.CANCELED })
+      task = await taskService.updateTaskByTaskID({
+        taskID,
+        status: TaskStatus.CANCELED
+      })
     } else if (role === UserRole.TRANSPORT_WORKER) {
       const currentTask = await Task.findByPk(taskID)
 
@@ -78,7 +75,7 @@ export const cancelTask = async (
         throw new AppError(400, '❌ Only in-process tasks can be cancelled')
       }
 
-      task = await updateTaskByTaskID({
+      task = await taskService.updateTaskByTaskID({
         taskID,
         status: TaskStatus.PENDING,
         accepterID: null
@@ -104,21 +101,13 @@ export const getTasks = async (
 ): Promise<void> => {
   try {
     const { role, accountID, warehouseID: localWarehouseID } = res.locals
-    const queryWarehouseID = req.query.warehouseID
-    const { keyword, status: rawStatus } = req.query
+    const { keyword, status: rawStatus, queryWarehouseID } = req.query
 
     let warehouseID: string
     let status: string | undefined = undefined
 
     if (role === UserRole.ADMIN) {
-      if (typeof queryWarehouseID !== 'string') {
-        res.status(400).json({
-          success: false,
-          message: '❌ Admin must provide a valid warehouseID in query params.'
-        })
-        return
-      }
-      warehouseID = queryWarehouseID
+      warehouseID = queryWarehouseID as string
 
       if (typeof rawStatus === 'string') {
         status = rawStatus
@@ -233,13 +222,21 @@ export const updateTask = async (req: Request, res: Response) => {
       sourceBinCode === 'Transfer-in' || sourceBinCode === 'Out of Stock'
 
     if (
-      originalStatus === 'PENDING' &&
-      status === 'COMPLETED' &&
+      originalStatus === TaskStatus.PENDING &&
+      status === TaskStatus.COMPLETED &&
       !isVirtualBin
     ) {
-      updatedTask = await completeTaskByAdmin(taskID, sourceBinCode, accountID)
+      updatedTask = await taskService.completeTaskByAdmin(
+        taskID,
+        sourceBinCode,
+        accountID
+      )
     } else {
-      updatedTask = await updateTaskByTaskID({ taskID, status, sourceBinCode })
+      updatedTask = await taskService.updateTaskByTaskID({
+        taskID,
+        status,
+        sourceBinCode
+      })
     }
 
     return res.json({ success: true, task: updatedTask })

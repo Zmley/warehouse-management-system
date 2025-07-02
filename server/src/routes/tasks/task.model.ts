@@ -2,7 +2,7 @@ import { DataTypes, Model } from 'sequelize'
 import { sequelize } from 'config/db'
 import Inventory from 'routes/inventory/inventory.model'
 import Bin from 'routes/bins/bin.model'
-import { TaskStatus } from 'constants/tasksStatus'
+import { TaskStatus } from 'constants/index'
 import Account from 'routes/accounts/accounts.model'
 
 export class Task extends Model {

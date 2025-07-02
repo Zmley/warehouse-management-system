@@ -8,7 +8,7 @@ import {
   handleProductInsertion
 } from 'utils/product.utils'
 import { ProductUploadInput } from 'types/product'
-import { BinType } from 'constants/binType'
+import { BinType } from 'constants/index'
 import AppError from 'utils/appError'
 
 export const getProductCodes = async (): Promise<string[]> => {
