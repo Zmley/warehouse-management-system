@@ -10,7 +10,6 @@ import {
 } from 'routes/tasks/task.service'
 import Task from './task.model'
 import AppError from 'utils/appError'
-// import AppError from 'utils/appError'
 
 export const acceptTask = async (
   req: Request,
@@ -21,10 +20,8 @@ export const acceptTask = async (
     const accountID = res.locals.accountID
     const { taskID } = req.params
 
-    // Step 1: Validate whether the task can be accepted
     await validateTaskAcceptance(accountID, taskID)
 
-    // Step 2: Update the task status to IN_PROCESS and assign accepterID
     const task = await updateTaskByTaskID({
       taskID,
       status: TaskStatus.IN_PROCESS,
@@ -61,27 +58,6 @@ export const getMyTask = async (
   }
 }
 
-// export const cancelTask = async (
-//   req: Request,
-//   res: Response,
-//   next: NextFunction
-// ): Promise<void> => {
-//   try {
-//     const { taskID } = req.params
-//     const { role, accountID } = res.locals
-
-//     const task = await taskService.cancelBytaskID(taskID, accountID, role)
-
-//     res.status(200).json({
-//       success: true,
-//       message: `Task "${task.taskID}" cancelled successfully by ${role}`,
-//       task
-//     })
-//   } catch (error) {
-//     next(error)
-//   }
-// }
-
 export const cancelTask = async (
   req: Request,
   res: Response,
@@ -95,16 +71,8 @@ export const cancelTask = async (
 
     if (role === UserRole.ADMIN || role === UserRole.PICKER) {
       task = await updateTaskByTaskID({ taskID, status: TaskStatus.CANCELED })
-
-      // if (role === UserRole.PICKER) {
-      //   const currentTask = await Task.findByPk(taskID)
-      //   if (currentTask?.creatorID !== accountID) {
-      //     throw new AppError(403, '❌ Picker does not own this task')
-      //   }
-      // }
     } else if (role === UserRole.TRANSPORT_WORKER) {
       const currentTask = await Task.findByPk(taskID)
-      // if (!currentTask) throw new AppError(404, '❌ Task not found')
 
       if (currentTask.status !== TaskStatus.IN_PROCESS) {
         throw new AppError(400, '❌ Only in-process tasks can be cancelled')

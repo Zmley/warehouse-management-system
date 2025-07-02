@@ -160,7 +160,6 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
                               .join(' / ')}
                           </Box>
 
-                          {/* 右侧渐变遮罩提示滑动 */}
                           {task.sourceBins.length > 5 && (
                             <Box
                               sx={{
@@ -170,7 +169,7 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
                                 bottom: 0,
                                 width: 30,
                                 background:
-                                  'linear-gradient(to right, transparent, #eff6ff)', // 跟背景色一致
+                                  'linear-gradient(to right, transparent, #eff6ff)',
                                 pointerEvents: 'none'
                               }}
                             />

@@ -106,8 +106,6 @@ export const unload = async (
         status: 'COMPLETED'
       })
 
-      // await taskService.completeTask(task.taskID)
-
       res.status(200).json({
         success: true,
         message: `✅ ${result} Product(s) successfully unloaded into bin "${binCode}" and task completed.`,
