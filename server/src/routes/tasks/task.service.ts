@@ -12,7 +12,7 @@ import {
 } from 'routes/inventory/inventory.service'
 import { getBinByBinCode } from 'routes/bins/bin.service'
 import Account from 'routes/accounts/accounts.model'
-import { sequelize } from 'config/db'
+import { moveInventoriesToBin } from 'routes/carts/cart.service'
 
 export const hasActiveTask = async (
   accountID: string
@@ -63,40 +63,33 @@ export const binToBin = async (
   }
 }
 
-export const acceptTaskByTaskID = async (accountID: string, taskID: string) => {
-  try {
-    const isActive = await hasActiveTask(accountID)
-    if (isActive) {
-      throw new AppError(409, '❌ You already have an active task in progress.')
-    }
-
-    const cartHasCargo = await hasInventoryInCart(accountID)
-    if (cartHasCargo) {
-      throw new AppError(
-        409,
-        '❌ Please unload your cart before accepting a new task.'
-      )
-    }
-
-    const task = await Task.findOne({ where: { taskID } })
-    if (!task) {
-      throw new AppError(404, '❌ Task not found.')
-    }
-
-    if (task.status !== 'PENDING') {
-      throw new AppError(400, '❌ Task is already in progress.')
-    }
-
-    task.accepterID = accountID
-    task.status = TaskStatus.IN_PROCESS
-    await task.save()
-
-    return task
-  } catch (error) {
-    console.error('❌ Error accepting task:', error)
-    if (error instanceof AppError) throw error
-    throw new AppError(500, '❌ Failed to accept task')
+export const validateTaskAcceptance = async (
+  accountID: string,
+  taskID: string
+) => {
+  const isActive = await hasActiveTask(accountID)
+  if (isActive) {
+    throw new AppError(409, '❌ You already have an active task in progress.')
   }
+
+  const cartHasCargo = await hasInventoryInCart(accountID)
+  if (cartHasCargo) {
+    throw new AppError(
+      409,
+      '❌ Please unload your cart before accepting a new task.'
+    )
+  }
+
+  const task = await Task.findOne({ where: { taskID } })
+  if (!task) {
+    throw new AppError(404, '❌ Task not found.')
+  }
+
+  if (task.status !== TaskStatus.PENDING) {
+    throw new AppError(400, '❌ Task is already in progress.')
+  }
+
+  return task
 }
 
 export const checkBinAvailability = async (sourceBinID: string) => {
@@ -168,19 +161,6 @@ export const binsToPick = async (
   })
 
   return { ...task.toJSON(), sourceBins }
-}
-
-export const completeTask = async (taskID: string) => {
-  const task = await Task.findByPk(taskID)
-
-  if (!task) {
-    throw new AppError(404, '❌ Task not found')
-  }
-
-  task.status = 'COMPLETED'
-  await task.save()
-
-  return task
 }
 
 export const getTaskByAccountID = async (
@@ -258,55 +238,6 @@ export const getTaskByAccountID = async (
 
 export const updateTaskSourceBin = async (taskID: string, binID: string) => {
   await Task.update({ sourceBinID: binID }, { where: { taskID } })
-}
-
-export const cancelBytaskID = async (
-  taskID: string,
-  accountID: string,
-  role: string
-) => {
-  let task
-
-  if (role === UserRole.ADMIN) {
-    task = await Task.findByPk(taskID)
-
-    if (!task) {
-      throw new AppError(404, '❌ Task not found')
-    }
-
-    task.status = TaskStatus.CANCELED
-    await task.save()
-  } else if (role === UserRole.PICKER) {
-    task = await Task.findOne({
-      where: {
-        taskID,
-        creatorID: accountID
-      }
-    })
-
-    if (!task) {
-      throw new AppError(404, '❌ Task not found or not owned by picker')
-    }
-
-    task.status = 'CANCELED'
-    await task.save()
-  } else {
-    task = await Task.findByPk(taskID)
-
-    if (!task) {
-      throw new AppError(404, '❌ Task not found')
-    }
-
-    if (task.status !== 'IN_PROCESS') {
-      throw new AppError(400, '❌ Only tasks in progress can be cancelled')
-    }
-
-    task.status = 'PENDING'
-    task.accepterID = null
-    await task.save()
-  }
-
-  return task
 }
 
 const getIncludeClause = (warehouseID: string) => {
@@ -457,48 +388,6 @@ export const getTasksByWarehouseID = async (
   return mapTasks(tasks)
 }
 
-// export const checkIfPickerTaskPublished = async (
-//   productCode: string,
-//   destinationBinCode: string
-// ) => {
-//   try {
-//     const bin = await getBinByBinCode(destinationBinCode)
-
-//     if (!bin) {
-//       throw new AppError(
-//         404,
-//         `❌ Bin with code ${destinationBinCode} not found.`
-//       )
-//     }
-
-//     const existing = await Task.findOne({
-//       where: {
-//         destinationBinID: bin.binID,
-//         productCode,
-//         status: [TaskStatus.PENDING, TaskStatus.IN_PROCESS]
-//       }
-//     })
-
-//     if (existing) {
-//       throw new AppError(
-//         400,
-//         `❌ Task for product ${productCode} in Pick up bin ${bin.binCode} already exists or inprocess.`
-//       )
-//     }
-
-//     return bin
-//   } catch (err) {
-//     console.error('❌ Failed to check if task is published:', err)
-//     if (err instanceof AppError) throw err
-//     throw new AppError(500, '❌ Unexpected error checking task publication')
-//   }
-// }
-
-/**
- * 检查是否存在重复任务（PENDING/IN_PROCESS）
- * Admin任务传 sourceBinCode；Picker任务不传
- * @throws AppError if task exists
- */
 export const checkIfTaskDuplicate = async (
   productCode: string,
   destinationBinCode: string,
@@ -550,47 +439,51 @@ export const checkIfTaskDuplicate = async (
   }
 }
 
-export const updateTaskService = async (
-  taskID: string,
-  status: string,
-  sourceBinCode: string
-) => {
-  const bin = await Bin.findOne({
-    where: { binCode: sourceBinCode }
-  })
+export const updateTaskByTaskID = async ({
+  taskID,
+  status,
+  sourceBinCode,
+  sourceBinID,
+  quantity,
+  accepterID
+}: {
+  taskID: string
+  status?: string
+  sourceBinCode?: string
+  sourceBinID?: string
+  quantity?: number
+  accepterID?: string
+}) => {
+  const task = await Task.findByPk(taskID)
+  if (!task) throw new Error('Task not found')
 
-  if (!bin) {
-    throw new Error('Bin code not found')
+  if (status) task.status = status
+
+  if (sourceBinCode) {
+    const bin = await getBinByBinCode(sourceBinCode)
+    task.sourceBinID = bin.binID
   }
 
-  const [affectedRows] = await Task.update(
-    {
-      status,
-      sourceBinID: bin.binID
-    },
-    {
-      where: { taskID },
-      returning: true
-    }
-  )
+  if (sourceBinID) task.sourceBinID = sourceBinID
 
-  if (affectedRows === 0) {
-    throw new Error('Task not found or not updated')
+  if (typeof quantity === 'number') {
+    task.quantity = quantity
   }
 
-  return await Task.findOne({ where: { taskID } })
+  if (typeof accepterID !== 'undefined') {
+    task.accepterID = accepterID
+  }
+  await task.save()
+  return task
 }
 
-export const finishedTaskByAdmin = async (
+export const completeTaskByAdmin = async (
   taskID: string,
-  sourceBinCode: string
+  sourceBinCode: string,
+  accountID: string
 ): Promise<{ message: string }> => {
   const task = await Task.findByPk(taskID)
   if (!task) throw new AppError(404, '❌ Task not found')
-
-  if (task.status === 'COMPLETED') {
-    throw new AppError(400, '❌ Task is already completed')
-  }
 
   const sourceBin = await Bin.findOne({ where: { binCode: sourceBinCode } })
   if (!sourceBin) throw new AppError(404, '❌ Source bin not found')
@@ -604,7 +497,6 @@ export const finishedTaskByAdmin = async (
       productCode: task.productCode
     }
   })
-
   if (!inventory) {
     throw new AppError(
       404,
@@ -615,60 +507,20 @@ export const finishedTaskByAdmin = async (
   const quantityToMove =
     task.quantity === 0 ? inventory.quantity : task.quantity
 
-  await sequelize.transaction(async t => {
-    if (destinationBin.type === 'PICK_UP') {
-      // ✅ 出库
-      if (quantityToMove >= inventory.quantity) {
-        await inventory.destroy({ transaction: t })
-      } else {
-        await inventory.update(
-          { quantity: inventory.quantity - quantityToMove },
-          { transaction: t }
-        )
-      }
-    } else {
-      // ✅ 仓内转运
-      const [destInventory, created] = await Inventory.findOrCreate({
-        where: {
-          binID: destinationBin.binID,
-          productCode: task.productCode
-        },
-        defaults: {
-          quantity: quantityToMove
-        },
-        transaction: t
-      })
+  await moveInventoriesToBin(
+    [{ inventoryID: inventory.inventoryID, quantity: quantityToMove }],
+    destinationBin
+  )
 
-      if (!created) {
-        await destInventory.update(
-          { quantity: destInventory.quantity + quantityToMove },
-          { transaction: t }
-        )
-      }
-
-      if (quantityToMove >= inventory.quantity) {
-        await inventory.destroy({ transaction: t })
-      } else {
-        await inventory.update(
-          { quantity: inventory.quantity - quantityToMove },
-          { transaction: t }
-        )
-      }
-    }
-
-    // ✅ 更新任务为 COMPLETED，并写入实际 quantity
-    await task.update(
-      {
-        status: 'COMPLETED',
-        sourceBinCode,
-        sourceBinID: sourceBin.binID,
-        quantity: quantityToMove
-      },
-      { transaction: t }
-    )
+  await updateTaskByTaskID({
+    taskID,
+    status: TaskStatus.COMPLETED,
+    sourceBinID: sourceBin.binID,
+    quantity: quantityToMove,
+    accepterID: accountID
   })
 
   return {
-    message: '✅ Task completed, inventory updated, and task quantity set.'
+    message: '✅ Task completed and inventory updated successfully.'
   }
 }

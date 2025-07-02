@@ -3,7 +3,64 @@ import Bin from 'routes/bins/bin.model'
 import AppError from 'utils/appError'
 import { getTaskByAccountID } from 'routes/tasks/task.service'
 
-const moveInventoriesToBin = async (
+// const moveInventoriesToBin = async (
+//   inventories: { inventoryID: string; quantity: number }[],
+//   bin: Bin
+// ): Promise<number> => {
+//   try {
+//     const binID = bin.binID
+//     let updatedItemCount = 0
+
+//     const updatedInventories = inventories.map(async item => {
+//       const inventory = await Inventory.findOne({
+//         where: { inventoryID: item.inventoryID }
+//       })
+
+//       if (!inventory) {
+//         throw new AppError(
+//           404,
+//           `❌ Inventory item with ID "${item.inventoryID}" not found.`
+//         )
+//       }
+
+//       const targetInventory = await Inventory.findOne({
+//         where: { binID, productCode: inventory.productCode }
+//       })
+
+//       if (targetInventory) {
+//         await targetInventory.update({
+//           quantity: targetInventory.quantity + item.quantity
+//         })
+//       } else {
+//         await Inventory.create({
+//           binID,
+//           productCode: inventory.productCode,
+//           quantity: item.quantity
+//         })
+//       }
+
+//       await inventory.update({
+//         quantity: inventory.quantity - item.quantity
+//       })
+
+//       if (inventory.quantity === 0) {
+//         await inventory.destroy()
+//       }
+
+//       updatedItemCount++
+//       return item
+//     })
+
+//     await Promise.all(updatedInventories)
+//     return updatedItemCount
+//   } catch (error) {
+//     console.error('Error moving inventories:', error)
+//     if (error instanceof AppError) throw error
+//     throw new AppError(500, '❌ Failed to move inventories to target bin')
+//   }
+// }
+
+export const moveInventoriesToBin = async (
   inventories: { inventoryID: string; quantity: number }[],
   bin: Bin
 ): Promise<number> => {
@@ -23,6 +80,20 @@ const moveInventoriesToBin = async (
         )
       }
 
+      // ✅ 如果是 PICK_UP 类型，不需要新增或转移，只减少库存
+      if (bin.type === 'PICK_UP') {
+        const newQuantity = inventory.quantity - item.quantity
+        if (newQuantity <= 0) {
+          await inventory.destroy()
+        } else {
+          await inventory.update({ quantity: newQuantity })
+        }
+
+        updatedItemCount++
+        return item
+      }
+
+      // 否则正常转移库存到目标 bin
       const targetInventory = await Inventory.findOne({
         where: { binID, productCode: inventory.productCode }
       })
@@ -39,12 +110,12 @@ const moveInventoriesToBin = async (
         })
       }
 
-      await inventory.update({
-        quantity: inventory.quantity - item.quantity
-      })
-
-      if (inventory.quantity === 0) {
+      // 原 bin 减去数量
+      const remaining = inventory.quantity - item.quantity
+      if (remaining <= 0) {
         await inventory.destroy()
+      } else {
+        await inventory.update({ quantity: remaining })
       }
 
       updatedItemCount++

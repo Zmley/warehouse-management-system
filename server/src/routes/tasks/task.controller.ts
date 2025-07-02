@@ -4,10 +4,13 @@ import * as binService from 'routes/bins/bin.service'
 import { UserRole } from 'constants/uerRole'
 import { TaskStatus } from 'constants/tasksStatus'
 import {
-  finishedTaskByAdmin,
-  updateTaskService
+  completeTaskByAdmin,
+  updateTaskByTaskID,
+  validateTaskAcceptance
 } from 'routes/tasks/task.service'
 import Task from './task.model'
+import AppError from 'utils/appError'
+// import AppError from 'utils/appError'
 
 export const acceptTask = async (
   req: Request,
@@ -18,11 +21,19 @@ export const acceptTask = async (
     const accountID = res.locals.accountID
     const { taskID } = req.params
 
-    const task = await taskService.acceptTaskByTaskID(accountID, taskID)
+    // Step 1: Validate whether the task can be accepted
+    await validateTaskAcceptance(accountID, taskID)
+
+    // Step 2: Update the task status to IN_PROCESS and assign accepterID
+    const task = await updateTaskByTaskID({
+      taskID,
+      status: TaskStatus.IN_PROCESS,
+      accepterID: accountID
+    })
 
     res.status(200).json({
       success: true,
-      message: 'Task accepted successfully and is now in progress',
+      message: '✅ Task accepted successfully and is now in progress',
       task
     })
   } catch (error) {
@@ -50,6 +61,27 @@ export const getMyTask = async (
   }
 }
 
+// export const cancelTask = async (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ): Promise<void> => {
+//   try {
+//     const { taskID } = req.params
+//     const { role, accountID } = res.locals
+
+//     const task = await taskService.cancelBytaskID(taskID, accountID, role)
+
+//     res.status(200).json({
+//       success: true,
+//       message: `Task "${task.taskID}" cancelled successfully by ${role}`,
+//       task
+//     })
+//   } catch (error) {
+//     next(error)
+//   }
+// }
+
 export const cancelTask = async (
   req: Request,
   res: Response,
@@ -57,13 +89,39 @@ export const cancelTask = async (
 ): Promise<void> => {
   try {
     const { taskID } = req.params
-    const { role, accountID } = res.locals
+    const { role } = res.locals
 
-    const task = await taskService.cancelBytaskID(taskID, accountID, role)
+    let task
+
+    if (role === UserRole.ADMIN || role === UserRole.PICKER) {
+      task = await updateTaskByTaskID({ taskID, status: TaskStatus.CANCELED })
+
+      // if (role === UserRole.PICKER) {
+      //   const currentTask = await Task.findByPk(taskID)
+      //   if (currentTask?.creatorID !== accountID) {
+      //     throw new AppError(403, '❌ Picker does not own this task')
+      //   }
+      // }
+    } else if (role === UserRole.TRANSPORT_WORKER) {
+      const currentTask = await Task.findByPk(taskID)
+      // if (!currentTask) throw new AppError(404, '❌ Task not found')
+
+      if (currentTask.status !== TaskStatus.IN_PROCESS) {
+        throw new AppError(400, '❌ Only in-process tasks can be cancelled')
+      }
+
+      task = await updateTaskByTaskID({
+        taskID,
+        status: TaskStatus.PENDING,
+        accepterID: null
+      })
+    } else {
+      throw new AppError(403, '❌ Role not authorized to cancel tasks')
+    }
 
     res.status(200).json({
       success: true,
-      message: `Task "${task.taskID}" cancelled successfully by ${role}`,
+      message: `Task "${task.taskID}" cancelled successfully`,
       task
     })
   } catch (error) {
@@ -129,63 +187,6 @@ export const getTasks = async (
   }
 }
 
-// export const createTask = async (
-//   req: Request,
-//   res: Response,
-//   next: NextFunction
-// ) => {
-//   try {
-//     const { accountID } = res.locals
-//     const {
-//       productCode,
-//       sourceBinCode,
-//       destinationBinCode,
-//       quantity,
-//       warehouseID
-//     } = req.body.payload
-
-//     if (!sourceBinCode) {
-//       const destinationBin = await checkIfPickerTaskPublished(
-//         productCode,
-//         destinationBinCode
-//       )
-
-//       const task = await taskService.binsToPick(
-//         destinationBin.binCode,
-//         accountID,
-//         warehouseID,
-//         productCode,
-//         quantity
-//       )
-
-//       return res.status(201).json({
-//         success: true,
-//         message: '✅ Task created using destination bin from productCode',
-//         task
-//       })
-//     }
-
-//     const sourceBin = await binService.getBinByBinCode(sourceBinCode)
-//     const destinationBin = await binService.getBinByBinCode(destinationBinCode)
-
-//     const task = await taskService.binToBin(
-//       sourceBin.binID,
-//       destinationBin.binID,
-//       productCode,
-//       accountID,
-//       quantity
-//     )
-
-//     return res.status(200).json({
-//       success: true,
-//       message: '✅ Task created successfully',
-//       task
-//     })
-//   } catch (error) {
-//     next(error)
-//   }
-// }
-
 export const createTask = async (
   req: Request,
   res: Response,
@@ -201,14 +202,12 @@ export const createTask = async (
       warehouseID
     } = req.body.payload
 
-    // ✅ 统一先检查是否重复
     await taskService.checkIfTaskDuplicate(
       productCode,
       destinationBinCode,
       sourceBinCode
     )
 
-    // ✅ binsToPick 模式（没有指定 sourceBinCode）
     if (!sourceBinCode) {
       const destinationBin = await binService.getBinByBinCode(
         destinationBinCode
@@ -229,7 +228,6 @@ export const createTask = async (
       })
     }
 
-    // ✅ binToBin 模式
     const sourceBin = await binService.getBinByBinCode(sourceBinCode)
     const destinationBin = await binService.getBinByBinCode(destinationBinCode)
 
@@ -251,35 +249,18 @@ export const createTask = async (
   }
 }
 
-// export const updateTask = async (req: Request, res: Response) => {
-//   const { taskID } = req.params
-//   const { status, sourceBinCode } = req.body
-
-//   try {
-//     const updatedTask = await updateTaskService(taskID, status, sourceBinCode)
-//     res.json({ success: true, task: updatedTask })
-//   } catch (error) {
-//     console.error('❌ Failed to update task:', error)
-//     res.status(500).json({ error: 'Internal server error' })
-//   }
-// }
-
 export const updateTask = async (req: Request, res: Response) => {
   const { taskID } = req.params
   const { status, sourceBinCode } = req.body
+  const { accountID } = res.locals
 
   try {
     const existingTask = await Task.findByPk(taskID)
-
-    if (!existingTask) {
-      return res.status(404).json({ error: 'Task not found' })
-    }
 
     const originalStatus = existingTask.status
 
     let updatedTask
 
-    // ✅ 如果是缺货情况（不涉及真实库存变动）
     const isVirtualBin =
       sourceBinCode === 'Transfer-in' || sourceBinCode === 'Out of Stock'
 
@@ -288,11 +269,9 @@ export const updateTask = async (req: Request, res: Response) => {
       status === 'COMPLETED' &&
       !isVirtualBin
     ) {
-      // 👉 正常完成任务，同时处理库存
-      updatedTask = await finishedTaskByAdmin(taskID, sourceBinCode)
+      updatedTask = await completeTaskByAdmin(taskID, sourceBinCode, accountID)
     } else {
-      // 👉 普通状态更新或虚拟任务完成
-      updatedTask = await updateTaskService(taskID, status, sourceBinCode)
+      updatedTask = await updateTaskByTaskID({ taskID, status, sourceBinCode })
     }
 
     return res.json({ success: true, task: updatedTask })

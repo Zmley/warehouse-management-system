@@ -4,6 +4,7 @@ import * as taskService from 'routes/tasks/task.service'
 import { getBinByBinCode } from 'routes/bins/bin.service'
 import AppError from 'utils/appError'
 import { SourceBinItem } from 'types/bin'
+import { updateTaskByTaskID } from 'routes/tasks/task.service'
 
 export const load = async (
   req: Request,
@@ -79,7 +80,7 @@ export const unload = async (
 
     const task = await taskService.getTaskByAccountID(accountID, warehouseID)
 
-    if (task && task.status === 'IN_PROCESS') {
+    if (task) {
       if (task.destinationBinCode !== binCode) {
         res.status(400).json({
           success: false,
@@ -93,15 +94,19 @@ export const unload = async (
         unloadProductList
       )
 
-      const taskCompletionResult = await taskService.completeTask(task.taskID)
+      let matchedQuantity: number | undefined
 
-      if (!taskCompletionResult) {
-        res.status(500).json({
-          success: false,
-          message: '❌ Failed to complete the task.'
-        })
-        return
+      if (unloadProductList.length === 1) {
+        matchedQuantity = unloadProductList[0].quantity
       }
+
+      await updateTaskByTaskID({
+        taskID: task.taskID,
+        quantity: matchedQuantity,
+        status: 'COMPLETED'
+      })
+
+      // await taskService.completeTask(task.taskID)
 
       res.status(200).json({
         success: true,
