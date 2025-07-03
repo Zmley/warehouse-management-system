@@ -101,7 +101,9 @@ export const getTasks = async (
 ): Promise<void> => {
   try {
     const { role, accountID, warehouseID: localWarehouseID } = res.locals
-    const { keyword, status: rawStatus, queryWarehouseID } = req.query
+
+    const queryWarehouseID = req.query.warehouseID as string | undefined
+    const { keyword, status: rawStatus } = req.query
 
     let warehouseID: string
     let status: string | undefined = undefined
