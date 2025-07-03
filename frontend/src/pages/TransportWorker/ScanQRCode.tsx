@@ -7,7 +7,8 @@ import {
   TextField,
   Autocomplete,
   InputAdornment,
-  IconButton
+  IconButton,
+  Drawer
 } from '@mui/material'
 import SearchIcon from '@mui/icons-material/Search'
 import { useTranslation } from 'react-i18next'
@@ -17,6 +18,9 @@ import { useProduct } from 'hooks/useProduct'
 import { ScanMode } from 'constants/index'
 import AddToCartInline from 'pages/TransportWorker/AddToCartInline'
 import { ProductType } from 'types/product'
+import { useInventory } from 'hooks/useInventory'
+import { InventoryItem } from 'types/inventory'
+import LoadConfirmInventory from './LoadConfirmInventory'
 
 // Dynamsoft Scanner globals
 declare global {
@@ -33,7 +37,7 @@ const ScanCode = () => {
   const scannedRef = useRef(false)
   const navigate = useNavigate()
   const location = useLocation()
-  const { loadCart, unloadCart, error: cartError } = useCart()
+  const { unloadCart, error: cartError } = useCart()
   const { fetchBinCodes, binCodes } = useBin()
   const { fetchProduct, productCodes, loadProducts } = useProduct()
 
@@ -45,13 +49,18 @@ const ScanCode = () => {
   const [error, setError] = useState<string | null>(null)
   const [scannedProduct, setScannedProduct] = useState<ProductType | null>(null)
 
+  const { fetchInventoriesByBinCode } = useInventory()
+  const [scannedBinCode, setScannedBinCode] = useState<string | null>(null)
+  const [inventoryList, setInventoryList] = useState<InventoryItem[]>([])
+  const [showDrawer, setShowDrawer] = useState(false)
+
   useEffect(() => {
     fetchBinCodes()
     loadProducts()
   }, [])
 
   useEffect(() => {
-    if (manualMode) return
+    if (manualMode || scannedBinCode || showDrawer) return
 
     const loadAndInit = async () => {
       try {
@@ -91,7 +100,21 @@ const ScanCode = () => {
                   if (scanMode === ScanMode.UNLOAD) {
                     await unloadCart(text, unloadProductList)
                   } else {
-                    await loadCart({ binCode: text })
+                    const result = await fetchInventoriesByBinCode(text)
+
+                    if (
+                      result.success &&
+                      result.inventories &&
+                      result.inventories.length > 0
+                    ) {
+                      setScannedBinCode(text)
+                      setInventoryList(result.inventories)
+                      setShowDrawer(true)
+                      await router.stopCapturing()
+                      await cameraEnhancer.close()
+                    } else {
+                      setError(result.message || t('scan.noInventoryFound'))
+                    }
                   }
                 } catch (err) {
                   console.error('操作失败:', err)
@@ -123,7 +146,7 @@ const ScanCode = () => {
       scannerRef.current?.router?.stopCapturing()
       scannerRef.current?.cameraEnhancer?.close()
     }
-  }, [manualMode])
+  }, [manualMode, scannedBinCode, showDrawer])
 
   const handleManualSubmit = async () => {
     if (!manualInput.trim()) {
@@ -145,7 +168,19 @@ const ScanCode = () => {
         if (scanMode === ScanMode.UNLOAD) {
           await unloadCart(input, unloadProductList)
         } else {
-          await loadCart({ binCode: input })
+          const result = await fetchInventoriesByBinCode(input)
+
+          if (
+            result.success &&
+            result.inventories &&
+            result.inventories.length > 0
+          ) {
+            setScannedBinCode(input)
+            setInventoryList(result.inventories)
+            setShowDrawer(true)
+          } else {
+            setError(result.message || t('scan.noInventoryFound'))
+          }
         }
       } catch (err) {
         console.error('操作失败:', err)
@@ -192,10 +227,10 @@ const ScanCode = () => {
       >
         {scanMode === ScanMode.UNLOAD
           ? t('scan.scanBinCode')
-          : t('scan.scanProductCode')}{' '}
+          : t('scan.scanProductCode')}
       </Typography>
 
-      {!manualMode && !scannedProduct && (
+      {!manualMode && !showDrawer && !scannedProduct && !scannedBinCode && (
         <Box
           id='scanner-view'
           sx={{
@@ -213,7 +248,7 @@ const ScanCode = () => {
         />
       )}
 
-      {manualMode && (
+      {manualMode && !scannedBinCode && (
         <Box sx={{ width: '100%', maxWidth: 420 }}>
           <Autocomplete
             freeSolo
@@ -258,12 +293,41 @@ const ScanCode = () => {
             onSuccess={() => {
               setScannedProduct(null)
               navigate('/')
+              setTimeout(() => window.location.reload(), 0)
             }}
           />
         </Box>
       )}
 
-      {!manualMode && !scannedProduct && (
+      {showDrawer && (
+        <Drawer
+          anchor='top'
+          open={showDrawer}
+          onClose={() => {
+            setShowDrawer(false)
+            setScannedBinCode(null)
+            setInventoryList([])
+            navigate('/')
+            setTimeout(() => window.location.reload(), 0)
+          }}
+          PaperProps={{
+            sx: { maxHeight: '90vh', borderRadius: '0 0 16px 16px', p: 2 }
+          }}
+        >
+          <LoadConfirmInventory
+            binCode={scannedBinCode!}
+            inventories={inventoryList}
+            onSuccess={() => {
+              setShowDrawer(false)
+              setScannedBinCode(null)
+              setInventoryList([])
+              navigate('/')
+            }}
+          />
+        </Drawer>
+      )}
+
+      {!manualMode && !scannedProduct && !scannedBinCode && !showDrawer && (
         <Button
           variant='outlined'
           onClick={() => {

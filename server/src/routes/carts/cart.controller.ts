@@ -13,7 +13,7 @@ export const load = async (
 ): Promise<void> => {
   try {
     const { cartID, accountID, warehouseID } = res.locals
-    const { binCode, productCode, quantity } = req.body
+    const { binCode, productCode, quantity, selectedItems } = req.body
 
     let result
 
@@ -48,7 +48,8 @@ export const load = async (
         binCode,
         cartID,
         accountID,
-        warehouseID
+        warehouseID,
+        selectedItems
       )
 
       const activeTask = await taskService.hasActiveTask(accountID)

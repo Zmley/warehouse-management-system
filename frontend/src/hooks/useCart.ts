@@ -18,8 +18,41 @@ export const useCart = () => {
     setSourceBin
   } = useCartContext()
 
+  // const loadCart = async (
+  //   input: { binCode: string } | { productCode: string; quantity: number }
+  // ) => {
+  //   try {
+  //     const response = await load(input)
+  //     await getMyCart()
+
+  //     if (response.success) {
+  //       setError(null)
+
+  //       if ('binCode' in input) {
+  //         setSourceBin(input.binCode)
+  //       }
+
+  //       navigate('/success')
+  //       return { success: true }
+  //     } else {
+  //       const msg = response.data?.error || '❌ Failed to load to cart.'
+  //       setError(msg)
+  //       return { success: false, error: msg }
+  //     }
+  //   } catch (err: any) {
+  //     const msg = err?.response?.data?.error || '❌ Error loading cart'
+  //     setError(msg)
+  //     return { success: false, error: msg }
+  //   }
+  // }
+
   const loadCart = async (
-    input: { binCode: string } | { productCode: string; quantity: number }
+    input:
+      | { productCode: string; quantity: number }
+      | {
+          binCode: string
+          selectedItems: { inventoryID: string; quantity: number }[]
+        }
   ) => {
     try {
       const response = await load(input)

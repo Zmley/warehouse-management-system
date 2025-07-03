@@ -47,10 +47,6 @@ const TaskInstruction: React.FC = () => {
   const handleLoadAisleTask = async () => {
     if (!binCode) return
     try {
-      const res = await loadCart({ binCode })
-      if (res.success) {
-        console.log('✅ Loaded successfully from aisle bin')
-      }
     } catch (err) {
       console.error('❌ Failed to load from aisle bin', err)
     }

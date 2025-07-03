@@ -74,6 +74,8 @@
 
 
 
+
+
     "title": "扫捡货二维码(发布任务)或扫描产品条形码(产品信息)",
     "notRecognized": "未识别到条码",
     "productNotFound": "未找到该产品",
@@ -86,7 +88,13 @@
     "cancel": "取消返回",
 
   "scanBinCode": "扫描货位二维码卸货",
-  "scanProductCode": "扫描条形码或二维码装货"
+  "scanProductCode": "扫描条形码或二维码装货",
+
+
+
+        "invalidBinForTask": "❌ 当前任务不允许扫描该 binCode：{{scannedBinCode}}"
+
+
 
 
 
@@ -157,7 +165,23 @@
     "defaultTitle": "操作成功！",
     "description": "正在为您跳转至叉车..."
   }
+,
 
+ "load": {
+    "confirmTitle": " 当前{{binCode}} 内产品",
+    "productQuantity": "库存数量",
+
+
+        "inputQuantity": "装入数量",
+
+
+                "confirm": "确认装货到叉车"
+
+
+
+
+
+  }
 
 
 }

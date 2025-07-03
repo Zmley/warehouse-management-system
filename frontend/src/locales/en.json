@@ -75,7 +75,12 @@
 
 
      "scanBinCode": "unload: Scan the BinCode",
-  "scanProductCode": "load: scan the product barCode or QRcode"
+  "scanProductCode": "load: scan the product barCode or QRcode",
+
+
+
+  "invalidBinForTask": "❌ The scanned binCode: {{scannedBinCode}} is not allowed for this task.\n✅ Allowed binCodes: {{allowedBinCodes}}"
+
 
 
 
@@ -155,6 +160,17 @@
     "pickerTitle": "Pick-up Task Created!",
     "defaultTitle": "Operation Completed!",
     "description": "Everything went smoothly. You’ll be redirected shortly."
+  },
+
+
+    "load": {
+    "confirmTitle": "Confirm items to load from {{binCode}}",
+    "productQuantity": "Product Quantity",
+
+            "inputQuantity": "input Quantity",
+                            "confirm": "confirm Load to Forklift"
+
+
   }
 
 }
