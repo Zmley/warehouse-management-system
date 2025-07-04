@@ -1,5 +1,5 @@
 import { Server } from 'http'
-import app from './app'
+import app from 'app'
 import config from 'config/config'
 import logger from 'utils/logger'
 import errorHandler from 'utils/errorHandler'
