@@ -42,4 +42,4 @@ jobs:
 
             yarn build
 
-            pm2 restart server || pm2 start dist/server.js --name server
+            pm2 start dist/server.js --name server --node-args="-r tsconfig-paths/register"
