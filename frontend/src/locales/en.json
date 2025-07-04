@@ -26,7 +26,6 @@
     "loading": "Loading...",
     "outOfStock": "Out of Stock",
     "canceling" : "canceling"
-
   },
    "cart": {
     "loadedFromBin": "Loaded From Bin",
@@ -37,16 +36,13 @@
     "startLoad" :  "startLoad",
     "chooseLoadMode" : "choose Load Mode",
     "unloadDirectTo": "Unload directly to",
-
-
     "confirmUnloadTitle": "Confirm Destination Bin",
     "confirmUnloadDescription": "Please confirm whether you are at the correct destination bin.",
-
-        "confirmNow": "CONFIRM NOW"
+    "confirmNow": "CONFIRM NOW"
 
   },
     "scan": {
-     "scanBin": "Scan Code",
+    "scanBin": "Scan Code",
     "scanProduct": "Scan Product BarCode",
     "modeScanner": "Scan QR Code",
     "modeManual": "Manual Input",
@@ -56,13 +52,9 @@
     "operationError": "❌ Operation failed. Please try again.",
     "enterBinOrProduct" : "Enter Bin Code or Product BarCode",
     "enterProductCode": "enter Product Codee",
-      "scan.startCamera": "turn on the camera",
+    "scan.startCamera": "turn on the camera",
 
-
-
-
-
-          "title": "Scan Barcode(check information) or QRcode(Creat Task)",
+    "title": "Scan Barcode(check information) or QRcode(Creat Task)",
     "notRecognized": "Barcode not recognized",
     "productNotFound": "Product not found",
     "productError": "Failed to fetch product",
@@ -72,30 +64,15 @@
     "submit": "Submit",
     "switchToManual": "Switch to Manual Input",
     "cancel": "Cancel & Return",
-
-
-     "scanBinCode": "unload: Scan the BinCode",
-  "scanProductCode": "load: scan the product barCode or QRcode",
-
-
-
-  "invalidBinForTask": "❌ The scanned binCode: {{scannedBinCode}} is not allowed for this task.\n✅ Allowed binCodes: {{allowedBinCodes}}"
-
-
-
-
-
- 
-
-
+    "scanBinCode": "unload: Scan the BinCode",
+    "scanProductCode": "load: scan the product barCode or QRcode",
+    "invalidBinForTask": "❌ The scanned binCode: {{scannedBinCode}} is not allowed for this task.\n✅ Allowed binCodes: {{allowedBinCodes}}"
   },
-
     "inventory": {
     "total": "Total",
     "offload": "Offload",
     "quantityExceed": "Quantity cannot exceed total ({{quantity}})",
     "currentCargoInForklift" : "current Cargo In Forklift"
-
   }
   ,
     "addToCart": {
@@ -118,14 +95,12 @@
     "releaseTooltip": "Release this task to the aisle",
     "loadTooltip": "Load items from aisle bin"
   },
-
     "productCard": {
     "title": "Product Info",
     "productCode": "Product Code",
     "barCode": "Bar Code",
     "boxType": "Box Type",
-        "pickBinCode": "pickBinCode"
-
+    "pickBinCode": "pickBinCode"
   },
 
   "taskListCard": {
@@ -135,15 +110,12 @@
   "refreshing" : "refreshing",
   "empty" : "No pending tasks found."
   },
-
   "pickerBottomBar": {
   "taskList": "Task List",
   "createTask": "Create Task",
   "archivedTask": "Archived Task"
 },
-
-
-  "createTask": {
+    "createTask": {
     "title": "Create A New Task",
     "targetBin": "Target Bin",
     "productCode": "Product Code",
@@ -155,22 +127,15 @@
     "outOfStock": "Create Out-of-Stock Task",
     "cancel": "Cancel"
   },
-
     "success": {
     "pickerTitle": "Pick-up Task Created!",
     "defaultTitle": "Operation Completed!",
     "description": "Everything went smoothly. You’ll be redirected shortly."
   },
-
-
     "load": {
     "confirmTitle": "Confirm items to load from {{binCode}}",
     "productQuantity": "Product Quantity",
-
-            "inputQuantity": "input Quantity",
-                            "confirm": "confirm Load to Forklift"
-
-
+    "inputQuantity": "input Quantity",
+    "confirm": "confirm Load to Forklift"
   }
-
 }
