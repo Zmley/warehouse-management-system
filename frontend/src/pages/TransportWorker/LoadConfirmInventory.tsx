@@ -16,7 +16,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTaskContext } from 'contexts/task'
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
 
-interface LoadConfirmInventoryProps {
+interface LoadConfirmProps {
   binCode: string
   inventories: InventoryItem[]
   onSuccess?: () => void
@@ -27,10 +27,7 @@ type InventoryWithSelection = InventoryItem & {
   loadQuantity: number
 }
 
-const LoadConfirmInventory: React.FC<LoadConfirmInventoryProps> = ({
-  binCode,
-  inventories
-}) => {
+const LoadConfirm: React.FC<LoadConfirmProps> = ({ binCode, inventories }) => {
   const { t } = useTranslation()
   const { loadCart } = useCart()
   const navigate = useNavigate()
@@ -41,7 +38,6 @@ const LoadConfirmInventory: React.FC<LoadConfirmInventoryProps> = ({
   )
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [snackOpen, setSnackOpen] = useState(false)
 
   const taskProductCode = myTask?.productCode
   const taskQuantity = myTask?.quantity
@@ -61,7 +57,7 @@ const LoadConfirmInventory: React.FC<LoadConfirmInventoryProps> = ({
       return {
         ...item,
         selected,
-        loadQuantity: quantity ?? 0 // ✅ 显式兜底，确保永远是 number
+        loadQuantity: quantity ?? 0
       }
     })
 
@@ -107,24 +103,6 @@ const LoadConfirmInventory: React.FC<LoadConfirmInventoryProps> = ({
 
     for (const item of selectedItems) {
       if (item.loadQuantity > item.quantity) {
-        setSnackOpen(true)
-        return false
-      }
-    }
-
-    if (isTaskMode) {
-      const taskItems = selectedItems.filter(
-        item => item.productCode === taskProductCode
-      )
-      const totalSelectedQty = taskItems.reduce(
-        (sum, item) => sum + item.loadQuantity,
-        0
-      )
-
-      if (taskQuantity !== 0 && totalSelectedQty !== taskQuantity) {
-        setError(
-          `❌ Please match task product (${taskProductCode}) quantity: ${taskQuantity}`
-        )
         return false
       }
     }
@@ -260,13 +238,12 @@ const LoadConfirmInventory: React.FC<LoadConfirmInventoryProps> = ({
         <Box mt={2} textAlign='center'>
           <ArrowDownwardIcon
             sx={{
-              color: '#1976d2', // primary color
+              color: '#1976d2',
               fontSize: 24,
-              mb: 0.5 // 微调箭头与按钮之间的距离
+              mb: 0.5
             }}
           />
 
-          {/* 确认按钮 */}
           <Button
             variant='contained'
             color='primary'
@@ -288,4 +265,4 @@ const LoadConfirmInventory: React.FC<LoadConfirmInventoryProps> = ({
   )
 }
 
-export default LoadConfirmInventory
+export default LoadConfirm

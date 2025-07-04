@@ -20,7 +20,7 @@ import AddToCartInline from 'pages/TransportWorker/AddToCartInline'
 import { ProductType } from 'types/product'
 import { useInventory } from 'hooks/useInventory'
 import { InventoryItem } from 'types/inventory'
-import LoadConfirmInventory from './LoadConfirmInventory'
+import LoadConfirm from './LoadConfirmInventory'
 
 // Dynamsoft Scanner globals
 declare global {
@@ -314,7 +314,7 @@ const ScanCode = () => {
             sx: { maxHeight: '90vh', borderRadius: '0 0 16px 16px', p: 2 }
           }}
         >
-          <LoadConfirmInventory
+          <LoadConfirm
             binCode={scannedBinCode!}
             inventories={inventoryList}
             onSuccess={() => {

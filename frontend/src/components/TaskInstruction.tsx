@@ -12,7 +12,6 @@ import {
 import { useTaskContext } from 'contexts/task'
 import { useCartContext } from 'contexts/cart'
 import { useTask } from 'hooks/useTask'
-import { useCart } from 'hooks/useCart'
 import { useTranslation } from 'react-i18next'
 
 const TaskInstruction: React.FC = () => {
@@ -20,7 +19,6 @@ const TaskInstruction: React.FC = () => {
   const { myTask, setMyTask } = useTaskContext()
   const { inventoriesInCart } = useCartContext()
   const { cancelMyTask } = useTask()
-  const { loadCart } = useCart()
 
   if (!myTask) return null
 
