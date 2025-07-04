@@ -1,8 +1,9 @@
 name: Deploy to S3
 
 on:
-  release:
-    types: [prereleased]
+  push:
+    branches:
+      - loadByBinCodeWithSelection
 
 jobs:
   deploy:
@@ -21,6 +22,7 @@ jobs:
         working-directory: frontend
         env:
           REACT_APP_SERVER_API_BASE_URL: 'https://api.qte-warehouse.zmley.com'
+          REACT_APP_DYNAMSOFT_LICENSE: ${{ secrets.REACT_APP_DYNAMSOFT_LICENSE }}
           PORT: '4100'
 
       - name: Deploy to S3

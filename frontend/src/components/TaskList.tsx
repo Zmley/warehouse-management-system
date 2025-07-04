@@ -134,35 +134,63 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
                       >
                         {t('taskList.sourceBin')}
                       </Typography>
-                      <Box
-                        sx={{
-                          fontWeight: 'bold',
-                          fontSize: 13,
-                          wordBreak: 'break-word',
-                          mt: 0.3
-                        }}
-                      >
-                        {task.sourceBins && task.sourceBins.length > 0 ? (
-                          task.sourceBins
-                            .map((inv: any) => inv.bin?.binCode)
-                            .join(' / ')
-                        ) : (
+
+                      {task.sourceBins && task.sourceBins.length > 0 ? (
+                        <Box
+                          sx={{
+                            position: 'relative',
+                            width: '100%',
+                            mt: 0.3
+                          }}
+                        >
                           <Box
-                            display='flex'
-                            justifyContent='center'
-                            alignItems='flex-start'
-                            gap={0.5}
+                            sx={{
+                              overflowX:
+                                task.sourceBins.length > 5 ? 'auto' : 'visible',
+                              whiteSpace: 'nowrap',
+                              WebkitOverflowScrolling: 'touch',
+                              fontSize: 13,
+                              fontWeight: 'bold',
+                              scrollbarWidth: 'none',
+                              '&::-webkit-scrollbar': { display: 'none' }
+                            }}
                           >
-                            <Typography
-                              fontSize={12}
-                              fontWeight='medium'
-                              sx={{ color: '#d32f2f' }}
-                            >
-                              {t('taskList.outOfStock')}
-                            </Typography>
+                            {task.sourceBins
+                              .map((inv: any) => inv.bin?.binCode)
+                              .join(' / ')}
                           </Box>
-                        )}
-                      </Box>
+
+                          {task.sourceBins.length > 5 && (
+                            <Box
+                              sx={{
+                                position: 'absolute',
+                                right: 0,
+                                top: 0,
+                                bottom: 0,
+                                width: 30,
+                                background:
+                                  'linear-gradient(to right, transparent, #eff6ff)',
+                                pointerEvents: 'none'
+                              }}
+                            />
+                          )}
+                        </Box>
+                      ) : (
+                        <Box
+                          display='flex'
+                          justifyContent='center'
+                          alignItems='flex-start'
+                          gap={0.5}
+                        >
+                          <Typography
+                            fontSize={12}
+                            fontWeight='medium'
+                            sx={{ color: '#d32f2f' }}
+                          >
+                            {t('taskList.outOfStock')}
+                          </Typography>
+                        </Box>
+                      )}
                     </Grid>
 
                     <Grid item xs={4} textAlign='center'>

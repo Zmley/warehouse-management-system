@@ -12,15 +12,13 @@ import {
 import { useTaskContext } from 'contexts/task'
 import { useCartContext } from 'contexts/cart'
 import { useTask } from 'hooks/useTask'
-import { useCart } from 'hooks/useCart'
 import { useTranslation } from 'react-i18next'
 
 const TaskInstruction: React.FC = () => {
   const { t } = useTranslation()
   const { myTask, setMyTask } = useTaskContext()
-  const { inventoriesInCart, getMyCart } = useCartContext()
-  const { cancelMyTask, releaseTask } = useTask()
-  const { loadCart } = useCart()
+  const { inventoriesInCart } = useCartContext()
+  const { cancelMyTask } = useTask()
 
   if (!myTask) return null
 
@@ -44,23 +42,9 @@ const TaskInstruction: React.FC = () => {
     }
   }
 
-  const handleRelease = async () => {
-    try {
-      await releaseTask(myTask.taskID)
-      await getMyCart()
-      setMyTask(null)
-    } catch (err) {
-      console.error('❌ Failed to release task', err)
-    }
-  }
-
   const handleLoadAisleTask = async () => {
     if (!binCode) return
     try {
-      const res = await loadCart({ binCode })
-      if (res.success) {
-        console.log('✅ Loaded successfully from aisle bin')
-      }
     } catch (err) {
       console.error('❌ Failed to load from aisle bin', err)
     }
@@ -86,16 +70,24 @@ const TaskInstruction: React.FC = () => {
             </Typography>
 
             {myTask.sourceBins?.length > 0 ? (
-              myTask.sourceBins.map((inv: any, index: number) => (
-                <Typography
-                  key={index}
-                  fontSize={13}
-                  fontWeight={600}
-                  lineHeight={1.3}
-                >
-                  {inv.bin?.binCode ?? '--'}: {inv.quantity ?? '--'}
-                </Typography>
-              ))
+              <Box
+                display='grid'
+                gridTemplateColumns='repeat(auto-fit, minmax(120px, 1fr))'
+                gap={0.5}
+                mt={0.5}
+                justifyContent='center'
+              >
+                {myTask.sourceBins.map((inv: any, index: number) => (
+                  <Typography
+                    key={index}
+                    fontSize={13}
+                    fontWeight={600}
+                    textAlign='center'
+                  >
+                    {inv.bin?.binCode ?? '--'}: {inv.quantity ?? '--'}
+                  </Typography>
+                ))}
+              </Box>
             ) : (
               <Typography fontSize={13} fontWeight={600}>
                 --
@@ -168,24 +160,7 @@ const TaskInstruction: React.FC = () => {
                 : t('taskInstruction.mustLoadFirst')
             }
           >
-            <span>
-              <Button
-                variant='contained'
-                color='success'
-                size='small'
-                disabled={!hasCargo}
-                onClick={handleRelease}
-                sx={{
-                  height: 28,
-                  px: 1.5,
-                  fontSize: 11,
-                  fontWeight: 600,
-                  borderRadius: 1
-                }}
-              >
-                {t('taskInstruction.release')}
-              </Button>
-            </span>
+            <span></span>
           </Tooltip>
 
           {isAisleTask && !hasCargo && (

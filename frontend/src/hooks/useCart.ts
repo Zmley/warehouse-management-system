@@ -19,7 +19,12 @@ export const useCart = () => {
   } = useCartContext()
 
   const loadCart = async (
-    input: { binCode: string } | { productCode: string; quantity: number }
+    input:
+      | { productCode: string; quantity: number }
+      | {
+          binCode: string
+          selectedItems: { inventoryID: string; quantity: number }[]
+        }
   ) => {
     try {
       const response = await load(input)
