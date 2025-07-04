@@ -40,18 +40,20 @@ const LoadConfirm: React.FC<LoadConfirmProps> = ({ binCode, inventories }) => {
   const [error, setError] = useState<string | null>(null)
 
   const taskProductCode = myTask?.productCode
-  const taskQuantity = myTask?.quantity
-  const isTaskMode = taskProductCode !== null && taskQuantity !== null
-
   useEffect(() => {
+    const isTaskMode = !!myTask?.productCode && myTask?.quantity !== undefined
+
     const newList = inventories.map(item => {
-      const isTaskProduct = item.productCode === taskProductCode
-      const selected = isTaskMode && isTaskProduct
+      const isTaskProduct = item.productCode === myTask?.productCode
+
+      const selected = isTaskMode ? isTaskProduct : true
 
       const quantity = selected
-        ? taskQuantity === 0
-          ? item.quantity
-          : taskQuantity
+        ? isTaskMode
+          ? myTask?.quantity === 0
+            ? item.quantity
+            : myTask.quantity
+          : item.quantity
         : 0
 
       return {
@@ -62,7 +64,7 @@ const LoadConfirm: React.FC<LoadConfirmProps> = ({ binCode, inventories }) => {
     })
 
     setInventoryList(newList)
-  }, [inventories, taskProductCode, taskQuantity])
+  }, [inventories, myTask])
 
   const handleQuantityChange = (inventoryID: string, quantity: number) => {
     setInventoryList(prev =>

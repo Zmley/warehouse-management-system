@@ -20,7 +20,7 @@ import AddToCartInline from 'pages/TransportWorker/AddToCartInline'
 import { ProductType } from 'types/product'
 import { useInventory } from 'hooks/useInventory'
 import { InventoryItem } from 'types/inventory'
-import LoadConfirm from './LoadConfirmInventory'
+import LoadConfirm from './LoadConfirm'
 
 // Dynamsoft Scanner globals
 declare global {
