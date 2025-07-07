@@ -2,7 +2,7 @@ import { DataTypes, Model } from 'sequelize'
 import { sequelize } from 'config/db'
 import Inventory from 'routes/inventory/inventory.model'
 import Bin from 'routes/bins/bin.model'
-import { TaskStatus } from 'constants/tasksStatus'
+import { TaskStatus } from 'constants/index'
 import Account from 'routes/accounts/accounts.model'
 
 export class Task extends Model {
@@ -12,7 +12,7 @@ export class Task extends Model {
   public accepterID!: string
   public creatorID!: string
   public productCode!: string
-  public quantity!: string
+  public quantity!: number
   public status!: TaskStatus | string
   public createdAt!: Date
   public updatedAt!: Date | null

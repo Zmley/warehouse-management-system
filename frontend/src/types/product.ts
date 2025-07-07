@@ -3,4 +3,5 @@ export interface ProductType {
   barCode: string
   boxType: string
   createdAt: string
+  binCode: string
 }

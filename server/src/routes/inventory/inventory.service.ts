@@ -205,3 +205,21 @@ export const hasInventoryInCart = async (
   console.log('items ++++++++++', items, items.length > 0)
   return items.length > 0
 }
+
+export const getInventoriesByBinID = async (
+  binID: string
+): Promise<Inventory[]> => {
+  const inventories = await Inventory.findAll({
+    where: { binID },
+    include: [
+      {
+        model: Bin,
+        as: 'bin',
+        attributes: ['binID', 'binCode']
+      }
+    ],
+    order: [['productCode', 'ASC']]
+  })
+
+  return inventories
+}

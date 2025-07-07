@@ -2,7 +2,7 @@ name: Deploy Backend to EC2
 
 on:
   release:
-    types: [prereleased]
+    types: [published]
 
 jobs:
   deploy:
@@ -26,7 +26,7 @@ jobs:
             echo "Cloning the repository"
             git clone --filter=blob:none --no-checkout https://github.com/Zmley/warehouse-management-system.git
             cd warehouse-management-system
-            git checkout pre-release
+            git checkout loadByBinCodeWithSelection
 
             git sparse-checkout init --cone
             git sparse-checkout set server

@@ -1,5 +1,8 @@
 import { Request, Response, NextFunction } from 'express'
 import * as inventoryService from './inventory.service'
+import AppError from 'utils/appError'
+import { getBinByBinCode } from 'routes/bins/bin.service'
+import { getInventoriesByBinID } from './inventory.service'
 
 export const getInventoriesInCart = async (
   req: Request,
@@ -97,5 +100,24 @@ export const addInventories = async (
     })
   } catch (error) {
     next(error)
+  }
+}
+
+export const getInventoriesByBinCode = async (req: Request, res: Response) => {
+  const { binCode } = req.params
+
+  if (typeof binCode !== 'string') {
+    throw new AppError(400, '❌ binCode must be provided as a query string')
+  }
+
+  try {
+    const bin = await getBinByBinCode(binCode)
+
+    const inventories = await getInventoriesByBinID(bin.binID)
+
+    return res.json({ success: true, inventories })
+  } catch (error) {
+    console.error('❌ Failed to get inventories by binCode:', error)
+    return res.status(500).json({ success: false, message: error.message })
   }
 }

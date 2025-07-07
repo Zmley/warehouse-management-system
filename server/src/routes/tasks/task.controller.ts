@@ -1,12 +1,9 @@
 import { Request, Response, NextFunction } from 'express'
+import { UserRole, TaskStatus } from 'constants/index'
 import * as taskService from 'routes/tasks/task.service'
 import * as binService from 'routes/bins/bin.service'
-import { UserRole } from 'constants/uerRole'
-import { TaskStatus } from 'constants/tasksStatus'
-import {
-  checkIfPickerTaskPublished,
-  updateTaskService
-} from 'routes/tasks/task.service'
+import Task from './task.model'
+import AppError from 'utils/appError'
 
 export const acceptTask = async (
   req: Request,
@@ -17,11 +14,17 @@ export const acceptTask = async (
     const accountID = res.locals.accountID
     const { taskID } = req.params
 
-    const task = await taskService.acceptTaskByTaskID(accountID, taskID)
+    await taskService.validateTaskAcceptance(accountID, taskID)
+
+    const task = await taskService.updateTaskByTaskID({
+      taskID,
+      status: TaskStatus.IN_PROCESS,
+      accepterID: accountID
+    })
 
     res.status(200).json({
       success: true,
-      message: 'Task accepted successfully and is now in progress',
+      message: '✅ Task accepted successfully and is now in progress',
       task
     })
   } catch (error) {
@@ -56,13 +59,34 @@ export const cancelTask = async (
 ): Promise<void> => {
   try {
     const { taskID } = req.params
-    const { role, accountID } = res.locals
+    const { role } = res.locals
 
-    const task = await taskService.cancelBytaskID(taskID, accountID, role)
+    let task
+
+    if (role === UserRole.ADMIN || role === UserRole.PICKER) {
+      task = await taskService.updateTaskByTaskID({
+        taskID,
+        status: TaskStatus.CANCELED
+      })
+    } else if (role === UserRole.TRANSPORT_WORKER) {
+      const currentTask = await Task.findByPk(taskID)
+
+      if (currentTask.status !== TaskStatus.IN_PROCESS) {
+        throw new AppError(400, '❌ Only in-process tasks can be cancelled')
+      }
+
+      task = await taskService.updateTaskByTaskID({
+        taskID,
+        status: TaskStatus.PENDING,
+        accepterID: null
+      })
+    } else {
+      throw new AppError(403, '❌ Role not authorized to cancel tasks')
+    }
 
     res.status(200).json({
       success: true,
-      message: `Task "${task.taskID}" cancelled successfully by ${role}`,
+      message: `Task "${task.taskID}" cancelled successfully`,
       task
     })
   } catch (error) {
@@ -77,21 +101,15 @@ export const getTasks = async (
 ): Promise<void> => {
   try {
     const { role, accountID, warehouseID: localWarehouseID } = res.locals
-    const queryWarehouseID = req.query.warehouseID
+
+    const queryWarehouseID = req.query.warehouseID as string | undefined
     const { keyword, status: rawStatus } = req.query
 
     let warehouseID: string
     let status: string | undefined = undefined
 
     if (role === UserRole.ADMIN) {
-      if (typeof queryWarehouseID !== 'string') {
-        res.status(400).json({
-          success: false,
-          message: '❌ Admin must provide a valid warehouseID in query params.'
-        })
-        return
-      }
-      warehouseID = queryWarehouseID
+      warehouseID = queryWarehouseID as string
 
       if (typeof rawStatus === 'string') {
         status = rawStatus
@@ -143,10 +161,14 @@ export const createTask = async (
       warehouseID
     } = req.body.payload
 
+    await taskService.checkIfTaskDuplicate(
+      productCode,
+      destinationBinCode,
+      sourceBinCode
+    )
+
     if (!sourceBinCode) {
-      const destinationBin = await checkIfPickerTaskPublished(
-        warehouseID,
-        productCode,
+      const destinationBin = await binService.getBinByBinCode(
         destinationBinCode
       )
 
@@ -186,45 +208,42 @@ export const createTask = async (
   }
 }
 
-export const releaseTask = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { taskID } = req.params
-    const { accountID, cartID, warehouseID } = res.locals
-
-    const releasedTask = await taskService.releaseTask(
-      taskID,
-      accountID,
-      cartID,
-      warehouseID
-    )
-
-    res.status(200).json({
-      success: true,
-      message: '✅ Task released successfully',
-      task: releasedTask
-    })
-  } catch (error) {
-    next(error)
-  }
-}
-
 export const updateTask = async (req: Request, res: Response) => {
   const { taskID } = req.params
   const { status, sourceBinCode } = req.body
+  const { accountID } = res.locals
 
   try {
-    if (!status || !sourceBinCode) {
-      return res.status(400).json({ error: 'Missing required fields' })
+    const existingTask = await Task.findByPk(taskID)
+
+    const originalStatus = existingTask.status
+
+    let updatedTask
+
+    const isVirtualBin =
+      sourceBinCode === 'Transfer-in' || sourceBinCode === 'Out of Stock'
+
+    if (
+      originalStatus === TaskStatus.PENDING &&
+      status === TaskStatus.COMPLETED &&
+      !isVirtualBin
+    ) {
+      updatedTask = await taskService.completeTaskByAdmin(
+        taskID,
+        sourceBinCode,
+        accountID
+      )
+    } else {
+      updatedTask = await taskService.updateTaskByTaskID({
+        taskID,
+        status,
+        sourceBinCode
+      })
     }
 
-    const updatedTask = await updateTaskService(taskID, status, sourceBinCode)
-    res.json({ success: true, task: updatedTask })
+    return res.json({ success: true, task: updatedTask })
   } catch (error) {
     console.error('❌ Failed to update task:', error)
-    res.status(500).json({ error: 'Internal server error' })
+    return res.status(500).json({ error: 'Internal server error' })
   }
 }

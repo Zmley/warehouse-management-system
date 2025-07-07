@@ -1,6 +1,6 @@
 import { DataTypes, Model } from 'sequelize'
 import { sequelize } from 'config/db'
-import { BinType } from 'constants/binType'
+import { BinType } from 'constants/index'
 import Inventory from 'routes/inventory/inventory.model'
 
 export class Bin extends Model {

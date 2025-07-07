@@ -4060,6 +4060,11 @@ dlv@^1.1.3:
   resolved "https://registry.yarnpkg.com/dlv/-/dlv-1.1.3.tgz#5c198a8a11453596e751494d49874bc7732f2e79"
   integrity sha512-+HlytyjlPKnIG8XuRG8WvmBP8xs8P71y+SKKS6ZXWoEgLuePxtDoUEiH7WkdePWrQ5JBpE6aoVqfZfJUQkjXwA==
 
+dm-howler@^2.2.4:
+  version "2.2.4"
+  resolved "https://registry.yarnpkg.com/dm-howler/-/dm-howler-2.2.4.tgz#29e10ed86f6eff16f85e116eb3f394e1e668a77a"
+  integrity sha512-h+iDEP/cyALeqWNtGdZZRwm3buSwaG26wzF6fCUGhvkF/yxYoWb8F/v7qN+urqdZw3wotZGO/01rDlzOxJUUGw==
+
 dns-packet@^5.2.2:
   version "5.6.1"
   resolved "https://registry.yarnpkg.com/dns-packet/-/dns-packet-5.6.1.tgz#ae888ad425a9d1478a0674256ab866de1012cf2f"
@@ -4195,6 +4200,71 @@ duplexer@^0.1.2:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/duplexer/-/duplexer-0.1.2.tgz#3abe43aef3835f8ae077d136ddce0f276b0400e6"
   integrity sha512-jtD6YG370ZCIi/9GTaJKQxWTZD045+4R4hTk/x1UyoqadyJ9x9CgSi1RlVDQF8U2sxLLSnFkCaMihqljHIWgMg==
+
+dynamsoft-barcode-reader-bundle@10.5.3000:
+  version "10.5.3000"
+  resolved "https://registry.yarnpkg.com/dynamsoft-barcode-reader-bundle/-/dynamsoft-barcode-reader-bundle-10.5.3000.tgz#a914a0c7081570c1460524c0e469effb55c754f3"
+  integrity sha512-tvGE+TX+N1Qka+yj7vAjKW3eOZZkFL1wYloW5JsXObrPMp3sEVvX9KG8idfdw/mCk7jjzKGZKcsrdGMmvVo7qA==
+  dependencies:
+    dynamsoft-barcode-reader "10.4.31"
+    dynamsoft-camera-enhancer "4.1.1"
+    dynamsoft-capture-vision-router "2.4.33"
+    dynamsoft-core "3.4.31"
+    dynamsoft-license "3.4.31"
+    dynamsoft-utility "1.4.32"
+
+dynamsoft-barcode-reader@10.4.31:
+  version "10.4.31"
+  resolved "https://registry.yarnpkg.com/dynamsoft-barcode-reader/-/dynamsoft-barcode-reader-10.4.31.tgz#5a69ce12554153880c53d380cade2b1830ce0982"
+  integrity sha512-iRgFA/dINctVFunetQ8ifPGCUYrOI4ZrJNGyId+VWTk45SzCcpIwLbb6wLMkc0m7JfSo4ewhesjRmjVqwRJYjA==
+  dependencies:
+    dynamsoft-core "^3.4.31"
+
+dynamsoft-camera-enhancer@3.3.10-beta-202404222209:
+  version "3.3.10-beta-202404222209"
+  resolved "https://registry.yarnpkg.com/dynamsoft-camera-enhancer/-/dynamsoft-camera-enhancer-3.3.10-beta-202404222209.tgz#5dabd3398f4eb85413d667bf6bcb90fbd02762a6"
+  integrity sha512-s4mwLslTT9XlKfEn8DD+ndzMqyYqNT/SbMWR6NNjOdcI4cod5Ij3tZTWFffcpjprX+0ZtwYBPJUHX19gtbKjzA==
+
+dynamsoft-camera-enhancer@4.1.1:
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/dynamsoft-camera-enhancer/-/dynamsoft-camera-enhancer-4.1.1.tgz#ca8c1bb573ca145e805780b13fb926dea2844180"
+  integrity sha512-eFd/+imgKlSVR2QelEjZ0N7hFKiODAiVmJ+HgzJE2L63C6Cw3EGjQ69d/hqxrWgHYBsPVYIbtZtAgpmFuNpgKw==
+  dependencies:
+    dynamsoft-core "^3.4.30"
+
+dynamsoft-capture-vision-router@2.4.33:
+  version "2.4.33"
+  resolved "https://registry.yarnpkg.com/dynamsoft-capture-vision-router/-/dynamsoft-capture-vision-router-2.4.33.tgz#07347c08ce9cc60be2f8021a4bfaf80bbb0f8963"
+  integrity sha512-ymnGu9u1OY7QNp+225MtoLf7HCVYEQF2BVnfGr5H1OCTIFyNHbiQA1hUIifN5THIhzSSWSDue7HpCGBPiZKmuA==
+  dependencies:
+    dynamsoft-core "^3.4.31"
+
+dynamsoft-core@3.4.31, dynamsoft-core@^3.4.30, dynamsoft-core@^3.4.31:
+  version "3.4.31"
+  resolved "https://registry.yarnpkg.com/dynamsoft-core/-/dynamsoft-core-3.4.31.tgz#a1194a4de3eda503ab28a293213beb9a7d3b845b"
+  integrity sha512-bgu1cDnYSCMVCc59wM8OpsNUdQg2tMezqAeRxHz+SCvSDs1RkMCZA2XlTU3pdtB0zo1xdLiza6l9uaKGrDf3UQ==
+
+dynamsoft-javascript-barcode@^9.6.42:
+  version "9.6.42"
+  resolved "https://registry.yarnpkg.com/dynamsoft-javascript-barcode/-/dynamsoft-javascript-barcode-9.6.42.tgz#47538f0f0bd9c256c690c4a46106be464530df14"
+  integrity sha512-aLb+zUv0l1/kZKJxCGSDU3iZTSIyxjhsK2pPBr2abGcakMGArhkCgOWZGPGDGQ5JsKvUM70MUlUs9C1H7dQbjw==
+  dependencies:
+    dm-howler "^2.2.4"
+    dynamsoft-camera-enhancer "3.3.10-beta-202404222209"
+
+dynamsoft-license@3.4.31:
+  version "3.4.31"
+  resolved "https://registry.yarnpkg.com/dynamsoft-license/-/dynamsoft-license-3.4.31.tgz#77e023aaa3eafc10daf47e92891fbbef92cb688a"
+  integrity sha512-qsli2c9ELXBxITudehiyUTdO9TY9TjGMkoEMf3iShpSb/NwNlOf0EPYIErTuvTG0/RshwVnNbFVstckNvS5l6g==
+  dependencies:
+    dynamsoft-core "^3.4.31"
+
+dynamsoft-utility@1.4.32:
+  version "1.4.32"
+  resolved "https://registry.yarnpkg.com/dynamsoft-utility/-/dynamsoft-utility-1.4.32.tgz#24ae8b519e37b57e70fa44d3ac761692c3a5fc18"
+  integrity sha512-QoZ4PD2DBAfe4hJ+KFrSOD+slSNf8jmpUzGTNSYe6IOpUJQgXaAftnmdSMsG0wl15cQB/Pw/q92EOXYA0ywdiQ==
+  dependencies:
+    dynamsoft-core "^3.4.31"
 
 eastasianwidth@^0.2.0:
   version "0.2.0"

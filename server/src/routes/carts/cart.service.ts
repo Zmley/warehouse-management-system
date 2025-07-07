@@ -3,7 +3,7 @@ import Bin from 'routes/bins/bin.model'
 import AppError from 'utils/appError'
 import { getTaskByAccountID } from 'routes/tasks/task.service'
 
-const moveInventoriesToBin = async (
+export const moveInventoriesToBin = async (
   inventories: { inventoryID: string; quantity: number }[],
   bin: Bin
 ): Promise<number> => {
@@ -23,6 +23,18 @@ const moveInventoriesToBin = async (
         )
       }
 
+      if (bin.type === 'PICK_UP') {
+        const newQuantity = inventory.quantity - item.quantity
+        if (newQuantity <= 0) {
+          await inventory.destroy()
+        } else {
+          await inventory.update({ quantity: newQuantity })
+        }
+
+        updatedItemCount++
+        return item
+      }
+
       const targetInventory = await Inventory.findOne({
         where: { binID, productCode: inventory.productCode }
       })
@@ -39,12 +51,11 @@ const moveInventoriesToBin = async (
         })
       }
 
-      await inventory.update({
-        quantity: inventory.quantity - item.quantity
-      })
-
-      if (inventory.quantity === 0) {
+      const remaining = inventory.quantity - item.quantity
+      if (remaining <= 0) {
         await inventory.destroy()
+      } else {
+        await inventory.update({ quantity: remaining })
       }
 
       updatedItemCount++
@@ -130,7 +141,8 @@ export const loadByBinCode = async (
   binCode: string,
   cartID: string,
   accountID: string,
-  warehouseID: string
+  warehouseID: string,
+  selectedItems?: { inventoryID: string; quantity: number }[]
 ): Promise<{ message: string }> => {
   try {
     const bin = await Bin.findOne({ where: { binCode } })
@@ -138,46 +150,23 @@ export const loadByBinCode = async (
 
     await validateSourceBinAccess(accountID, warehouseID, binCode)
 
-    const sourceInventories = await Inventory.findAll({
-      where: { binID: bin.binID }
-    })
-
-    if (sourceInventories.length === 0) {
-      throw new AppError(404, `❌ ${binCode} is empty.`)
+    if (!selectedItems || selectedItems.length === 0) {
+      throw new AppError(400, `❌ No items selected to load from ${binCode}.`)
     }
 
-    for (const item of sourceInventories) {
-      const { productCode, quantity } = item
+    // ✅ 直接移动选中的 items 到 cart bin
+    const cartBin = await Bin.findOne({ where: { binID: cartID } })
+    if (!cartBin) throw new AppError(404, '❌ Cart bin not found')
 
-      const existingInCart = await Inventory.findOne({
-        where: {
-          binID: cartID,
-          productCode
-        }
-      })
-
-      if (existingInCart) {
-        await existingInCart.update({
-          quantity: existingInCart.quantity + quantity
-        })
-      } else {
-        await Inventory.create({
-          ...item.toJSON(),
-          inventoryID: undefined,
-          binID: cartID
-        })
-      }
-
-      await item.destroy()
-    }
+    await moveInventoriesToBin(selectedItems, cartBin)
 
     return {
-      message: `✅ Products loaded from bin ${binCode}.`
+      message: `✅ Selected products loaded from bin ${binCode}.`
     }
   } catch (error) {
     console.error('❌ Error loading from bin:', error)
     if (error instanceof AppError) throw error
-    throw new AppError(500, '❌ Failed to load items from bin')
+    throw new AppError(500, '❌ Failed to load selected items from bin')
   }
 }
 

@@ -1,4 +1,4 @@
-import { BinType } from 'constants/binType'
+import { BinType } from 'constants/index'
 
 export interface BinUploadPayload {
   warehouseID: string

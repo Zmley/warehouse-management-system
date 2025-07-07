@@ -24,12 +24,15 @@ const Success: React.FC = () => {
   const handleClose = () => {
     setVisible(false)
     navigate('/', { replace: true, state: { view: 'cart' } })
+    window.location.reload()
+    //TEST
   }
 
   useEffect(() => {
     const timer = setTimeout(() => {
       handleClose()
     }, 1000)
+
     return () => clearTimeout(timer)
   }, [])
 

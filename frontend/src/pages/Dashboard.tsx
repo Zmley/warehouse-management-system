@@ -33,13 +33,12 @@ const TransportWorkerContent: React.FC<{ userName: string }> = ({
 }) => {
   const { isCartEmpty } = useCart()
   const location = useLocation()
+  const navigate = useNavigate()
 
   const defaultView =
     location.state?.view === 'cart' ? 'cart' : isCartEmpty ? 'task' : 'cart'
 
   const [view, setView] = useState<'cart' | 'task'>(defaultView)
-
-  const navigate = useNavigate()
 
   useEffect(() => {
     if (!isCartEmpty) {
@@ -49,11 +48,24 @@ const TransportWorkerContent: React.FC<{ userName: string }> = ({
 
   return (
     <Box
-      sx={{ height: '100vh', backgroundColor: '#F7F9FC', overflow: 'hidden' }}
+      sx={{
+        height: '100vh',
+        backgroundColor: '#F7F9FC',
+        display: 'flex',
+        flexDirection: 'column'
+      }}
     >
       <TopBarFixed userName={userName} />
 
-      <Box sx={{ pt: '72px', pb: '80px', height: '100vh' }}>
+      <Box
+        sx={{
+          flex: 1,
+          pt: '72px',
+          pb: '80px',
+          overflowY: 'auto',
+          WebkitOverflowScrolling: 'touch'
+        }}
+      >
         {view === 'cart' ? <Cart /> : <PendingTaskList setView={setView} />}
       </Box>
 

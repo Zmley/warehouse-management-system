@@ -1,7 +1,7 @@
 import express from 'express'
 import { load, unload } from './cart.controller'
 import roleAllow from 'middlewares/roleAllow.middleware'
-import { UserRole } from 'constants/uerRole'
+import { UserRole } from 'constants/index'
 import { validateLoad, validateUnload } from './cart.middleware'
 
 const router = express.Router()

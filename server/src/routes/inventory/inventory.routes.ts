@@ -4,11 +4,12 @@ import {
   getInventories,
   deleteInventory,
   updateInventory,
-  addInventories
+  addInventories,
+  getInventoriesByBinCode
 } from './inventory.controller'
 
 import roleAllow from 'middlewares/roleAllow.middleware'
-import { UserRole } from 'constants/uerRole'
+import { UserRole } from 'constants/index'
 
 import {
   validateAddInventories,
@@ -52,5 +53,7 @@ router.delete(
   validateDeleteInventory,
   deleteInventory
 )
+
+router.get('/:binCode', getInventoriesByBinCode)
 
 export default router
