@@ -3,9 +3,8 @@ import { useTaskContext } from 'contexts/task'
 import {
   acceptTask as acceptTaskAPI,
   cancelTask as cancelTaskAPI,
-  releaseTask as releaseTaskAPI,
   getTasks
-} from 'api/taskApi'
+} from 'api/task'
 import { Task } from 'types/task'
 
 export const useTask = () => {
@@ -18,7 +17,7 @@ export const useTask = () => {
     try {
       setIsLoading(true)
       const result = await getTasks()
-      setTasks(result)
+      setTasks(result.data.tasks || [])
     } catch (err) {
       console.error('❌ Error loading tasks', err)
     } finally {
@@ -31,10 +30,10 @@ export const useTask = () => {
     setError(null)
     try {
       const res = await acceptTaskAPI(taskID)
-      if (res?.success && res?.task) {
+      if (res?.data.success && res?.data.task) {
         return true
       } else {
-        setError(res?.error || '❌ Failed to accept task.')
+        setError(res?.data.error || '❌ Failed to accept task.')
         return false
       }
     } catch (err: any) {
@@ -58,23 +57,6 @@ export const useTask = () => {
     }
   }
 
-  const releaseTask = async (taskID: string) => {
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      await releaseTaskAPI(taskID)
-      await fetchMyTask()
-    } catch (err: any) {
-      const message =
-        err?.response?.data?.error || err.message || '❌ Failed to release task'
-      setError(message)
-      console.error(message)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
   return {
     acceptTask,
     cancelMyTask,
@@ -82,6 +64,6 @@ export const useTask = () => {
     error,
     tasks,
     fetchTasks,
-    releaseTask
+    fetchMyTask
   }
 }

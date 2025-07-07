@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { getProductByBarCode, getProductCodes } from 'api/productApi'
+import { getProductByBarCode, getProductCodes } from 'api/product'
 import { ProductType } from 'types/product'
 
 export const useProduct = () => {
@@ -11,7 +11,7 @@ export const useProduct = () => {
   const loadProducts = useCallback(async () => {
     try {
       const res = await getProductCodes()
-      setProductCodes(res.productCodes)
+      setProductCodes(res.data.productCodes)
     } catch (err) {
       console.error('❌ Failed to load products', err)
     }
@@ -24,14 +24,14 @@ export const useProduct = () => {
     try {
       const res = await getProductByBarCode(barCode)
 
-      if (!res || res.success === false) {
-        setError(res?.error || '❌ Product not found')
+      if (!res || res.data.success === false) {
+        setError(res?.data.error || '❌ Product not found')
         setProduct(null)
         return null
       }
 
-      setProduct(res.product)
-      return res.product
+      setProduct(res.data.product)
+      return res.data.product
     } catch (err: any) {
       setError(err?.response?.data?.error || '❌ Failed to fetch product')
       setProduct(null)

@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { getInventoriesByBinCode } from 'api/inventoryApi'
+import { getInventoriesByBinCode } from 'api/inventory'
 import { InventoryItem } from 'types/inventory'
 
 export const useInventory = () => {
@@ -14,11 +14,11 @@ export const useInventory = () => {
 
       const response = await getInventoriesByBinCode(binCode)
 
-      if (response && Array.isArray(response.inventories)) {
-        setInventories(response.inventories)
-        return { success: true, inventories: response.inventories }
+      if (response && Array.isArray(response.data.inventories)) {
+        setInventories(response.data.inventories)
+        return { success: true, inventories: response.data.inventories }
       } else {
-        const message = response?.message || '❌ Invalid inventory data.'
+        const message = response?.data.message || '❌ Invalid inventory data.'
         setError(message)
         return { success: false, message }
       }
