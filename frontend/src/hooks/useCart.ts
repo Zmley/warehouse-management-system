@@ -58,7 +58,7 @@ export const useCart = () => {
     try {
       setError(null)
 
-      const response = await unload(binCode, unloadProductList)
+      const response = await unload({ binCode, unloadProductList })
 
       if (response?.data.success) {
         const inventoriesLeftInCart = inventoriesInCart
