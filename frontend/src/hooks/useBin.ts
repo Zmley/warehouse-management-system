@@ -4,7 +4,7 @@ import {
   getBinByBinCode,
   getBinCodes,
   getBinCodesByProductCode
-} from 'api/binApi'
+} from 'api/bin'
 import { Bin } from 'types/bin'
 import { useAuth } from './useAuth'
 
@@ -17,13 +17,36 @@ export const useBin = () => {
 
   const warehouseID = userProfile?.warehouseID
 
+  // const fetchBinCodesByProductCode = useCallback(
+  //   async (
+  //     productCode: string
+  //   ): Promise<{ binCode: string; quantity: number }[]> => {
+  //     setIsLoading(true)
+  //     try {
+  //       return await getBinCodesByProductCode(productCode)
+  //     } catch (err) {
+  //       console.error('❌ Failed to fetch bins by product code:', err)
+  //       return []
+  //     } finally {
+  //       setIsLoading(false)
+  //     }
+  //   },
+  //   []
+  // )
+
   const fetchBinCodesByProductCode = useCallback(
     async (
       productCode: string
     ): Promise<{ binCode: string; quantity: number }[]> => {
       setIsLoading(true)
       try {
-        return await getBinCodesByProductCode(productCode)
+        const res = await getBinCodesByProductCode(productCode)
+
+        if (!res.data.success || !res.data.binCodes) {
+          throw new Error(res.data.message || '❌ Failed to fetch bin codes')
+        }
+
+        return res.data.binCodes
       } catch (err) {
         console.error('❌ Failed to fetch bins by product code:', err)
         return []
@@ -34,14 +57,24 @@ export const useBin = () => {
     []
   )
 
+  // const fetchBinByCode = useCallback(async (binCode: string): Promise<Bin> => {
+  //   const res = await getBinByBinCode(binCode)
+
+  //   if (!res.success || !res.bin) {
+  //     throw new Error(res.error || '❌ Failed to fetch bin info')
+  //   }
+
+  //   return res.bin
+  // }, [])
+
   const fetchBinByCode = useCallback(async (binCode: string): Promise<Bin> => {
     const res = await getBinByBinCode(binCode)
 
-    if (!res.success || !res.bin) {
-      throw new Error(res.error || '❌ Failed to fetch bin info')
+    if (!res.data.success || !res.data.bin) {
+      throw new Error(res.data.message || '❌ Failed to fetch bin info')
     }
 
-    return res.bin
+    return res.data.bin
   }, [])
 
   const fetchBinCodes = useCallback(async () => {
@@ -53,8 +86,8 @@ export const useBin = () => {
 
       const res = await getBinCodes(warehouseID)
 
-      if (!res.success) {
-        setError(res.error || '❌ Failed to fetch bins')
+      if (!res.data.success) {
+        setError(res.data.error || '❌ Failed to fetch bins')
         return []
       }
 
@@ -62,7 +95,7 @@ export const useBin = () => {
       setBinCodes(codes)
 
       setError(null)
-      return res.bins
+      return res.data.bins
     } catch (err) {
       setError('❌ Failed to fetch bins')
       return []
@@ -75,7 +108,7 @@ export const useBin = () => {
 
     try {
       const result = await checkIfPickUpBin(binCode)
-      return result.success === true
+      return result.data.success === true
     } catch (err: any) {
       setError(err?.response?.data?.error || '❌ Error checking bin')
       return false

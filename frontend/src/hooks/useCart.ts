@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useCartContext } from 'contexts/cart'
-import { load, unload } from 'api/cartApi'
+import { load, unload } from 'api/cart'
 import { useNavigate } from 'react-router-dom'
 import { InventoryItem } from 'types/inventory'
 import { unloadInventory } from 'types/inventory'
@@ -30,7 +30,7 @@ export const useCart = () => {
       const response = await load(input)
       await getMyCart()
 
-      if (response.success) {
+      if (response.data.success) {
         setError(null)
 
         if ('binCode' in input) {
@@ -60,7 +60,7 @@ export const useCart = () => {
 
       const response = await unload(binCode, unloadProductList)
 
-      if (response?.success) {
+      if (response?.data.success) {
         const inventoriesLeftInCart = inventoriesInCart
           .map(item => {
             const selected = unloadProductList.find(

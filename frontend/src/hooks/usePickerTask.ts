@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { createPickerTask, getPickerTasks, cancelPickerTask } from 'api/taskApi'
+import { createPickerTask, getPickerTasks, cancelPickerTask } from 'api/task'
 import { Task } from 'types/task'
 import { useAuth } from 'hooks/useAuth'
 
@@ -14,8 +14,8 @@ export const usePickerTasks = () => {
     setLoading(true)
     setError(null)
     try {
-      const tasks = await getPickerTasks()
-      setTasks(tasks)
+      const res = await getPickerTasks()
+      setTasks(res.data.tasks || [])
     } catch (err) {
       setError('Failed to fetch tasks')
     } finally {
@@ -37,10 +37,10 @@ export const usePickerTasks = () => {
         warehouseID: userProfile.warehouseID
       })
 
-      if (res.success) {
+      if (res.data.success) {
         return res
       } else {
-        setError(res.error || '❌ Failed to create task')
+        setError(res.data.error || '❌ Failed to create task')
         return null
       }
     } catch (err: any) {
@@ -57,8 +57,8 @@ export const usePickerTasks = () => {
     setLoading(true)
     setError(null)
     try {
-      const task = await cancelPickerTask(taskID)
-      return task
+      const res = await cancelPickerTask(taskID)
+      return res.data.task || null
     } catch (err) {
       setError('Failed to cancel task')
       return null
