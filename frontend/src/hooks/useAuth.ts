@@ -13,7 +13,7 @@ export const useAuth = () => {
   const handleLogin = async (email: string, password: string) => {
     setError(null)
     try {
-      const res = await loginUser(email, password)
+      const res = await loginUser({ email, password })
       saveTokens(res.data)
       setIsAuthenticated(true)
 
