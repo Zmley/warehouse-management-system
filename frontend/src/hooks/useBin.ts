@@ -17,23 +17,6 @@ export const useBin = () => {
 
   const warehouseID = userProfile?.warehouseID
 
-  // const fetchBinCodesByProductCode = useCallback(
-  //   async (
-  //     productCode: string
-  //   ): Promise<{ binCode: string; quantity: number }[]> => {
-  //     setIsLoading(true)
-  //     try {
-  //       return await getBinCodesByProductCode(productCode)
-  //     } catch (err) {
-  //       console.error('❌ Failed to fetch bins by product code:', err)
-  //       return []
-  //     } finally {
-  //       setIsLoading(false)
-  //     }
-  //   },
-  //   []
-  // )
-
   const fetchBinCodesByProductCode = useCallback(
     async (
       productCode: string
@@ -56,16 +39,6 @@ export const useBin = () => {
     },
     []
   )
-
-  // const fetchBinByCode = useCallback(async (binCode: string): Promise<Bin> => {
-  //   const res = await getBinByBinCode(binCode)
-
-  //   if (!res.success || !res.bin) {
-  //     throw new Error(res.error || '❌ Failed to fetch bin info')
-  //   }
-
-  //   return res.bin
-  // }, [])
 
   const fetchBinByCode = useCallback(async (binCode: string): Promise<Bin> => {
     const res = await getBinByBinCode(binCode)
