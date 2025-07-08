@@ -62,8 +62,8 @@ const TransportWorkerContent: React.FC<{ userName: string }> = ({
       <Box
         sx={{
           flex: 1,
-          pt: '72px', // TopBar 避让
-          pb: '90px', // BottomBar 避让
+          pt: '72px',
+          pb: '90px',
           overflowY: 'auto',
           WebkitOverflowScrolling: 'touch'
         }}
@@ -79,7 +79,6 @@ const TransportWorkerContent: React.FC<{ userName: string }> = ({
           onTaskListClick={() => setView('tasks')}
           onInventoryClick={() => setView('inventory')}
           onPublishClick={() => navigate('/picker-scan-bin')}
-          // onCompletedTaskClick={() => {}}
           activeTab={view}
         />
       </Box>
