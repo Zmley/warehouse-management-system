@@ -76,10 +76,7 @@ const Inventory: React.FC = () => {
             <TextField
               {...params}
               onKeyDown={handleKeyPress}
-              placeholder={t(
-                'inventorySearch.searchPlaceholder',
-                '请输入商品编号'
-              )}
+              placeholder={t('inventorySearch.searchPlaceholder')}
               size='small'
               InputProps={{
                 ...params.InputProps,
