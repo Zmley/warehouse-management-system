@@ -6,7 +6,6 @@ import {
   Autocomplete,
   TextField,
   InputAdornment,
-  IconButton,
   Table,
   TableHead,
   TableRow,
@@ -30,67 +29,95 @@ const InventoryPage: React.FC = () => {
     fetchProductCodes()
   }, [])
 
-  const handleSearch = async () => {
-    if (!productCode.trim()) return
+  const handleSearch = async (code: string) => {
+    if (!code.trim()) return
     setIsFetching(true)
-    await fetchInventories(productCode.trim())
+    await fetchInventories(code.trim())
     setIsFetching(false)
   }
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') handleSearch()
+    if (e.key === 'Enter') handleSearch(productCode)
   }
 
   return (
     <Box p={2} sx={{ mx: 'auto' }}>
       <Typography variant='h6' fontWeight={600} mb={2} textAlign='center'>
-        {t('inventorySearch.title', 'Inventory')}
+        {t('inventorySearch.title')}
       </Typography>
 
-      <Autocomplete
-        options={productCodes}
-        value={productCode}
-        onChange={(_, newValue) => setProductCode(newValue || '')}
-        onInputChange={(_, newInput) => setProductCode(newInput)}
-        filterOptions={(options, { inputValue }) =>
-          inputValue.trim()
-            ? options.filter(opt =>
-                opt.toLowerCase().includes(inputValue.toLowerCase())
-              )
-            : []
-        }
-        renderInput={params => (
-          <TextField
-            {...params}
-            placeholder={t(
-              'inventorySearch.searchPlaceholder',
-              'Search by product code'
-            )}
-            onKeyDown={handleKeyPress}
-            InputProps={{
-              ...params.InputProps,
-              endAdornment: (
-                <InputAdornment position='end'>
-                  <IconButton onClick={handleSearch}>
-                    <SearchIcon />
-                  </IconButton>
-                </InputAdornment>
-              )
-            }}
-            sx={{
-              mb: 3,
-              '& .MuiOutlinedInput-root': {
-                borderRadius: '10px'
-              }
-            }}
-          />
-        )}
-        noOptionsText={
-          productCode.trim() === ''
-            ? ''
-            : t('inventorySearch.noOptions', 'No options')
-        }
-      />
+      <Box
+        display='flex'
+        justifyContent='center'
+        mb={3}
+        sx={{
+          maxWidth: 400,
+          mx: 'auto'
+        }}
+      >
+        <Autocomplete
+          fullWidth
+          options={productCodes}
+          value={productCode}
+          onChange={(_, newValue) => {
+            const newCode = newValue || ''
+            setProductCode(newCode)
+            handleSearch(newCode)
+          }}
+          onInputChange={(_, newInput) => setProductCode(newInput)}
+          filterOptions={(options, { inputValue }) =>
+            inputValue.trim()
+              ? options.filter(opt =>
+                  opt.toLowerCase().includes(inputValue.toLowerCase())
+                )
+              : []
+          }
+          renderInput={params => (
+            <TextField
+              {...params}
+              onKeyDown={handleKeyPress}
+              placeholder={t(
+                'inventorySearch.searchPlaceholder',
+                '请输入商品编号'
+              )}
+              size='small'
+              InputProps={{
+                ...params.InputProps,
+                sx: {
+                  pl: 2,
+                  pr: 1,
+                  py: 0.5,
+                  backgroundColor: '#fff',
+                  borderRadius: '999px',
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
+                  '& fieldset': {
+                    border: '1px solid #ccc'
+                  },
+                  '&:hover fieldset': {
+                    borderColor: '#888'
+                  }
+                },
+                endAdornment: (
+                  <InputAdornment position='end'>
+                    <SearchIcon
+                      sx={{
+                        color: '#888',
+                        fontSize: 20,
+                        cursor: 'default',
+                        mr: 1,
+                        '&:hover': { color: '#333' }
+                      }}
+                    />
+                  </InputAdornment>
+                )
+              }}
+            />
+          )}
+          noOptionsText={
+            productCode.trim() === '' ? '' : t('inventorySearch.noOptions')
+          }
+        />
+      </Box>
 
       {isFetching ? (
         <Box display='flex' justifyContent='center' mt={4}>
@@ -98,7 +125,7 @@ const InventoryPage: React.FC = () => {
         </Box>
       ) : inventories.length === 0 ? (
         <Typography textAlign='center' color='text.secondary'>
-          {t('inventorySearch.noResult', 'No inventory found.')}
+          {t('inventorySearch.noResult')}
         </Typography>
       ) : (
         <Paper
@@ -106,7 +133,9 @@ const InventoryPage: React.FC = () => {
           sx={{
             borderRadius: 2,
             overflow: 'auto',
-            border: '2px solid #1976d2'
+            border: '2px solid #1976d2',
+            maxWidth: 400,
+            mx: 'auto'
           }}
         >
           <Table
@@ -124,13 +153,13 @@ const InventoryPage: React.FC = () => {
             <TableHead sx={{ backgroundColor: '#f5f8fc' }}>
               <TableRow>
                 <TableCell sx={{ fontWeight: 'bold' }}>
-                  {t('inventorySearch.binCode', 'Bin Code')}
+                  {t('inventorySearch.binCode')}
                 </TableCell>
                 <TableCell sx={{ fontWeight: 'bold' }}>
-                  {t('inventorySearch.productCode', 'Product Code')}
+                  {t('inventorySearch.productCode')}
                 </TableCell>
                 <TableCell sx={{ fontWeight: 'bold' }}>
-                  {t('inventorySearch.quantity', 'Quantity')}
+                  {t('inventorySearch.quantity')}
                 </TableCell>
               </TableRow>
             </TableHead>
