@@ -11,7 +11,9 @@
    "bottombar": {
     "tasks": "Tasks",
     "cart": "ForkLift",
-    "publish": "Publish Task"
+    "publish": "Publish Task",
+      "inventory": "inventory",
+  "completed": "completed"
   },
     "taskList": {
     "pullToRefresh": "↓ Pull down to refresh tasks",
@@ -137,5 +139,16 @@
     "productQuantity": "Product Quantity",
     "inputQuantity": "input Quantity",
     "confirm": "confirm Load to Forklift"
+  },
+
+    "inventorySearch": {
+    "title": "Inventory",
+    "searchPlaceholder": "Search by product code",
+    "noOptions": "No options",
+    "pleaseSearch": "Please enter a product code and search.",
+    "noResult": "No inventory found.",
+    "binCode": "Bin Code",
+    "productCode": "Product Code",
+    "quantity": "Quantity"
   }
 }

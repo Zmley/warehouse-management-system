@@ -1,6 +1,7 @@
 import React from 'react'
 import { Box, Typography, IconButton } from '@mui/material'
 import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined'
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined'
 import AddIcon from '@mui/icons-material/Add'
 import { useTranslation } from 'react-i18next'
 
@@ -8,14 +9,25 @@ interface BottomBarProps {
   onCartClick: () => void
   onTaskListClick: () => void
   onPublishClick: () => void
+  onInventoryClick: () => void
+  activeTab: 'tasks' | 'publish' | 'cart' | 'inventory'
 }
 
 const WokerBottomBar: React.FC<BottomBarProps> = ({
   onCartClick,
   onTaskListClick,
-  onPublishClick
+  onPublishClick,
+  onInventoryClick,
+  activeTab
 }) => {
   const { t } = useTranslation()
+
+  const getColor = (tab: string) => (activeTab === tab ? '#2563eb' : '#9ca3af')
+  const getFilter = (tab: string) =>
+    activeTab === tab
+      ? 'invert(34%) sepia(93%) saturate(1939%) hue-rotate(210deg) brightness(93%) contrast(92%)'
+      : 'invert(60%) sepia(6%) saturate(220%) hue-rotate(174deg) brightness(90%) contrast(85%)'
+  const isActive = (tab: string) => activeTab === tab
 
   return (
     <Box
@@ -24,43 +36,27 @@ const WokerBottomBar: React.FC<BottomBarProps> = ({
         bottom: 0,
         left: 0,
         right: 0,
-        height: 75,
-        backgroundColor: '#ffffff',
-        boxShadow: '0px -2px 10px #00000014',
+        height: 68,
+        backgroundColor: '#fff',
+        boxShadow: '0 -1px 6px rgba(0, 0, 0, 0.06)',
         display: 'flex',
         justifyContent: 'space-around',
         zIndex: 1200
       }}
     >
       {/* Task List */}
-      <Box
+      <BottomBarItem
+        icon={
+          <AssignmentOutlinedIcon
+            sx={{ fontSize: 22, color: getColor('tasks') }}
+          />
+        }
+        label={t('bottombar.tasks')}
         onClick={onTaskListClick}
-        sx={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: 'pointer',
-          height: '100%',
-          transition: 'background-color 0.2s ease-in-out',
-          '&:hover': {
-            backgroundColor: '#ecfdf5'
-          },
-          '&:hover svg': { color: '#059669' },
-          '&:hover span': { color: '#059669' }
-        }}
-      >
-        <AssignmentOutlinedIcon sx={{ fontSize: 24, color: '#10b981' }} />
-        <Typography
-          variant='caption'
-          sx={{ fontWeight: 600, fontSize: 12, color: '#10b981', mt: 0.5 }}
-        >
-          {t('bottombar.tasks')}
-        </Typography>
-      </Box>
+        isActive={isActive('tasks')}
+      />
 
-      {/* Publish Button (plus icon moved inside) */}
+      {/* Publish */}
       <Box
         sx={{
           flex: 1,
@@ -73,26 +69,26 @@ const WokerBottomBar: React.FC<BottomBarProps> = ({
         <IconButton
           onClick={onPublishClick}
           sx={{
-            width: 48,
-            height: 48,
+            width: 36,
+            height: 36,
             borderRadius: '50%',
             background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
-            boxShadow: '0 4px 12px #3B82F657',
+            boxShadow: '0 2px 8px #3B82F640',
             color: '#fff',
             '&:hover': {
               background: 'linear-gradient(135deg, #2563eb, #1e40af)'
             }
           }}
         >
-          <AddIcon sx={{ fontSize: 28 }} />
+          <AddIcon sx={{ fontSize: 20 }} />
         </IconButton>
         <Typography
           variant='caption'
           sx={{
-            fontWeight: 600,
-            fontSize: 12,
-            mt: 0.5,
-            color: '#2563eb'
+            fontWeight: 500,
+            fontSize: 11,
+            mt: 0.3,
+            color: getColor('publish')
           }}
         >
           {t('bottombar.publish')}
@@ -100,44 +96,76 @@ const WokerBottomBar: React.FC<BottomBarProps> = ({
       </Box>
 
       {/* Cart */}
-      <Box
+      <BottomBarItem
+        icon={
+          <img
+            src='/forklift.svg'
+            alt='Forklift'
+            style={{
+              width: 24,
+              height: 24,
+              filter: getFilter('cart'),
+              transition: 'filter 0.3s ease'
+            }}
+          />
+        }
+        label={t('bottombar.cart')}
         onClick={onCartClick}
-        sx={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: 'pointer',
-          height: '100%',
-          transition: 'background-color 0.2s ease-in-out',
-          '&:hover': {
-            backgroundColor: '#e0edff'
-          },
-          '&:hover svg': { color: '#1d4ed8' },
-          '&:hover span': { color: '#1d4ed8' }
-        }}
-      >
-        <img
-          src='/forklift.svg'
-          alt='Forklift'
-          style={{
-            width: 32,
-            height: 32,
-            filter:
-              'invert(29%) sepia(92%) saturate(1675%) hue-rotate(211deg) brightness(93%) contrast(101%)'
-          }}
-        />
+        isActive={isActive('cart')}
+      />
 
-        <Typography
-          variant='caption'
-          sx={{ fontWeight: 600, fontSize: 12, color: '#2563eb', mt: 0.5 }}
-        >
-          {t('bottombar.cart')}
-        </Typography>
-      </Box>
+      {/* Inventory */}
+      <BottomBarItem
+        icon={
+          <Inventory2OutlinedIcon
+            sx={{ fontSize: 22, color: getColor('inventory') }}
+          />
+        }
+        label={t('bottombar.inventory')}
+        onClick={onInventoryClick}
+        isActive={isActive('inventory')}
+      />
     </Box>
   )
 }
+
+// 子组件 BottomBarItem
+const BottomBarItem: React.FC<{
+  icon: React.ReactNode
+  label: string
+  onClick: () => void
+  isActive: boolean
+}> = ({ icon, label, onClick, isActive }) => (
+  <Box
+    onClick={onClick}
+    sx={{
+      flex: 1,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      cursor: 'pointer',
+      height: '100%',
+      backgroundColor: isActive ? '#f0f9ff' : 'transparent',
+      transition: 'background-color 0.3s ease-in-out',
+      '&:hover': {
+        backgroundColor: '#f3f4f6'
+      }
+    }}
+  >
+    {icon}
+    <Typography
+      sx={{
+        fontWeight: 500,
+        fontSize: 11,
+        mt: 0.3,
+        color: isActive ? '#2563eb' : '#9ca3af',
+        transition: 'color 0.3s ease'
+      }}
+    >
+      {label}
+    </Typography>
+  </Box>
+)
 
 export default WokerBottomBar

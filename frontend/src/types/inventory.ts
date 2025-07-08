@@ -1,4 +1,5 @@
 export interface InventoryItem {
+  bin: any
   inventoryID: string
   binID: string
   productCode: string

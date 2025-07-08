@@ -41,5 +41,26 @@ export const useProduct = () => {
     }
   }
 
-  return { productCodes, loadProducts, error, isLoading, fetchProduct, product }
+  const fetchProductCodes = useCallback(async () => {
+    try {
+      const res = await getProductCodes()
+      if (res.data.success) {
+        setProductCodes(res.data.productCodes)
+      } else {
+        throw new Error('Invalid response')
+      }
+    } catch (err) {
+      console.error('❌ Failed to load product codes', err)
+    }
+  }, [])
+
+  return {
+    productCodes,
+    loadProducts,
+    error,
+    isLoading,
+    fetchProduct,
+    product,
+    fetchProductCodes
+  }
 }

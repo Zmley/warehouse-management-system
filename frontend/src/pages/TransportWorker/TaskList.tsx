@@ -18,7 +18,7 @@ import { useTaskContext } from 'contexts/task'
 import { useTranslation } from 'react-i18next'
 
 interface TaskListProps {
-  setView: (view: 'task' | 'cart') => void
+  setView: (view: 'tasks' | 'cart') => void
 }
 
 const TaskList: React.FC<TaskListProps> = ({ setView }) => {
