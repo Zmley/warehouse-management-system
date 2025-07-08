@@ -1,5 +1,5 @@
 import React from 'react'
-import { Box, Typography, IconButton } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined'
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined'
 import AddIcon from '@mui/icons-material/Add'
@@ -27,7 +27,6 @@ const WokerBottomBar: React.FC<BottomBarProps> = ({
     activeTab === tab
       ? 'invert(34%) sepia(93%) saturate(1939%) hue-rotate(210deg) brightness(93%) contrast(92%)'
       : 'invert(60%) sepia(6%) saturate(220%) hue-rotate(174deg) brightness(90%) contrast(85%)'
-  const isActive = (tab: string) => activeTab === tab
 
   return (
     <Box
@@ -53,57 +52,42 @@ const WokerBottomBar: React.FC<BottomBarProps> = ({
         }
         label={t('bottombar.tasks')}
         onClick={onTaskListClick}
-        isActive={isActive('tasks')}
+        isActive={activeTab === 'tasks'}
       />
 
       {/* Publish */}
-      <Box
-        sx={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}
-      >
-        <IconButton
-          onClick={onPublishClick}
-          sx={{
-            width: 36,
-            height: 36,
-            borderRadius: '50%',
-            background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
-            boxShadow: '0 2px 8px #3B82F640',
-            color: '#fff',
-            '&:hover': {
-              background: 'linear-gradient(135deg, #2563eb, #1e40af)'
-            }
-          }}
-        >
-          <AddIcon sx={{ fontSize: 20 }} />
-        </IconButton>
-        <Typography
-          variant='caption'
-          sx={{
-            fontWeight: 500,
-            fontSize: 11,
-            mt: 0.3,
-            color: getColor('publish')
-          }}
-        >
-          {t('bottombar.publish')}
-        </Typography>
-      </Box>
+      <BottomBarItem
+        icon={
+          <Box
+            sx={{
+              width: 22,
+              height: 22,
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#fff'
+            }}
+          >
+            <AddIcon sx={{ fontSize: 16 }} />
+          </Box>
+        }
+        label={t('bottombar.publish')}
+        onClick={onPublishClick}
+        isActive={activeTab === 'publish'}
+      />
 
       {/* Cart */}
       <BottomBarItem
         icon={
-          <img
+          <Box
+            component='img'
             src='/forklift.svg'
             alt='Forklift'
-            style={{
-              width: 24,
-              height: 24,
+            sx={{
+              width: 22,
+              height: 22,
               filter: getFilter('cart'),
               transition: 'filter 0.3s ease'
             }}
@@ -111,7 +95,7 @@ const WokerBottomBar: React.FC<BottomBarProps> = ({
         }
         label={t('bottombar.cart')}
         onClick={onCartClick}
-        isActive={isActive('cart')}
+        isActive={activeTab === 'cart'}
       />
 
       {/* Inventory */}
@@ -123,13 +107,12 @@ const WokerBottomBar: React.FC<BottomBarProps> = ({
         }
         label={t('bottombar.inventory')}
         onClick={onInventoryClick}
-        isActive={isActive('inventory')}
+        isActive={activeTab === 'inventory'}
       />
     </Box>
   )
 }
 
-// 子组件 BottomBarItem
 const BottomBarItem: React.FC<{
   icon: React.ReactNode
   label: string
@@ -153,12 +136,22 @@ const BottomBarItem: React.FC<{
       }
     }}
   >
-    {icon}
+    <Box
+      sx={{
+        width: 22,
+        height: 22,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}
+    >
+      {icon}
+    </Box>
     <Typography
       sx={{
         fontWeight: 500,
         fontSize: 11,
-        mt: 0.3,
+        mt: 0.4,
         color: isActive ? '#2563eb' : '#9ca3af',
         transition: 'color 0.3s ease'
       }}
