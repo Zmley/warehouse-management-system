@@ -18,7 +18,7 @@ import { useTranslation } from 'react-i18next'
 import { useInventory } from 'hooks/useInventory'
 import { useProduct } from 'hooks/useProduct'
 
-const InventoryPage: React.FC = () => {
+const Inventory: React.FC = () => {
   const { t } = useTranslation()
   const [productCode, setProductCode] = useState('')
   const [isFetching, setIsFetching] = useState(false)
@@ -179,4 +179,4 @@ const InventoryPage: React.FC = () => {
   )
 }
 
-export default InventoryPage
+export default Inventory
