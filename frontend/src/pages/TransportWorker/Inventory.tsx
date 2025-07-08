@@ -21,11 +21,8 @@ import { useProduct } from 'hooks/useProduct'
 
 const InventoryPage: React.FC = () => {
   const { t } = useTranslation()
-  const [inputProduct, setInputProduct] = useState('')
   const [productCode, setProductCode] = useState('')
-  const [hasSearched, setHasSearched] = useState(false)
   const [isFetching, setIsFetching] = useState(false)
-
   const { fetchInventories, inventories } = useInventory()
   const { fetchProductCodes, productCodes } = useProduct()
 
@@ -34,10 +31,9 @@ const InventoryPage: React.FC = () => {
   }, [])
 
   const handleSearch = async () => {
-    if (!productCode) return
-    setHasSearched(true)
+    if (!productCode.trim()) return
     setIsFetching(true)
-    await fetchInventories(productCode)
+    await fetchInventories(productCode.trim())
     setIsFetching(false)
   }
 
@@ -46,7 +42,7 @@ const InventoryPage: React.FC = () => {
   }
 
   return (
-    <Box p={2} sx={{ maxWidth: '100%', mx: 'auto' }}>
+    <Box p={2} sx={{ mx: 'auto' }}>
       <Typography variant='h6' fontWeight={600} mb={2} textAlign='center'>
         {t('inventorySearch.title', 'Inventory')}
       </Typography>
@@ -54,15 +50,14 @@ const InventoryPage: React.FC = () => {
       <Autocomplete
         options={productCodes}
         value={productCode}
-        inputValue={inputProduct}
-        onInputChange={(_, newInput) => setInputProduct(newInput)}
         onChange={(_, newValue) => setProductCode(newValue || '')}
-        filterOptions={options =>
-          inputProduct.trim() === ''
-            ? []
-            : options.filter(opt =>
-                opt.toLowerCase().includes(inputProduct.toLowerCase())
+        onInputChange={(_, newInput) => setProductCode(newInput)}
+        filterOptions={(options, { inputValue }) =>
+          inputValue.trim()
+            ? options.filter(opt =>
+                opt.toLowerCase().includes(inputValue.toLowerCase())
               )
+            : []
         }
         renderInput={params => (
           <TextField
@@ -74,16 +69,12 @@ const InventoryPage: React.FC = () => {
             onKeyDown={handleKeyPress}
             InputProps={{
               ...params.InputProps,
-              startAdornment: null,
               endAdornment: (
-                <>
-                  {params.InputProps.endAdornment}
-                  <InputAdornment position='end'>
-                    <IconButton onClick={handleSearch}>
-                      <SearchIcon />
-                    </IconButton>
-                  </InputAdornment>
-                </>
+                <InputAdornment position='end'>
+                  <IconButton onClick={handleSearch}>
+                    <SearchIcon />
+                  </IconButton>
+                </InputAdornment>
               )
             }}
             sx={{
@@ -95,20 +86,13 @@ const InventoryPage: React.FC = () => {
           />
         )}
         noOptionsText={
-          inputProduct.trim() === ''
+          productCode.trim() === ''
             ? ''
             : t('inventorySearch.noOptions', 'No options')
         }
       />
 
-      {!hasSearched ? (
-        <Typography textAlign='center' color='text.secondary'>
-          {t(
-            'inventorySearch.pleaseSearch',
-            'Please enter a product code and search.'
-          )}
-        </Typography>
-      ) : isFetching ? (
+      {isFetching ? (
         <Box display='flex' justifyContent='center' mt={4}>
           <CircularProgress />
         </Box>
