@@ -7,8 +7,8 @@ export const useInventory = () => {
   const [inventories, setInventories] = useState<InventoryItem[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
   const { userProfile } = useContext(AuthContext)!
+  const { warehouseID } = userProfile
 
   const fetchInventoriesByBinCode = useCallback(async (binCode: string) => {
     try {
@@ -36,21 +36,17 @@ export const useInventory = () => {
     }
   }, [])
 
-  const { warehouseID } = userProfile
-
   const fetchInventories = useCallback(
     async (keyword?: string) => {
       setIsLoading(true)
       setError(null)
 
       try {
-        const { data } = await getInventories({
-          warehouseID: warehouseID,
+        const res = await getInventories({
+          warehouseID,
           keyword
         })
-
-        setInventories(data.inventories)
-        return { success: true }
+        setInventories(res.data.inventories)
       } catch (err: any) {
         const message =
           err?.response?.data?.message || '❌ Failed to fetch inventories.'

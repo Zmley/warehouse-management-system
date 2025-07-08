@@ -122,7 +122,7 @@ const InventoryPage: React.FC = () => {
           sx={{
             borderRadius: 2,
             overflow: 'auto',
-            border: '2px solid #1976d2' // 蓝色边框
+            border: '2px solid #1976d2'
           }}
         >
           <Table
