@@ -5,8 +5,5 @@ export const getInventoriesByBinCode = async (binCode: string) =>
 
 export const getInventories = (params: {
   warehouseID: string
-  binID?: string
-  page?: number
-  limit?: number
   keyword?: string
 }) => apiClient.get('/inventories', { params })

@@ -37,7 +37,7 @@ const InventoryPage: React.FC = () => {
     if (!productCode) return
     setHasSearched(true)
     setIsFetching(true)
-    await fetchInventories(undefined, 1, 100, productCode)
+    await fetchInventories(productCode)
     setIsFetching(false)
   }
 

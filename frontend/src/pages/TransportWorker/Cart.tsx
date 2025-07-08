@@ -10,7 +10,7 @@ import {
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCartContext } from 'contexts/cart'
-import InventoryListCard from './InventoryListCard'
+import InventoryListCard from './components/InventoryListCard'
 import TaskInstruction from 'components/TaskInstruction'
 import { useTaskContext } from 'contexts/task'
 import { useTranslation } from 'react-i18next'

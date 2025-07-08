@@ -39,20 +39,17 @@ export const useInventory = () => {
   const { warehouseID } = userProfile
 
   const fetchInventories = useCallback(
-    async (binID?: string, page = 1, limit = 10, keyword?: string) => {
+    async (keyword?: string) => {
       setIsLoading(true)
       setError(null)
 
       try {
         const { data } = await getInventories({
-          warehouseID: warehouseID || '',
-          binID: binID === 'All' ? undefined : binID,
-          page,
-          limit,
+          warehouseID: warehouseID,
           keyword
         })
 
-        setInventories(data.inventories ?? [])
+        setInventories(data.inventories)
         return { success: true }
       } catch (err: any) {
         const message =

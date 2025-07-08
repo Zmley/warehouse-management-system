@@ -1,5 +1,5 @@
 import { Routes, Route } from 'react-router-dom'
-import ScanQRCode from 'pages/TransportWorker/ScanQRCode'
+import ScanQRCode from 'pages/TransportWorker/ScanCode'
 import UnloadSuccess from 'pages/Success'
 import { useContext, useEffect } from 'react'
 import { AuthContext } from 'contexts/auth'

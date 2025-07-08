@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Box } from '@mui/material'
 import TopBar from 'components/Topbar'
-import WokerBottombar from './TransportWorker/WokerBottomBar'
+import WokerBottombar from './TransportWorker/components/WokerBottomBar'
 import PickerBottombar from './Picker/PickerBottombar'
 import PendingTaskList from 'pages/TransportWorker/TaskList'
 import PickerCreatedTaskList from './Picker/TaskListCard'
@@ -10,7 +10,7 @@ import { TaskCategoryEnum } from 'constants/index'
 import { TransportWorkCartProvider } from 'contexts/cart'
 import { useCart } from 'hooks/useCart'
 import Cart from 'pages/TransportWorker/Cart'
-import InventoryPage from 'pages/TransportWorker/InventoryPage'
+import InventoryPage from 'pages/TransportWorker/Inventory'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 const TopBarFixed = ({ userName }: { userName: string }) => (
