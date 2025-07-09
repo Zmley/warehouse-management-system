@@ -16,11 +16,11 @@ import { useCart } from 'hooks/useCart'
 import { useBin } from 'hooks/useBin'
 import { useProduct } from 'hooks/useProduct'
 import { ScanMode } from 'constants/index'
-import AddToCartInline from 'pages/TransportWorker/AddToCartInline'
+import AddToCartInline from 'pages/TransportWorker/components/AddToCartInline'
 import { ProductType } from 'types/product'
 import { useInventory } from 'hooks/useInventory'
 import { InventoryItem } from 'types/inventory'
-import LoadConfirm from './LoadConfirm'
+import LoadConfirm from './components/LoadConfirm'
 
 // Dynamsoft Scanner globals
 declare global {

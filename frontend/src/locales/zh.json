@@ -11,7 +11,11 @@
    "bottombar": {
     "tasks": "任务列表",
     "cart": "叉车",
-    "publish": "发布任务"
+    "publish": "发布任务",
+      "inventory": "库存",
+  "completed": "已完成"
+
+
   },
    "taskList": {
     "pullToRefresh": "↓ 下拉刷新任务",
@@ -142,5 +146,18 @@
     "productQuantity": "库存数量",
     "inputQuantity": "装入数量",
     "confirm": "确认装货到叉车"
-  }
+  },
+
+
+  "inventorySearch": {
+    "title": "库存查询",
+    "searchPlaceholder": "请输入商品编号搜索",
+    "noOptions": "无匹配项",
+    "pleaseSearch": "请输入商品编号并搜索。",
+    "noResult": "未找到相关库存,或此产品缺货",
+    "binCode": "货位编号",
+    "productCode": "商品编号",
+    "quantity": "数量"
+  
+}
 }

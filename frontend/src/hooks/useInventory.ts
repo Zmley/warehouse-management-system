@@ -1,11 +1,14 @@
-import { useCallback, useState } from 'react'
-import { getInventoriesByBinCode } from 'api/inventory'
+import { useCallback, useContext, useState } from 'react'
+import { getInventories, getInventoriesByBinCode } from 'api/inventory'
 import { InventoryItem } from 'types/inventory'
+import { AuthContext } from 'contexts/auth'
 
 export const useInventory = () => {
   const [inventories, setInventories] = useState<InventoryItem[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { userProfile } = useContext(AuthContext)!
+  const { warehouseID } = userProfile
 
   const fetchInventoriesByBinCode = useCallback(async (binCode: string) => {
     try {
@@ -33,10 +36,34 @@ export const useInventory = () => {
     }
   }, [])
 
+  const fetchInventories = useCallback(
+    async (keyword?: string) => {
+      setIsLoading(true)
+      setError(null)
+
+      try {
+        const res = await getInventories({
+          warehouseID,
+          keyword
+        })
+        setInventories(res.data.inventories)
+      } catch (err: any) {
+        const message =
+          err?.response?.data?.message || '❌ Failed to fetch inventories.'
+        setError(message)
+        return { success: false, message }
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [warehouseID]
+  )
+
   return {
     inventories,
     isLoading,
     error,
-    fetchInventoriesByBinCode
+    fetchInventoriesByBinCode,
+    fetchInventories
   }
 }
