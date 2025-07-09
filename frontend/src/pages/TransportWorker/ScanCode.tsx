@@ -261,14 +261,14 @@ const ScanCode = () => {
       <Button
         onClick={handleCancel}
         sx={{
-          background: 'linear-gradient(to right, #e53935, #ef5350)', // 渐变红
+          background: 'linear-gradient(to right, #e53935, #ef5350)',
           color: 'white',
           px: 6,
           py: 1.5,
           borderRadius: 3,
           fontWeight: 'bold',
           fontSize: '1rem',
-          boxShadow: '0 4px 12px rgba(239, 83, 80, 0.4)', // 红色阴影
+          boxShadow: '0 4px 12px rgba(239, 83, 80, 0.4)',
           mt: 2
         }}
       >
