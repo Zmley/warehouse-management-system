@@ -94,7 +94,7 @@ const MultiProductInputBox: React.FC<MultiProductInputBoxProps> = ({
             p: 2,
             borderRadius: 3,
             border: '1px solid #1976d2',
-            backgroundColor: '#fdfdfd'
+            backgroundColor: '#fff'
           }}
         >
           <Autocomplete
@@ -128,7 +128,7 @@ const MultiProductInputBox: React.FC<MultiProductInputBoxProps> = ({
             value={input.quantity}
             onChange={e => handleChange(index, 'quantity', e.target.value)}
             size='small'
-            sx={{ flex: 3, backgroundColor: 'white', borderRadius: 2 }}
+            sx={{ flex: 3, backgroundColor: '#fff', borderRadius: 2 }}
           />
 
           <IconButton

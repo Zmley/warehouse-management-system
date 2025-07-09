@@ -166,13 +166,14 @@ const ScanCode = () => {
   return (
     <Box
       sx={{
-        minHeight: '50vh',
-        backgroundColor: '#f9f9f9',
+        minHeight: '100vh',
+        backgroundColor: '#fff',
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
         alignItems: 'center',
-        px: 2
+        px: 2,
+        py: 4
       }}
     >
       <Typography
@@ -260,13 +261,15 @@ const ScanCode = () => {
       <Button
         onClick={handleCancel}
         sx={{
-          backgroundColor: '#e53935',
+          background: 'linear-gradient(to right, #e53935, #ef5350)', // 渐变红
           color: 'white',
-          px: 4,
-          py: 1,
-          borderRadius: 2,
+          px: 6,
+          py: 1.5,
+          borderRadius: 3,
           fontWeight: 'bold',
-          mt: 1
+          fontSize: '1rem',
+          boxShadow: '0 4px 12px rgba(239, 83, 80, 0.4)', // 红色阴影
+          mt: 2
         }}
       >
         {t('scan.cancel')}
