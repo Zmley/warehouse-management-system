@@ -79,17 +79,11 @@
   "invalidBinForTask": "❌ 当前任务不允许扫描该 binCode：{{scannedBinCode}}",
 
 
-
-
-
-
-    "quantity": "数量",
-    "enterAtLeastOneChar": "请输入至少一个字符以进行搜索",
-      "confirm": "确认装货",
-
-        "productCode": "输入产品号",
-
-                  "manualInputTitle": "手动装货"
+  "quantity": "数量",
+  "enterAtLeastOneChar": "请输入至少一个字符以进行搜索",
+  "confirm": "确认装货",
+  "productCode": "输入产品号",
+  "manualInputTitle": "手动录入装货"
 
 
 
