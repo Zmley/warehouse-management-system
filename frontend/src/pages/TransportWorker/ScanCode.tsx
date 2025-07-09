@@ -1,28 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import {
-  Box,
-  Button,
-  Typography,
-  TextField,
-  Autocomplete,
-  InputAdornment,
-  IconButton,
-  Drawer
-} from '@mui/material'
-import SearchIcon from '@mui/icons-material/Search'
+import { Box, Button, Typography, Drawer } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { useCart } from 'hooks/useCart'
 import { useBin } from 'hooks/useBin'
 import { useProduct } from 'hooks/useProduct'
 import { ScanMode } from 'constants/index'
-import AddToCartInline from 'pages/TransportWorker/components/AddToCartInline'
 import { ProductType } from 'types/product'
 import { useInventory } from 'hooks/useInventory'
 import { InventoryItem } from 'types/inventory'
 import LoadConfirm from './components/LoadConfirm'
+import MultiProductInputBox from './components/ManualInputBox'
 
-// Dynamsoft Scanner globals
 declare global {
   interface Window {
     Dynamsoft: any
@@ -37,17 +26,19 @@ const ScanCode = () => {
   const scannedRef = useRef(false)
   const navigate = useNavigate()
   const location = useLocation()
-  const { unloadCart, error: cartError } = useCart()
-  const { fetchBinCodes, binCodes } = useBin()
+  const { unloadCart, error: cartError, loadCart } = useCart()
+  const { fetchBinCodes } = useBin()
   const { fetchProduct, productCodes, loadProducts } = useProduct()
 
   const scanMode: ScanMode = location.state?.mode ?? ScanMode.LOAD
   const unloadProductList = location.state?.unloadProductList ?? []
 
   const [manualMode, setManualMode] = useState(false)
-  const [manualInput, setManualInput] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [scannedProduct, setScannedProduct] = useState<ProductType | null>(null)
+  const [defaultManualItems, setDefaultManualItems] = useState<
+    { productCode: string; quantity: string }[]
+  >([])
 
   const { fetchInventoriesByBinCode } = useInventory()
   const [scannedBinCode, setScannedBinCode] = useState<string | null>(null)
@@ -91,7 +82,10 @@ const ScanCode = () => {
               if (/^\d{8,}$/.test(text)) {
                 const product = await fetchProduct(text)
                 if (product) {
-                  setScannedProduct(product)
+                  setDefaultManualItems([
+                    { productCode: product.productCode, quantity: '1' }
+                  ])
+                  setManualMode(true)
                 } else {
                   setError(t('scan.productNotFound'))
                 }
@@ -148,55 +142,18 @@ const ScanCode = () => {
     }
   }, [manualMode, scannedBinCode, showDrawer])
 
-  const handleManualSubmit = async () => {
-    if (!manualInput.trim()) {
-      setError(t('scan.enterPrompt'))
-      return
-    }
-
-    const input = manualInput.trim()
-
-    if (/^\d{8,}$/.test(input)) {
-      const product = await fetchProduct(input)
-      if (product) {
-        setScannedProduct(product)
-      } else {
-        setError(t('scan.productNotFound'))
-      }
-    } else {
-      try {
-        if (scanMode === ScanMode.UNLOAD) {
-          await unloadCart(input, unloadProductList)
-        } else {
-          const result = await fetchInventoriesByBinCode(input)
-
-          if (
-            result.success &&
-            result.inventories &&
-            result.inventories.length > 0
-          ) {
-            setScannedBinCode(input)
-            setInventoryList(result.inventories)
-            setShowDrawer(true)
-          } else {
-            setError(result.message || t('scan.noInventoryFound'))
-          }
-        }
-      } catch (err) {
-        console.error('操作失败:', err)
-        setError(t('scan.operationError'))
-      }
-    }
-  }
-
-  const filterBinOptions = (
-    options: string[],
-    { inputValue }: { inputValue: string }
+  const handleManualSubmit = async (
+    items: { productCode: string; quantity: number }[]
   ) => {
-    if (!inputValue) return []
-    return options.filter(option =>
-      option.toLowerCase().startsWith(inputValue.toLowerCase())
-    )
+    for (const item of items) {
+      const result = await loadCart(item)
+      if (!result.success) {
+        setError(result.error || t('scan.operationError'))
+        return
+      }
+    }
+
+    navigate('/success')
   }
 
   const handleCancel = () => {
@@ -218,7 +175,7 @@ const ScanCode = () => {
         px: 2
       }}
     >
-      <Typography
+      {/* <Typography
         fontSize='18px'
         variant='h5'
         mb={2}
@@ -226,6 +183,20 @@ const ScanCode = () => {
         sx={{ mt: 1, textAlign: 'center' }}
       >
         {scanMode === ScanMode.UNLOAD
+          ? t('scan.scanBinCode')
+          : t('scan.scanProductCode')}
+      </Typography> */}
+
+      <Typography
+        fontSize='18px'
+        variant='h5'
+        mb={2}
+        fontWeight='bold'
+        sx={{ mt: 1, textAlign: 'center' }}
+      >
+        {manualMode
+          ? t('scan.manualInputTitle')
+          : scanMode === ScanMode.UNLOAD
           ? t('scan.scanBinCode')
           : t('scan.scanProductCode')}
       </Typography>
@@ -249,54 +220,11 @@ const ScanCode = () => {
       )}
 
       {manualMode && !scannedBinCode && (
-        <Box sx={{ width: '100%', maxWidth: 420 }}>
-          <Autocomplete
-            freeSolo
-            disableClearable
-            options={[...binCodes, ...productCodes]}
-            value={manualInput}
-            onInputChange={(_, newValue) => setManualInput(newValue)}
-            filterOptions={filterBinOptions}
-            renderInput={params => (
-              <TextField
-                {...params}
-                label={t('scan.enterBinCode')}
-                onKeyDown={e => e.key === 'Enter' && handleManualSubmit()}
-                InputProps={{
-                  ...params.InputProps,
-                  endAdornment: (
-                    <InputAdornment position='end'>
-                      <IconButton onClick={handleManualSubmit}>
-                        <SearchIcon />
-                      </IconButton>
-                    </InputAdornment>
-                  )
-                }}
-              />
-            )}
-          />
-          <Button
-            variant='contained'
-            onClick={handleManualSubmit}
-            fullWidth
-            sx={{ mt: 2 }}
-          >
-            {t('scan.submit')}
-          </Button>
-        </Box>
-      )}
-
-      {scannedProduct && (
-        <Box sx={{ mt: 1, width: '100%', maxWidth: 500 }}>
-          <AddToCartInline
-            product={scannedProduct}
-            onSuccess={() => {
-              setScannedProduct(null)
-              navigate('/')
-              setTimeout(() => window.location.reload(), 0)
-            }}
-          />
-        </Box>
+        <MultiProductInputBox
+          productOptions={productCodes}
+          onSubmit={handleManualSubmit}
+          defaultItems={defaultManualItems}
+        />
       )}
 
       {showDrawer && (

@@ -76,7 +76,32 @@
 
   "scanBinCode": "扫描货位二维码卸货",
   "scanProductCode": "扫描条形码或二维码装货",
-  "invalidBinForTask": "❌ 当前任务不允许扫描该 binCode：{{scannedBinCode}}"
+  "invalidBinForTask": "❌ 当前任务不允许扫描该 binCode：{{scannedBinCode}}",
+
+
+
+
+
+
+    "quantity": "数量",
+    "enterAtLeastOneChar": "请输入至少一个字符以进行搜索",
+      "confirm": "确认装货",
+
+        "productCode": "输入产品号",
+
+                  "manualInputTitle": "手动装货"
+
+
+
+
+
+
+
+
+
+
+
+
   },  
   "inventory": {
     "total": "叉车上总数",

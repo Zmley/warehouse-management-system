@@ -53,7 +53,7 @@
 
     "operationError": "❌ Operation failed. Please try again.",
     "enterBinOrProduct" : "Enter Bin Code or Product BarCode",
-    "enterProductCode": "enter Product Codee",
+    "enterProductCode": "Enter Product Codee",
     "scan.startCamera": "turn on the camera",
 
     "title": "Scan Barcode(check information) or QRcode(Creat Task)",
@@ -68,7 +68,21 @@
     "cancel": "Cancel & Return",
     "scanBinCode": "unload: Scan the BinCode",
     "scanProductCode": "load: scan the product barCode or QRcode",
-    "invalidBinForTask": "❌ The scanned binCode: {{scannedBinCode}} is not allowed for this task.\n✅ Allowed binCodes: {{allowedBinCodes}}"
+    "invalidBinForTask": "❌ The scanned binCode: {{scannedBinCode}} is not allowed for this task.\n✅ Allowed binCodes: {{allowedBinCodes}}",
+
+
+    "quantity": "Quantity",
+    "enterAtLeastOneChar": "Please enter at least one character to search",
+
+
+     "confirm": "Confirm Load",
+        "productCode": "Enter Product Code",
+
+
+          "manualInputTitle": "Manual Input"
+
+
+
   },
     "inventory": {
     "total": "Total",
