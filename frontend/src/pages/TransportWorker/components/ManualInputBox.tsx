@@ -98,7 +98,6 @@ const MultiProductInputBox: React.FC<MultiProductInputBoxProps> = ({
           }}
         >
           <Autocomplete
-            fullWidth
             options={productOptions}
             value={input.productCode}
             onInputChange={(_, value) =>
@@ -119,7 +118,7 @@ const MultiProductInputBox: React.FC<MultiProductInputBoxProps> = ({
                 sx={{ backgroundColor: 'white', borderRadius: 2 }}
               />
             )}
-            sx={{ flex: 6 }}
+            sx={{ flex: 7 }}
           />
 
           <TextField
