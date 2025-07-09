@@ -76,10 +76,8 @@
 
 
      "confirm": "Confirm Load",
-        "productCode": "Enter Product Code",
-
-
-          "manualInputTitle": "Manual Input"
+     "productCode": "Enter Product Code",
+     "manualInputTitle": "Manual Input"
 
 
 
