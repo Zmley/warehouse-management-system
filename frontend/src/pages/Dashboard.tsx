@@ -91,7 +91,6 @@ const Dashboard: React.FC = () => {
   const isPicker = userProfile.role === 'PICKER'
   const isTransportWorker = userProfile.role === 'TRANSPORT_WORKER'
   const [taskStatus, setTaskStatus] = useState(TaskCategoryEnum.PENDING)
-
   const navigate = useNavigate()
 
   if (isPicker) {
