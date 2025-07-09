@@ -35,7 +35,7 @@ const ScanCode = () => {
 
   const [manualMode, setManualMode] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [scannedProduct, setScannedProduct] = useState<ProductType | null>(null)
+  const [scannedProduct] = useState<ProductType | null>(null)
   const [defaultManualItems, setDefaultManualItems] = useState<
     { productCode: string; quantity: string }[]
   >([])
@@ -175,18 +175,6 @@ const ScanCode = () => {
         px: 2
       }}
     >
-      {/* <Typography
-        fontSize='18px'
-        variant='h5'
-        mb={2}
-        fontWeight='bold'
-        sx={{ mt: 1, textAlign: 'center' }}
-      >
-        {scanMode === ScanMode.UNLOAD
-          ? t('scan.scanBinCode')
-          : t('scan.scanProductCode')}
-      </Typography> */}
-
       <Typography
         fontSize='18px'
         variant='h5'
