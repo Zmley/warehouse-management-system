@@ -42,5 +42,4 @@ jobs:
             yarn build
 
 
-
             NODE_ENV=production pm2 restart server || NODE_ENV=production pm2 start dist/server.js --name server
