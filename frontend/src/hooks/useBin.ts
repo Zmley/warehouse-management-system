@@ -64,7 +64,7 @@ export const useBin = () => {
         return []
       }
 
-      const codes = res.data.map((bin: any) => bin.binCode)
+      const codes = res.data.data.map((bin: any) => bin.binCode)
       setBinCodes(codes)
 
       setError(null)

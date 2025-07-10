@@ -1,6 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Box, Button, Typography, Drawer } from '@mui/material'
+import {
+  Box,
+  Button,
+  Typography,
+  Drawer,
+  Autocomplete,
+  InputAdornment,
+  TextField,
+  IconButton
+} from '@mui/material'
+import SearchIcon from '@mui/icons-material/Search'
 import { useTranslation } from 'react-i18next'
 import { useCart } from 'hooks/useCart'
 import { useBin } from 'hooks/useBin'
@@ -27,7 +37,7 @@ const ScanCode = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const { unloadCart, error: cartError, loadCart } = useCart()
-  const { fetchBinCodes } = useBin()
+  const { fetchBinCodes, binCodes } = useBin()
   const { fetchProduct, productCodes, loadProducts } = useProduct()
 
   const scanMode: ScanMode = location.state?.mode ?? ScanMode.LOAD
@@ -44,11 +54,22 @@ const ScanCode = () => {
   const [scannedBinCode, setScannedBinCode] = useState<string | null>(null)
   const [inventoryList, setInventoryList] = useState<InventoryItem[]>([])
   const [showDrawer, setShowDrawer] = useState(false)
+  const [manualInput, setManualInput] = useState('')
 
   useEffect(() => {
     fetchBinCodes()
     loadProducts()
   }, [])
+
+  const handleUnloadWithCart = (input: string) => {
+    const trimmed = input.trim()
+    if (!trimmed) {
+      setError(t('scan.enterPrompt'))
+      return
+    }
+
+    unloadCart(trimmed, unloadProductList)
+  }
 
   useEffect(() => {
     if (manualMode || scannedBinCode || showDrawer) return
@@ -208,13 +229,69 @@ const ScanCode = () => {
         />
       )}
 
-      {manualMode && !scannedBinCode && (
+      {/* {manualMode && !scannedBinCode && (
         <MultiProductInputBox
           productOptions={productCodes}
           onSubmit={handleManualSubmit}
           defaultItems={defaultManualItems}
         />
-      )}
+      )} */}
+
+      {manualMode &&
+        !scannedBinCode &&
+        (scanMode === ScanMode.UNLOAD ? (
+          <Box sx={{ width: '100%', maxWidth: 420 }}>
+            <Autocomplete
+              freeSolo
+              disableClearable
+              options={binCodes}
+              value={manualInput}
+              onInputChange={(_, newValue) => setManualInput(newValue)}
+              filterOptions={(options, state) =>
+                state.inputValue.length < 1
+                  ? []
+                  : options.filter(opt =>
+                      opt.toLowerCase().includes(state.inputValue.toLowerCase())
+                    )
+              }
+              renderInput={params => (
+                <TextField
+                  {...params}
+                  label={t('scan.enterBinCode')}
+                  onKeyDown={e =>
+                    e.key === 'Enter' && handleUnloadWithCart(manualInput)
+                  }
+                  InputProps={{
+                    ...params.InputProps,
+                    endAdornment: (
+                      <InputAdornment position='end'>
+                        <IconButton
+                          onClick={() => handleUnloadWithCart(manualInput)}
+                        >
+                          <SearchIcon />
+                        </IconButton>
+                      </InputAdornment>
+                    )
+                  }}
+                />
+              )}
+            />
+            <Button
+              variant='contained'
+              onClick={() => handleUnloadWithCart(manualInput)}
+              fullWidth
+              sx={{ mt: 2 }}
+            >
+              {t('scan.submit')}
+            </Button>
+          </Box>
+        ) : (
+          <MultiProductInputBox
+            productOptions={productCodes}
+            onSubmit={handleManualSubmit}
+            defaultItems={defaultManualItems}
+          />
+        ))}
 
       {showDrawer && (
         <Drawer
