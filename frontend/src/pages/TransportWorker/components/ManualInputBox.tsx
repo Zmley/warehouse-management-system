@@ -1,13 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import {
-  Box,
-  IconButton,
-  TextField,
-  Typography,
-  Autocomplete,
-  Button,
-  Paper
-} from '@mui/material'
+import { Box, IconButton, TextField, Autocomplete, Button } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
 import { useTranslation } from 'react-i18next'
