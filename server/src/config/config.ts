@@ -1,13 +1,7 @@
 import Joi from 'joi'
 import * as dotenv from 'dotenv'
-import path from 'path'
 
-const env = process.env.NODE_ENV || 'local'
-dotenv.config({
-  path: path.resolve(__dirname, `../../.env.${env}`)
-})
-
-console.log(`✅ Loaded .env.${env}`)
+dotenv.config({ path: `.env` })
 
 // All env variables used by the app should be defined in this file.
 
@@ -20,12 +14,7 @@ console.log(`✅ Loaded .env.${env}`)
 
 const envsSchema = Joi.object()
   .keys({
-    NODE_ENV: Joi.string().valid(
-      'production',
-      'integration',
-      'development',
-      'local'
-    ),
+    NODE_ENV: Joi.string().valid('production', 'integration', 'development'),
     PORT: Joi.number().default(3000),
     API_KEY_TOKEN: Joi.string(),
     DB_HOST: Joi.string().required(),
