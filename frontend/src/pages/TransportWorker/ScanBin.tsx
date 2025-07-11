@@ -75,6 +75,8 @@ const ScanBin = () => {
         setInventoryList(result.inventories)
         setShowDrawer(true)
       } else {
+        scannerRef.current?.router?.stopCapturing()
+        scannerRef.current?.cameraEnhancer?.close()
         setError(result.message || t('scan.noInventoryFound'))
       }
     }
