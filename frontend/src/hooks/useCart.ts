@@ -51,16 +51,56 @@ export const useCart = () => {
     }
   }
 
+  // const unloadCart = async (
+  //   binCode: string,
+  //   unloadProductList: unloadInventory[]
+  // ) => {
+  //   try {
+  //     setError(null)
+
+  //     const response = await unload({ binCode, unloadProductList })
+
+  //     if (response.data.success) {
+  //       const inventoriesLeftInCart = inventoriesInCart
+  //         .map(item => {
+  //           const selected = unloadProductList.find(
+  //             s => s.inventoryID === item.inventoryID
+  //           )
+  //           if (selected) {
+  //             const remainingQty = item.quantity - Number(selected.quantity)
+  //             return remainingQty > 0
+  //               ? { ...item, quantity: remainingQty }
+  //               : null
+  //           }
+  //           return item
+  //         })
+  //         .filter(Boolean)
+
+  //       setInventoriesInCart(inventoriesLeftInCart as InventoryItem[])
+
+  //       navigate('/success')
+  //     } else {
+  //       setError(response?.data?.error || '❌ Failed to unload cart.')
+  //     }
+
+  //     return response
+  //   } catch (err: any) {
+  //     const msg = err?.response?.data?.message || '❌ Error unloading cart'
+  //     setError(msg)
+  //     return { success: false, error: msg }
+  //   }
+  // }
+
   const unloadCart = async (
     binCode: string,
     unloadProductList: unloadInventory[]
-  ) => {
+  ): Promise<{ success: boolean; error?: string }> => {
     try {
       setError(null)
 
       const response = await unload({ binCode, unloadProductList })
 
-      if (response?.data.success) {
+      if (response?.data?.success) {
         const inventoriesLeftInCart = inventoriesInCart
           .map(item => {
             const selected = unloadProductList.find(
@@ -78,14 +118,14 @@ export const useCart = () => {
 
         setInventoriesInCart(inventoriesLeftInCart as InventoryItem[])
 
-        navigate('/success')
+        return { success: true }
       } else {
-        setError(response?.data?.error || '❌ Failed to unload cart.')
+        const msg = response?.data?.error || '❌ Failed to unload cart.'
+        return { success: false, error: msg }
       }
-
-      return response
     } catch (err: any) {
-      const msg = err?.response?.data?.message || '❌ Error unloading cart'
+      const msg =
+        err?.response?.data?.error.message || '❌ Error unloading cart'
       setError(msg)
       return { success: false, error: msg }
     }

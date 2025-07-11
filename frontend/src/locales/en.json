@@ -40,7 +40,20 @@
     "unloadDirectTo": "Unload directly to",
     "confirmUnloadTitle": "Confirm Destination Bin",
     "confirmUnloadDescription": "Please confirm whether you are at the correct destination bin.",
-    "confirmNow": "CONFIRM NOW"
+    "confirmNow": "CONFIRM NOW",
+
+
+
+
+  "selectScanMode": "Select scan mode",
+  "scanBinCode": "Scan Bin Code",
+  "scanProduct": "Scan Product",
+  "disableScanProductDueToTask": "You have an active task. Please finish it before scanning products."
+
+
+
+
+
 
   },
     "scan": {
@@ -67,7 +80,6 @@
     "switchToManual": "Switch to Manual Input",
     "cancel": "Cancel & Return",
     "scanBinCode": "unload: Scan the BinCode",
-    "scanProductCode": "load: scan the product barCode or QRcode",
     "invalidBinForTask": "❌ The scanned binCode: {{scannedBinCode}} is not allowed for this task.\n✅ Allowed binCodes: {{allowedBinCodes}}",
 
 
@@ -77,7 +89,33 @@
 
      "confirm": "Confirm Load",
      "productCode": "Enter Product Code",
-     "manualInputTitle": "Manual Input"
+     "manualInputBinCodeTitle": "Manual Input",
+
+
+
+          "manualInputTitleForUnload": "Manual Input",
+
+
+
+
+            "noInventoryFound": "No inventories in this binCode",
+
+
+             "scanProductCode": "Scan Product BarCode",
+
+  "manualInputProductCodeTitle": "Manual Input Product Code",
+
+
+      "invalidProductCode": "invalid product barcode, please make sure scan the barcode",
+
+
+        "switchToScan": "switch To Scan"
+
+
+
+
+
+
 
 
 

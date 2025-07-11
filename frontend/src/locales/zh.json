@@ -50,7 +50,19 @@
   
     "confirmUnloadTo": "请确认卸货货位为",
     "confirmUnloadDescription": "请确认您当前的位置是否是正确的目标货位。",
-    "confirmNow": "确认并卸货"
+    "confirmNow": "确认并卸货",
+
+
+     "selectScanMode": "请选择扫码模式",
+  "scanBinCode": "扫码货位",
+  "scanProduct": "扫码产品",
+  "disableScanProductDueToTask": "当前已有任务，请完成后再进行扫码装货。"
+
+
+
+
+
+
   },
   "scan": {
   "scanBin": "扫描码",
@@ -68,14 +80,21 @@
   "productNotFound": "未找到该产品",
   "productError": "查询产品失败",
   "invalidBinCode": "无效的Bin码",
+    "invalidProductCode": "无效的产品条纹码，请确认扫描了产品条纹码",
+
   "enterPrompt": "请输入内容",
   "inputLabel": "请输入条码或Bin码",
   "submit": "提交",
   "switchToManual": "切换为手动输入",
   "cancel": "取消返回",
 
-  "scanBinCode": "扫描货位二维码卸货",
-  "scanProductCode": "扫描条形码或二维码装货",
+
+
+
+  "scanBinCode": "扫描货位码",
+
+
+
   "invalidBinForTask": "❌ 当前任务不允许扫描该 binCode：{{scannedBinCode}}",
 
 
@@ -83,18 +102,21 @@
   "enterAtLeastOneChar": "请输入至少一个字符以进行搜索",
   "confirm": "确认装货",
   "productCode": "输入产品号",
-  "manualInputTitle": "手动录入装货"
+  "manualInputBinCodeTitle": "手动录入货位号码",
+
+
+  "manualInputTitleForUnload": "手动录入货位号卸货",
 
 
 
+  "noInventoryFound": "次货位暂无任何产品库存",
 
 
+  "scanProductCode": "扫码产品条形码",
 
+  "manualInputProductCodeTitle": "手动输入产品编码",
 
-
-
-
-
+  "switchToScan": "切换回扫描"
 
   },  
   "inventory": {
