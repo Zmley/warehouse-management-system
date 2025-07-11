@@ -200,5 +200,33 @@
     "binCode": "Bin Code",
     "productCode": "Product Code",
     "quantity": "Quantity"
-  }
+  },
+
+
+
+
+
+
+  "picker": {
+    "title": "Create Picker Task",
+    "productCode": "Product Code",
+    "pickupBin": "Pickup Bin:",
+    "sourceBinList": "Source Bin List",
+    "qty": "Qty",
+    "createTask": "Create Task",
+    "createOutOfStockTask": "Create Out-of-stock Task",
+    "error": {
+      "noProductCode": "❌ Please select a product code.",
+      "noPickupBin": "❌ Pickup bin not found.",
+      "fetchFailed": "❌ Failed to fetch bin info."
+    }
+
+}
+
+
+
+
+
+
+
 }

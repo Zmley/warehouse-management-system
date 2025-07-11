@@ -118,6 +118,11 @@
 
   "switchToScan": "切换回扫描"
 
+
+
+
+
+
   },  
   "inventory": {
     "total": "叉车上总数",
@@ -200,5 +205,36 @@
     "productCode": "商品编号",
     "quantity": "数量"
   
+},
+
+
+
+
+
+
+
+  "picker": {
+    "title": "创建任务",
+    "productCode": "产品编码",
+    "pickupBin": "取货货位：",
+    "sourceBinList": "源货位列表",
+    "qty": "数量",
+    "createTask": "创建任务",
+    "createOutOfStockTask": "发布缺货任务",
+    "error": {
+      "noProductCode": "❌ 请选择产品编码。",
+      "noPickupBin": "❌ 未找到取货货位。",
+      "fetchFailed": "❌ 获取货位信息失败。"
+    }
+  
 }
+
+
+
+
+
+
+
+
+
 }

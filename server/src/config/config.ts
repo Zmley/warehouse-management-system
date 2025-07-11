@@ -1,7 +1,7 @@
 import Joi from 'joi'
 import * as dotenv from 'dotenv'
 
-dotenv.config({ path: `.env` })
+dotenv.config({ path: `.env.local` })
 
 // All env variables used by the app should be defined in this file.
 
