@@ -40,7 +40,20 @@
     "unloadDirectTo": "Unload directly to",
     "confirmUnloadTitle": "Confirm Destination Bin",
     "confirmUnloadDescription": "Please confirm whether you are at the correct destination bin.",
-    "confirmNow": "CONFIRM NOW"
+    "confirmNow": "CONFIRM NOW",
+
+
+
+
+  "selectScanMode": "Select scan mode",
+  "scanBinCode": "Scan Bin Code",
+  "scanProduct": "Scan Product",
+  "disableScanProductDueToTask": "You have an active task. Please finish it before scanning products."
+
+
+
+
+
 
   },
     "scan": {
@@ -53,7 +66,7 @@
 
     "operationError": "❌ Operation failed. Please try again.",
     "enterBinOrProduct" : "Enter Bin Code or Product BarCode",
-    "enterProductCode": "enter Product Codee",
+    "enterProductCode": "Enter Product Codee",
     "scan.startCamera": "turn on the camera",
 
     "title": "Scan Barcode(check information) or QRcode(Creat Task)",
@@ -67,8 +80,45 @@
     "switchToManual": "Switch to Manual Input",
     "cancel": "Cancel & Return",
     "scanBinCode": "unload: Scan the BinCode",
-    "scanProductCode": "load: scan the product barCode or QRcode",
-    "invalidBinForTask": "❌ The scanned binCode: {{scannedBinCode}} is not allowed for this task.\n✅ Allowed binCodes: {{allowedBinCodes}}"
+    "invalidBinForTask": "❌ The scanned binCode: {{scannedBinCode}} is not allowed for this task.\n✅ Allowed binCodes: {{allowedBinCodes}}",
+
+
+    "quantity": "Quantity",
+    "enterAtLeastOneChar": "Please enter at least one character to search",
+
+
+     "confirm": "Confirm Load",
+     "productCode": "Enter Product Code",
+     "manualInputBinCodeTitle": "Manual Input",
+
+
+
+          "manualInputTitleForUnload": "Manual Input",
+
+
+
+
+            "noInventoryFound": "No inventories in this binCode",
+
+
+             "scanProductCode": "Scan Product BarCode",
+
+  "manualInputProductCodeTitle": "Manual Input Product Code",
+
+
+      "invalidProductCode": "invalid product barcode, please make sure scan the barcode",
+
+
+        "switchToScan": "switch To Scan"
+
+
+
+
+
+
+
+
+
   },
     "inventory": {
     "total": "Total",
@@ -150,5 +200,33 @@
     "binCode": "Bin Code",
     "productCode": "Product Code",
     "quantity": "Quantity"
-  }
+  },
+
+
+
+
+
+
+  "picker": {
+    "title": "Create Picker Task",
+    "productCode": "Product Code",
+    "pickupBin": "Pickup Bin:",
+    "sourceBinList": "Source Bin List",
+    "qty": "Qty",
+    "createTask": "Create Task",
+    "createOutOfStockTask": "Create Out-of-stock Task",
+    "error": {
+      "noProductCode": "❌ Please select a product code.",
+      "noPickupBin": "❌ Pickup bin not found.",
+      "fetchFailed": "❌ Failed to fetch bin info."
+    }
+
+}
+
+
+
+
+
+
+
 }

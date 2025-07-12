@@ -22,9 +22,10 @@ const Cart = () => {
   const navigate = useNavigate()
   const { inventoriesInCart, setSelectedToUnload } = useCartContext()
   const { myTask, fetchMyTask } = useTaskContext()
-  const [confirmUnloadDrawer, setConfirmUnloadDrawer] = useState(false)
-
   const { unloadCart } = useCart()
+
+  const [confirmUnloadDrawer, setConfirmUnloadDrawer] = useState(false)
+  const [loadDrawerOpen, setLoadDrawerOpen] = useState(false) // 新增
 
   const defaultUnloadList = useMemo(() => {
     if (!inventoriesInCart.length) return []
@@ -101,7 +102,15 @@ const Cart = () => {
     setSelectedToUnload(selectedToUnload)
 
     if (myTask?.destinationBinCode) {
-      await unloadCart(myTask.destinationBinCode, selectedToUnload)
+      const result = await unloadCart(
+        myTask.destinationBinCode,
+        selectedToUnload
+      )
+      if (result?.success) {
+        navigate('/success')
+      } else {
+        console.error('Unload failed:', result?.error)
+      }
     } else {
       navigate('/my-task/scan-QRCode', {
         state: {
@@ -166,11 +175,7 @@ const Cart = () => {
                   <Button
                     variant='contained'
                     color='primary'
-                    onClick={() =>
-                      navigate('/my-task/scan-QRCode', {
-                        state: { mode: ScanMode.LOAD }
-                      })
-                    }
+                    onClick={() => setLoadDrawerOpen(true)} // 打开 drawer
                     sx={{
                       width: '100%',
                       height: 80,
@@ -244,6 +249,7 @@ const Cart = () => {
         </Card>
       </Box>
 
+      {/* Unload Drawer */}
       <Drawer
         anchor='bottom'
         open={confirmUnloadDrawer}
@@ -253,7 +259,7 @@ const Cart = () => {
             borderTopLeftRadius: 16,
             borderTopRightRadius: 16,
             p: 3,
-            height: 200
+            height: 250
           }
         }}
       >
@@ -275,6 +281,59 @@ const Cart = () => {
         >
           {t('cart.confirmNow')}
         </Button>
+      </Drawer>
+
+      {/* Load Drawer */}
+      <Drawer
+        anchor='bottom'
+        open={loadDrawerOpen}
+        onClose={() => setLoadDrawerOpen(false)}
+        PaperProps={{
+          sx: {
+            borderTopLeftRadius: 16,
+            borderTopRightRadius: 16,
+            p: 3,
+            height: 220
+          }
+        }}
+      >
+        <Typography textAlign='center' fontWeight='bold' mb={2}>
+          {t('cart.selectScanMode')}
+        </Typography>
+
+        <Grid container spacing={2}>
+          <Grid item xs={6}>
+            <Button
+              variant='contained'
+              fullWidth
+              color='primary'
+              sx={{ height: 80, fontSize: 16, fontWeight: 600 }}
+              onClick={() => {
+                navigate('/my-task/scan-QRCode', {
+                  state: { mode: ScanMode.LOAD }
+                })
+                setLoadDrawerOpen(false)
+              }}
+            >
+              {t('cart.scanBinCode')}
+            </Button>
+          </Grid>
+          <Grid item xs={6}>
+            <Button
+              variant='contained'
+              fullWidth
+              color='secondary'
+              disabled={!!myTask}
+              sx={{ height: 80, fontSize: 16, fontWeight: 600 }}
+              onClick={() => {
+                navigate('/my-task/scan-product')
+                setLoadDrawerOpen(false)
+              }}
+            >
+              {t('cart.scanProduct')}
+            </Button>
+          </Grid>
+        </Grid>
       </Drawer>
     </Box>
   )
