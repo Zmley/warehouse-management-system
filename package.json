@@ -1,6 +1,6 @@
 {
   "devDependencies": {
-    "concurrently": "^9.1.2"
+    "concurrently": "^9.2.0"
   },
   "scripts": {
     "start": "concurrently \"cd frontend && yarn dev\" \"cd server && yarn start\""
