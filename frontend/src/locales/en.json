@@ -145,7 +145,26 @@
     "cancelTooltip": "Cancel this task",
     "mustLoadFirst": "❌ Load cargo first to release",
     "releaseTooltip": "Release this task to the aisle",
-    "loadTooltip": "Load items from aisle bin"
+    "loadTooltip": "Load items from aisle bin",
+
+      "cancelAndReturnTooltip": "Cancel task and return cargo to source bin.",
+  "cancelAndReturnButton": "Cancel & Return",
+  "cancelButton": "Cancel",
+
+
+   "confirmCancelTitle": "Are you sure you want to cancel this task?",
+  "confirmCancelSubtitle": "Cargo will be returned to source bin: {{bin}}",
+  "confirmNow": "Yes, cancel it"
+
+
+
+
+
+
+
+
+
+
   },
     "productCard": {
     "title": "Product Info",

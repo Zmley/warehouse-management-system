@@ -147,7 +147,30 @@
     "cancelTooltip": "取消此任务",
     "mustLoadFirst": "❌ 请先加载货物再释放任务",
     "releaseTooltip": "释放任务到巷道",
-    "loadTooltip": "从过道货位加载物品"
+    "loadTooltip": "从过道货位加载物品",
+
+
+ "cancelAndReturnTooltip": "取消任务并将货物退回到原始货位",
+  "cancelAndReturnButton": "取消并卸货到原货位",
+  "cancelButton": "取消",
+
+
+   "confirmCancelTitle": "确认要取消任务吗？",
+  "confirmCancelSubtitle": "货物将退回到原始货位：{{bin}}",
+  "confirmNow": "确认取消"
+
+
+
+
+  
+
+
+
+
+
+
+
+
   },
     "productCard": {
     "title": "产品信息",

@@ -2,8 +2,12 @@ import { Request, Response, NextFunction } from 'express'
 import { UserRole, TaskStatus } from 'constants/index'
 import * as taskService from 'routes/tasks/task.service'
 import * as binService from 'routes/bins/bin.service'
+import * as inventoryService from 'routes/inventory/inventory.service'
+import * as cartsService from 'routes/carts/cart.service'
+
 import Task from './task.model'
 import AppError from 'utils/appError'
+import Bin from 'routes/bins/bin.model'
 
 export const acceptTask = async (
   req: Request,
@@ -52,6 +56,48 @@ export const getMyTask = async (
   }
 }
 
+// export const cancelTask = async (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ): Promise<void> => {
+//   try {
+//     const { taskID } = req.params
+//     const { role } = res.locals
+
+//     let task
+
+//     if (role === UserRole.ADMIN || role === UserRole.PICKER) {
+//       task = await taskService.updateTaskByTaskID({
+//         taskID,
+//         status: TaskStatus.CANCELED
+//       })
+//     } else if (role === UserRole.TRANSPORT_WORKER) {
+//       const currentTask = await Task.findByPk(taskID)
+
+//       if (currentTask.status !== TaskStatus.IN_PROCESS) {
+//         throw new AppError(400, '❌ Only in-process tasks can be cancelled')
+//       }
+
+//       task = await taskService.updateTaskByTaskID({
+//         taskID,
+//         status: TaskStatus.PENDING,
+//         accepterID: null
+//       })
+//     } else {
+//       throw new AppError(403, '❌ Role not authorized to cancel tasks')
+//     }
+
+//     res.status(200).json({
+//       success: true,
+//       message: `Task "${task.taskID}" cancelled successfully`,
+//       task
+//     })
+//   } catch (error) {
+//     next(error)
+//   }
+// }
+
 export const cancelTask = async (
   req: Request,
   res: Response,
@@ -59,7 +105,7 @@ export const cancelTask = async (
 ): Promise<void> => {
   try {
     const { taskID } = req.params
-    const { role } = res.locals
+    const { role, cartID } = res.locals
 
     let task
 
@@ -73,6 +119,28 @@ export const cancelTask = async (
 
       if (currentTask.status !== TaskStatus.IN_PROCESS) {
         throw new AppError(400, '❌ Only in-process tasks can be cancelled')
+      }
+
+      const cartInventories = await inventoryService.getCartInventories(cartID)
+
+      console.log(
+        `Auto-unloading item(s) back to bin: ${cartInventories.length}`
+      )
+
+      if (cartInventories.length > 0) {
+        // 自动卸货到任务的 sourceBinCode
+        const unloadProductList = cartInventories.map(item => ({
+          inventoryID: item.inventoryID,
+          quantity: item.quantity
+        }))
+
+        const sourceBin = await Bin.findByPk(currentTask.sourceBinID)
+
+        console.log(
+          `🚚 Auto-unloading ${unloadProductList.length} item(s) back to bin ${sourceBin.binCode}`
+        )
+
+        await cartsService.unloadByBinCode(sourceBin.binCode, unloadProductList)
       }
 
       task = await taskService.updateTaskByTaskID({

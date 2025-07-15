@@ -25,7 +25,7 @@ const Cart = () => {
   const { unloadCart } = useCart()
 
   const [confirmUnloadDrawer, setConfirmUnloadDrawer] = useState(false)
-  const [loadDrawerOpen, setLoadDrawerOpen] = useState(false) // 新增
+  const [loadDrawerOpen, setLoadDrawerOpen] = useState(false)
 
   const defaultUnloadList = useMemo(() => {
     if (!inventoriesInCart.length) return []

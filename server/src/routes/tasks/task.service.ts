@@ -7,7 +7,7 @@ import { UserRole, TaskStatus } from 'constants/index'
 import { TaskWithJoin } from 'types/task'
 import {
   checkInventoryQuantity,
-  hasInventoryInCart
+  getCartInventories
 } from 'routes/inventory/inventory.service'
 import { getBinByBinCode } from 'routes/bins/bin.service'
 import Account from 'routes/accounts/accounts.model'
@@ -71,8 +71,16 @@ export const validateTaskAcceptance = async (
     throw new AppError(409, '❌ You already have an active task in progress.')
   }
 
-  const cartHasCargo = await hasInventoryInCart(accountID)
-  if (cartHasCargo) {
+  // const cartHasCargo = await hasInventoryInCart(accountID)
+  // if (cartHasCargo) {
+  //   throw new AppError(
+  //     409,
+  //     '❌ Please unload your cart before accepting a new task.'
+  //   )
+  // }
+
+  const cartInventories = await getCartInventories(accountID)
+  if (cartInventories.length > 0) {
     throw new AppError(
       409,
       '❌ Please unload your cart before accepting a new task.'
