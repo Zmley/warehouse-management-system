@@ -56,48 +56,6 @@ export const getMyTask = async (
   }
 }
 
-// export const cancelTask = async (
-//   req: Request,
-//   res: Response,
-//   next: NextFunction
-// ): Promise<void> => {
-//   try {
-//     const { taskID } = req.params
-//     const { role } = res.locals
-
-//     let task
-
-//     if (role === UserRole.ADMIN || role === UserRole.PICKER) {
-//       task = await taskService.updateTaskByTaskID({
-//         taskID,
-//         status: TaskStatus.CANCELED
-//       })
-//     } else if (role === UserRole.TRANSPORT_WORKER) {
-//       const currentTask = await Task.findByPk(taskID)
-
-//       if (currentTask.status !== TaskStatus.IN_PROCESS) {
-//         throw new AppError(400, '❌ Only in-process tasks can be cancelled')
-//       }
-
-//       task = await taskService.updateTaskByTaskID({
-//         taskID,
-//         status: TaskStatus.PENDING,
-//         accepterID: null
-//       })
-//     } else {
-//       throw new AppError(403, '❌ Role not authorized to cancel tasks')
-//     }
-
-//     res.status(200).json({
-//       success: true,
-//       message: `Task "${task.taskID}" cancelled successfully`,
-//       task
-//     })
-//   } catch (error) {
-//     next(error)
-//   }
-// }
-
 export const cancelTask = async (
   req: Request,
   res: Response,
@@ -128,7 +86,6 @@ export const cancelTask = async (
       )
 
       if (cartInventories.length > 0) {
-        // 自动卸货到任务的 sourceBinCode
         const unloadProductList = cartInventories.map(item => ({
           inventoryID: item.inventoryID,
           quantity: item.quantity

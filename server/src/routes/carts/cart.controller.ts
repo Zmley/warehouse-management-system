@@ -82,14 +82,6 @@ export const unload = async (
     const task = await taskService.getTaskByAccountID(accountID, warehouseID)
 
     if (task) {
-      // if (task.destinationBinCode !== binCode) {
-      //   res.status(400).json({
-      //     success: false,
-      //     message: `❌ You can only unload to your assigned destination bin: ${task.destinationBinCode}`
-      //   })
-      //   return
-      // }
-
       if (
         task.destinationBinCode !== binCode &&
         task.sourceBinCode !== binCode

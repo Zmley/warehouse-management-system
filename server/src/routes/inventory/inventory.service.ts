@@ -191,19 +191,6 @@ export const checkInventoryQuantity = async (
   }
 }
 
-// export const hasInventoryInCart = async (
-//   accountID: string
-// ): Promise<boolean> => {
-//   const account = await Account.findByPk(accountID)
-//   if (!account?.cartID) return false
-
-//   const items = await Inventory.findAll({
-//     where: { binID: account.cartID }
-//   })
-
-//   return items.length > 0
-// }
-
 export const getCartInventories = async (
   cartID: string
 ): Promise<Inventory[]> => {
