@@ -6,11 +6,11 @@ export const validateLoad = (
   res: Response,
   next: NextFunction
 ) => {
-  const { productCode, binCode, quantity } = req.body
+  const { productCode, quantity } = req.body
 
-  if (!productCode && !binCode) {
-    return next(new AppError(400, '❌ Missing productCode or binCode'))
-  }
+  // if (!productCode && !binCode) {
+  //   return next(new AppError(400, '❌ Missing productCode or binCode'))
+  // }
 
   if (productCode && (quantity === undefined || quantity === null)) {
     return next(

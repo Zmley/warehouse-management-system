@@ -59,26 +59,34 @@ const ScanBin = () => {
       return
     }
 
-    if (scanMode === ScanMode.UNLOAD) {
-      const result = await unloadCart(trimmed, unloadProductList)
-      if (result.success) {
-        navigate('/success')
-      } else {
+    try {
+      if (scanMode === ScanMode.UNLOAD) {
+        const result = await unloadCart(trimmed, unloadProductList)
         scannerRef.current?.router?.stopCapturing()
         scannerRef.current?.cameraEnhancer?.close()
-        setError(result.error || t('scan.unloadFailed'))
-      }
-    } else {
-      const result = await fetchInventoriesByBinCode(trimmed)
-      if (result.success && result.inventories?.length > 0) {
-        setScannedBinCode(trimmed)
-        setInventoryList(result.inventories)
-        setShowDrawer(true)
+
+        if (result.success) {
+          navigate('/success')
+        } else {
+          setError(result.error || t('scan.unloadFailed'))
+        }
       } else {
+        const result = await fetchInventoriesByBinCode(trimmed)
         scannerRef.current?.router?.stopCapturing()
         scannerRef.current?.cameraEnhancer?.close()
-        setError(result.message || t('scan.noInventoryFound'))
+
+        if (result.success && result.inventories?.length > 0) {
+          setScannedBinCode(trimmed)
+          setInventoryList(result.inventories)
+          setShowDrawer(true)
+        } else {
+          setError(result.message || t('scan.noInventoryFound'))
+        }
       }
+    } catch (err) {
+      scannerRef.current?.router?.stopCapturing()
+      scannerRef.current?.cameraEnhancer?.close()
+      setError(t('scan.operationError'))
     }
   }
 
@@ -138,7 +146,7 @@ const ScanBin = () => {
     scannerRef.current?.router?.stopCapturing()
     scannerRef.current?.cameraEnhancer?.close()
     navigate('/')
-    setTimeout(() => window.location.reload(), 0)
+    // setTimeout(() => window.location.reload(), 0)
   }
 
   return (

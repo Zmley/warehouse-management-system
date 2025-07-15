@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Box, Button, Typography } from '@mui/material'
+import { Box, Button, Typography, Drawer } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { useCart } from 'hooks/useCart'
 import { useProduct } from 'hooks/useProduct'
@@ -29,6 +29,7 @@ const ScanProduct = () => {
   const unloadProductList = location.state?.unloadProductList ?? []
 
   const [manualMode, setManualMode] = useState(false)
+  const [showDrawer, setShowDrawer] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [scannedProduct] = useState<ProductType | null>(null)
   const [defaultManualItems, setDefaultManualItems] = useState<
@@ -38,6 +39,21 @@ const ScanProduct = () => {
   useEffect(() => {
     loadProducts()
   }, [])
+
+  const parseProductList = (
+    text: string
+  ): { productCode: string; quantity: string }[] => {
+    const entries = text.split(',').map(pair => pair.trim())
+    const result: { productCode: string; quantity: string }[] = []
+
+    for (const entry of entries) {
+      const [code, qty] = entry.split(':').map(s => s.trim())
+      if (code && qty && /^\d+$/.test(qty)) {
+        result.push({ productCode: code, quantity: qty })
+      }
+    }
+    return result
+  }
 
   useEffect(() => {
     if (manualMode) return
@@ -65,36 +81,46 @@ const ScanProduct = () => {
 
           for (const item of result.items) {
             const text = item.text?.trim()
-            if (text) {
-              scannedRef.current = true
+            if (!text) continue
 
-              if (/^\d{8,}$/.test(text)) {
+            scannedRef.current = true
+
+            try {
+              if (text.includes(':') && text.includes(',')) {
+                const parsedList = parseProductList(text)
+                if (parsedList.length > 0) {
+                  setDefaultManualItems(parsedList)
+                  setManualMode(true)
+                  setShowDrawer(true)
+                } else {
+                  setError(t('scan.invalidProductCode'))
+                }
+              } else if (/^\d{8,}$/.test(text)) {
                 const product = await fetchProduct(text)
                 if (product) {
                   setDefaultManualItems([
                     { productCode: product.productCode, quantity: '1' }
                   ])
                   setManualMode(true)
+                  setShowDrawer(true)
                 } else {
                   setError(t('scan.productNotFound'))
                 }
               } else {
-                try {
-                  if (scanMode === ScanMode.UNLOAD) {
-                    await unloadCart(text, unloadProductList)
-                  } else {
-                    setError(t('scan.invalidProductCode'))
-                  }
-                } catch (err) {
-                  console.error('操作失败:', err)
-                  setError(t('scan.operationError'))
+                if (scanMode === ScanMode.UNLOAD) {
+                  await unloadCart(text, unloadProductList)
+                } else {
+                  setError(t('scan.invalidProductCode'))
                 }
               }
-
-              await router.stopCapturing()
-              await cameraEnhancer.close()
-              break
+            } catch (err) {
+              console.error('🚨 scan fail:', err)
+              setError(t('scan.operationError'))
             }
+
+            await router.stopCapturing()
+            await cameraEnhancer.close()
+            break
           }
         }
 
@@ -120,12 +146,11 @@ const ScanProduct = () => {
   const handleManualSubmit = async (
     items: { productCode: string; quantity: number }[]
   ) => {
-    for (const item of items) {
-      const result = await loadCart(item)
-      if (!result.success) {
-        setError(result.error || t('scan.operationError'))
-        return
-      }
+    const result = await loadCart({ productList: items })
+
+    if (!result.success) {
+      setError(result.error || t('scan.operationError'))
+      return
     }
 
     navigate('/success')
@@ -135,7 +160,7 @@ const ScanProduct = () => {
     scannerRef.current?.router?.stopCapturing()
     scannerRef.current?.cameraEnhancer?.close()
     navigate('/')
-    setTimeout(() => window.location.reload(), 0)
+    // setTimeout(() => window.location.reload(), 0)
   }
 
   return (
@@ -181,19 +206,12 @@ const ScanProduct = () => {
         />
       )}
 
-      {manualMode && (
-        <MultiProductInputBox
-          productOptions={productCodes}
-          onSubmit={handleManualSubmit}
-          defaultItems={defaultManualItems}
-        />
-      )}
-
       {!manualMode && !scannedProduct && (
         <Button
           variant='outlined'
           onClick={() => {
             setManualMode(true)
+            setShowDrawer(true)
             scannerRef.current?.router?.stopCapturing()
             scannerRef.current?.cameraEnhancer?.close()
           }}
@@ -225,6 +243,27 @@ const ScanProduct = () => {
           {error || cartError}
         </Typography>
       )}
+
+      <Drawer
+        anchor='top'
+        open={showDrawer}
+        onClose={handleCancel}
+        PaperProps={{
+          sx: {
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            borderRadius: '0 0 16px 16px',
+            p: 2,
+            bgcolor: '#fff'
+          }
+        }}
+      >
+        <MultiProductInputBox
+          productOptions={productCodes}
+          onSubmit={handleManualSubmit}
+          defaultItems={defaultManualItems}
+        />
+      </Drawer>
     </Box>
   )
 }

@@ -68,7 +68,7 @@ const MultiProductInputBox: React.FC<MultiProductInputBoxProps> = ({
     <Box
       sx={{
         width: '100%',
-        maxWidth: 650,
+        maxWidth: 300,
         p: 2,
         backgroundColor: '#fff',
         borderRadius: 2

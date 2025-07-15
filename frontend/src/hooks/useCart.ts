@@ -25,6 +25,9 @@ export const useCart = () => {
           binCode: string
           selectedItems: { inventoryID: string; quantity: number }[]
         }
+      | {
+          productList: { productCode: string; quantity: number }[]
+        }
   ) => {
     try {
       const response = await load(input)
