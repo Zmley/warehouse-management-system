@@ -64,14 +64,15 @@ export const binToBin = async (
 
 export const validateTaskAcceptance = async (
   accountID: string,
-  taskID: string
+  taskID: string,
+  cartID: string
 ) => {
   const isActive = await hasActiveTask(accountID)
   if (isActive) {
     throw new AppError(409, '❌ You already have an active task in progress.')
   }
 
-  const cartInventories = await getCartInventories(accountID)
+  const cartInventories = await getCartInventories(cartID)
   if (cartInventories.length > 0) {
     throw new AppError(
       409,

@@ -15,10 +15,10 @@ export const acceptTask = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const accountID = res.locals.accountID
+    const { accountID, cartID } = res.locals
     const { taskID } = req.params
 
-    await taskService.validateTaskAcceptance(accountID, taskID)
+    await taskService.validateTaskAcceptance(accountID, taskID, cartID)
 
     const task = await taskService.updateTaskByTaskID({
       taskID,
