@@ -1,0 +1,232 @@
+import { useEffect, useRef, useState } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { Box, Button, Typography } from '@mui/material'
+import { useTranslation } from 'react-i18next'
+import { useCart } from 'hooks/useCart'
+import { useProduct } from 'hooks/useProduct'
+import { ScanMode } from 'constants/index'
+import { ProductType } from 'types/product'
+import MultiProductInputBox from './components/ManualInputBox'
+
+declare global {
+  interface Window {
+    Dynamsoft: any
+  }
+}
+
+const license = process.env.REACT_APP_DYNAMSOFT_LICENSE || ''
+
+const ScanProduct = () => {
+  const { t } = useTranslation()
+  const scannerRef = useRef<any>(null)
+  const scannedRef = useRef(false)
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { unloadCart, error: cartError, loadCart } = useCart()
+  const { fetchProduct, productCodes, loadProducts } = useProduct()
+
+  const scanMode: ScanMode = location.state?.mode ?? ScanMode.LOAD
+  const unloadProductList = location.state?.unloadProductList ?? []
+
+  const [manualMode, setManualMode] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [scannedProduct] = useState<ProductType | null>(null)
+  const [defaultManualItems, setDefaultManualItems] = useState<
+    { productCode: string; quantity: string }[]
+  >([])
+
+  useEffect(() => {
+    loadProducts()
+  }, [])
+
+  useEffect(() => {
+    if (manualMode) return
+
+    const loadAndInit = async () => {
+      try {
+        const { Dynamsoft } = window
+        await Dynamsoft.License.LicenseManager.initLicense(license)
+        await Dynamsoft.Core.CoreModule.loadWasm(['DBR'])
+
+        const cameraView = await Dynamsoft.DCE.CameraView.createInstance()
+        const cameraEnhancer =
+          await Dynamsoft.DCE.CameraEnhancer.createInstance(cameraView)
+
+        document
+          .getElementById('scanner-view')
+          ?.append(cameraView.getUIElement())
+
+        const router = await Dynamsoft.CVR.CaptureVisionRouter.createInstance()
+        await router.setInput(cameraEnhancer)
+
+        const receiver = new Dynamsoft.CVR.CapturedResultReceiver()
+        receiver.onCapturedResultReceived = async (result: any) => {
+          if (scannedRef.current) return
+
+          for (const item of result.items) {
+            const text = item.text?.trim()
+            if (text) {
+              scannedRef.current = true
+
+              if (/^\d{8,}$/.test(text)) {
+                const product = await fetchProduct(text)
+                if (product) {
+                  setDefaultManualItems([
+                    { productCode: product.productCode, quantity: '1' }
+                  ])
+                  setManualMode(true)
+                } else {
+                  setError(t('scan.productNotFound'))
+                }
+              } else {
+                try {
+                  if (scanMode === ScanMode.UNLOAD) {
+                    await unloadCart(text, unloadProductList)
+                  } else {
+                    setError(t('scan.invalidProductCode'))
+                  }
+                } catch (err) {
+                  console.error('操作失败:', err)
+                  setError(t('scan.operationError'))
+                }
+              }
+
+              await router.stopCapturing()
+              await cameraEnhancer.close()
+              break
+            }
+          }
+        }
+
+        router.addResultReceiver(receiver)
+        await cameraEnhancer.open()
+        await router.startCapturing('ReadBarcodes_SpeedFirst')
+
+        scannerRef.current = { router, cameraEnhancer }
+      } catch (err) {
+        console.error('❌ Scanner init failed:', err)
+        setError(t('scan.operationError'))
+      }
+    }
+
+    loadAndInit()
+
+    return () => {
+      scannerRef.current?.router?.stopCapturing()
+      scannerRef.current?.cameraEnhancer?.close()
+    }
+  }, [manualMode])
+
+  const handleManualSubmit = async (
+    items: { productCode: string; quantity: number }[]
+  ) => {
+    for (const item of items) {
+      const result = await loadCart(item)
+      if (!result.success) {
+        setError(result.error || t('scan.operationError'))
+        return
+      }
+    }
+
+    navigate('/success')
+  }
+
+  const handleCancel = () => {
+    scannerRef.current?.router?.stopCapturing()
+    scannerRef.current?.cameraEnhancer?.close()
+    navigate('/')
+    setTimeout(() => window.location.reload(), 0)
+  }
+
+  return (
+    <Box
+      sx={{
+        minHeight: '100vh',
+        backgroundColor: '#fff',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'flex-start',
+        alignItems: 'center',
+        px: 2,
+        py: 4
+      }}
+    >
+      <Typography
+        fontSize='18px'
+        variant='h5'
+        mb={2}
+        fontWeight='bold'
+        sx={{ mt: 1, textAlign: 'center' }}
+      >
+        {manualMode
+          ? t('scan.manualInputProductCodeTitle')
+          : t('scan.scanProductCode')}
+      </Typography>
+
+      {!manualMode && !scannedProduct && (
+        <Box
+          id='scanner-view'
+          sx={{
+            height: 300,
+            width: '90%',
+            maxWidth: 500,
+            borderRadius: 3,
+            overflow: 'hidden',
+            border: '2px solid #ccc',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginBottom: 2
+          }}
+        />
+      )}
+
+      {manualMode && (
+        <MultiProductInputBox
+          productOptions={productCodes}
+          onSubmit={handleManualSubmit}
+          defaultItems={defaultManualItems}
+        />
+      )}
+
+      {!manualMode && !scannedProduct && (
+        <Button
+          variant='outlined'
+          onClick={() => {
+            setManualMode(true)
+            scannerRef.current?.router?.stopCapturing()
+            scannerRef.current?.cameraEnhancer?.close()
+          }}
+          sx={{ mt: 3, mb: 2 }}
+        >
+          {t('scan.switchToManual')}
+        </Button>
+      )}
+
+      <Button
+        onClick={handleCancel}
+        sx={{
+          background: 'linear-gradient(to right, #e53935, #ef5350)',
+          color: 'white',
+          px: 6,
+          py: 1.5,
+          borderRadius: 3,
+          fontWeight: 'bold',
+          fontSize: '1rem',
+          boxShadow: '0 4px 12px rgba(239, 83, 80, 0.4)',
+          mt: 2
+        }}
+      >
+        {t('scan.cancel')}
+      </Button>
+
+      {(error || cartError) && (
+        <Typography color='error' mt={2} fontWeight='bold' textAlign='center'>
+          {error || cartError}
+        </Typography>
+      )}
+    </Box>
+  )
+}
+
+export default ScanProduct

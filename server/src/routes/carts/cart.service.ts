@@ -154,7 +154,6 @@ export const loadByBinCode = async (
       throw new AppError(400, `❌ No items selected to load from ${binCode}.`)
     }
 
-    // ✅ 直接移动选中的 items 到 cart bin
     const cartBin = await Bin.findOne({ where: { binID: cartID } })
     if (!cartBin) throw new AppError(404, '❌ Cart bin not found')
 

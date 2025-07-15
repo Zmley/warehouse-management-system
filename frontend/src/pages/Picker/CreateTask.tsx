@@ -31,8 +31,8 @@ const CreateTask = () => {
   >([])
   const [sourceError, setSourceError] = useState(false)
 
-  const { createTask, loading, error } = usePickerTasks()
-  const { fetchBinCodesByProductCode, isLoading } = useBin()
+  const { createTask, isLoading, error } = usePickerTasks()
+  const { fetchBinCodesByProductCode } = useBin()
 
   useEffect(() => {
     const getSources = async () => {
@@ -201,7 +201,7 @@ const CreateTask = () => {
             variant='contained'
             color='primary'
             fullWidth
-            disabled={!productCode || loading}
+            disabled={!productCode || isLoading}
             onClick={handleSubmit}
             sx={{
               borderRadius: '12px',
@@ -211,7 +211,7 @@ const CreateTask = () => {
               mb: 2
             }}
           >
-            {loading
+            {isLoading
               ? t('createTask.loading')
               : sourceError
               ? t('createTask.outOfStock')

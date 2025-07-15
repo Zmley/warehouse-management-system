@@ -23,7 +23,8 @@ const envsSchema = Joi.object()
     DB_PASSWORD: Joi.string(),
     AWS_REGION: Joi.string(),
     COGNITO_USER_POOL_ID: Joi.string(),
-    COGNITO_CLIENT_ID: Joi.string()
+    COGNITO_CLIENT_ID: Joi.string(),
+    DB_SSL: Joi.string().valid('true', 'false').default('false')
   })
   .unknown(true)
 
@@ -48,5 +49,6 @@ export default {
   dbPassword: envVars.DB_PASSWORD,
   awsRegion: envVars.AWS_REGION,
   cognitoUserPoolId: envVars.COGNITO_USER_POOL_ID,
-  cognitoClientId: envVars.COGNITO_CLIENT_ID
+  cognitoClientId: envVars.COGNITO_CLIENT_ID,
+  dbSsl: envVars.DB_SSL === 'true'
 }
