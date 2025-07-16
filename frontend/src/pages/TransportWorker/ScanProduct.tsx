@@ -36,6 +36,8 @@ const ScanProduct = () => {
     { productCode: string; quantity: string }[]
   >([])
 
+  const [cancelCountdown, setCancelCountdown] = useState<number | null>(null) // ✅ 添加
+
   useEffect(() => {
     loadProducts()
   }, [])
@@ -159,9 +161,22 @@ const ScanProduct = () => {
   const handleCancel = () => {
     scannerRef.current?.router?.stopCapturing()
     scannerRef.current?.cameraEnhancer?.close()
-    navigate('/')
-    // setTimeout(() => window.location.reload(), 0)
+    setCancelCountdown(3)
   }
+
+  useEffect(() => {
+    if (cancelCountdown === null) return
+    if (cancelCountdown === 0) {
+      navigate('/')
+      return
+    }
+
+    const timer = setTimeout(() => {
+      setCancelCountdown(prev => (prev !== null ? prev - 1 : null))
+    }, 1000)
+
+    return () => clearTimeout(timer)
+  }, [cancelCountdown, navigate])
 
   return (
     <Box
@@ -223,6 +238,7 @@ const ScanProduct = () => {
 
       <Button
         onClick={handleCancel}
+        disabled={cancelCountdown !== null}
         sx={{
           background: 'linear-gradient(to right, #e53935, #ef5350)',
           color: 'white',
@@ -235,7 +251,9 @@ const ScanProduct = () => {
           mt: 2
         }}
       >
-        {t('scan.cancel')}
+        {cancelCountdown !== null
+          ? `${t('scan.cancel')} (${cancelCountdown})`
+          : t('scan.cancel')}
       </Button>
 
       {(error || cartError) && (

@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next'
 import CreateManualTask from './CreateManual'
 
 const license = process.env.REACT_APP_DYNAMSOFT_LICENSE || ''
+
 declare global {
   interface Window {
     Dynamsoft: any
@@ -26,6 +27,7 @@ const Scan = () => {
   const [product, setProduct] = useState<ProductType | null>(null)
   const [showScanner, setShowScanner] = useState(true)
   const [manualMode, setManualMode] = useState(false)
+  const [cancelCountdown, setCancelCountdown] = useState<number | null>(null) // ✅ 新增状态
 
   useEffect(() => {
     fetchBinCodes()
@@ -86,6 +88,20 @@ const Scan = () => {
     }
   }, [manualMode])
 
+  useEffect(() => {
+    if (cancelCountdown === null) return
+    if (cancelCountdown === 0) {
+      navigate('/')
+      return
+    }
+
+    const timer = setTimeout(() => {
+      setCancelCountdown(prev => (prev !== null ? prev - 1 : null))
+    }, 1000)
+
+    return () => clearTimeout(timer)
+  }, [cancelCountdown, navigate])
+
   const processBarcode = async (barcodeText: string) => {
     if (/^\d{12}$/.test(barcodeText)) {
       try {
@@ -112,8 +128,7 @@ const Scan = () => {
   const handleCancel = () => {
     scannerRef.current?.router?.stopCapturing()
     scannerRef.current?.cameraEnhancer?.close()
-    navigate('/')
-    // window.location.reload()
+    setCancelCountdown(3)
   }
 
   return (
@@ -190,6 +205,7 @@ const Scan = () => {
 
       <Button
         onClick={handleCancel}
+        disabled={cancelCountdown !== null}
         sx={{
           backgroundColor: '#e53935',
           color: 'white',
@@ -200,7 +216,9 @@ const Scan = () => {
           mt: 1
         }}
       >
-        {t('scan.cancel')}
+        {cancelCountdown !== null
+          ? `${t('scan.cancel')} (${cancelCountdown})`
+          : t('scan.cancel')}
       </Button>
     </Box>
   )
