@@ -27,7 +27,7 @@ const Scan = () => {
   const [product, setProduct] = useState<ProductType | null>(null)
   const [showScanner, setShowScanner] = useState(true)
   const [manualMode, setManualMode] = useState(false)
-  const [cancelCountdown, setCancelCountdown] = useState<number | null>(null) // ✅ 新增状态
+  const [cancelCountdown, setCancelCountdown] = useState<number | null>(null)
 
   useEffect(() => {
     fetchBinCodes()
