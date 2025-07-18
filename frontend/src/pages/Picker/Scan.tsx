@@ -88,20 +88,6 @@ const Scan = () => {
     }
   }, [manualMode])
 
-  useEffect(() => {
-    if (cancelCountdown === null) return
-    if (cancelCountdown === 0) {
-      navigate('/')
-      return
-    }
-
-    const timer = setTimeout(() => {
-      setCancelCountdown(prev => (prev !== null ? prev - 1 : null))
-    }, 1000)
-
-    return () => clearTimeout(timer)
-  }, [cancelCountdown, navigate])
-
   const processBarcode = async (barcodeText: string) => {
     if (/^\d{12}$/.test(barcodeText)) {
       try {
@@ -128,7 +114,7 @@ const Scan = () => {
   const handleCancel = () => {
     scannerRef.current?.router?.stopCapturing()
     scannerRef.current?.cameraEnhancer?.close()
-    setCancelCountdown(3)
+    navigate('/')
   }
 
   return (

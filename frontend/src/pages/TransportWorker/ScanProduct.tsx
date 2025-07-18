@@ -36,8 +36,6 @@ const ScanProduct = () => {
     { productCode: string; quantity: string }[]
   >([])
 
-  const [cancelCountdown, setCancelCountdown] = useState<number | null>(null) // ✅ 添加
-
   useEffect(() => {
     loadProducts()
   }, [])
@@ -88,7 +86,7 @@ const ScanProduct = () => {
             scannedRef.current = true
 
             try {
-              if (text.includes(':') && text.includes(',')) {
+              if (text.includes(':')) {
                 const parsedList = parseProductList(text)
                 if (parsedList.length > 0) {
                   setDefaultManualItems(parsedList)
@@ -161,22 +159,8 @@ const ScanProduct = () => {
   const handleCancel = () => {
     scannerRef.current?.router?.stopCapturing()
     scannerRef.current?.cameraEnhancer?.close()
-    setCancelCountdown(3)
+    navigate('/')
   }
-
-  useEffect(() => {
-    if (cancelCountdown === null) return
-    if (cancelCountdown === 0) {
-      navigate('/')
-      return
-    }
-
-    const timer = setTimeout(() => {
-      setCancelCountdown(prev => (prev !== null ? prev - 1 : null))
-    }, 1000)
-
-    return () => clearTimeout(timer)
-  }, [cancelCountdown, navigate])
 
   return (
     <Box
@@ -238,7 +222,6 @@ const ScanProduct = () => {
 
       <Button
         onClick={handleCancel}
-        disabled={cancelCountdown !== null}
         sx={{
           background: 'linear-gradient(to right, #e53935, #ef5350)',
           color: 'white',
@@ -251,9 +234,7 @@ const ScanProduct = () => {
           mt: 2
         }}
       >
-        {cancelCountdown !== null
-          ? `${t('scan.cancel')} (${cancelCountdown})`
-          : t('scan.cancel')}
+        {t('scan.cancel')}
       </Button>
 
       {(error || cartError) && (
@@ -279,6 +260,7 @@ const ScanProduct = () => {
         <MultiProductInputBox
           productOptions={productCodes}
           onSubmit={handleManualSubmit}
+          onCancel={handleCancel}
           defaultItems={defaultManualItems}
         />
       </Drawer>

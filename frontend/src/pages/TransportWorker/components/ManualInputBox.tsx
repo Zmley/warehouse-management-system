@@ -12,12 +12,14 @@ interface ProductInput {
 interface MultiProductInputBoxProps {
   productOptions: string[]
   onSubmit: (items: { productCode: string; quantity: number }[]) => void
+  onCancel?: () => void // ✅ 新增
   defaultItems?: ProductInput[]
 }
 
 const MultiProductInputBox: React.FC<MultiProductInputBoxProps> = ({
   productOptions,
   onSubmit,
+  onCancel,
   defaultItems = []
 }) => {
   const { t } = useTranslation()
@@ -148,27 +150,51 @@ const MultiProductInputBox: React.FC<MultiProductInputBoxProps> = ({
 
       <Box textAlign='center' mb={2}>
         <AddCircleOutlineIcon
-          sx={{ color: '#1976d2', fontSize: 32 }}
+          sx={{ color: '#1976d2', fontSize: 32, cursor: 'pointer' }}
           onClick={handleAdd}
         />
       </Box>
 
-      <Box textAlign='center'>
+      <Box
+        textAlign='center'
+        display='flex'
+        justifyContent='center'
+        gap={2}
+        mt={2}
+      >
         <Button
           onClick={handleSubmit}
           variant='contained'
           sx={{
             borderRadius: 3,
-            px: 6,
-            py: 1.5,
+            px: 4,
+            py: 1.2,
             fontWeight: 'bold',
-            fontSize: '1rem',
+            fontSize: '0.95rem',
             background: 'linear-gradient(to right, #1976d2, #42a5f5)',
             boxShadow: '0 4px 12px rgba(0, 123, 255, 0.3)'
           }}
         >
           {t('scan.confirm')}
         </Button>
+
+        {onCancel && (
+          <Button
+            onClick={onCancel}
+            variant='outlined'
+            sx={{
+              borderRadius: 3,
+              px: 4,
+              py: 1.2,
+              fontWeight: 'bold',
+              fontSize: '0.95rem',
+              color: '#f44336',
+              borderColor: '#f44336'
+            }}
+          >
+            {t('scan.cancel')}
+          </Button>
+        )}
       </Box>
     </Box>
   )

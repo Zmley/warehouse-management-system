@@ -13,6 +13,7 @@ const app: Application = express()
 const corsOrigins = [
   process.env.CORS_ORIGIN_ADMIN_LOCAL,
   process.env.CORS_ORIGIN_ADMIN_PROD,
+  process.env.CORS_ORIGIN_ADMIN_PROD_ZMLEY,
   process.env.CORS_ORIGIN_WORKER_LOCAL,
   process.env.CORS_ORIGIN_WORKER_PROD
 ].filter(Boolean)
