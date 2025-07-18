@@ -48,8 +48,6 @@ const ScanBin = () => {
   const [inventoryList, setInventoryList] = useState([])
   const [showDrawer, setShowDrawer] = useState(false)
 
-  const [cancelCountdown, setCancelCountdown] = useState<number | null>(null)
-
   useEffect(() => {
     fetchBinCodes()
   }, [])
@@ -147,23 +145,8 @@ const ScanBin = () => {
   const handleCancel = () => {
     scannerRef.current?.router?.stopCapturing()
     scannerRef.current?.cameraEnhancer?.close()
-    // setCancelCountdown(3)
     navigate('/')
   }
-
-  // useEffect(() => {
-  //   if (cancelCountdown === null) return
-  //   if (cancelCountdown === 0) {
-  //     navigate('/')
-  //     return
-  //   }
-
-  //   const timer = setTimeout(() => {
-  //     setCancelCountdown(prev => (prev !== null ? prev - 1 : null))
-  //   }, 1000)
-
-  //   return () => clearTimeout(timer)
-  // }, [cancelCountdown, navigate])
 
   return (
     <Box
@@ -279,12 +262,7 @@ const ScanBin = () => {
           boxShadow: '0 4px 12px rgba(239, 83, 80, 0.4)',
           mt: 2
         }}
-        disabled={cancelCountdown !== null}
-      >
-        {cancelCountdown !== null
-          ? `${t('scan.cancel')} (${cancelCountdown})`
-          : t('scan.cancel')}
-      </Button>
+      ></Button>
 
       {error && (
         <Typography color='error' mt={2} fontWeight='bold' textAlign='center'>
