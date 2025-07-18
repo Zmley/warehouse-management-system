@@ -262,8 +262,9 @@ const ScanBin = () => {
           boxShadow: '0 4px 12px rgba(239, 83, 80, 0.4)',
           mt: 2
         }}
-      ></Button>
-
+      >
+        {t('scan.cancel')}
+      </Button>
       {error && (
         <Typography color='error' mt={2} fontWeight='bold' textAlign='center'>
           {error}
