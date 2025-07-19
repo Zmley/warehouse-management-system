@@ -13,7 +13,9 @@ export const getAccessToken = (): string | null => {
 }
 
 export const clearTokens = () => {
-  localStorage.clear()
+  localStorage.removeItem('accessToken')
+  localStorage.removeItem('refreshToken')
+  localStorage.removeItem('idToken')
 }
 
 export const areTokensValid = (): boolean => {
@@ -22,4 +24,8 @@ export const areTokensValid = (): boolean => {
     localStorage.getItem('idToken') &&
     localStorage.getItem('refreshToken')
   )
+}
+
+export const getRefreshToken = (): string | null => {
+  return localStorage.getItem('refreshToken')
 }

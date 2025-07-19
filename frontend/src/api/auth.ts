@@ -5,3 +5,6 @@ export const loginUser = (payload: LoginPayload) =>
   apiClient.post('/login', payload)
 
 export const getUserProfile = () => apiClient.get('/me')
+
+export const refreshToken = (token: string) =>
+  apiClient.post('/refresh-token', { refreshToken: token })

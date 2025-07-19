@@ -1,12 +1,47 @@
-import React, { useState } from 'react'
-import { Typography, Button, TextField, Box, Alert } from '@mui/material'
+import React, { useState, useEffect } from 'react'
+import {
+  Typography,
+  Button,
+  TextField,
+  Box,
+  Alert,
+  Checkbox,
+  FormControlLabel,
+  MenuItem,
+  Select
+} from '@mui/material'
 import { useAuth } from 'hooks/useAuth'
 
 const Login: React.FC = () => {
   const { handleLogin, error } = useAuth()
-  const [email, setEmail] = useState('')
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [rememberMe, setRememberMe] = useState(false)
+  const [domain, setDomain] = useState('@outlook.com')
+
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('savedEmail')
+    const savedPassword = localStorage.getItem('savedPassword')
+    if (savedEmail && savedPassword) {
+      const parts = savedEmail.split('@')
+      setUsername(parts[0])
+      setDomain(`@${parts[1]}`)
+      setPassword(savedPassword)
+      setRememberMe(true)
+    }
+  }, [])
+
   const handleLoginClick = () => {
+    const email = `${username}${domain}`
+
+    if (rememberMe) {
+      localStorage.setItem('savedEmail', email)
+      localStorage.setItem('savedPassword', password)
+    } else {
+      localStorage.removeItem('savedEmail')
+      localStorage.removeItem('savedPassword')
+    }
+
     handleLogin(email, password)
   }
 
@@ -53,20 +88,35 @@ const Login: React.FC = () => {
           </Alert>
         )}
 
-        <TextField
-          label='User name'
-          variant='outlined'
-          fullWidth
-          value={email}
-          onChange={e => setEmail(e.target.value)}
+        {/* Username + domain */}
+        {/* Username + domain */}
+        <Box
           sx={{
-            mb: 2,
-            borderRadius: '8px',
-            '& .MuiOutlinedInput-root': {
-              borderRadius: '8px'
-            }
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            mb: 2
           }}
-        />
+        >
+          <TextField
+            label='Username'
+            variant='outlined'
+            fullWidth
+            value={username}
+            onChange={e => setUsername(e.target.value)}
+          />
+          <Typography
+            sx={{
+              minWidth: '120px',
+              textAlign: 'center',
+              fontWeight: 'bold',
+              color: '#555'
+            }}
+          >
+            {domain}
+          </Typography>
+        </Box>
+
         <TextField
           label='Password'
           variant='outlined'
@@ -74,13 +124,19 @@ const Login: React.FC = () => {
           type='password'
           value={password}
           onChange={e => setPassword(e.target.value)}
-          sx={{
-            mb: 2,
-            borderRadius: '8px',
-            '& .MuiOutlinedInput-root': {
-              borderRadius: '8px'
-            }
-          }}
+          sx={{ mb: 2 }}
+        />
+
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={rememberMe}
+              onChange={e => setRememberMe(e.target.checked)}
+              color='primary'
+            />
+          }
+          label='Remember me'
+          sx={{ mb: 2 }}
         />
 
         <Button
@@ -88,7 +144,6 @@ const Login: React.FC = () => {
           fullWidth
           sx={{
             backgroundColor: '#2272FF',
-            //改pr 你应该写一个theme provider 控制这些颜色，比如就直接写个color:primary就行了
             color: '#FFF',
             padding: '12px',
             borderRadius: '8px',
