@@ -6,9 +6,7 @@ import {
   Box,
   Alert,
   Checkbox,
-  FormControlLabel,
-  MenuItem,
-  Select
+  FormControlLabel
 } from '@mui/material'
 import { useAuth } from 'hooks/useAuth'
 
