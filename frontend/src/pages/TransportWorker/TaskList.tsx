@@ -244,11 +244,13 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
                       variant='caption'
                       color='text.secondary'
                       fontSize={11}
+                      sx={{ whiteSpace: 'pre-line' }}
                     >
-                      {t('taskList.createDate')}:{' '}
-                      {new Date(task.createdAt).toLocaleString()} ｜{' '}
-                      {t('taskList.creator')}: {task.creator?.firstName}{' '}
-                      {task.creator?.lastName}
+                      {`${t('taskList.createDate')}: ${new Date(
+                        task.createdAt
+                      ).toLocaleString()}\n${t('taskList.creator')}: ${
+                        task.creator?.firstName || '--'
+                      } ${task.creator?.lastName || ''}`}
                     </Typography>
 
                     <Button
