@@ -67,7 +67,7 @@ export const cancelTask = async (
 
     let task
 
-    if (role === UserRole.ADMIN || role === UserRole.PICKER) {
+    if (role === UserRole.ADMIN) {
       task = await taskService.updateTaskByTaskID({
         taskID,
         status: TaskStatus.CANCELED
