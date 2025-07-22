@@ -1,7 +1,7 @@
 import Bin from './bin.model'
 import Inventory from 'routes/inventory/inventory.model'
 import AppError from 'utils/appError'
-import { Op, Sequelize, WhereOptions } from 'sequelize'
+import { literal, Op, Sequelize, WhereOptions } from 'sequelize'
 import { BinUploadPayload } from 'types/bin'
 
 export const getBinByBinCode = async (binCode: string) => {
@@ -165,6 +165,23 @@ export const addBins = async (binList: BinUploadPayload[]) => {
   }
 }
 
+// export const getPickBinByProductCode = async (
+//   productCode: string,
+//   warehouseID: string
+// ) => {
+//   const bin = await Bin.findOne({
+//     where: {
+//       type: 'PICK_UP',
+//       warehouseID,
+//       defaultProductCodes: {
+//         [Op.like]: `%${productCode}%`
+//       }
+//     }
+//   })
+
+//   return bin
+// }
+
 export const getPickBinByProductCode = async (
   productCode: string,
   warehouseID: string
@@ -173,9 +190,9 @@ export const getPickBinByProductCode = async (
     where: {
       type: 'PICK_UP',
       warehouseID,
-      defaultProductCodes: {
-        [Op.like]: `%${productCode}%`
-      }
+      [Op.and]: literal(
+        `'${productCode}' = ANY(string_to_array("defaultProductCodes", ','))`
+      )
     }
   })
 
