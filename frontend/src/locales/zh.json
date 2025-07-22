@@ -34,7 +34,9 @@
     "❌ You already have an active task in progress.": "❌ 您已有一个进行中的任务",
     "❌ Failed to accept task": "❌ 接受任务失败",
     "unknown": "❌ 发生未知错误"
-  }
+  },
+    "creator": "创建者"
+
 
   },
     "cart": {

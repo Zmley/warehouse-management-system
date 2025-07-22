@@ -107,4 +107,6 @@ Task.belongsTo(Account, {
   as: 'accepter'
 })
 
+Task.belongsTo(Account, { as: 'creator', foreignKey: 'creatorID' })
+
 export default Task

@@ -246,7 +246,9 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
                       fontSize={11}
                     >
                       {t('taskList.createDate')}:{' '}
-                      {new Date(task.createdAt).toLocaleString()}
+                      {new Date(task.createdAt).toLocaleString()} ｜{' '}
+                      {t('taskList.creator')}: {task.creator?.firstName}{' '}
+                      {task.creator?.lastName}
                     </Typography>
 
                     <Button

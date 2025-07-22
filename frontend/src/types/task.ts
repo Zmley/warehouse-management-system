@@ -27,6 +27,11 @@ export interface Task {
   status: 'PENDING' | 'IN_PROCESS' | 'COMPLETED' | 'CANCELED'
   creatorID: string
   accepterID: string | null
+  creator?: {
+    accountID: string
+    firstName: string
+    lastName: string
+  }
   createdAt: string
   updatedAt: string
   productCode: string

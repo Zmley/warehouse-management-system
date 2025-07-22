@@ -4,7 +4,6 @@ import {
   Typography,
   Card,
   CardContent,
-  Button,
   Grid,
   Divider,
   CircularProgress,
@@ -22,10 +21,10 @@ interface Props {
 
 const TaskListCard: React.FC<Props> = ({ status }) => {
   const { t } = useTranslation()
-  const { cancelTask, tasks, fetchTasks } = usePickerTasks()
+  const { tasks, fetchTasks } = usePickerTasks()
 
   const [hasFetched, setHasFetched] = useState(false)
-  const [isLoadingTaskID, setIsLoadingTaskID] = useState<string | null>(null)
+  // const [isLoadingTaskID, setIsLoadingTaskID] = useState<string | null>(null)
   const [open, setOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -52,23 +51,23 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
     }
   }
 
-  const handleCancel = async (taskID: string) => {
-    setIsLoadingTaskID(taskID)
-    try {
-      const result = await cancelTask(taskID)
-      if (result) {
-        await fetchTasks()
-      } else {
-        setError(t('taskListCard.cancelFailed'))
-        setOpen(true)
-      }
-    } catch (err: any) {
-      setError(err.message || t('taskListCard.cancelFailed'))
-      setOpen(true)
-    } finally {
-      setIsLoadingTaskID(null)
-    }
-  }
+  // const handleCancel = async (taskID: string) => {
+  //   setIsLoadingTaskID(taskID)
+  //   try {
+  //     const result = await cancelTask(taskID)
+  //     if (result) {
+  //       await fetchTasks()
+  //     } else {
+  //       setError(t('taskListCard.cancelFailed'))
+  //       setOpen(true)
+  //     }
+  //   } catch (err: any) {
+  //     setError(err.message || t('taskListCard.cancelFailed'))
+  //     setOpen(true)
+  //   } finally {
+  //     setIsLoadingTaskID(null)
+  //   }
+  // }
 
   const filteredTasks = tasks.filter(task => task.status === status)
 
@@ -181,11 +180,11 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
                     {new Date(task.createdAt).toLocaleString()}
                   </Typography>
 
-                  {status === 'PENDING' && (
+                  {/* {status === 'PENDING' && (
                     <Button
                       variant='contained'
                       color='error'
-                      onClick={() => handleCancel(task.taskID)}
+                      // onClick={() => handleCancel(task.taskID)}
                       disabled={isLoadingTaskID === task.taskID}
                       sx={{
                         fontSize: 11,
@@ -201,7 +200,7 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
                         ? t('taskListCard.cancelling')
                         : t('taskListCard.cancel')}
                     </Button>
-                  )}
+                  )} */}
 
                   {status === 'COMPLETED' && (
                     <Typography

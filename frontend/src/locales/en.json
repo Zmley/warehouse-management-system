@@ -27,7 +27,9 @@
     "takeOver": "Take Over",
     "loading": "Loading...",
     "outOfStock": "Out of Stock",
-    "canceling" : "canceling"
+    "canceling" : "canceling",
+      "creator": "creator"
+
   },
    "cart": {
     "loadedFromBin": "Loaded From Bin",
