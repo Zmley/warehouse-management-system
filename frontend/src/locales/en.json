@@ -111,7 +111,13 @@
       "invalidProductCode": "invalid product barcode, please make sure scan the barcode",
 
 
-        "switchToScan": "switch To Scan"
+        "switchToScan": "switch To Scan",
+
+        "inputBinCode" : "Input BinCode",
+
+
+                            "manualInputButton" : "Manual Input Product and Quantity"
+
 
 
 

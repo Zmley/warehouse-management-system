@@ -82,8 +82,7 @@
   "productNotFound": "未找到该产品",
   "productError": "查询产品失败",
   "invalidBinCode": "无效的Bin码",
-    "invalidProductCode": "无效的产品条纹码，请确认扫描了产品条纹码",
-
+  "invalidProductCode": "无效的产品条纹码，请确认扫描了产品条纹码",
   "enterPrompt": "请输入内容",
   "inputLabel": "请输入条码或Bin码",
   "submit": "提交",
@@ -93,7 +92,7 @@
 
 
 
-  "scanBinCode": "扫描货位码",
+  "scanBinCode": "扫描或输入货位号",
 
 
 
@@ -102,7 +101,7 @@
 
   "quantity": "数量",
   "enterAtLeastOneChar": "请输入至少一个字符以进行搜索",
-  "confirm": "确认装货",
+  "confirm": "确认",
   "productCode": "输入产品号",
   "manualInputBinCodeTitle": "手动录入货位号码",
 
@@ -118,7 +117,17 @@
 
   "manualInputProductCodeTitle": "手动输入产品编码",
 
-  "switchToScan": "切换回扫描"
+  "switchToScan": "切换回扫描",
+
+
+          "inputBinCode" : "输入货位编号",
+
+
+                    "manualInputButton" : "手动录入产品和数量"
+
+
+
+
 
 
 

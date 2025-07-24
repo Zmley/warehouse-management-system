@@ -25,7 +25,6 @@ const Cart = () => {
   const { unloadCart } = useCart()
 
   const [confirmUnloadDrawer, setConfirmUnloadDrawer] = useState(false)
-  const [loadDrawerOpen, setLoadDrawerOpen] = useState(false)
 
   const defaultUnloadList = useMemo(() => {
     if (!inventoriesInCart.length) return []
@@ -175,7 +174,11 @@ const Cart = () => {
                   <Button
                     variant='contained'
                     color='primary'
-                    onClick={() => setLoadDrawerOpen(true)} // 打开 drawer
+                    onClick={() =>
+                      navigate('/my-task/scan-QRCode', {
+                        state: { mode: ScanMode.LOAD }
+                      })
+                    }
                     sx={{
                       width: '100%',
                       height: 80,
@@ -195,18 +198,18 @@ const Cart = () => {
                     color='success'
                     disabled={overLimit || noSelectedItems}
                     onClick={() => {
+                      const selectedToUnload = inventoryListReadyToUnload
+                        .filter(item => item.selected)
+                        .map(({ inventoryID, quantity }) => ({
+                          inventoryID,
+                          quantity
+                        }))
+
+                      setSelectedToUnload(selectedToUnload)
+
                       if (myTask?.destinationBinCode) {
                         setConfirmUnloadDrawer(true)
                       } else {
-                        const selectedToUnload = inventoryListReadyToUnload
-                          .filter(item => item.selected)
-                          .map(({ inventoryID, quantity }) => ({
-                            inventoryID,
-                            quantity
-                          }))
-
-                        setSelectedToUnload(selectedToUnload)
-
                         navigate('/my-task/scan-QRCode', {
                           state: {
                             mode: ScanMode.UNLOAD,
@@ -231,11 +234,9 @@ const Cart = () => {
                     }}
                   >
                     {myTask?.destinationBinCode ? (
-                      <>
-                        <Typography fontWeight={600} fontSize={16}>
-                          {t('cart.unloadDirectTo')}
-                        </Typography>
-                      </>
+                      <Typography fontWeight={600} fontSize={16}>
+                        {t('cart.unloadDirectTo')}
+                      </Typography>
                     ) : (
                       <Typography fontWeight={600} fontSize={16}>
                         {t('cart.unload')}
@@ -249,7 +250,7 @@ const Cart = () => {
         </Card>
       </Box>
 
-      {/* Unload Drawer */}
+      {/* Unload Confirmation Drawer */}
       <Drawer
         anchor='bottom'
         open={confirmUnloadDrawer}
@@ -281,59 +282,6 @@ const Cart = () => {
         >
           {t('cart.confirmNow')}
         </Button>
-      </Drawer>
-
-      {/* Load Drawer */}
-      <Drawer
-        anchor='bottom'
-        open={loadDrawerOpen}
-        onClose={() => setLoadDrawerOpen(false)}
-        PaperProps={{
-          sx: {
-            borderTopLeftRadius: 16,
-            borderTopRightRadius: 16,
-            p: 3,
-            height: 220
-          }
-        }}
-      >
-        <Typography textAlign='center' fontWeight='bold' mb={2}>
-          {t('cart.selectScanMode')}
-        </Typography>
-
-        <Grid container spacing={2}>
-          <Grid item xs={6}>
-            <Button
-              variant='contained'
-              fullWidth
-              color='primary'
-              sx={{ height: 80, fontSize: 16, fontWeight: 600 }}
-              onClick={() => {
-                navigate('/my-task/scan-QRCode', {
-                  state: { mode: ScanMode.LOAD }
-                })
-                setLoadDrawerOpen(false)
-              }}
-            >
-              {t('cart.scanBinCode')}
-            </Button>
-          </Grid>
-          <Grid item xs={6}>
-            <Button
-              variant='contained'
-              fullWidth
-              color='secondary'
-              disabled={!!myTask}
-              sx={{ height: 80, fontSize: 16, fontWeight: 600 }}
-              onClick={() => {
-                navigate('/my-task/scan-product')
-                setLoadDrawerOpen(false)
-              }}
-            >
-              {t('cart.scanProduct')}
-            </Button>
-          </Grid>
-        </Grid>
       </Drawer>
     </Box>
   )
