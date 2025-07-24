@@ -32,9 +32,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     role: '',
     warehouseID: ''
   })
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(
-    areTokensValid()
-  )
+  const [isAuthenticated, setIsAuthenticated] =
+    useState<boolean>(areTokensValid())
 
   const getMe = async () => {
     try {

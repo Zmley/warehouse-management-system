@@ -109,7 +109,7 @@ const TaskInstruction: React.FC = () => {
                 {t('taskInstruction.quantity')}
               </Typography>
               <Typography fontSize={13} fontWeight='bold'>
-                {myTask.quantity === 0 ? 'ALL' : myTask.quantity ?? '--'}
+                {myTask.quantity === 0 ? 'ALL' : (myTask.quantity ?? '--')}
               </Typography>
             </Grid>
 

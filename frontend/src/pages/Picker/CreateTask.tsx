@@ -214,8 +214,8 @@ const CreateTask = () => {
             {isLoading
               ? t('createTask.loading')
               : sourceError
-              ? t('createTask.outOfStock')
-              : t('createTask.create')}
+                ? t('createTask.outOfStock')
+                : t('createTask.create')}
           </Button>
 
           <Button

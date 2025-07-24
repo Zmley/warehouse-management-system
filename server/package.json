@@ -19,14 +19,8 @@
     "format": "prettier --check \"{*.js,!(node*)**/*.ts}\"",
     "format:fix": "prettier --write \"{*.js,!(node*)**/*.ts}\"",
     "loglevel:change": "runtime-node-refresh",
-
-
     "dev": "NODE_ENV=development npx nodemon -r tsconfig-paths/register ./src/server.ts",
-
     "prod": "NODE_ENV=production node dist/server.js"
-
-
-
   },
   "keywords": [
     "express template",
