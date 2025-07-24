@@ -161,7 +161,6 @@ const LoadConfirm: React.FC<LoadConfirmProps> = ({ binCode, inventories }) => {
 
         <Divider sx={{ mb: 1 }} />
 
-        {/* ⬇️ Scrollable area for large inventory lists */}
         <Box
           sx={{
             maxHeight: '60vh',

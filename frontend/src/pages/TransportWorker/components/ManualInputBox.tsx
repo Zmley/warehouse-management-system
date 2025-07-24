@@ -12,7 +12,7 @@ interface ProductInput {
 interface MultiProductInputBoxProps {
   productOptions: string[]
   onSubmit: (items: { productCode: string; quantity: number }[]) => void
-  onCancel?: () => void // ✅ 新增
+  onCancel?: () => void
   defaultItems?: ProductInput[]
 }
 

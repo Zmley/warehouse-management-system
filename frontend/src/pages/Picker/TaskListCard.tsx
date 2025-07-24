@@ -24,9 +24,9 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
   const { tasks, fetchTasks } = usePickerTasks()
 
   const [hasFetched, setHasFetched] = useState(false)
-  // const [isLoadingTaskID, setIsLoadingTaskID] = useState<string | null>(null)
   const [open, setOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const filteredTasks = tasks.filter(task => task.status === status)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -50,26 +50,6 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
       setOpen(true)
     }
   }
-
-  // const handleCancel = async (taskID: string) => {
-  //   setIsLoadingTaskID(taskID)
-  //   try {
-  //     const result = await cancelTask(taskID)
-  //     if (result) {
-  //       await fetchTasks()
-  //     } else {
-  //       setError(t('taskListCard.cancelFailed'))
-  //       setOpen(true)
-  //     }
-  //   } catch (err: any) {
-  //     setError(err.message || t('taskListCard.cancelFailed'))
-  //     setOpen(true)
-  //   } finally {
-  //     setIsLoadingTaskID(null)
-  //   }
-  // }
-
-  const filteredTasks = tasks.filter(task => task.status === status)
 
   return (
     <PullToRefresh
@@ -179,28 +159,6 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
                     {t('taskList.createDate')}:{' '}
                     {new Date(task.createdAt).toLocaleString()}
                   </Typography>
-
-                  {/* {status === 'PENDING' && (
-                    <Button
-                      variant='contained'
-                      color='error'
-                      // onClick={() => handleCancel(task.taskID)}
-                      disabled={isLoadingTaskID === task.taskID}
-                      sx={{
-                        fontSize: 11,
-                        px: 2,
-                        py: 0.5,
-                        borderRadius: 2,
-                        textTransform: 'uppercase',
-                        fontWeight: 600,
-                        minHeight: 30
-                      }}
-                    >
-                      {isLoadingTaskID === task.taskID
-                        ? t('taskListCard.cancelling')
-                        : t('taskListCard.cancel')}
-                    </Button>
-                  )} */}
 
                   {status === 'COMPLETED' && (
                     <Typography

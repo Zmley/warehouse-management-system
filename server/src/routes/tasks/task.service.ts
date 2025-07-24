@@ -238,47 +238,6 @@ export const updateTaskSourceBin = async (taskID: string, binID: string) => {
   await Task.update({ sourceBinID: binID }, { where: { taskID } })
 }
 
-// const getIncludeClause = (warehouseID: string) => {
-//   return [
-//     {
-//       model: Bin,
-//       as: 'destinationBin',
-//       attributes: ['binID', 'binCode', 'warehouseID'],
-//       required: true,
-//       where: { warehouseID }
-//     },
-//     {
-//       model: Bin,
-//       as: 'sourceBin',
-//       attributes: ['binID', 'binCode', 'warehouseID'],
-//       required: false
-//     },
-//     {
-//       model: Inventory,
-//       as: 'inventories',
-//       required: false,
-//       include: [
-//         {
-//           model: Bin,
-//           as: 'bin',
-//           attributes: ['binID', 'binCode', 'warehouseID'],
-//           required: true,
-//           where: {
-//             warehouseID,
-//             type: 'INVENTORY'
-//           }
-//         }
-//       ]
-//     },
-//     {
-//       model: Account,
-//       as: 'accepter',
-//       attributes: ['accountID', 'firstName', 'lastName'],
-//       required: false
-//     }
-//   ]
-// }
-
 const getIncludeClause = (warehouseID: string) => {
   return [
     {

@@ -94,7 +94,7 @@ export const cancelTask = async (
         const sourceBin = await Bin.findByPk(currentTask.sourceBinID)
 
         console.log(
-          `🚚 Auto-unloading ${unloadProductList.length} item(s) back to bin ${sourceBin.binCode}`
+          ` Auto-unloading ${unloadProductList.length} item(s) back to bin ${sourceBin.binCode}`
         )
 
         await cartsService.unloadByBinCode(sourceBin.binCode, unloadProductList)

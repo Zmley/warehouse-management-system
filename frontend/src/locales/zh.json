@@ -14,8 +14,6 @@
     "publish": "发布任务",
       "inventory": "库存",
   "completed": "已完成"
-
-
   },
    "taskList": {
     "pullToRefresh": "↓ 下拉刷新任务",
@@ -53,17 +51,10 @@
     "confirmUnloadTo": "请确认卸货货位为",
     "confirmUnloadDescription": "请确认您当前的位置是否是正确的目标货位。",
     "confirmNow": "确认并卸货",
-
-
-     "selectScanMode": "请选择扫码模式",
+  "selectScanMode": "请选择扫码模式",
   "scanBinCode": "扫码货位",
   "scanProduct": "扫码产品",
   "disableScanProductDueToTask": "当前已有任务，请完成后再进行扫码装货。"
-
-
-
-
-
 
   },
   "scan": {
@@ -88,52 +79,20 @@
   "submit": "提交",
   "switchToManual": "切换为手动输入",
   "cancel": "取消返回",
-
-
-
-
   "scanBinCode": "扫描或输入货位号",
-
-
-
   "invalidBinForTask": "❌ 当前任务不允许扫描该 binCode：{{scannedBinCode}}",
-
-
   "quantity": "数量",
   "enterAtLeastOneChar": "请输入至少一个字符以进行搜索",
   "confirm": "确认",
   "productCode": "输入产品号",
   "manualInputBinCodeTitle": "手动录入货位号码",
-
-
   "manualInputTitleForUnload": "手动录入货位号卸货",
-
-
-
   "noInventoryFound": "次货位暂无任何产品库存",
-
-
   "scanProductCode": "扫码产品条形码",
-
   "manualInputProductCodeTitle": "手动输入产品编码",
-
   "switchToScan": "切换回扫描",
-
-
-          "inputBinCode" : "输入货位编号",
-
-
-                    "manualInputButton" : "手动录入产品和数量"
-
-
-
-
-
-
-
-
-
-
+  "inputBinCode" : "输入货位编号",
+  "manualInputButton" : "手动录入产品和数量"
   },  
   "inventory": {
     "total": "叉车上总数",
@@ -169,19 +128,6 @@
    "confirmCancelTitle": "确认要取消任务吗？",
   "confirmCancelSubtitle": "货物将退回到原始货位：{{bin}}",
   "confirmNow": "确认取消"
-
-
-
-
-  
-
-
-
-
-
-
-
-
   },
     "productCard": {
     "title": "产品信息",
@@ -240,13 +186,6 @@
     "quantity": "数量"
   
 },
-
-
-
-
-
-
-
   "picker": {
     "title": "创建任务",
     "productCode": "产品编码",
@@ -259,16 +198,6 @@
       "noProductCode": "❌ 请选择产品编码。",
       "noPickupBin": "❌ 未找到取货货位。",
       "fetchFailed": "❌ 获取货位信息失败。"
-    }
-  
+    } 
 }
-
-
-
-
-
-
-
-
-
 }
