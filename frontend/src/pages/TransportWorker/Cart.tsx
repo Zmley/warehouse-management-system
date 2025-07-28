@@ -22,9 +22,9 @@ const Cart = () => {
   const navigate = useNavigate()
   const { inventoriesInCart, setSelectedToUnload } = useCartContext()
   const { myTask, fetchMyTask } = useTaskContext()
-  const [confirmUnloadDrawer, setConfirmUnloadDrawer] = useState(false)
-
   const { unloadCart } = useCart()
+
+  const [confirmUnloadDrawer, setConfirmUnloadDrawer] = useState(false)
 
   const defaultUnloadList = useMemo(() => {
     if (!inventoriesInCart.length) return []
@@ -101,7 +101,15 @@ const Cart = () => {
     setSelectedToUnload(selectedToUnload)
 
     if (myTask?.destinationBinCode) {
-      await unloadCart(myTask.destinationBinCode, selectedToUnload)
+      const result = await unloadCart(
+        myTask.destinationBinCode,
+        selectedToUnload
+      )
+      if (result?.success) {
+        navigate('/success')
+      } else {
+        console.error('Unload failed:', result?.error)
+      }
     } else {
       navigate('/my-task/scan-QRCode', {
         state: {
@@ -190,18 +198,18 @@ const Cart = () => {
                     color='success'
                     disabled={overLimit || noSelectedItems}
                     onClick={() => {
+                      const selectedToUnload = inventoryListReadyToUnload
+                        .filter(item => item.selected)
+                        .map(({ inventoryID, quantity }) => ({
+                          inventoryID,
+                          quantity
+                        }))
+
+                      setSelectedToUnload(selectedToUnload)
+
                       if (myTask?.destinationBinCode) {
                         setConfirmUnloadDrawer(true)
                       } else {
-                        const selectedToUnload = inventoryListReadyToUnload
-                          .filter(item => item.selected)
-                          .map(({ inventoryID, quantity }) => ({
-                            inventoryID,
-                            quantity
-                          }))
-
-                        setSelectedToUnload(selectedToUnload)
-
                         navigate('/my-task/scan-QRCode', {
                           state: {
                             mode: ScanMode.UNLOAD,
@@ -226,11 +234,9 @@ const Cart = () => {
                     }}
                   >
                     {myTask?.destinationBinCode ? (
-                      <>
-                        <Typography fontWeight={600} fontSize={16}>
-                          {t('cart.unloadDirectTo')}
-                        </Typography>
-                      </>
+                      <Typography fontWeight={600} fontSize={16}>
+                        {t('cart.unloadDirectTo')}
+                      </Typography>
                     ) : (
                       <Typography fontWeight={600} fontSize={16}>
                         {t('cart.unload')}
@@ -244,6 +250,7 @@ const Cart = () => {
         </Card>
       </Box>
 
+      {/* Unload Confirmation Drawer */}
       <Drawer
         anchor='bottom'
         open={confirmUnloadDrawer}
@@ -253,7 +260,7 @@ const Cart = () => {
             borderTopLeftRadius: 16,
             borderTopRightRadius: 16,
             p: 3,
-            height: 200
+            height: 250
           }
         }}
       >

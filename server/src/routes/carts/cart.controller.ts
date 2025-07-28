@@ -13,17 +13,28 @@ export const load = async (
 ): Promise<void> => {
   try {
     const { cartID, accountID, warehouseID } = res.locals
-    const { binCode, productCode, quantity, selectedItems } = req.body
+    const { binCode, selectedItems, productList } = req.body
 
-    let result
+    if (productList && Array.isArray(productList)) {
+      let resultMessage = ''
 
-    if (productCode) {
-      result = await cartService.loadByProductCode(
-        productCode,
-        quantity,
-        cartID
-      )
-    } else if (binCode) {
+      for (const item of productList) {
+        const res = await cartService.loadByProductCode(
+          item.productCode,
+          item.quantity,
+          cartID
+        )
+        resultMessage += res.message + '\n'
+      }
+
+      res.status(200).json({
+        success: true,
+        message: resultMessage.trim()
+      })
+      return
+    }
+
+    if (binCode) {
       const currentTask = await taskService.getTaskByAccountID(
         accountID,
         warehouseID
@@ -44,7 +55,7 @@ export const load = async (
         }
       }
 
-      result = await cartService.loadByBinCode(
+      const result = await cartService.loadByBinCode(
         binCode,
         cartID,
         accountID,
@@ -59,12 +70,18 @@ export const load = async (
           await taskService.updateTaskSourceBin(activeTask.taskID, bin.binID)
         }
       }
+
+      res.status(200).json({
+        success: true,
+        message: result.message
+      })
+      return
     }
 
-    res.status(200).json({
-      success: true,
-      message: result.message
-    })
+    throw new AppError(
+      400,
+      '❌ Invalid request: must include productList or binCode.'
+    )
   } catch (error) {
     next(error)
   }
@@ -82,10 +99,13 @@ export const unload = async (
     const task = await taskService.getTaskByAccountID(accountID, warehouseID)
 
     if (task) {
-      if (task.destinationBinCode !== binCode) {
+      if (
+        task.destinationBinCode !== binCode &&
+        task.sourceBinCode !== binCode
+      ) {
         res.status(400).json({
           success: false,
-          message: `❌ You can only unload to your assigned destination bin: ${task.destinationBinCode}`
+          message: `❌ You can only unload to your assigned destinatione: ${task.destinationBinCode} or source: ${task.sourceBinCode}`
         })
         return
       }

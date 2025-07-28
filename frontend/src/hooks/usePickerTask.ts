@@ -1,17 +1,17 @@
 import { useState } from 'react'
 import { createPickerTask, getPickerTasks, cancelPickerTask } from 'api/task'
-import { Task } from 'types/task'
+import { CreateTaskPayload, Task } from 'types/task'
 import { useAuth } from 'hooks/useAuth'
 
 export const usePickerTasks = () => {
   const [tasks, setTasks] = useState<Task[]>([])
-  const [loading, setLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const { userProfile } = useAuth()
 
   const fetchTasks = async () => {
-    setLoading(true)
+    setIsLoading(true)
     setError(null)
     try {
       const res = await getPickerTasks()
@@ -19,7 +19,7 @@ export const usePickerTasks = () => {
     } catch (err) {
       setError('Failed to fetch tasks')
     } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
   }
 
@@ -27,7 +27,7 @@ export const usePickerTasks = () => {
     destinationBinCode: string,
     productCode: string
   ) => {
-    setLoading(true)
+    setIsLoading(true)
     setError(null)
 
     try {
@@ -49,12 +49,12 @@ export const usePickerTasks = () => {
       setError(message)
       return null
     } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
   }
 
   const cancelTask = async (taskID: string): Promise<Task | null> => {
-    setLoading(true)
+    setIsLoading(true)
     setError(null)
     try {
       const res = await cancelPickerTask(taskID)
@@ -63,16 +63,49 @@ export const usePickerTasks = () => {
       setError('Failed to cancel task')
       return null
     } finally {
-      setLoading(false)
+      setIsLoading(false)
+    }
+  }
+
+  const createPickTask = async (
+    productCode: string,
+    destinationBinCode: string
+  ): Promise<CreateTaskPayload | null> => {
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const result = await createPickerTask({
+        productCode,
+        warehouseID: userProfile.warehouseID,
+        destinationBinCode
+      })
+
+      if (!result.data?.success) {
+        const backendError =
+          result.data?.error || '❌ Pick task creation failed'
+        throw new Error(backendError)
+      }
+
+      return result.data.task
+    } catch (err: any) {
+      const message =
+        err?.response?.data?.error || err?.message || '❌ Failed to create task'
+      setError(message)
+      return null
+    } finally {
+      setIsLoading(false)
     }
   }
 
   return {
     tasks,
-    loading,
+    isLoading,
+    setError,
     error,
     fetchTasks,
     createTask,
-    cancelTask
+    cancelTask,
+    createPickTask
   }
 }

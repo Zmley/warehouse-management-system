@@ -40,14 +40,13 @@ const LoadConfirm: React.FC<LoadConfirmProps> = ({ binCode, inventories }) => {
   const [error, setError] = useState<string | null>(null)
 
   const taskProductCode = myTask?.productCode
+
   useEffect(() => {
     const isTaskMode = !!myTask?.productCode && myTask?.quantity !== undefined
 
     const newList = inventories.map(item => {
       const isTaskProduct = item.productCode === myTask?.productCode
-
       const selected = isTaskMode ? isTaskProduct : true
-
       const quantity = selected
         ? isTaskMode
           ? myTask?.quantity === 0
@@ -162,68 +161,76 @@ const LoadConfirm: React.FC<LoadConfirmProps> = ({ binCode, inventories }) => {
 
         <Divider sx={{ mb: 1 }} />
 
-        {inventoryList.map(item => {
-          const isTaskProduct = item.productCode === taskProductCode
+        <Box
+          sx={{
+            maxHeight: '60vh',
+            overflowY: 'auto',
+            pr: 1
+          }}
+        >
+          {inventoryList.map(item => {
+            const isTaskProduct = item.productCode === taskProductCode
 
-          return (
-            <Box
-              key={item.inventoryID}
-              display='flex'
-              alignItems='center'
-              sx={{
-                bgcolor: '#e3f2fd',
-                borderRadius: 1,
-                p: 1,
-                mb: 1,
-                opacity: item.selected || isTaskProduct ? 1 : 0.6
-              }}
-            >
-              <Checkbox
-                checked={item.selected}
-                onChange={() => handleCheckboxChange(item.inventoryID)}
-                sx={{ mr: 1, p: 0.5 }}
-                size='small'
-              />
-
-              <Box flex={1} sx={{ minWidth: 0 }}>
-                <Typography fontWeight={600} fontSize={12} noWrap>
-                  #{item.productCode}
-                </Typography>
-                <Typography fontSize={10} color='text.secondary' noWrap>
-                  {t('load.productQuantity')} {item.quantity}
-                </Typography>
-              </Box>
-
-              <Box ml={1} display='flex' alignItems='center' gap={0.5}>
-                <Typography fontSize={10} color='text.secondary'>
-                  {t('load.inputQuantity')}
-                </Typography>
-                <TextField
-                  type='number'
+            return (
+              <Box
+                key={item.inventoryID}
+                display='flex'
+                alignItems='center'
+                sx={{
+                  bgcolor: '#e3f2fd',
+                  borderRadius: 1,
+                  p: 1,
+                  mb: 1,
+                  opacity: item.selected || isTaskProduct ? 1 : 0.6
+                }}
+              >
+                <Checkbox
+                  checked={item.selected}
+                  onChange={() => handleCheckboxChange(item.inventoryID)}
+                  sx={{ mr: 1, p: 0.5 }}
                   size='small'
-                  value={item.loadQuantity}
-                  onChange={e =>
-                    handleQuantityChange(
-                      item.inventoryID,
-                      Math.max(0, Number(e.target.value))
-                    )
-                  }
-                  disabled={!item.selected}
-                  sx={{
-                    width: 52,
-                    backgroundColor: '#f0f4f8',
-                    borderRadius: 1
-                  }}
-                  inputProps={{
-                    min: 0,
-                    max: item.quantity,
-                    style: { fontSize: 11, padding: 5 }
-                  }}
                 />
+
+                <Box flex={1} sx={{ minWidth: 0 }}>
+                  <Typography fontWeight={600} fontSize={12} noWrap>
+                    #{item.productCode}
+                  </Typography>
+                  <Typography fontSize={10} color='text.secondary' noWrap>
+                    {t('load.productQuantity')} {item.quantity}
+                  </Typography>
+                </Box>
+
+                <Box ml={1} display='flex' alignItems='center' gap={0.5}>
+                  <Typography fontSize={10} color='text.secondary'>
+                    {t('load.inputQuantity')}
+                  </Typography>
+                  <TextField
+                    type='number'
+                    size='small'
+                    value={item.loadQuantity}
+                    onChange={e =>
+                      handleQuantityChange(
+                        item.inventoryID,
+                        Math.max(0, Number(e.target.value))
+                      )
+                    }
+                    disabled={!item.selected}
+                    sx={{
+                      width: 52,
+                      backgroundColor: '#f0f4f8',
+                      borderRadius: 1
+                    }}
+                    inputProps={{
+                      min: 0,
+                      max: item.quantity,
+                      style: { fontSize: 11, padding: 5 }
+                    }}
+                  />
+                </Box>
               </Box>
-            </Box>
-          )
-        })}
+            )
+          })}
+        </Box>
 
         {error && (
           <Typography

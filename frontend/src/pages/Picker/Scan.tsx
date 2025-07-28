@@ -4,19 +4,12 @@ import { useBin } from 'hooks/useBin'
 import { useProduct } from 'hooks/useProduct'
 import { ProductType } from 'types/product'
 import ProductCard from './ProductCard'
-import {
-  Box,
-  Button,
-  TextField,
-  Autocomplete,
-  InputAdornment,
-  IconButton,
-  Typography
-} from '@mui/material'
-import SearchIcon from '@mui/icons-material/Search'
+import { Box, Button, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
+import CreateManualTask from './CreateManual'
 
 const license = process.env.REACT_APP_DYNAMSOFT_LICENSE || ''
+
 declare global {
   interface Window {
     Dynamsoft: any
@@ -28,13 +21,13 @@ const Scan = () => {
   const scannerRef = useRef<any>(null)
   const scannedRef = useRef(false)
   const navigate = useNavigate()
-  const { fetchBinByCode, binCodes, fetchBinCodes } = useBin()
-  const { fetchProduct, productCodes, loadProducts } = useProduct()
+  const { fetchBinByCode, fetchBinCodes } = useBin()
+  const { fetchProduct, loadProducts } = useProduct()
 
   const [product, setProduct] = useState<ProductType | null>(null)
   const [showScanner, setShowScanner] = useState(true)
   const [manualMode, setManualMode] = useState(false)
-  const [manualInput, setManualInput] = useState('')
+  const [cancelCountdown] = useState<number | null>(null)
 
   useEffect(() => {
     fetchBinCodes()
@@ -118,32 +111,16 @@ const Scan = () => {
     }
   }
 
-  const handleManualSubmit = async () => {
-    if (!manualInput.trim()) return
-    await processBarcode(manualInput.trim())
-  }
-
-  const filterBinOptions = (
-    options: string[],
-    { inputValue }: { inputValue: string }
-  ) => {
-    if (!inputValue) return []
-    return options.filter(option =>
-      option.toLowerCase().startsWith(inputValue.toLowerCase())
-    )
-  }
-
   const handleCancel = () => {
     scannerRef.current?.router?.stopCapturing()
     scannerRef.current?.cameraEnhancer?.close()
     navigate('/')
-    window.location.reload()
   }
 
   return (
     <Box
       sx={{
-        minHeight: '50vh',
+        minHeight: '100vh',
         backgroundColor: '#f9f9f9',
         display: 'flex',
         flexDirection: 'column',
@@ -152,12 +129,14 @@ const Scan = () => {
         px: 2
       }}
     >
-      <Typography
-        sx={{ mt: 1, mb: 2, fontSize: '14px', textAlign: 'center' }}
-        fontWeight='bold'
-      >
-        {t('scan.title')}
-      </Typography>
+      {!manualMode && (
+        <Typography
+          sx={{ mt: 1, mb: 2, fontSize: '14px', textAlign: 'center' }}
+          fontWeight='bold'
+        >
+          {t('scan.title')}
+        </Typography>
+      )}
 
       {showScanner && !manualMode && (
         <Box
@@ -183,40 +162,15 @@ const Scan = () => {
       )}
 
       {manualMode && (
-        <Box sx={{ width: '100%', maxWidth: 420 }}>
-          <Autocomplete
-            freeSolo
-            disableClearable
-            options={[...binCodes, ...productCodes]}
-            value={manualInput}
-            onInputChange={(_, newValue) => setManualInput(newValue)}
-            filterOptions={filterBinOptions}
-            renderInput={params => (
-              <TextField
-                {...params}
-                label={t('scan.inputLabel')}
-                onKeyDown={e => e.key === 'Enter' && handleManualSubmit()}
-                InputProps={{
-                  ...params.InputProps,
-                  endAdornment: (
-                    <InputAdornment position='end'>
-                      <IconButton onClick={handleManualSubmit}>
-                        <SearchIcon />
-                      </IconButton>
-                    </InputAdornment>
-                  )
-                }}
-              />
-            )}
+        <Box sx={{ width: '100%', maxWidth: 500 }}>
+          <CreateManualTask
+            onClose={() => {
+              setManualMode(false)
+              setShowScanner(true)
+              scannedRef.current = false
+              setProduct(null)
+            }}
           />
-          <Button
-            variant='contained'
-            onClick={handleManualSubmit}
-            fullWidth
-            sx={{ mt: 2 }}
-          >
-            {t('scan.submit')}
-          </Button>
         </Box>
       )}
 
@@ -237,6 +191,7 @@ const Scan = () => {
 
       <Button
         onClick={handleCancel}
+        disabled={cancelCountdown !== null}
         sx={{
           backgroundColor: '#e53935',
           color: 'white',
@@ -247,7 +202,9 @@ const Scan = () => {
           mt: 1
         }}
       >
-        {t('scan.cancel')}
+        {cancelCountdown !== null
+          ? `${t('scan.cancel')} (${cancelCountdown})`
+          : t('scan.cancel')}
       </Button>
     </Box>
   )

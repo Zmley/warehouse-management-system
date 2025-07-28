@@ -1,21 +1,21 @@
 {
   "profile": {
-  "title": "Profile",
-  "signOut": "Sign Out"
+    "title": "Profile",
+    "signOut": "Sign Out"
   },
   "topbar": {
     "greeting": "Hello, {{name}}",
     "tooltip": "Pick up Task",
     "pickButton": "Pick"
   },
-   "bottombar": {
+  "bottombar": {
     "tasks": "Tasks",
     "cart": "ForkLift",
     "publish": "Publish Task",
-      "inventory": "inventory",
-  "completed": "completed"
+    "inventory": "inventory",
+    "completed": "completed"
   },
-    "taskList": {
+  "taskList": {
     "pullToRefresh": "↓ Pull down to refresh tasks",
     "empty": "No pending tasks found.",
     "sourceBin": "Source Bin",
@@ -27,35 +27,37 @@
     "takeOver": "Take Over",
     "loading": "Loading...",
     "outOfStock": "Out of Stock",
-    "canceling" : "canceling"
+    "canceling": "canceling",
+    "creator": "creator"
   },
-   "cart": {
+  "cart": {
     "loadedFromBin": "Loaded From Bin",
     "overLimit": "❌ Selected quantity ({{selected}}) exceeds task limit ({{limit}})",
     "loadByBin": "Load By QRCode",
     "loadByProduct": "Load By BarCode",
     "unload": "Unload",
-    "startLoad" :  "startLoad",
-    "chooseLoadMode" : "choose Load Mode",
+    "startLoad": "startLoad",
+    "chooseLoadMode": "choose Load Mode",
     "unloadDirectTo": "Unload directly to",
     "confirmUnloadTitle": "Confirm Destination Bin",
     "confirmUnloadDescription": "Please confirm whether you are at the correct destination bin.",
-    "confirmNow": "CONFIRM NOW"
-
+    "confirmNow": "CONFIRM NOW",
+    "selectScanMode": "Select scan mode",
+    "scanBinCode": "Scan Bin Code",
+    "scanProduct": "Scan Product",
+    "disableScanProductDueToTask": "You have an active task. Please finish it before scanning products."
   },
-    "scan": {
+  "scan": {
     "scanBin": "Scan Code",
     "scanProduct": "Scan Product BarCode",
     "modeScanner": "Scan QR Code",
     "modeManual": "Manual Input",
     "alignPrompt": "Please align the QR code within the frame",
     "enterBinCode": "Enter Bin Code",
-
     "operationError": "❌ Operation failed. Please try again.",
-    "enterBinOrProduct" : "Enter Bin Code or Product BarCode",
-    "enterProductCode": "enter Product Codee",
+    "enterBinOrProduct": "Enter Bin Code or Product BarCode",
+    "enterProductCode": "Enter Product Codee",
     "scan.startCamera": "turn on the camera",
-
     "title": "Scan Barcode(check information) or QRcode(Creat Task)",
     "notRecognized": "Barcode not recognized",
     "productNotFound": "Product not found",
@@ -67,22 +69,34 @@
     "switchToManual": "Switch to Manual Input",
     "cancel": "Cancel & Return",
     "scanBinCode": "unload: Scan the BinCode",
-    "scanProductCode": "load: scan the product barCode or QRcode",
-    "invalidBinForTask": "❌ The scanned binCode: {{scannedBinCode}} is not allowed for this task.\n✅ Allowed binCodes: {{allowedBinCodes}}"
+    "invalidBinForTask": "❌ The scanned binCode: {{scannedBinCode}} is not allowed for this task.\n✅ Allowed binCodes: {{allowedBinCodes}}",
+    "quantity": "Quantity",
+    "enterAtLeastOneChar": "Please enter at least one character to search",
+    "confirm": "Confirm Load",
+    "productCode": "Enter Product Code",
+    "manualInputBinCodeTitle": "Manual Input",
+    "manualInputTitleForUnload": "Manual Input",
+    "noInventoryFound": "No inventories in this binCode",
+    "scanProductCode": "Scan Product BarCode",
+
+    "manualInputProductCodeTitle": "Manual Input Product Code",
+    "invalidProductCode": "invalid product barcode, please make sure scan the barcode",
+    "switchToScan": "switch To Scan",
+    "inputBinCode": "Input BinCode",
+    "manualInputButton": "Manual Input Product and Quantity"
   },
-    "inventory": {
+  "inventory": {
     "total": "Total",
     "offload": "Offload",
     "quantityExceed": "Quantity cannot exceed total ({{quantity}})",
-    "currentCargoInForklift" : "current Cargo In Forklift"
-  }
-  ,
-    "addToCart": {
+    "currentCargoInForklift": "current Cargo In Forklift"
+  },
+  "addToCart": {
     "invalidQuantity": "❌ Invalid quantity",
     "addFailed": "❌ Failed to add",
     "load": "Add"
   },
-  
+
   "taskInstruction": {
     "sourceBin": "Source Bin",
     "product": "Product",
@@ -95,9 +109,15 @@
     "cancelTooltip": "Cancel this task",
     "mustLoadFirst": "❌ Load cargo first to release",
     "releaseTooltip": "Release this task to the aisle",
-    "loadTooltip": "Load items from aisle bin"
+    "loadTooltip": "Load items from aisle bin",
+    "cancelAndReturnTooltip": "Cancel task and return cargo to source bin.",
+    "cancelAndReturnButton": "Cancel & Return",
+    "cancelButton": "Cancel",
+    "confirmCancelTitle": "Are you sure you want to cancel this task?",
+    "confirmCancelSubtitle": "Cargo will be returned to source bin: {{bin}}",
+    "confirmNow": "Yes, cancel it"
   },
-    "productCard": {
+  "productCard": {
     "title": "Product Info",
     "productCode": "Product Code",
     "barCode": "Bar Code",
@@ -106,18 +126,18 @@
   },
 
   "taskListCard": {
-  "cancel": "cancel",
-  "cancelling": "canceling",
-  "completed": "completed",
-  "refreshing" : "refreshing",
-  "empty" : "No pending tasks found."
+    "cancel": "cancel",
+    "cancelling": "canceling",
+    "completed": "completed",
+    "refreshing": "refreshing",
+    "empty": "No pending tasks found."
   },
   "pickerBottomBar": {
-  "taskList": "Task List",
-  "createTask": "Create Task",
-  "archivedTask": "Archived Task"
-},
-    "createTask": {
+    "taskList": "Task List",
+    "createTask": "Create Task",
+    "archivedTask": "Archived Task"
+  },
+  "createTask": {
     "title": "Create A New Task",
     "targetBin": "Target Bin",
     "productCode": "Product Code",
@@ -129,19 +149,19 @@
     "outOfStock": "Create Out-of-Stock Task",
     "cancel": "Cancel"
   },
-    "success": {
+  "success": {
     "pickerTitle": "Pick-up Task Created!",
     "defaultTitle": "Operation Completed!",
     "description": "Everything went smoothly. You’ll be redirected shortly."
   },
-    "load": {
+  "load": {
     "confirmTitle": "Confirm items to load from {{binCode}}",
     "productQuantity": "Product Quantity",
     "inputQuantity": "input Quantity",
     "confirm": "confirm Load to Forklift"
   },
 
-    "inventorySearch": {
+  "inventorySearch": {
     "title": "Inventory",
     "searchPlaceholder": "Search by product code",
     "noOptions": "No options",
@@ -150,5 +170,20 @@
     "binCode": "Bin Code",
     "productCode": "Product Code",
     "quantity": "Quantity"
+  },
+
+  "picker": {
+    "title": "Create Picker Task",
+    "productCode": "Product Code",
+    "pickupBin": "Pickup Bin:",
+    "sourceBinList": "Source Bin List",
+    "qty": "Qty",
+    "createTask": "Create Task",
+    "createOutOfStockTask": "Create Out-of-stock Task",
+    "error": {
+      "noProductCode": "❌ Please select a product code.",
+      "noPickupBin": "❌ Pickup bin not found.",
+      "fetchFailed": "❌ Failed to fetch bin info."
+    }
   }
 }

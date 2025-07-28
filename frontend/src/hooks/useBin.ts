@@ -3,7 +3,8 @@ import {
   checkIfPickUpBin,
   getBinByBinCode,
   getBinCodes,
-  getBinCodesByProductCode
+  getBinCodesByProductCode,
+  getPickupBinsByProductCode
 } from 'api/bin'
 import { Bin } from 'types/bin'
 import { useAuth } from './useAuth'
@@ -16,6 +17,8 @@ export const useBin = () => {
   const { userProfile } = useAuth()
 
   const warehouseID = userProfile?.warehouseID
+
+  const [pickupBinCode, setPickupBinCode] = useState<string | null>(null)
 
   const fetchBinCodesByProductCode = useCallback(
     async (
@@ -64,7 +67,7 @@ export const useBin = () => {
         return []
       }
 
-      const codes = res.data.map((bin: any) => bin.binCode)
+      const codes = res.data.data.map((bin: any) => bin.binCode)
       setBinCodes(codes)
 
       setError(null)
@@ -90,6 +93,52 @@ export const useBin = () => {
     }
   }
 
+  ///////////////////////////////
+
+  const fetchAvailableBinCodes = useCallback(
+    async (
+      productCode: string
+    ): Promise<{ binCode: string; quantity: number }[]> => {
+      try {
+        const res = await getBinCodesByProductCode(productCode)
+        if (!res.data.success || !res.data.binCodes) {
+          throw new Error(res.data.message || '❌ Failed to fetch bin codes')
+        }
+        return res.data.binCodes
+      } catch (err) {
+        console.error('❌ Failed to fetch bins by product code:', err)
+        return []
+      }
+    },
+    []
+  )
+  const getPickUpBinByProductCode = useCallback(async (productCode: string) => {
+    try {
+      const res = await getPickupBinsByProductCode(productCode)
+
+      const pickupBin = res.data?.data
+
+      if (!pickupBin || !pickupBin.binCode) {
+        return {
+          success: false,
+          error: `❌ No ${productCode} in current warehouse!`
+        }
+      }
+
+      setPickupBinCode(pickupBin.binCode)
+
+      return {
+        success: true,
+        data: pickupBin.binCode
+      }
+    } catch (err: any) {
+      return {
+        success: false,
+        error: err?.response?.data?.error || '❌ Failed to fetch pickup bin'
+      }
+    }
+  }, [])
+
   return {
     fetchBinCodesByProductCode,
     fetchBinByCode,
@@ -97,6 +146,9 @@ export const useBin = () => {
     fetchBinCodes,
     error,
     binCodes,
-    checkBinType
+    checkBinType,
+    fetchAvailableBinCodes,
+    getPickUpBinByProductCode,
+    pickupBinCode
   }
 }

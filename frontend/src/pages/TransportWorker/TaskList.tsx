@@ -101,9 +101,9 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
               typeof firstSourceBin === 'object' && 'bin' in firstSourceBin
                 ? firstSourceBin?.bin?.binCode
                 : typeof firstSourceBin === 'object' &&
-                  'binCode' in firstSourceBin
-                ? (firstSourceBin as any).binCode
-                : ''
+                    'binCode' in firstSourceBin
+                  ? (firstSourceBin as any).binCode
+                  : ''
 
             const isAisleTask =
               typeof binCode === 'string' && binCode.startsWith('AISLE-')
@@ -244,9 +244,13 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
                       variant='caption'
                       color='text.secondary'
                       fontSize={11}
+                      sx={{ whiteSpace: 'pre-line' }}
                     >
-                      {t('taskList.createDate')}:{' '}
-                      {new Date(task.createdAt).toLocaleString()}
+                      {`${t('taskList.createDate')}: ${new Date(
+                        task.createdAt
+                      ).toLocaleString()}\n${t('taskList.creator')}: ${
+                        task.creator?.firstName || '--'
+                      } ${task.creator?.lastName || ''}`}
                     </Typography>
 
                     <Button
@@ -271,8 +275,8 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
                       {loadingTasks[task.taskID]
                         ? t('taskList.loading')
                         : isAisleTask
-                        ? t('taskList.takeOver')
-                        : t('taskList.accept')}
+                          ? t('taskList.takeOver')
+                          : t('taskList.accept')}
                     </Button>
                   </Box>
                 </CardContent>

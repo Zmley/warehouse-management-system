@@ -10,13 +10,7 @@ import { getCognitoErrorMessage } from './accounts.service'
 import env from 'config/config'
 import Task from 'routes/tasks/task.model'
 import Account from 'routes/accounts/accounts.model'
-
 import { cognitoClient } from 'utils/aws'
-
-// export const cognitoClient = new CognitoIdentityProviderClient({
-//   region: process.env.AWS_REGION!
-// })
-//改pr你在aws.ts文件里也有一个cognitoClient，你看下能不能用同一个
 
 export const loginUser = async (req: Request, res: Response) => {
   const { email, password } = req.body
@@ -100,5 +94,33 @@ export const getUserInfo = async (
   } catch (error) {
     console.error('❌ Error fetching user info:', error)
     res.status(500).json({ message: '❌ Internal Server Error' })
+  }
+}
+
+export const refreshAccessToken = async (req: Request, res: Response) => {
+  const { refreshToken } = req.body
+
+  if (!refreshToken) {
+    return res.status(400).json({ message: 'Missing refreshToken' })
+  }
+
+  try {
+    const command = new InitiateAuthCommand({
+      AuthFlow: 'REFRESH_TOKEN_AUTH',
+      ClientId: env.cognitoClientId,
+      AuthParameters: {
+        REFRESH_TOKEN: refreshToken
+      }
+    })
+
+    const response = await cognitoClient.send(command)
+
+    res.json({
+      accessToken: response.AuthenticationResult?.AccessToken,
+      idToken: response.AuthenticationResult?.IdToken
+    })
+  } catch (error) {
+    console.error('❌ Failed to refresh token:', error)
+    res.status(401).json({ message: 'Refresh token expired or invalid' })
   }
 }

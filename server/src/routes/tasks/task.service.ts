@@ -7,7 +7,7 @@ import { UserRole, TaskStatus } from 'constants/index'
 import { TaskWithJoin } from 'types/task'
 import {
   checkInventoryQuantity,
-  hasInventoryInCart
+  getCartInventories
 } from 'routes/inventory/inventory.service'
 import { getBinByBinCode } from 'routes/bins/bin.service'
 import Account from 'routes/accounts/accounts.model'
@@ -64,15 +64,16 @@ export const binToBin = async (
 
 export const validateTaskAcceptance = async (
   accountID: string,
-  taskID: string
+  taskID: string,
+  cartID: string
 ) => {
   const isActive = await hasActiveTask(accountID)
   if (isActive) {
     throw new AppError(409, '❌ You already have an active task in progress.')
   }
 
-  const cartHasCargo = await hasInventoryInCart(accountID)
-  if (cartHasCargo) {
+  const cartInventories = await getCartInventories(cartID)
+  if (cartInventories.length > 0) {
     throw new AppError(
       409,
       '❌ Please unload your cart before accepting a new task.'
@@ -272,6 +273,12 @@ const getIncludeClause = (warehouseID: string) => {
     {
       model: Account,
       as: 'accepter',
+      attributes: ['accountID', 'firstName', 'lastName'],
+      required: false
+    },
+    {
+      model: Account,
+      as: 'creator',
       attributes: ['accountID', 'firstName', 'lastName'],
       required: false
     }
