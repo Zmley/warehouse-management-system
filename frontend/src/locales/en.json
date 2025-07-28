@@ -54,12 +54,10 @@
     "modeManual": "Manual Input",
     "alignPrompt": "Please align the QR code within the frame",
     "enterBinCode": "Enter Bin Code",
-
     "operationError": "❌ Operation failed. Please try again.",
     "enterBinOrProduct": "Enter Bin Code or Product BarCode",
     "enterProductCode": "Enter Product Codee",
     "scan.startCamera": "turn on the camera",
-
     "title": "Scan Barcode(check information) or QRcode(Creat Task)",
     "notRecognized": "Barcode not recognized",
     "productNotFound": "Product not found",

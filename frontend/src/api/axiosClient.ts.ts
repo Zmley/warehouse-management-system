@@ -39,13 +39,17 @@ apiClient.interceptors.request.use(config => {
   return config
 })
 
-// 响应拦截器：处理 401 并尝试使用 refreshToken
 apiClient.interceptors.response.use(
   res => res,
   async err => {
     const originalRequest = err.config
 
-    // Token 过期且尚未重试
+    if (originalRequest.url.includes('/refresh-token')) {
+      clearTokens()
+      window.location.href = '/'
+      return Promise.reject(err)
+    }
+
     if (
       (err.response?.status === 401 || err.response?.status === 403) &&
       !originalRequest._retry
@@ -79,6 +83,7 @@ apiClient.interceptors.response.use(
 
         const { accessToken, idToken } = response.data
         saveTokens({ accessToken, idToken, refreshToken })
+
         apiClient.defaults.headers.common.Authorization = `Bearer ${accessToken}`
 
         processQueue(null, accessToken)

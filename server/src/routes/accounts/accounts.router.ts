@@ -1,6 +1,7 @@
 import express from 'express'
 import { authenticateToken } from 'middlewares/auth.middleware'
 import currentAccount from 'middlewares/currentAccount.middleware'
+
 import {
   registerUser,
   loginUser,
