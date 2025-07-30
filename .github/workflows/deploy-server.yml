@@ -23,6 +23,7 @@ jobs:
               rm -rf warehouse-management-system
             fi
 
+
             echo "Cloning the repository"
             git clone --filter=blob:none --no-checkout https://github.com/Zmley/warehouse-management-system.git
             cd warehouse-management-system

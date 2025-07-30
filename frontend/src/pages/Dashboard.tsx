@@ -13,6 +13,10 @@ import Cart from 'pages/TransportWorker/Cart'
 import InventoryPage from 'pages/TransportWorker/Inventory'
 import { useLocation, useNavigate } from 'react-router-dom'
 
+const TOPBAR_HEIGHT = 64
+const BOTTOMBAR_HEIGHT = 64
+
+// ✅ 顶部固定 TopBar
 const TopBarFixed = ({ userName }: { userName: string }) => (
   <Box
     sx={{
@@ -20,9 +24,9 @@ const TopBarFixed = ({ userName }: { userName: string }) => (
       top: 0,
       left: 0,
       right: 0,
+      height: `${TOPBAR_HEIGHT}px`,
       zIndex: 1300,
-      backgroundColor: '#fff',
-      boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.08)'
+      backgroundColor: '#f9fafb'
     }}
   >
     <TopBar userName={userName} />
@@ -48,22 +52,14 @@ const TransportWorkerContent: React.FC<{ userName: string }> = ({
   }, [isCartEmpty])
 
   return (
-    <Box
-      sx={{
-        height: '100vh',
-        backgroundColor: '#F7F9FC',
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'relative'
-      }}
-    >
+    <Box sx={{ height: '100vh', backgroundColor: '#F7F9FC' }}>
       <TopBarFixed userName={userName} />
 
       <Box
         sx={{
-          flex: 1,
-          pt: '72px',
-          pb: '90px',
+          paddingTop: `${TOPBAR_HEIGHT + 4}px`,
+          paddingBottom: `${BOTTOMBAR_HEIGHT}px`,
+          height: '100vh',
           overflowY: 'auto',
           WebkitOverflowScrolling: 'touch'
         }}
@@ -73,7 +69,18 @@ const TransportWorkerContent: React.FC<{ userName: string }> = ({
         {view === 'inventory' && <InventoryPage />}
       </Box>
 
-      <Box sx={{ zIndex: 1300 }}>
+      {/* ✅ 底部固定条 */}
+      <Box
+        sx={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: `${BOTTOMBAR_HEIGHT}px`,
+          backgroundColor: '#fff',
+          zIndex: 1300
+        }}
+      >
         <WokerBottombar
           onCartClick={() => setView('cart')}
           onTaskListClick={() => setView('tasks')}
@@ -95,16 +102,15 @@ const Dashboard: React.FC = () => {
 
   if (isPicker) {
     return (
-      <Box
-        sx={{ height: '100vh', backgroundColor: '#F7F9FC', overflow: 'hidden' }}
-      >
+      <Box sx={{ height: '100vh', backgroundColor: '#F7F9FC' }}>
         <TopBarFixed
           userName={`${userProfile.firstName} ${userProfile.lastName}`}
         />
+
         <Box
           sx={{
-            pt: '72px',
-            pb: '90px',
+            paddingTop: `${TOPBAR_HEIGHT + 16}px`, // ✅ 初始有 16px 间距
+            paddingBottom: `${BOTTOMBAR_HEIGHT}px`,
             height: '100vh',
             overflowY: 'auto',
             WebkitOverflowScrolling: 'touch'
@@ -112,7 +118,18 @@ const Dashboard: React.FC = () => {
         >
           <PickerCreatedTaskList status={taskStatus} />
         </Box>
-        <Box sx={{ zIndex: 1300 }}>
+
+        <Box
+          sx={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: `${BOTTOMBAR_HEIGHT}px`,
+            backgroundColor: '#fff',
+            zIndex: 1300
+          }}
+        >
           <PickerBottombar
             selectedView={
               taskStatus === TaskCategoryEnum.PENDING ? 'task' : 'archived'
