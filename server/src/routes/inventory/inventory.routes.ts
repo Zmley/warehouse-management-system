@@ -3,7 +3,7 @@ import {
   getInventoriesInCart,
   getInventories,
   deleteInventory,
-  updateInventory,
+  updateInventories,
   addInventories,
   getInventoriesByBinCode
 } from './inventory.controller'
@@ -13,7 +13,7 @@ import { UserRole } from 'constants/index'
 
 import {
   validateAddInventories,
-  validateUpdateInventory,
+  // validateUpdateInventory,
   validateDeleteInventory,
   validateGetInventories
 } from './inventory.middleware'
@@ -40,12 +40,7 @@ router.post(
   addInventories
 )
 
-router.put(
-  '/:inventoryID',
-  roleAllow([UserRole.ADMIN]),
-  validateUpdateInventory,
-  updateInventory
-)
+router.put('/', roleAllow([UserRole.ADMIN]), updateInventories)
 
 router.delete(
   '/:inventoryID',

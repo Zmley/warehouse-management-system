@@ -90,23 +90,36 @@ export const deleteByInventoryID = async (
   }
 }
 
-export const updateByInventoryID = async (
-  inventoryID: string,
-  updatedFields: { quantity?: number; productID?: string; binID?: string }
+// services/inventoryService.ts
+export const updateByInventoryIDs = async (
+  updates: {
+    inventoryID: string
+    quantity?: number
+    productCode?: string
+  }[]
 ) => {
   try {
-    const inventoryItem = await Inventory.findByPk(inventoryID)
-    if (!inventoryItem) {
-      throw new Error('Inventory item not found')
-    }
+    const results = await Promise.all(
+      updates.map(async update => {
+        const { inventoryID, quantity, productCode } = update
+        const inventoryItem = await Inventory.findByPk(inventoryID)
 
-    await inventoryItem.update(updatedFields)
+        if (!inventoryItem) {
+          return {
+            inventoryID,
+            success: false,
+            message: 'Inventory item not found'
+          }
+        }
 
-    return { success: true, updatedItem: inventoryItem }
+        await inventoryItem.update({ quantity, productCode })
+        return { inventoryID, success: true, updatedItem: inventoryItem }
+      })
+    )
+
+    return results
   } catch (error) {
-    if (error instanceof AppError) throw error
-
-    throw new Error(`Failed to update inventory item: ${error.message}`)
+    throw new Error(`Failed to bulk update inventories: ${error.message}`)
   }
 }
 

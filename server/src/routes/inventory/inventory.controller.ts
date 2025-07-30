@@ -57,27 +57,27 @@ export const deleteInventory = async (
   }
 }
 
-export const updateInventory = async (
+export const updateInventories = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  const { inventoryID } = req.params
-  const updatedFields = req.body
-
   try {
-    const updatedItem = await inventoryService.updateByInventoryID(
-      inventoryID,
-      updatedFields
-    )
+    const { updates } = req.body
 
-    if (updatedItem) {
-      return res.status(200).json({ success: true, updatedItem })
-    } else {
+    if (!Array.isArray(updates) || updates.length === 0) {
       return res
-        .status(404)
-        .json({ success: false, message: 'Inventory item not found' })
+        .status(400)
+        .json({ success: false, message: 'No updates provided' })
     }
+
+    const updatedItems = await inventoryService.updateByInventoryIDs(updates)
+
+    return res.status(200).json({
+      success: true,
+      message: 'Inventories updated successfully',
+      updatedItems
+    })
   } catch (error) {
     next(error)
   }
