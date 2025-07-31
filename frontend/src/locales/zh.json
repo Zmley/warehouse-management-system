@@ -33,7 +33,13 @@
       "❌ Failed to accept task": "❌ 接受任务失败",
       "unknown": "❌ 发生未知错误"
     },
-    "creator": "创建人员"
+    "creator": "创建人员",
+
+     "status": {
+      "pending": "待处理",
+      "outOfStock": "缺货"
+    }
+
   },
   "cart": {
     "loadedFromBin": "已从货位装载",

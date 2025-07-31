@@ -28,7 +28,11 @@
     "loading": "Loading...",
     "outOfStock": "Out of Stock",
     "canceling": "canceling",
-    "creator": "creator"
+    "creator": "creator",
+     "status": {
+      "pending": "Pending",
+      "outOfStock": "Out of Stock"
+    }
   },
   "cart": {
     "loadedFromBin": "Loaded From Bin",
