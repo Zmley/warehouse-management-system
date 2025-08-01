@@ -6,8 +6,11 @@ import {
   Typography,
   Snackbar,
   Alert,
-  Divider
+  Divider,
+  IconButton,
+  Tooltip
 } from '@mui/material'
+import UndoIcon from '@mui/icons-material/Undo'
 import { InventoryItem } from 'types/inventory'
 import { sanitizeQuantityInput } from 'utils/inputHelpers'
 import { useTranslation } from 'react-i18next'
@@ -22,13 +25,15 @@ interface Props {
   }[]
   onQuantityChange: (inventoryID: string, newQuantity: number) => void
   onSelectionChange: (inventoryID: string) => void
+  onReturnClick?: () => void
 }
 
 const InventoryListCard: React.FC<Props> = ({
   inventories,
   selectedList,
   onQuantityChange,
-  onSelectionChange
+  onSelectionChange,
+  onReturnClick
 }) => {
   const [errorOpen, setErrorOpen] = React.useState(false)
   const [errorMessage, setErrorMessage] = React.useState('')
@@ -49,13 +54,45 @@ const InventoryListCard: React.FC<Props> = ({
     onQuantityChange(inventoryID, numericValue)
   }
 
+  const isCartEmpty = inventories.length === 0
+
   return (
     <Box>
-      <Box sx={{ textAlign: 'center' }}>
+      <Box sx={{ textAlign: 'center', position: 'relative', mb: 1 }}>
         <Typography variant='subtitle1' fontWeight='bold'>
           {t('inventory.currentCargoInForklift')}
         </Typography>
+
+        {onReturnClick && (
+          <Tooltip title={t('inventory.returnToSource')} arrow>
+            <span>
+              <IconButton
+                size='small'
+                onClick={onReturnClick}
+                disabled={isCartEmpty}
+                sx={{
+                  position: 'absolute',
+                  right: 0,
+                  top: -5,
+                  backgroundColor: 'white',
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+                  '&:hover': {
+                    backgroundColor: isCartEmpty ? 'white' : '#f1f1f1'
+                  },
+                  opacity: isCartEmpty ? 0.4 : 1,
+                  cursor: isCartEmpty ? 'not-allowed' : 'pointer'
+                }}
+              >
+                <UndoIcon
+                  fontSize='small'
+                  color={isCartEmpty ? 'disabled' : 'primary'}
+                />
+              </IconButton>
+            </span>
+          </Tooltip>
+        )}
       </Box>
+
       <Divider sx={{ my: 1.2 }} />
 
       <Box

@@ -35,11 +35,10 @@
     },
     "creator": "创建人员",
 
-     "status": {
+    "status": {
       "pending": "待处理",
       "outOfStock": "缺货"
     }
-
   },
   "cart": {
     "loadedFromBin": "已从货位装载",
@@ -58,7 +57,11 @@
     "selectScanMode": "请选择扫码模式",
     "scanBinCode": "扫码货位",
     "scanProduct": "扫码产品",
-    "disableScanProductDueToTask": "当前已有任务，请完成后再进行扫码装货。"
+    "disableScanProductDueToTask": "当前已有任务，请完成后再进行扫码装货。",
+    "confirmReturnToSource": "确认退回到来源货位？",
+    "confirmReturnToEmptyCart": "确认退回到 emptyCart（过道货）？",
+
+    "stagingArea": "暂存区"
   },
   "scan": {
     "scanBin": "扫描码",
@@ -101,7 +104,8 @@
     "total": "叉车上总数",
     "offload": "卸载数量",
     "quantityExceed": "数量不能超过库存总数 ({{quantity}})",
-    "currentCargoInForklift": "叉车内货物"
+    "currentCargoInForklift": "叉车内货物",
+    "returnToSource": "退回来源货位"
   },
   "addToCart": {
     "invalidQuantity": "❌ 无效的数量",

@@ -1,5 +1,5 @@
 import { Routes, Route } from 'react-router-dom'
-import ScanBin from 'pages/TransportWorker/ScanBin'
+import Scan from 'pages/TransportWorker/Scan'
 import UnloadSuccess from 'pages/Success'
 import { useContext, useEffect } from 'react'
 import { AuthContext } from 'contexts/auth'
@@ -9,7 +9,6 @@ import CreateTaskPage from 'pages/Picker/CreateTask'
 
 import { TransportWorkCartProvider } from 'contexts/cart'
 import ScannedProductPage from 'pages/Picker/ScannedProductPage'
-import ScanProduct from 'pages/TransportWorker/ScanProduct'
 
 const PrivateRoutes: React.FC = () => {
   const { getMe } = useContext(AuthContext)!
@@ -24,16 +23,7 @@ const PrivateRoutes: React.FC = () => {
         path='/my-task/scan-QRCode'
         element={
           <TransportWorkCartProvider>
-            <ScanBin />
-          </TransportWorkCartProvider>
-        }
-      />
-
-      <Route
-        path='/my-task/scan-product'
-        element={
-          <TransportWorkCartProvider>
-            <ScanProduct />
+            <Scan />
           </TransportWorkCartProvider>
         }
       />

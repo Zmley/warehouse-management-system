@@ -3,6 +3,7 @@ import { Box, IconButton, TextField, Autocomplete, Button } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
 import { useTranslation } from 'react-i18next'
+import { setSourceBinCode } from 'utils/Storages'
 
 interface ProductInput {
   productCode: string
@@ -62,6 +63,8 @@ const MultiProductInputBox: React.FC<MultiProductInputBoxProps> = ({
       )
 
     if (parsed.length > 0) {
+      setSourceBinCode('staging-area')
+
       onSubmit(parsed)
     }
   }
@@ -70,10 +73,14 @@ const MultiProductInputBox: React.FC<MultiProductInputBoxProps> = ({
     <Box
       sx={{
         width: '100%',
-        maxWidth: 300,
         p: 2,
+        pt: 0,
         backgroundColor: '#fff',
-        borderRadius: 2
+        borderRadius: 0,
+        boxSizing: 'border-box',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center'
       }}
     >
       {inputs.map((input, index) => (
@@ -82,19 +89,32 @@ const MultiProductInputBox: React.FC<MultiProductInputBoxProps> = ({
           display='flex'
           alignItems='center'
           sx={{
-            bgcolor: '#e3f2fd',
+            bgcolor: '#f7faff',
             border: '1px solid #1976d2',
-            borderRadius: 2,
+            borderRadius: 8,
             p: 1,
-            mb: 1
+            mb: 1,
+            width: '100%',
+            gap: 1
           }}
         >
           <Autocomplete
             options={productOptions}
             value={input.productCode}
-            onInputChange={(_, value) =>
+            freeSolo={false}
+            openOnFocus={false}
+            onInputChange={(_, value) => {
               handleChange(index, 'productCode', value)
-            }
+            }}
+            onChange={(_, newValue) => {
+              handleChange(index, 'productCode', newValue || '')
+            }}
+            onBlur={e => {
+              const inputValue = (e.target as HTMLInputElement).value
+              if (!productOptions.includes(inputValue)) {
+                handleChange(index, 'productCode', '')
+              }
+            }}
             filterOptions={(options, state) =>
               state.inputValue.length < 1
                 ? []
@@ -110,14 +130,11 @@ const MultiProductInputBox: React.FC<MultiProductInputBoxProps> = ({
                 sx={{
                   backgroundColor: '#fff',
                   borderRadius: 1,
-                  '& .MuiInputBase-input': {
-                    fontSize: 13,
-                    padding: '6px 8px'
-                  }
+                  '& .MuiInputBase-input': { fontSize: 16, padding: '8px 10px' }
                 }}
               />
             )}
-            sx={{ flex: 6 }}
+            sx={{ flex: 5 }}
           />
 
           <TextField
@@ -125,43 +142,42 @@ const MultiProductInputBox: React.FC<MultiProductInputBoxProps> = ({
             type='number'
             inputProps={{
               min: 1,
-              style: { fontSize: 13, padding: '6px 8px', textAlign: 'center' }
+              style: { fontSize: 16, padding: '8px 10px', textAlign: 'center' }
             }}
             value={input.quantity}
             onChange={e => handleChange(index, 'quantity', e.target.value)}
             size='small'
             sx={{
-              flex: 3,
-              ml: 1,
+              flex: 2,
               backgroundColor: '#f0f4f8',
-              borderRadius: 1
+              borderRadius: 6
             }}
           />
 
           <IconButton
             color='error'
             onClick={() => handleRemove(index)}
-            sx={{ flex: 1 }}
+            sx={{
+              backgroundColor: '#ffe5e5',
+              borderRadius: '50%',
+              width: 40,
+              height: 40,
+              '&:hover': { backgroundColor: '#ffcccc' }
+            }}
           >
-            <DeleteIcon />
+            <DeleteIcon fontSize='small' />
           </IconButton>
         </Box>
       ))}
 
       <Box textAlign='center' mb={2}>
         <AddCircleOutlineIcon
-          sx={{ color: '#1976d2', fontSize: 32, cursor: 'pointer' }}
+          sx={{ color: '#1976d2', fontSize: 36, cursor: 'pointer' }}
           onClick={handleAdd}
         />
       </Box>
 
-      <Box
-        textAlign='center'
-        display='flex'
-        justifyContent='center'
-        gap={2}
-        mt={2}
-      >
+      <Box textAlign='center' display='flex' justifyContent='center' gap={2}>
         <Button
           onClick={handleSubmit}
           variant='contained'
@@ -170,7 +186,7 @@ const MultiProductInputBox: React.FC<MultiProductInputBoxProps> = ({
             px: 4,
             py: 1.2,
             fontWeight: 'bold',
-            fontSize: '0.95rem',
+            fontSize: '1rem',
             background: 'linear-gradient(to right, #1976d2, #42a5f5)',
             boxShadow: '0 4px 12px rgba(0, 123, 255, 0.3)'
           }}
@@ -187,7 +203,7 @@ const MultiProductInputBox: React.FC<MultiProductInputBoxProps> = ({
               px: 4,
               py: 1.2,
               fontWeight: 'bold',
-              fontSize: '0.95rem',
+              fontSize: '1rem',
               color: '#f44336',
               borderColor: '#f44336'
             }}

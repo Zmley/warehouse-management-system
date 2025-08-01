@@ -29,7 +29,7 @@
     "outOfStock": "Out of Stock",
     "canceling": "canceling",
     "creator": "creator",
-     "status": {
+    "status": {
       "pending": "Pending",
       "outOfStock": "Out of Stock"
     }
@@ -49,7 +49,12 @@
     "selectScanMode": "Select scan mode",
     "scanBinCode": "Scan Bin Code",
     "scanProduct": "Scan Product",
-    "disableScanProductDueToTask": "You have an active task. Please finish it before scanning products."
+    "disableScanProductDueToTask": "You have an active task. Please finish it before scanning products.",
+
+    "confirmReturnToSource": "Confirm return to source bin?",
+    "confirmReturnToEmptyCart": "Confirm return to emptyCart (aisle goods)?",
+
+    "stagingArea": "staging-area"
   },
   "scan": {
     "scanBin": "Scan Code",
@@ -93,7 +98,9 @@
     "total": "Total",
     "offload": "Offload",
     "quantityExceed": "Quantity cannot exceed total ({{quantity}})",
-    "currentCargoInForklift": "current Cargo In Forklift"
+    "currentCargoInForklift": "current Cargo In Forklift",
+
+    "returnToSource": "Return to Source Bin"
   },
   "addToCart": {
     "invalidQuantity": "❌ Invalid quantity",

@@ -29,3 +29,11 @@ export const areTokensValid = (): boolean => {
 export const getRefreshToken = (): string | null => {
   return localStorage.getItem('refreshToken')
 }
+
+export const setSourceBinCode = (code: string) => {
+  localStorage.setItem('sourceBinCode', code)
+}
+
+export const getSourceBinCode = (): string | null => {
+  return localStorage.getItem('sourceBinCode')
+}

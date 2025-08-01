@@ -41,7 +41,7 @@ export const getProductsByWarehouseID = async (
         where: {
           warehouseID,
           type: {
-            [Op.in]: [BinType.INVENTORY, BinType.CART]
+            [Op.in]: [BinType.INVENTORY]
           }
         }
       },

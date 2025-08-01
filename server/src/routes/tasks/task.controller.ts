@@ -193,9 +193,8 @@ export const createTask = async (
     )
 
     if (!sourceBinCode) {
-      const destinationBin = await binService.getBinByBinCode(
-        destinationBinCode
-      )
+      const destinationBin =
+        await binService.getBinByBinCode(destinationBinCode)
 
       const task = await taskService.binsToPick(
         destinationBin.binCode,

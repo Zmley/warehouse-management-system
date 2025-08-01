@@ -34,7 +34,7 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
     [taskID: string]: boolean
   }>({})
   const [open, setOpen] = useState(false)
-  const [showOutOfStock, setShowOutOfStock] = useState(false) // ✅ 切换状态
+  const [showOutOfStock, setShowOutOfStock] = useState(false)
 
   useEffect(() => {
     if (error) setOpen(true)
@@ -75,18 +75,20 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
     await fetchMyTask()
   }
 
-  const filteredTasks = tasks.filter(
-    task =>
-      showOutOfStock
-        ? !task.sourceBins || task.sourceBins.length === 0 // Out of Stock
-        : task.sourceBins && task.sourceBins.length > 0 // 正常 Pending
+  const filteredTasks = tasks.filter(task =>
+    showOutOfStock
+      ? !task.sourceBins || task.sourceBins.length === 0
+      : task.sourceBins && task.sourceBins.length > 0
   )
 
   return (
-    <PullToRefresh onRefresh={handleManualRefresh}>
+    <PullToRefresh
+      onRefresh={handleManualRefresh}
+      pullingContent={<></>}
+      refreshingContent={<></>}
+    >
+      {' '}
       <Box p={2} pt={0} pb={10} sx={{ position: 'relative' }}>
-        {/* ✅ 顶部同一行布局 */}
-        {/* ✅ 顶部布局 */}
         <Box
           sx={{
             display: 'flex',
@@ -95,11 +97,10 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
             position: 'relative'
           }}
         >
-          {/* ✅ 中间的下拉刷新提示 */}
           <Typography
             sx={{
-              flex: 1, // ✅ 占满中间空间
-              textAlign: 'center', // ✅ 文字居中
+              flex: 1,
+              textAlign: 'center',
               color: 'text.secondary',
               fontSize: 13,
               fontStyle: 'italic'
@@ -108,14 +109,13 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
             {t('taskList.pullToRefresh')}
           </Typography>
 
-          {/* ✅ 右边：状态文字 + 箭头 */}
           <Box
             sx={{
               display: 'flex',
               alignItems: 'center',
               gap: 1,
               position: 'absolute',
-              right: 10 // ✅ 永远靠右
+              right: 10
             }}
           >
             <Typography

@@ -2,6 +2,7 @@ import Inventory from 'routes/inventory/inventory.model'
 import Bin from 'routes/bins/bin.model'
 import AppError from 'utils/appError'
 import { getTaskByAccountID } from 'routes/tasks/task.service'
+import { BinType } from 'constants/index'
 
 export const moveInventoriesToBin = async (
   inventories: { inventoryID: string; quantity: number }[],
@@ -23,7 +24,7 @@ export const moveInventoriesToBin = async (
         )
       }
 
-      if (bin.type === 'PICK_UP') {
+      if (bin.type === BinType.PICK_UP || bin.type === BinType.AISLE) {
         const newQuantity = inventory.quantity - item.quantity
         if (newQuantity <= 0) {
           await inventory.destroy()

@@ -27,7 +27,7 @@ declare global {
 
 const license = process.env.REACT_APP_DYNAMSOFT_LICENSE || ''
 
-const ScanBin = () => {
+const Scan = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
@@ -331,7 +331,11 @@ const ScanBin = () => {
             overflowY: 'auto',
             borderRadius: '0 0 16px 16px',
             p: 2,
-            bgcolor: '#fff'
+            overflowX: 'hidden',
+
+            bgcolor: '#fff',
+            width: '100vw',
+            boxSizing: 'border-box'
           }
         }}
       >
@@ -366,4 +370,4 @@ const ScanBin = () => {
   )
 }
 
-export default ScanBin
+export default Scan
