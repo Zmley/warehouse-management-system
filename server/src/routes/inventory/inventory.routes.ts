@@ -1,4 +1,8 @@
-import express from 'express'
+import { Router } from 'express'
+import { celebrate, Segments } from 'celebrate'
+import roleAllow from 'middlewares/roleAllow.middleware'
+import { UserRole } from 'constants/index'
+
 import {
   getInventoriesInCart,
   getInventories,
@@ -8,17 +12,15 @@ import {
   getInventoriesByBinCode
 } from './inventory.controller'
 
-import roleAllow from 'middlewares/roleAllow.middleware'
-import { UserRole } from 'constants/index'
-
 import {
-  validateAddInventories,
-  // validateUpdateInventory,
-  validateDeleteInventory,
-  validateGetInventories
-} from './inventory.middleware'
+  GetInventoriesSchema,
+  UpdateInventoriesSchema,
+  AddInventoriesSchema,
+  InventoryIDParamSchema,
+  BinCodeParamSchema
+} from './inventory.schema'
 
-const router = express.Router()
+const router: Router = Router()
 
 router.get(
   '/inventoriesInCart',
@@ -29,26 +31,35 @@ router.get(
 router.get(
   '/',
   roleAllow([UserRole.ADMIN, UserRole.PICKER, UserRole.TRANSPORT_WORKER]),
-  validateGetInventories,
+  celebrate({ [Segments.QUERY]: GetInventoriesSchema }),
   getInventories
 )
 
 router.post(
   '/',
   roleAllow([UserRole.ADMIN]),
-  validateAddInventories,
+  celebrate({ [Segments.BODY]: AddInventoriesSchema }),
   addInventories
 )
 
-router.put('/', roleAllow([UserRole.ADMIN]), updateInventories)
+router.put(
+  '/',
+  roleAllow([UserRole.ADMIN]),
+  celebrate({ [Segments.BODY]: UpdateInventoriesSchema }),
+  updateInventories
+)
 
 router.delete(
   '/:inventoryID',
   roleAllow([UserRole.ADMIN]),
-  validateDeleteInventory,
+  celebrate({ [Segments.PARAMS]: InventoryIDParamSchema }),
   deleteInventory
 )
 
-router.get('/:binCode', getInventoriesByBinCode)
+router.get(
+  '/:binCode',
+  celebrate({ [Segments.PARAMS]: BinCodeParamSchema }),
+  getInventoriesByBinCode
+)
 
 export default router
