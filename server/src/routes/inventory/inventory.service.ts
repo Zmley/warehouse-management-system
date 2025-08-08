@@ -30,23 +30,18 @@ export const getInventoriesByWarehouseID = async (
   binID?: string,
   page = 1,
   limit = 20,
-  keyword?: string
+  keyword?: string,
+  sortOrder: 'ASC' | 'DESC' = 'DESC'
 ) => {
   const binWhere: WhereOptions = {
     warehouseID,
-    type: {
-      [Op.in]: ['INVENTORY', 'CART']
-    }
+    type: { [Op.in]: ['INVENTORY'] }
   }
-
-  if (binID) {
-    Object.assign(binWhere, { binID })
-  }
+  if (binID) Object.assign(binWhere, { binID })
 
   const where: WhereOptions = {}
-
   if (keyword) {
-    where[Op.or as keyof WhereOptions] = [
+    where[Op.or as unknown as keyof WhereOptions] = [
       { productCode: keyword },
       Sequelize.where(Sequelize.col('bin.binCode'), keyword)
     ] as unknown as WhereOptions[]
@@ -64,7 +59,7 @@ export const getInventoriesByWarehouseID = async (
     ],
     offset: (page - 1) * limit,
     limit,
-    order: [[Sequelize.col('bin.binCode'), 'ASC']]
+    order: [[Sequelize.col('Inventory.updatedAt'), sortOrder]]
   })
 
   return result
