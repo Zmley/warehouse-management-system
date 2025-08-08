@@ -24,13 +24,23 @@ export const getInventories = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { warehouseID, binID, page, limit = '20', keyword, sort } = req.query
+    const {
+      warehouseID,
+      binID,
+      page,
+      limit = '20',
+      keyword,
+      sort,
+      sortBy
+    } = req.query
 
     const parsedPage = parseInt(page as string, 10) || 1
     const parsedLimit = parseInt(limit as string, 10) || 20
 
     const sortParam = typeof sort === 'string' ? sort.toLowerCase() : 'desc'
     const sortOrder: 'ASC' | 'DESC' = sortParam === 'asc' ? 'ASC' : 'DESC'
+    const sortField: 'binCode' | 'updatedAt' =
+      sortBy === 'binCode' ? 'binCode' : 'updatedAt'
 
     const { rows, count } = await inventoryService.getInventoriesByWarehouseID(
       warehouseID as string,
@@ -38,7 +48,7 @@ export const getInventories = async (
       parsedPage,
       parsedLimit,
       typeof keyword === 'string' ? keyword : undefined,
-      sortOrder
+      { sortBy: sortField, sortOrder } // ← 传对象
     )
 
     res.status(200).json({ inventories: rows, totalCount: count })

@@ -1,7 +1,7 @@
 import { getBinsByBinCodes } from 'routes/bins/bin.service'
 import { Inventory } from './inventory.model'
 import { Bin } from 'routes/bins/bin.model'
-import { Op, Sequelize, WhereOptions } from 'sequelize'
+import { Op, WhereOptions, Order, col } from 'sequelize'
 import { InventoryUploadType } from 'types/inventory'
 import AppError from 'utils/appError'
 import { buildBinCodeToIDMap } from 'utils/bin.utils'
@@ -31,8 +31,10 @@ export const getInventoriesByWarehouseID = async (
   page = 1,
   limit = 20,
   keyword?: string,
-  sortOrder: 'ASC' | 'DESC' = 'DESC'
+  opts: { sortBy?: 'binCode' | 'updatedAt'; sortOrder?: 'ASC' | 'DESC' } = {}
 ) => {
+  const { sortBy = 'updatedAt', sortOrder = 'DESC' } = opts
+
   const binWhere: WhereOptions = {
     warehouseID,
     type: { [Op.in]: ['INVENTORY'] }
@@ -41,11 +43,25 @@ export const getInventoriesByWarehouseID = async (
 
   const where: WhereOptions = {}
   if (keyword) {
-    where[Op.or as unknown as keyof WhereOptions] = [
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(where as any)[Op.or] = [
       { productCode: keyword },
-      Sequelize.where(Sequelize.col('bin.binCode'), keyword)
-    ] as unknown as WhereOptions[]
+      // 精确匹配；要模糊就用 Op.iLike 并加 %
+      { ['$bin.binCode$']: keyword }
+      // 或者：where(col('bin.binCode'), { [Op.eq]: keyword })
+    ]
   }
+
+  const order: Order =
+    sortBy === 'binCode'
+      ? [
+          [col('bin.binCode'), sortOrder],
+          ['updatedAt', 'DESC']
+        ]
+      : [
+          ['updatedAt', sortOrder],
+          [col('bin.binCode'), 'ASC']
+        ]
 
   const result = await Inventory.findAndCountAll({
     where,
@@ -57,9 +73,11 @@ export const getInventoriesByWarehouseID = async (
         where: binWhere
       }
     ],
+    distinct: true,
+    subQuery: false,
     offset: (page - 1) * limit,
     limit,
-    order: [[Sequelize.col('Inventory.updatedAt'), sortOrder]]
+    order
   })
 
   return result
