@@ -53,7 +53,9 @@ export const getBinCodesByProductCode = async (
 
     return bins.map(bin => ({
       binCode: bin.binCode,
-      quantity: bin.inventories?.[0]?.quantity ?? 0
+      quantity: bin.inventories
+        ? bin.inventories.reduce((sum, inv) => sum + (inv.quantity || 0), 0)
+        : 0
     }))
   } catch (error) {
     console.error('Error fetching binCodes:', error)

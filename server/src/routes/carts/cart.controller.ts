@@ -87,13 +87,85 @@ export const load = async (
   }
 }
 
+// export const unload = async (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ): Promise<void> => {
+//   try {
+//     const { binCode, unloadProductList } = req.body
+//     const { warehouseID, accountID } = res.locals
+
+//     const task = await taskService.getTaskByAccountID(accountID, warehouseID)
+
+//     if (task) {
+//       if (
+//         task.destinationBinCode !== binCode &&
+//         task.sourceBinCode !== binCode
+//       ) {
+//         res.status(400).json({
+//           success: false,
+//           message: `❌ You can only unload to your assigned destinatione: ${task.destinationBinCode} or source: ${task.sourceBinCode}`
+//         })
+//         return
+//       }
+
+//       const result = await cartService.unloadByBinCode(
+//         binCode,
+//         unloadProductList
+//       )
+
+//       let matchedQuantity: number | undefined
+
+//       if (unloadProductList.length === 1) {
+//         matchedQuantity = unloadProductList[0].quantity
+//       }
+
+//       await updateTaskByTaskID({
+//         taskID: task.taskID,
+//         quantity: matchedQuantity,
+//         status: 'COMPLETED'
+//       })
+
+//       res.status(200).json({
+//         success: true,
+//         message: `✅ ${result} Product(s) successfully unloaded into bin "${binCode}" and task completed.`,
+//         updatedProducts: result
+//       })
+//     } else {
+//       const result = await cartService.unloadByBinCode(
+//         binCode,
+//         unloadProductList
+//       )
+
+//       res.status(200).json({
+//         success: true,
+//         message: `✅ ${result} Product(s) successfully unloaded into bin "${binCode}".`,
+//         updatedProducts: result
+//       })
+//     }
+//   } catch (error) {
+//     next(error)
+//   }
+// }
+
+// controller.ts
 export const unload = async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { binCode, unloadProductList } = req.body
+    const { binCode, unloadProductList } = req.body as {
+      binCode: string
+      unloadProductList: {
+        inventoryID: string
+        quantity: number
+        merge?: boolean
+        /** 当 merge=true 时可指定合并到 bin 内的哪一条记录 */
+        targetInventoryID?: string
+      }[]
+    }
     const { warehouseID, accountID } = res.locals
 
     const task = await taskService.getTaskByAccountID(accountID, warehouseID)
@@ -105,7 +177,7 @@ export const unload = async (
       ) {
         res.status(400).json({
           success: false,
-          message: `❌ You can only unload to your assigned destinatione: ${task.destinationBinCode} or source: ${task.sourceBinCode}`
+          message: `❌ You can only unload to your assigned destination: ${task.destinationBinCode} or source: ${task.sourceBinCode}`
         })
         return
       }
@@ -116,10 +188,8 @@ export const unload = async (
       )
 
       let matchedQuantity: number | undefined
-
-      if (unloadProductList.length === 1) {
+      if (unloadProductList.length === 1)
         matchedQuantity = unloadProductList[0].quantity
-      }
 
       await updateTaskByTaskID({
         taskID: task.taskID,
@@ -129,19 +199,18 @@ export const unload = async (
 
       res.status(200).json({
         success: true,
-        message: `✅ ${result} Product(s) successfully unloaded into bin "${binCode}" and task completed.`,
-        updatedProducts: result
+        message: `✅ ${result.updatedCount} product(s) successfully unloaded into bin "${binCode}" and task completed.`,
+        updatedProducts: result.updatedCount
       })
     } else {
       const result = await cartService.unloadByBinCode(
         binCode,
         unloadProductList
       )
-
       res.status(200).json({
         success: true,
-        message: `✅ ${result} Product(s) successfully unloaded into bin "${binCode}".`,
-        updatedProducts: result
+        message: `✅ ${result.updatedCount} product(s) successfully unloaded into bin "${binCode}".`,
+        updatedProducts: result.updatedCount
       })
     }
   } catch (error) {

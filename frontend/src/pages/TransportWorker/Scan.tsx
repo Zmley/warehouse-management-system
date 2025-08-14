@@ -16,6 +16,7 @@ import { useInventory } from 'hooks/useInventory'
 import { useProduct } from 'hooks/useProduct'
 import { useTaskContext } from 'contexts/task'
 import LoadConfirm from './components/LoadConfirm'
+import UnloadConfirm from './components/UnloadConfirm' // ✅ 引入卸货确认组件
 import MultiProductInputBox from './components/ManualInputBox'
 import { ScanMode } from 'constants/index'
 
@@ -34,22 +35,32 @@ const Scan = () => {
   const scannerRef = useRef<any>(null)
   const scannedRef = useRef(false)
 
-  const { unloadCart, loadCart } = useCart()
+  const { loadCart } = useCart() // ❗️卸货改由 UnloadConfirm 内部调用 unloadCart
   const { fetchBinCodes, binCodes } = useBin()
   const { fetchInventoriesByBinCode } = useInventory()
   const { fetchProduct, loadProducts, productCodes } = useProduct()
   const { myTask } = useTaskContext()
 
   const scanMode: ScanMode = location.state?.mode ?? ScanMode.LOAD
-  const unloadProductList = location.state?.unloadProductList ?? []
+
+  // 父层传来的卸货清单（必须包含 inventoryID / productCode / quantity）
+  const unloadProductList =
+    (location.state?.unloadProductList as
+      | { inventoryID: string; productCode: string; quantity: number }[]
+      | undefined) ?? []
 
   const [manualInput, setManualInput] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [scannedBinCode, setScannedBinCode] = useState<string | null>(null)
-  const [inventoryList, setInventoryList] = useState([])
+  const [inventoryList, setInventoryList] = useState<any[]>([])
   const [showDrawer, setShowDrawer] = useState(false)
   const [defaultManualItems, setDefaultManualItems] = useState<
     { productCode: string; quantity: string }[]
+  >([])
+
+  // 卸货用：把要卸的购物车条目传到 UnloadConfirm
+  const [unloadCartItems, setUnloadCartItems] = useState<
+    { inventoryID: string; productCode: string; quantity: number }[]
   >([])
 
   useEffect(() => {
@@ -82,6 +93,7 @@ const Scan = () => {
       return
     }
 
+    // 任务模式限制
     if (myTask) {
       const isSingleBarcode = /^\d{8,}$/.test(trimmed)
       const isMultiProduct = trimmed.includes(':') || trimmed.includes(',')
@@ -93,13 +105,17 @@ const Scan = () => {
     }
 
     try {
+      // ✅ UNLOAD：扫描/输入的是 BinCode，打开 UnloadConfirm
       if (scanMode === ScanMode.UNLOAD) {
-        const result = await unloadCart(trimmed, unloadProductList)
+        // 这里不直接调用 unloadCart，而是进入确认页
         stopScanner()
-        if (result.success) return navigate('/success')
-        else throw new Error(result.error)
+        setScannedBinCode(trimmed)
+        setUnloadCartItems(unloadProductList) // 父层应保证带 inventoryID
+        setShowDrawer(true)
+        return
       }
 
+      // 下面是 LOAD 逻辑不变
       if (trimmed.includes(':') || trimmed.includes(',')) {
         const parsed = parseProductList(trimmed)
         if (parsed.length > 0) {
@@ -264,6 +280,7 @@ const Scan = () => {
           }}
         />
 
+        {/* 手动输入按钮：UNLOAD 模式下禁用（跟原来一致） */}
         <Button
           fullWidth
           disabled={!!myTask || scanMode === ScanMode.UNLOAD}
@@ -320,7 +337,6 @@ const Scan = () => {
           </Typography>
         )}
       </Paper>
-
       <Drawer
         anchor='top'
         open={showDrawer}
@@ -330,40 +346,60 @@ const Scan = () => {
             maxHeight: '90vh',
             overflowY: 'auto',
             borderRadius: '0 0 16px 16px',
-            p: 2,
+            p: 0,
             overflowX: 'hidden',
-
             bgcolor: '#fff',
             width: '100vw',
             boxSizing: 'border-box'
           }
         }}
       >
-        {scannedBinCode && inventoryList.length > 0 ? (
-          <LoadConfirm
-            binCode={scannedBinCode}
-            inventories={inventoryList}
-            onSuccess={() => {
-              setShowDrawer(false)
-              setScannedBinCode(null)
-              setInventoryList([])
-              navigate('/success')
-            }}
-          />
+        {scanMode === ScanMode.UNLOAD ? (
+          scannedBinCode ? (
+            <Box sx={{ p: 16 / 8 /* 2 */ }}>
+              <UnloadConfirm
+                frameless // 👈 关键：无外壳模式
+                binCode={scannedBinCode}
+                cartItems={unloadCartItems}
+                onSuccess={() => {
+                  setShowDrawer(false)
+                  setScannedBinCode(null)
+                  setUnloadCartItems([])
+                  navigate('/success')
+                }}
+                onError={msg => setError(msg || t('scan.operationError'))}
+              />
+            </Box>
+          ) : null
+        ) : scannedBinCode && inventoryList.length > 0 ? (
+          <Box sx={{ p: 2 }}>
+            <LoadConfirm
+              binCode={scannedBinCode}
+              inventories={inventoryList}
+              onSuccess={() => {
+                setShowDrawer(false)
+                setScannedBinCode(null)
+                setInventoryList([])
+                navigate('/success')
+              }}
+            />
+          </Box>
         ) : (
-          <MultiProductInputBox
-            productOptions={productCodes}
-            onSubmit={async items => {
-              const result = await loadCart({ productList: items })
-              if (!result.success) {
-                setError(result.error || t('scan.operationError'))
-                return
-              }
-              navigate('/success')
-            }}
-            onCancel={handleCancel}
-            defaultItems={defaultManualItems}
-          />
+          <Box sx={{ p: 2 }}>
+            <MultiProductInputBox
+              productOptions={productCodes}
+              onSubmit={async items => {
+                const result = await loadCart({ productList: items })
+                if (!result.success) {
+                  setError(result.error || t('scan.operationError'))
+                  return
+                }
+                navigate('/success')
+              }}
+              onCancel={handleCancel}
+              defaultItems={defaultManualItems}
+            />
+          </Box>
         )}
       </Drawer>
     </Box>

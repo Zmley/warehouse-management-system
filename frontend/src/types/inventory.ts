@@ -12,4 +12,5 @@ export interface InventoryItem {
 export interface unloadInventory {
   inventoryID: string
   quantity: number
+  merge?: boolean
 }

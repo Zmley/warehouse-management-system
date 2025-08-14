@@ -1,17 +1,24 @@
+// routes/carts/cart.route.ts
 import express from 'express'
+import { celebrate, Segments } from 'celebrate'
 import { load, unload } from './cart.controller'
 import roleAllow from 'middlewares/roleAllow.middleware'
 import { UserRole } from 'constants/index'
-import { validateLoad, validateUnload } from './cart.middleware'
+import { CartLoadBodySchema, CartUnloadBodySchema } from './cart.schema'
 
 const router = express.Router()
 
-router.post('/load', roleAllow([UserRole.TRANSPORT_WORKER]), validateLoad, load)
+router.post(
+  '/load',
+  roleAllow([UserRole.TRANSPORT_WORKER]),
+  celebrate({ [Segments.BODY]: CartLoadBodySchema }),
+  load
+)
 
 router.post(
   '/unload',
   roleAllow([UserRole.TRANSPORT_WORKER]),
-  validateUnload,
+  celebrate({ [Segments.BODY]: CartUnloadBodySchema }),
   unload
 )
 

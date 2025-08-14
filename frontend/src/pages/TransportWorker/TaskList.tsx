@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import {
   Box,
   Typography,
@@ -25,14 +25,17 @@ interface TaskListProps {
   setView: (view: 'tasks' | 'cart') => void
 }
 
+type SourceBinView = {
+  bin?: { binCode?: string }
+  quantity?: number
+}
+
 const TaskList: React.FC<TaskListProps> = ({ setView }) => {
   const { t } = useTranslation()
   const { tasks, fetchTasks, acceptTask, isLoading, error } = useTask()
   const { fetchMyTask } = useTaskContext()
 
-  const [loadingTasks, setLoadingTasks] = useState<{
-    [taskID: string]: boolean
-  }>({})
+  const [loadingTasks, setLoadingTasks] = useState<Record<string, boolean>>({})
   const [open, setOpen] = useState(false)
   const [showOutOfStock, setShowOutOfStock] = useState(false)
 
@@ -42,6 +45,7 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
 
   useEffect(() => {
     fetchTasks()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
@@ -54,7 +58,7 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
-  }, [])
+  }, [fetchTasks])
 
   const handleAccept = async (taskID: string) => {
     setLoadingTasks(prev => ({ ...prev, [taskID]: true }))
@@ -75,11 +79,30 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
     await fetchMyTask()
   }
 
-  const filteredTasks = tasks.filter(task =>
-    showOutOfStock
-      ? !task.sourceBins || task.sourceBins.length === 0
-      : task.sourceBins && task.sourceBins.length > 0
+  const filteredTasks = useMemo(
+    () =>
+      tasks.filter(task =>
+        showOutOfStock
+          ? !task.sourceBins || task.sourceBins.length === 0
+          : task.sourceBins && task.sourceBins.length > 0
+      ),
+    [tasks, showOutOfStock]
   )
+
+  // ✅ 只返回唯一 binCode（不带数量）
+  const formatSourceBinsUnique = (sourceBins?: SourceBinView[]) => {
+    if (!sourceBins || sourceBins.length === 0) return ''
+    const seen = new Set<string>()
+    const uniqueCodes: string[] = []
+    for (const it of sourceBins) {
+      const code = it.bin?.binCode ?? '--'
+      if (!seen.has(code)) {
+        seen.add(code)
+        uniqueCodes.push(code)
+      }
+    }
+    return uniqueCodes.join(' / ')
+  }
 
   return (
     <PullToRefresh
@@ -87,7 +110,6 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
       pullingContent={<></>}
       refreshingContent={<></>}
     >
-      {' '}
       <Box p={2} pt={0} pb={10} sx={{ position: 'relative' }}>
         <Box
           sx={{
@@ -169,17 +191,13 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
               {filteredTasks.map((task: Task) => {
                 const isOutOfStock =
                   !task.sourceBins || task.sourceBins.length === 0
-                const firstSourceBin = task.sourceBins?.[0]
-                const binCode =
-                  typeof firstSourceBin === 'object' && 'bin' in firstSourceBin
-                    ? firstSourceBin?.bin?.binCode
-                    : typeof firstSourceBin === 'object' &&
-                        'binCode' in firstSourceBin
-                      ? (firstSourceBin as any).binCode
-                      : ''
 
-                const isAisleTask =
-                  typeof binCode === 'string' && binCode.startsWith('AISLE-')
+                // ✅ 只显示唯一 binCode
+                const sourceBinsLabel = formatSourceBinsUnique(
+                  task.sourceBins as unknown as SourceBinView[]
+                )
+                const firstBinCode = sourceBinsLabel.split(' / ')[0] ?? ''
+                const isAisleTask = firstBinCode.startsWith('AISLE-')
 
                 const cardBorderColor = isAisleTask ? '#059669' : '#2563eb'
                 const cardBgColor = isAisleTask ? '#ecfdf5' : '#eff6ff'
@@ -208,23 +226,7 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
                             {t('taskList.sourceBin')}
                           </Typography>
 
-                          {task.sourceBins && task.sourceBins.length > 0 ? (
-                            <Box
-                              sx={{
-                                overflowX:
-                                  task.sourceBins.length > 5
-                                    ? 'auto'
-                                    : 'visible',
-                                whiteSpace: 'nowrap',
-                                fontSize: 13,
-                                fontWeight: 'bold'
-                              }}
-                            >
-                              {task.sourceBins
-                                .map((inv: any) => inv.bin?.binCode)
-                                .join(' / ')}
-                            </Box>
-                          ) : (
+                          {isOutOfStock ? (
                             <Typography
                               fontSize={12}
                               fontWeight='medium'
@@ -232,6 +234,20 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
                             >
                               {t('taskList.outOfStock')}
                             </Typography>
+                          ) : (
+                            <Box
+                              sx={{
+                                overflowX:
+                                  (task.sourceBins?.length ?? 0) > 5
+                                    ? 'auto'
+                                    : 'visible',
+                                whiteSpace: 'nowrap',
+                                fontSize: 13,
+                                fontWeight: 'bold'
+                              }}
+                            >
+                              {sourceBinsLabel}
+                            </Box>
                           )}
                         </Grid>
 
@@ -288,11 +304,9 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
                           fontSize={11}
                           sx={{ whiteSpace: 'pre-line' }}
                         >
-                          {`${t('taskList.createDate')}: ${new Date(
-                            task.createdAt
-                          ).toLocaleString()}\n${t('taskList.creator')}: ${
-                            task.creator?.firstName || '--'
-                          } ${task.creator?.lastName || ''}`}
+                          {`${t('taskList.createDate')}: ${new Date(task.createdAt).toLocaleString()}\n${t(
+                            'taskList.creator'
+                          )}: ${task.creator?.firstName || '--'} ${task.creator?.lastName || ''}`}
                         </Typography>
 
                         <Button

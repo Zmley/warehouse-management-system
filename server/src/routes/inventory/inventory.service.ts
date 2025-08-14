@@ -5,7 +5,7 @@ import { Op, WhereOptions, Order, col } from 'sequelize'
 import { InventoryUploadType } from 'types/inventory'
 import AppError from 'utils/appError'
 import { buildBinCodeToIDMap } from 'utils/bin.utils'
-import { getExistingInventoryPairs } from 'utils/inventory.utils'
+// import { getExistingInventoryPairs } from 'utils/inventory.utils'
 
 export const getInventoriesByCartID = async (
   cartID: string
@@ -138,16 +138,14 @@ export const updateByInventoryIDs = async (
 
 export const addInventories = async (inventoryList: InventoryUploadType[]) => {
   let insertedCount = 0
-  let updatedCount = 0
 
   if (inventoryList.length === 0) {
-    return { insertedCount: 0, updatedCount: 0 }
+    return { success: true, insertedCount: 0, updatedCount: 0 }
   }
 
+  // 仍然用 binCode -> binID 做映射
   const bins = await getBinsByBinCodes(inventoryList)
   const binCodeToBinID = buildBinCodeToIDMap(bins)
-  const allBinIDs = bins.map(bin => bin.binID)
-  const existingPairs = await getExistingInventoryPairs(allBinIDs)
 
   const BATCH_SIZE = 5
 
@@ -162,29 +160,21 @@ export const addInventories = async (inventoryList: InventoryUploadType[]) => {
 
         if (!binID) return
 
-        const pairKey = `${binID}-${cleanProductCode}`
-
-        if (existingPairs.has(pairKey)) {
-          await Inventory.update(
-            { quantity: item.quantity },
-            { where: { binID, productCode: cleanProductCode } }
-          )
-          updatedCount++
-        } else {
-          await Inventory.create({
-            binID,
-            productCode: cleanProductCode,
-            quantity: item.quantity
-          })
-          insertedCount++
-        }
+        // 不再检查是否已存在，永远 create 一条新记录
+        await Inventory.create({
+          binID,
+          productCode: cleanProductCode,
+          quantity: item.quantity
+        })
+        insertedCount++
       })
     )
   }
 
   return {
+    success: true,
     insertedCount,
-    updatedCount
+    updatedCount: 0
   }
 }
 

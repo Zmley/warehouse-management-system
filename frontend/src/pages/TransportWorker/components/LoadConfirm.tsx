@@ -45,14 +45,21 @@ const LoadConfirm: React.FC<LoadConfirmProps> = ({ binCode, inventories }) => {
   useEffect(() => {
     const isTaskMode = !!myTask?.productCode && myTask?.quantity !== undefined
 
-    const newList = inventories.map(item => {
-      const isTaskProduct = item.productCode === myTask?.productCode
-      const selected = isTaskMode ? isTaskProduct : true
+    // ✅ 如果是任务模式：找到该任务产品出现的“第一条”索引
+    const firstTaskIdx = isTaskMode
+      ? inventories.findIndex(it => it.productCode === myTask?.productCode)
+      : -1
+
+    const newList = inventories.map((item, idx) => {
+      // ✅ 任务模式：只默认选中“第一条任务产品”，其余同款不选
+      // 非任务模式：保持你原来“默认全选”的行为
+      const selected = isTaskMode ? idx === firstTaskIdx : true
+
       const quantity = selected
         ? isTaskMode
           ? myTask?.quantity === 0
             ? item.quantity
-            : myTask.quantity
+            : (myTask?.quantity as number)
           : item.quantity
         : 0
 
@@ -130,7 +137,6 @@ const LoadConfirm: React.FC<LoadConfirmProps> = ({ binCode, inventories }) => {
 
       if (result.success) {
         setSourceBinCode(binCode)
-
         navigate('/success')
       } else {
         setError(result.error || t('load.error'))

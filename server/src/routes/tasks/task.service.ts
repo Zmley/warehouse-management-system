@@ -161,6 +161,79 @@ export const binsToPick = async (
   return { ...task.toJSON(), sourceBins }
 }
 
+// export const getTaskByAccountID = async (
+//   accountID: string,
+//   warehouseID: string
+// ) => {
+//   const myCurrentTask = await Task.findOne({
+//     where: {
+//       accepterID: accountID,
+//       status: TaskStatus.IN_PROCESS
+//     }
+//   })
+
+//   if (!myCurrentTask) return
+
+//   let sourceBins = []
+
+//   if (myCurrentTask.sourceBinID) {
+//     const sourceBin = await Bin.findOne({
+//       where: { binID: myCurrentTask.sourceBinID },
+//       attributes: ['binID', 'binCode']
+//     })
+
+//     const matchingInventory = await Inventory.findOne({
+//       where: {
+//         binID: myCurrentTask.sourceBinID,
+//         productCode: myCurrentTask.productCode
+//       },
+//       attributes: ['inventoryID', 'quantity', 'productCode']
+//     })
+
+//     if (sourceBin) {
+//       sourceBins = [
+//         {
+//           inventoryID: matchingInventory?.inventoryID || null,
+//           productCode: myCurrentTask.productCode,
+//           quantity: matchingInventory?.quantity || 0,
+//           bin: sourceBin
+//         }
+//       ]
+//     }
+//   } else {
+//     const inventories = await Inventory.findAll({
+//       where: { productCode: myCurrentTask.productCode },
+//       include: [
+//         {
+//           model: Bin,
+//           as: 'bin',
+//           where: {
+//             warehouseID,
+//             type: 'INVENTORY'
+//           },
+//           attributes: ['binID', 'binCode']
+//         }
+//       ],
+//       attributes: ['inventoryID', 'productCode', 'quantity']
+//     })
+
+//     sourceBins = inventories
+//   }
+
+//   const destinationBin = await Bin.findOne({
+//     where: { binID: myCurrentTask.destinationBinID },
+//     attributes: ['binCode']
+//   })
+
+//   const destinationBinCode = destinationBin?.binCode || '--'
+
+//   return {
+//     ...myCurrentTask.toJSON(),
+//     sourceBins,
+//     destinationBinCode
+//   }
+// }
+
 export const getTaskByAccountID = async (
   accountID: string,
   warehouseID: string
@@ -174,7 +247,13 @@ export const getTaskByAccountID = async (
 
   if (!myCurrentTask) return
 
-  let sourceBins = []
+  const productCode = myCurrentTask.productCode
+  let sourceBins: Array<{
+    inventoryID?: string | null
+    productCode: string
+    quantity: number
+    bin: { binID?: string; binCode?: string }
+  }> = []
 
   if (myCurrentTask.sourceBinID) {
     const sourceBin = await Bin.findOne({
@@ -182,42 +261,72 @@ export const getTaskByAccountID = async (
       attributes: ['binID', 'binCode']
     })
 
-    const matchingInventory = await Inventory.findOne({
-      where: {
-        binID: myCurrentTask.sourceBinID,
-        productCode: myCurrentTask.productCode
-      },
-      attributes: ['inventoryID', 'quantity', 'productCode']
-    })
-
     if (sourceBin) {
+      const row = await Inventory.findOne({
+        where: {
+          binID: myCurrentTask.sourceBinID,
+          productCode
+        },
+        attributes: [
+          [Sequelize.fn('SUM', Sequelize.col('quantity')), 'totalQuantity']
+        ],
+        raw: true
+      })
+
+      const totalQuantity = Number((row as any)?.totalQuantity ?? 0)
+
       sourceBins = [
         {
-          inventoryID: matchingInventory?.inventoryID || null,
-          productCode: myCurrentTask.productCode,
-          quantity: matchingInventory?.quantity || 0,
-          bin: sourceBin
+          inventoryID: null,
+          productCode,
+          quantity: totalQuantity,
+          bin: {
+            binID: sourceBin.binID,
+            binCode: sourceBin.binCode
+          }
         }
+      ]
+    } else {
+      sourceBins = [
+        { inventoryID: null, productCode, quantity: 0, bin: { binCode: '--' } }
       ]
     }
   } else {
-    const inventories = await Inventory.findAll({
-      where: { productCode: myCurrentTask.productCode },
+    const rows = await Inventory.findAll({
+      where: { productCode },
+      attributes: [
+        [Sequelize.col('bin.binID'), 'binID'],
+        [Sequelize.col('bin.binCode'), 'binCode'],
+        [
+          Sequelize.fn('SUM', Sequelize.col('Inventory.quantity')),
+          'totalQuantity'
+        ]
+      ],
       include: [
         {
           model: Bin,
           as: 'bin',
+          attributes: [],
+          required: true,
           where: {
             warehouseID,
             type: 'INVENTORY'
-          },
-          attributes: ['binID', 'binCode']
+          }
         }
       ],
-      attributes: ['inventoryID', 'productCode', 'quantity']
+      group: ['bin.binID', 'bin.binCode'],
+      raw: true
     })
 
-    sourceBins = inventories
+    sourceBins = rows.map(r => ({
+      inventoryID: null,
+      productCode,
+      quantity: Number((r as any).totalQuantity ?? 0),
+      bin: {
+        binID: (r as any).binID,
+        binCode: (r as any).binCode
+      }
+    }))
   }
 
   const destinationBin = await Bin.findOne({
