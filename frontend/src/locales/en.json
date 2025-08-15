@@ -196,5 +196,21 @@
       "noPickupBin": "❌ Pickup bin not found.",
       "fetchFailed": "❌ Failed to fetch bin info."
     }
+  },
+
+
+    "unload": {
+    "title": "Ready to unload",
+    "singlePallet": "Single pallet",
+    "palletQty": "Pallet • Qty {{qty}}",
+    "binInventory": "Bin {{binCode}} inventory",
+    "empty": "Empty.",
+    "back": "Back",
+    "unload": "Unload",
+    "unloading": "Unloading…",
+    "error": "Failed to unload items."
+  },
+  "common": {
+    "qty": "Qty {{qty}}"
   }
 }

@@ -200,5 +200,20 @@
       "noPickupBin": "❌ 未找到取货货位。",
       "fetchFailed": "❌ 获取货位信息失败。"
     }
+  },
+
+    "unload": {
+    "title": "准备卸货",
+    "singlePallet": "保持在当前托盘",
+    "palletQty": "合并到数量为 {{qty}}的托盘",
+    "binInventory": "库位 {{binCode}} 库存",
+    "empty": "空。",
+    "back": "返回",
+    "unload": "卸下",
+    "unloading": "正在卸下…",
+    "error": "卸货失败。"
+  },
+  "common": {
+    "qty": "数量 {{qty}}"
   }
 }

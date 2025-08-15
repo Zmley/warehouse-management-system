@@ -5,13 +5,13 @@ import {
   Card,
   CardContent,
   Typography,
-  Alert,
   Paper,
-  Divider,
-  Select,
+  Menu,
   MenuItem
 } from '@mui/material'
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
+import { useTranslation } from 'react-i18next'
 import { useCart } from 'hooks/useCart'
 import { useInventory } from 'hooks/useInventory'
 import { useCartContext } from 'contexts/cart'
@@ -32,7 +32,93 @@ type FixedCartRow = {
   productCode: string
   quantity: number
 }
-type Flow = 'confirm' | 'resolve-duplicates' | 'submitting'
+
+type PillOption = { value: string; label: string }
+
+/** 胶囊下拉（仅在可合并时出现） */
+const PillSelect = React.memo(function PillSelect({
+  value,
+  options,
+  onChange,
+  placeholder,
+  accent = false
+}: {
+  value: string
+  options: PillOption[]
+  onChange: (v: string) => void
+  placeholder: string
+  accent?: boolean
+}) {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+  const open = Boolean(anchorEl)
+  const current = options.find(o => o.value === value)?.label || placeholder
+
+  const baseStyles = accent
+    ? {
+        bgcolor: '#E8F5E9',
+        borderColor: '#2E7D32',
+        color: '#1B5E20',
+        '&:hover': { bgcolor: '#C8E6C9', borderColor: '#2E7D32' }
+      }
+    : {
+        bgcolor: '#f0f4f8',
+        borderColor: '#90caf9',
+        color: 'text.primary',
+        '&:hover': { bgcolor: '#e8f2ff', borderColor: '#64b5f6' }
+      }
+
+  return (
+    <>
+      <Button
+        onClick={e => setAnchorEl(e.currentTarget)}
+        endIcon={<KeyboardArrowDownIcon sx={{ fontSize: 18 }} />}
+        sx={{
+          height: 32,
+          minWidth: 140,
+          justifyContent: 'space-between',
+          px: 1,
+          borderRadius: 2,
+          textTransform: 'none',
+          fontSize: 13,
+          fontWeight: 700,
+          border: '1px solid',
+          boxShadow: 'none',
+          ...baseStyles
+        }}
+      >
+        {current}
+      </Button>
+
+      <Menu
+        anchorEl={anchorEl}
+        open={open}
+        onClose={() => setAnchorEl(null)}
+        PaperProps={{
+          elevation: 2,
+          sx: {
+            borderRadius: 2,
+            mt: 0.5,
+            minWidth: 180,
+            '& .MuiMenuItem-root': { fontSize: 14, py: 1 }
+          }
+        }}
+      >
+        {options.map(opt => (
+          <MenuItem
+            key={opt.value}
+            selected={opt.value === value}
+            onClick={() => {
+              onChange(opt.value)
+              setAnchorEl(null)
+            }}
+          >
+            {opt.label}
+          </MenuItem>
+        ))}
+      </Menu>
+    </>
+  )
+})
 
 const UnloadConfirm: React.FC<UnloadConfirmProps> = ({
   binCode,
@@ -41,59 +127,46 @@ const UnloadConfirm: React.FC<UnloadConfirmProps> = ({
   onError,
   frameless = false
 }) => {
+  const { t } = useTranslation()
   const { unloadCart } = useCart()
   const { fetchInventoriesByBinCode } = useInventory()
   const { inventoriesInCart } = useCartContext()
 
-  const [flow, setFlow] = useState<Flow>('confirm')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const [leftList, setLeftList] = useState<FixedCartRow[]>([])
   const [rightList, setRightList] = useState<InventoryItem[]>([])
-
-  const [basePayload, setBasePayload] = useState<
-    { inventoryID: string; quantity: number; productCode: string }[]
-  >([])
-  const [dupCodes, setDupCodes] = useState<string[]>([])
-  const [targetsByCode, setTargetsByCode] = useState<
-    Record<string, { inventoryID: string; qty: number }[]>
-  >({})
-  /** code -> 选中的目标（'' = New line / 不合并） */
   const [selectedTarget, setSelectedTarget] = useState<Record<string, string>>(
     {}
   )
 
-  // —— data prep ——
-  const cartIdToCode = useMemo(() => {
-    const m = new Map<string, string>()
-    for (const it of inventoriesInCart || [])
-      m.set(it.inventoryID, it.productCode)
-    return m
-  }, [inventoriesInCart])
-
+  /** 由 cartItems + context 规范化左侧列表（逐条渲染，不聚合） */
   useEffect(() => {
+    const idToCode = new Map<string, string>()
+    for (const it of inventoriesInCart || [])
+      idToCode.set(it.inventoryID, it.productCode)
+
     const normalized: FixedCartRow[] = (cartItems || []).map(ci => ({
       inventoryID: ci.inventoryID,
       productCode:
         (ci.productCode && ci.productCode.trim()) ||
-        cartIdToCode.get(ci.inventoryID) ||
+        idToCode.get(ci.inventoryID) ||
         '#',
       quantity: ci.quantity
     }))
     setLeftList(normalized)
-  }, [cartItems, cartIdToCode])
+  }, [cartItems, inventoriesInCart])
 
+  /** 获取右侧 bin 库存 */
   useEffect(() => {
     let active = true
     ;(async () => {
       try {
         const res = await fetchInventoriesByBinCode(binCode)
-        if (!active) return
-        setRightList(res?.inventories ?? [])
+        if (active) setRightList(res?.inventories ?? [])
       } catch {
-        if (!active) return
-        setRightList([])
+        if (active) setRightList([])
       }
     })()
     return () => {
@@ -101,6 +174,7 @@ const UnloadConfirm: React.FC<UnloadConfirmProps> = ({
     }
   }, [binCode, fetchInventoriesByBinCode])
 
+  /** bin 内按 productCode 建索引，用于生成“合并”目标 */
   const binListByCode = useMemo(() => {
     const map = new Map<string, InventoryItem[]>()
     for (const it of rightList) {
@@ -111,83 +185,36 @@ const UnloadConfirm: React.FC<UnloadConfirmProps> = ({
     return map
   }, [rightList])
 
-  // 将要卸入：按 productCode 聚合
-  const incomingAgg = useMemo(() => {
-    const m = new Map<string, number>()
-    for (const it of leftList) {
-      m.set(it.productCode, (m.get(it.productCode) || 0) + Number(it.quantity))
-    }
-    return Array.from(m.entries()).map(([productCode, qty]) => ({
-      productCode,
-      qty
-    }))
-  }, [leftList])
+  /** 左侧逐条数据（不聚合） */
+  const incomingRows = useMemo(
+    () =>
+      leftList.map(it => ({
+        inventoryID: it.inventoryID,
+        productCode: it.productCode,
+        qty: it.quantity
+      })),
+    [leftList]
+  )
 
-  const validate = (): { ok: boolean; message?: string } => {
-    if (!leftList.length) return { ok: false, message: 'No items to unload.' }
-    for (const it of leftList) {
-      if (!it.quantity || it.quantity <= 0)
-        return {
-          ok: false,
-          message: `Quantity must be > 0 for ${it.productCode}.`
-        }
-    }
-    return { ok: true }
-  }
-
-  // 首屏：点按钮后检测重复
-  const handleConfirm = async () => {
-    const v = validate()
-    if (!v.ok) {
-      setError(v.message || 'Invalid payload.')
-      onError?.(v.message)
-      return
-    }
-
-    const payload = leftList.map(it => ({
-      inventoryID: it.inventoryID,
-      quantity: it.quantity,
-      productCode: it.productCode
-    }))
-
-    const dups = Array.from(
-      new Set(
-        payload
-          .filter(p => (binListByCode.get(p.productCode)?.length ?? 0) > 0)
-          .map(p => p.productCode)
-      )
-    )
-
-    if (dups.length === 0) {
-      await submitUnload(payload) // 直接提交
-      return
-    }
-
-    // 重复：准备候选目标（按数量降序）；默认一律“不合并”（空值）
-    const targets: Record<string, { inventoryID: string; qty: number }[]> = {}
-    const preselect: Record<string, string> = {}
-    dups.forEach(code => {
+  /** 每个 productCode 的可合并候选（显示为下拉） */
+  const targetsByCode = useMemo(() => {
+    const map: Record<string, { inventoryID: string; qty: number }[]> = {}
+    const codes = new Set(leftList.map(i => i.productCode))
+    codes.forEach(code => {
       const items = (binListByCode.get(code) || [])
         .slice()
         .sort((a, b) => b.quantity - a.quantity)
-      targets[code] = items.map(i => ({
+      map[code] = items.map(i => ({
         inventoryID: i.inventoryID,
         qty: i.quantity
       }))
-      preselect[code] = '' // ✅ 默认不合并（即使只有 1 个托盘也可改选）
     })
+    return map
+  }, [leftList, binListByCode])
 
-    setBasePayload(payload)
-    setDupCodes(dups)
-    setTargetsByCode(targets)
-    setSelectedTarget(preselect)
-    setFlow('resolve-duplicates')
-  }
-
-  // 提交
   const submitUnload = async (
     items:
-      | { inventoryID: string; quantity: number; productCode: string }[]
+      | { inventoryID: string; quantity: number }[]
       | {
           inventoryID: string
           quantity: number
@@ -197,7 +224,6 @@ const UnloadConfirm: React.FC<UnloadConfirmProps> = ({
   ) => {
     setError(null)
     setSubmitting(true)
-    setFlow('submitting')
     try {
       const clean = (items as any[]).map(it => {
         const base = { inventoryID: it.inventoryID, quantity: it.quantity }
@@ -208,41 +234,36 @@ const UnloadConfirm: React.FC<UnloadConfirmProps> = ({
       const res = await unloadCart(binCode, clean)
       if (res?.success) onSuccess?.()
       else {
-        const msg = res?.error || 'Failed to unload items.'
+        const msg = res?.error || t('unload.error')
         setError(msg)
         onError?.(msg)
-        setFlow('confirm')
       }
     } catch (e: any) {
-      const msg = e?.message || 'Failed to unload items.'
+      const msg = e?.message || t('unload.error')
       setError(msg)
       onError?.(msg)
-      setFlow('confirm')
     } finally {
       setSubmitting(false)
     }
   }
 
   const submitPerProductDecisions = async () => {
-    const dupSet = new Set(dupCodes)
-    const finalItems = basePayload.map(p => {
-      if (!dupSet.has(p.productCode)) {
-        return { inventoryID: p.inventoryID, quantity: p.quantity }
-      }
-      const target = selectedTarget[p.productCode] || ''
-      if (!target) return { inventoryID: p.inventoryID, quantity: p.quantity } // keep separate
+    const finalItems = incomingRows.map(row => {
+      const hasDup = (targetsByCode[row.productCode]?.length || 0) > 0
+      const pick = selectedTarget[row.inventoryID] || ''
+      if (!hasDup || !pick)
+        return { inventoryID: row.inventoryID, quantity: row.qty }
       return {
-        inventoryID: p.inventoryID,
-        quantity: p.quantity,
+        inventoryID: row.inventoryID,
+        quantity: row.qty,
         merge: true,
-        targetInventoryID: target
+        targetInventoryID: pick
       }
     })
     await submitUnload(finalItems)
   }
 
-  // —— UI —— //
-
+  // ------- 样式 -------
   const panePaperSx = {
     p: 1,
     borderRadius: 2,
@@ -250,238 +271,198 @@ const UnloadConfirm: React.FC<UnloadConfirmProps> = ({
     borderColor: 'primary.main',
     borderWidth: 1.5,
     borderStyle: 'solid',
-    bgcolor: '#e3f2fd'
+    bgcolor: '#f0f6ff'
   } as const
 
-  const smallCardSx = {
+  const panePaperReadonlySx = {
+    p: 1,
+    borderRadius: 2,
+    mb: 1,
+    borderColor: '#cfd8dc',
+    borderWidth: 1.5,
+    borderStyle: 'solid',
+    bgcolor: '#f5f7f9'
+  } as const
+
+  const smallCardReadonlySx = {
     p: 0.7,
     borderRadius: 2,
-    borderColor: 'primary.main',
-    bgcolor: '#e3f2fd'
+    borderColor: '#cfd8dc',
+    bgcolor: '#eef1f4',
+    color: 'text.secondary'
   } as const
 
-  const selectSx = {
-    height: 34,
-    minWidth: 220,
-    borderRadius: 2,
-    bgcolor: '#f0f4f8',
-    '& .MuiOutlinedInput-notchedOutline': { borderColor: 'primary.main' },
-    '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'primary.main' },
-    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'primary.main',
-      borderWidth: 2
-    }
-  } as const
-
-  /** 上半：每个产品一行（重复 → 下拉；非重复 → 静态文案） */
-  const ReadyRow: React.FC<{ code: string; qty: number }> = ({ code, qty }) => {
+  /** 行组件（只在需要合并的行显示绿色下拉） */
+  const ReadyRow = React.memo(function ReadyRow({
+    inventoryID,
+    code,
+    qty
+  }: {
+    inventoryID: string
+    code: string
+    qty: number
+  }) {
     const cands = targetsByCode[code] || []
     const hasDup = cands.length > 0
-    const value = selectedTarget[code] ?? ''
+    const value = selectedTarget[inventoryID] ?? ''
+
+    const options: PillOption[] = hasDup
+      ? [
+          { value: '', label: t('unload.singlePallet') },
+          ...cands.map(c => ({
+            value: c.inventoryID,
+            label: t('unload.palletQty', { qty: c.qty })
+          }))
+        ]
+      : []
 
     return (
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: '1fr auto',
-          alignItems: 'center',
-          columnGap: 0.75,
-          rowGap: 0.25
-        }}
-      >
-        <Box sx={{ minWidth: 0 }}>
+      <Paper variant='outlined' sx={{ ...smallCardReadonlySx, p: 0.5 }}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: '1fr auto',
+            alignItems: 'center',
+            columnGap: 0.75
+          }}
+        >
           <Typography fontWeight={700} fontSize={12} noWrap>
-            #{code}
+            #{code} · {t('common.qty', { qty })}
           </Typography>
-          <Typography fontSize={11} color='text.secondary'>
-            Incoming: {qty}
-          </Typography>
+
+          {hasDup ? (
+            <PillSelect
+              value={value}
+              options={options}
+              onChange={v =>
+                setSelectedTarget(prev => ({
+                  ...prev,
+                  [inventoryID]: v
+                }))
+              }
+              placeholder={t('unload.singlePallet')}
+              accent
+            />
+          ) : null}
         </Box>
-
-        {!hasDup ? (
-          // 不在 bin 中 → 只能新建行
-          <Typography fontSize={12} color='text.secondary'>
-            New line (keep separate)
-          </Typography>
-        ) : (
-          // 在 bin 中 → 下拉可选：New line / Pallet • Qty …
-          <Select
-            size='small'
-            value={value}
-            onChange={e =>
-              setSelectedTarget(prev => ({
-                ...prev,
-                [code]: String(e.target.value)
-              }))
-            }
-            displayEmpty
-            sx={selectSx}
-            renderValue={val => {
-              if (!val) return 'New line (keep separate)'
-              const cand = cands.find(c => c.inventoryID === val)
-              return cand ? `Merge to • Qty ${cand.qty}` : 'Select…'
-            }}
-            MenuProps={{ PaperProps: { sx: { borderRadius: 2 } } }}
-          >
-            <MenuItem value=''>
-              <Typography fontSize={13}>New line (keep separate)</Typography>
-            </MenuItem>
-            {cands.map(c => (
-              <MenuItem key={c.inventoryID} value={c.inventoryID}>
-                <Typography fontSize={13}>Pallet • Qty {c.qty}</Typography>
-              </MenuItem>
-            ))}
-          </Select>
-        )}
-      </Box>
+      </Paper>
     )
-  }
+  })
 
+  // ---------------- Render ----------------
   const Content = (
     <Box sx={{ p: frameless ? 0 : 0 }}>
-      {/* 首屏：一个大按钮 */}
-      {flow === 'confirm' && (
-        <>
-          {!frameless && <Divider sx={{ mb: 1 }} />}
-          {error && (
-            <Typography color='error' textAlign='center' sx={{ mb: 1 }}>
-              {error}
-            </Typography>
-          )}
-          <Button
-            variant='contained'
-            color='primary'
-            fullWidth
-            disabled={submitting || leftList.length === 0}
-            onClick={handleConfirm}
-            sx={{
-              height: 64,
-              fontWeight: 800,
-              borderRadius: 999,
-              textTransform: 'none',
-              fontSize: 18
-            }}
-          >
-            Unload to {binCode}
-          </Button>
-        </>
-      )}
+      <Paper variant='outlined' sx={panePaperSx}>
+        <Typography
+          fontWeight={800}
+          fontSize={12}
+          sx={{ mb: 0.5 }}
+          align='center'
+        >
+          {t('unload.title')}
+        </Typography>
 
-      {/* 有重复：两块（上：决定目标；下：bin 库存） */}
-      {flow === 'resolve-duplicates' && (
-        <>
-          <Typography variant='body2' fontWeight={800}>
-            Unload to <b>{binCode}</b>
-          </Typography>
-
-          {/* 上：准备卸货（每行一个选择） */}
-          <Paper variant='outlined' sx={panePaperSx}>
-            <Typography fontWeight={800} fontSize={12} sx={{ mb: 0.5 }}>
-              Ready to unload
-            </Typography>
-
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-              {incomingAgg.map(({ productCode, qty }) => (
-                <ReadyRow key={productCode} code={productCode} qty={qty} />
-              ))}
-            </Box>
-          </Paper>
-
-          {/* 箭头 */}
-          <Box display='flex' justifyContent='center' sx={{ my: 0.5 }}>
-            <ArrowDownwardIcon
-              fontSize='small'
-              sx={{ color: 'primary.main' }}
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.6 }}>
+          {incomingRows.map(row => (
+            <ReadyRow
+              key={row.inventoryID}
+              inventoryID={row.inventoryID}
+              code={row.productCode}
+              qty={row.qty}
             />
-          </Box>
+          ))}
+        </Box>
+      </Paper>
 
-          {/* 下：目标 bin 全量库存 */}
-          <Paper variant='outlined' sx={panePaperSx}>
-            <Typography fontWeight={800} fontSize={12} sx={{ mb: 0.5 }}>
-              Bin {binCode} inventory
-            </Typography>
+      <Box display='flex' justifyContent='center' sx={{ my: 0.5 }}>
+        <ArrowDownwardIcon fontSize='small' sx={{ color: 'primary.main' }} />
+      </Box>
 
-            {rightList.length === 0 ? (
-              <Typography fontSize={12} color='text.secondary'>
-                Empty.
-              </Typography>
-            ) : (
-              <Box
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(2, minmax(0,1fr))',
-                  gap: 0.6,
-                  maxHeight: 220,
-                  overflowY: 'auto'
-                }}
-              >
-                {rightList.map(i => (
-                  <Paper
-                    key={i.inventoryID}
-                    variant='outlined'
-                    sx={smallCardSx}
-                  >
-                    <Typography fontWeight={700} fontSize={12} noWrap>
-                      #{i.productCode}
-                    </Typography>
-                    <Typography fontSize={11} color='text.secondary'>
-                      Qty {i.quantity}
-                    </Typography>
-                  </Paper>
-                ))}
-              </Box>
-            )}
-          </Paper>
+      <Paper variant='outlined' sx={panePaperReadonlySx}>
+        <Typography
+          fontWeight={800}
+          fontSize={12}
+          sx={{ mb: 0.5, color: 'text.secondary' }}
+          align='center'
+        >
+          {t('unload.binInventory', { binCode })}
+        </Typography>
 
-          {error && (
-            <Typography color='error' textAlign='center' sx={{ mt: 1 }}>
-              {error}
-            </Typography>
-          )}
-
+        {rightList.length === 0 ? (
+          <Typography fontSize={12} color='text.secondary' align='center'>
+            {t('unload.empty')}
+          </Typography>
+        ) : (
           <Box
             sx={{
               display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: 1.1,
-              mt: 1.2
+              gridTemplateColumns: 'repeat(2, minmax(0,1fr))',
+              gap: 0.6,
+              maxHeight: 220,
+              overflowY: 'auto'
             }}
           >
-            <Button
-              variant='outlined'
-              onClick={() => setFlow('confirm')}
-              disabled={submitting}
-              sx={{
-                height: 46,
-                borderRadius: 2,
-                textTransform: 'none',
-                fontWeight: 700
-              }}
-            >
-              Back
-            </Button>
-            <Button
-              variant='contained'
-              onClick={submitPerProductDecisions}
-              disabled={submitting}
-              sx={{
-                height: 46,
-                borderRadius: 2,
-                textTransform: 'none',
-                fontWeight: 800
-              }}
-            >
-              Unload
-            </Button>
+            {rightList.map(i => (
+              <Paper
+                key={i.inventoryID}
+                variant='outlined'
+                sx={smallCardReadonlySx}
+              >
+                <Typography
+                  fontWeight={700}
+                  fontSize={12}
+                  noWrap
+                  color='text.secondary'
+                >
+                  #{i.productCode} · {t('common.qty', { qty: i.quantity })}
+                </Typography>
+              </Paper>
+            ))}
           </Box>
-        </>
-      )}
+        )}
+      </Paper>
 
-      {flow === 'submitting' && (
-        <Typography textAlign='center' color='text.secondary'>
-          Processing…
+      {error && (
+        <Typography color='error' textAlign='center' sx={{ mt: 1 }}>
+          {error}
         </Typography>
       )}
+
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: 1.1,
+          mt: 1.2
+        }}
+      >
+        <Button
+          variant='outlined'
+          onClick={() => window.history.back()}
+          disabled={submitting}
+          sx={{
+            height: 46,
+            borderRadius: 2,
+            textTransform: 'none',
+            fontWeight: 700
+          }}
+        >
+          {t('unload.back')}
+        </Button>
+        <Button
+          variant='contained'
+          onClick={submitPerProductDecisions}
+          disabled={submitting}
+          sx={{
+            height: 46,
+            borderRadius: 2,
+            textTransform: 'none',
+            fontWeight: 800
+          }}
+        >
+          {submitting ? t('unload.unloading') : t('unload.unload')}
+        </Button>
+      </Box>
     </Box>
   )
 
