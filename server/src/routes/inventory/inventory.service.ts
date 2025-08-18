@@ -46,9 +46,7 @@ export const getInventoriesByWarehouseID = async (
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ;(where as any)[Op.or] = [
       { productCode: keyword },
-      // 精确匹配；要模糊就用 Op.iLike 并加 %
       { ['$bin.binCode$']: keyword }
-      // 或者：where(col('bin.binCode'), { [Op.eq]: keyword })
     ]
   }
 

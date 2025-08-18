@@ -272,7 +272,7 @@ export const getTaskByAccountID = async (
         ],
         raw: true
       })
-
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const totalQuantity = Number((row as any)?.totalQuantity ?? 0)
 
       sourceBins = [
@@ -321,9 +321,12 @@ export const getTaskByAccountID = async (
     sourceBins = rows.map(r => ({
       inventoryID: null,
       productCode,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       quantity: Number((r as any).totalQuantity ?? 0),
       bin: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         binID: (r as any).binID,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         binCode: (r as any).binCode
       }
     }))
