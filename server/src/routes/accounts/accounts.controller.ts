@@ -6,121 +6,152 @@ import {
   SignUpCommand,
   AdminConfirmSignUpCommand
 } from '@aws-sdk/client-cognito-identity-provider'
-import { getCognitoErrorMessage } from './accounts.service'
 import env from 'config/config'
 import Task from 'routes/tasks/task.model'
 import Account from 'routes/accounts/accounts.model'
 import { cognitoClient } from 'utils/aws'
+import { asyncHandler } from 'utils/asyncHandler'
+import AppError from 'utils/appError'
+import HttpStatusCodes from 'constants/httpStatus'
+import logger from 'utils/logger'
+import { getCognitoErrorMessage } from './accounts.service'
 
-export const loginUser = async (req: Request, res: Response) => {
-  const { email, password } = req.body
-
-  try {
-    const params = {
-      AuthFlow: AuthFlowType.USER_PASSWORD_AUTH,
-      ClientId: env.cognitoClientId,
-      AuthParameters: { USERNAME: email, PASSWORD: password }
-    }
-
-    const command = new InitiateAuthCommand(params)
-    const authResponse = await cognitoClient.send(command)
-
-    res.json({
-      accessToken: authResponse.AuthenticationResult?.AccessToken,
-      idToken: authResponse.AuthenticationResult?.IdToken,
-      refreshToken: authResponse.AuthenticationResult?.RefreshToken
-    })
-  } catch (error) {
-    res.status(400).json({ message: getCognitoErrorMessage(error) })
-  }
-}
-
-export const registerUser = async (req: Request, res: Response) => {
-  const { email, password } = req.body
-
-  const client = new CognitoIdentityProviderClient({ region: 'us-east-2' })
-
-  const command = new SignUpCommand({
-    ClientId: env.cognitoClientId,
-    Username: email,
-    Password: password,
-    UserAttributes: [
-      {
-        Name: 'email',
-        Value: email
-      }
-    ]
-  })
-
-  const { UserSub: accountID } = await client.send(command)
-
-  await client.send(
-    new AdminConfirmSignUpCommand({
-      UserPoolId: env.cognitoUserPoolId,
-      Username: email
-    })
-  )
-  await Account.create({
-    accountID: accountID as string,
-    email,
-    role: 'ADMIN',
-    firstName: 'TBD',
-    lastName: 'TBD',
-    createdAt: new Date(),
-    updatedAt: new Date()
-  })
-
-  console.log('✅ User information saved to database:', {
-    accountID,
-    email
-  })
-  res.json({ message: '✅ User registered successfully', accountID, email })
-}
-
-export const getUserInfo = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  try {
-    const account = res.locals.currentAccount
-
-    const currentTask = await Task.findOne({
-      where: {
-        accepterID: account.accountID,
-        status: 'IN_PROCESS'
-      }
-    })
-    res.json({ ...account, currentTask })
-  } catch (error) {
-    console.error('❌ Error fetching user info:', error)
-    res.status(500).json({ message: '❌ Internal Server Error' })
-  }
-}
-
-export const refreshAccessToken = async (req: Request, res: Response) => {
-  const { refreshToken } = req.body
-
-  if (!refreshToken) {
-    return res.status(400).json({ message: 'Missing refreshToken' })
-  }
+export const loginUser = asyncHandler(async (req: Request, res: Response) => {
+  const { email, password } = req.body as { email: string; password: string }
 
   try {
     const command = new InitiateAuthCommand({
-      AuthFlow: 'REFRESH_TOKEN_AUTH',
+      AuthFlow: AuthFlowType.USER_PASSWORD_AUTH,
       ClientId: env.cognitoClientId,
-      AuthParameters: {
-        REFRESH_TOKEN: refreshToken
-      }
+      AuthParameters: { USERNAME: email, PASSWORD: password }
     })
 
-    const response = await cognitoClient.send(command)
+    const authResponse = await cognitoClient.send(command)
+    const result = authResponse.AuthenticationResult
+
+    if (!result?.AccessToken || !result.IdToken || !result.RefreshToken) {
+      throw new AppError(
+        HttpStatusCodes.UNAUTHORIZED,
+        'Invalid credentials',
+        'INVALID_CREDENTIALS'
+      )
+    }
 
     res.json({
-      accessToken: response.AuthenticationResult?.AccessToken,
-      idToken: response.AuthenticationResult?.IdToken
+      accessToken: result.AccessToken,
+      idToken: result.IdToken,
+      refreshToken: result.RefreshToken
     })
-  } catch (error) {
-    console.error('❌ Failed to refresh token:', error)
-    res.status(401).json({ message: 'Refresh token expired or invalid' })
+  } catch (err) {
+    logger.error('Login failed:', err)
+    const friendly = getCognitoErrorMessage(err)
+    throw new AppError(
+      HttpStatusCodes.UNAUTHORIZED,
+      friendly || 'Login failed',
+      'LOGIN_FAILED'
+    )
   }
-}
+})
+
+export const registerUser = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { email, password } = req.body as { email: string; password: string }
+
+    try {
+      const client = new CognitoIdentityProviderClient({
+        region: env.awsRegion
+      })
+
+      const { UserSub: accountID } = await client.send(
+        new SignUpCommand({
+          ClientId: env.cognitoClientId,
+          Username: email,
+          Password: password,
+          UserAttributes: [{ Name: 'email', Value: email }]
+        })
+      )
+
+      await client.send(
+        new AdminConfirmSignUpCommand({
+          UserPoolId: env.cognitoUserPoolId,
+          Username: email
+        })
+      )
+
+      await Account.create({
+        accountID: accountID as string,
+        email,
+        role: 'ADMIN',
+        firstName: 'TBD',
+        lastName: 'TBD',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+
+      res.json({ message: '✅ User registered successfully', accountID, email })
+    } catch (err) {
+      logger.error('Register user failed:', err)
+      const friendly = getCognitoErrorMessage(err)
+      throw new AppError(
+        HttpStatusCodes.BAD_REQUEST,
+        friendly || 'Register user failed',
+        'REGISTER_FAILED'
+      )
+    }
+  }
+)
+
+export const getUserInfo = asyncHandler(async (req: Request, res: Response) => {
+  const account = res.locals.currentAccount
+
+  const currentTask = await Task.findOne({
+    where: { accepterID: account.accountID, status: 'IN_PROCESS' }
+  })
+
+  res.json({ ...account, currentTask })
+})
+
+export const refreshAccessToken = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { refreshToken } = req.body as { refreshToken?: string }
+
+    if (!refreshToken) {
+      throw new AppError(
+        HttpStatusCodes.BAD_REQUEST,
+        'Missing refreshToken',
+        'MISSING_REFRESH_TOKEN'
+      )
+    }
+
+    try {
+      const command = new InitiateAuthCommand({
+        AuthFlow: 'REFRESH_TOKEN_AUTH',
+        ClientId: env.cognitoClientId,
+        AuthParameters: { REFRESH_TOKEN: refreshToken }
+      })
+
+      const response = await cognitoClient.send(command)
+      const result = response.AuthenticationResult
+
+      if (!result?.AccessToken || !result.IdToken) {
+        throw new AppError(
+          HttpStatusCodes.UNAUTHORIZED,
+          'Refresh token expired or invalid',
+          'INVALID_REFRESH_TOKEN'
+        )
+      }
+
+      res.json({
+        accessToken: result.AccessToken,
+        idToken: result.IdToken
+      })
+    } catch (err) {
+      logger.error('Failed to refresh token:', err)
+      throw new AppError(
+        HttpStatusCodes.UNAUTHORIZED,
+        'Refresh token expired or invalid',
+        'INVALID_REFRESH_TOKEN'
+      )
+    }
+  }
+)

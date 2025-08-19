@@ -180,8 +180,7 @@
     "productQuantity": "Product Quantity",
     "inputQuantity": "input Quantity",
     "confirm": "confirm Load to Forklift",
-        "selectAtLeastOne": "Please select at least one item to load."
-
+    "selectAtLeastOne": "Please select at least one item to load."
   },
 
   "inventorySearch": {
@@ -210,8 +209,7 @@
     }
   },
 
-
-    "unload": {
+  "unload": {
     "title": "Ready to unload",
     "singlePallet": "Single pallet",
     "palletQty": "Pallet • Qty {{qty}}",

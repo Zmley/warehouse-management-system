@@ -1,29 +1,21 @@
-import { Request, Response, NextFunction } from 'express'
+import { Request, Response } from 'express'
 import * as inventoryService from './inventory.service'
-import AppError from 'utils/appError'
 import { getBinByBinCode } from 'routes/bins/bin.service'
 import { getInventoriesByBinID } from './inventory.service'
+import AppError from 'utils/appError'
+import httpStatus from 'constants/httpStatus'
+import { asyncHandler } from 'utils/asyncHandler'
 
-export const getInventoriesInCart = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
+export const getInventoriesInCart = asyncHandler(
+  async (_req: Request, res: Response) => {
     const cartID = res.locals.cartID
     const result = await inventoryService.getInventoriesByCartID(cartID)
-    res.status(200).json({ inventories: result.inventories })
-  } catch (error) {
-    next(error)
+    res.status(httpStatus.OK).json({ inventories: result.inventories })
   }
-}
+)
 
-export const getInventories = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
+export const getInventories = asyncHandler(
+  async (req: Request, res: Response) => {
     const {
       warehouseID,
       binID,
@@ -48,90 +40,66 @@ export const getInventories = async (
       parsedPage,
       parsedLimit,
       typeof keyword === 'string' ? keyword : undefined,
-      { sortBy: sortField, sortOrder } // ← 传对象
+      { sortBy: sortField, sortOrder }
     )
 
-    res.status(200).json({ inventories: rows, totalCount: count })
-  } catch (error) {
-    next(error)
+    res.status(httpStatus.OK).json({ inventories: rows, totalCount: count })
   }
-}
+)
 
-export const deleteInventory = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  const { inventoryID } = req.params
-  try {
+export const deleteInventory = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { inventoryID } = req.params
     const result = await inventoryService.deleteByInventoryID(inventoryID)
-    res.status(200).json({ success: true, message: result.message })
-  } catch (error) {
-    next(error)
+    res.status(httpStatus.OK).json({ success: true, message: result.message })
   }
-}
+)
 
-export const updateInventories = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
+export const updateInventories = asyncHandler(
+  async (req: Request, res: Response) => {
     const { updates } = req.body
-
     if (!Array.isArray(updates) || updates.length === 0) {
-      return res
-        .status(400)
-        .json({ success: false, message: 'No updates provided' })
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'No updates provided',
+        'VALIDATION_FAILED'
+      )
     }
 
     const updatedItems = await inventoryService.updateByInventoryIDs(updates)
-
-    return res.status(200).json({
+    res.status(httpStatus.OK).json({
       success: true,
-      message: 'Inventories updated successfully',
       updatedItems
     })
-  } catch (error) {
-    next(error)
   }
-}
+)
 
-export const addInventories = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
+export const addInventories = asyncHandler(
+  async (req: Request, res: Response) => {
     const inventories = req.body
-
     const result = await inventoryService.addInventories(inventories)
-
-    res.status(200).json({
+    res.status(httpStatus.OK).json({
       success: true,
       insertedCount: result.insertedCount,
       updatedCount: result.updatedCount
     })
-  } catch (error) {
-    next(error)
   }
-}
+)
 
-export const getInventoriesByBinCode = async (req: Request, res: Response) => {
-  const { binCode } = req.params
+export const getInventoriesByBinCode = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { binCode } = req.params
+    if (!binCode || typeof binCode !== 'string') {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        '❌ binCode must be provided as a path param',
+        'INVALID_BIN_CODE'
+      )
+    }
 
-  if (typeof binCode !== 'string') {
-    throw new AppError(400, '❌ binCode must be provided as a query string')
-  }
-
-  try {
     const bin = await getBinByBinCode(binCode)
-
     const inventories = await getInventoriesByBinID(bin.binID)
 
-    return res.json({ success: true, inventories })
-  } catch (error) {
-    console.error('❌ Failed to get inventories by binCode:', error)
-    return res.status(500).json({ success: false, message: error.message })
+    res.status(httpStatus.OK).json({ success: true, inventories })
   }
-}
+)

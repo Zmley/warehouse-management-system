@@ -28,7 +28,7 @@
     "loading": "加载中...",
     "outOfStock": "缺货",
     "canceling": "取消中",
-   
+
     "creator": "创建人员",
 
     "status": {
@@ -102,7 +102,7 @@
     "switchToScan": "切换回扫描",
     "inputBinCode": "输入货位编号",
     "manualInputButton": "手动录入产品和数量",
-       "onlyLoadFromAssigned": "仅允许从分配的来源库位加载：{{allowed}}（当前：{{received}}）",
+    "onlyLoadFromAssigned": "仅允许从分配的来源库位加载：{{allowed}}（当前：{{received}}）",
     "onlyUnloadToAssigned": "仅允许卸到分配的库位：{{allowed}}（当前：{{received}}）"
   },
   "inventory": {
@@ -180,8 +180,7 @@
     "productQuantity": "库存数量",
     "inputQuantity": "装入数量",
     "confirm": "确认装货到叉车",
-        "selectAtLeastOne": "请至少选择一个要装载的产品。"
-
+    "selectAtLeastOne": "请至少选择一个要装载的产品。"
   },
 
   "inventorySearch": {
@@ -209,7 +208,7 @@
     }
   },
 
-    "unload": {
+  "unload": {
     "title": "准备卸货",
     "singlePallet": "保持在当前托盘",
     "palletQty": "合并到数量为 {{qty}}的托盘",

@@ -1,70 +1,39 @@
-import { Request, Response, NextFunction } from 'express'
+import { Request, Response } from 'express'
 import * as productService from './product.service'
 import { ProductUploadInput } from 'types/product'
+import { asyncHandler } from 'utils/asyncHandler'
 
-export const getProductCodes = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
+export const getProductCodes = asyncHandler(
+  async (_req: Request, res: Response) => {
     const productCodes = await productService.getProductCodes()
     res.status(200).json({ success: true, productCodes })
-  } catch (error) {
-    next(error)
   }
-}
+)
 
-export const getProducts = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const warehouseID = req.query.warehouseID as string
-    const keyword = req.query.keyword?.toString()
-    const page = parseInt(req.query.page as string) || 1
-    const limit = parseInt(req.query.limit as string) || 10
+export const getProducts = asyncHandler(async (req: Request, res: Response) => {
+  const warehouseID = req.query.warehouseID as string
+  const keyword = req.query.keyword?.toString()
+  const page = parseInt(req.query.page as string) || 1
+  const limit = parseInt(req.query.limit as string) || 10
 
-    const { products, total } = await productService.getProductsByWarehouseID(
-      warehouseID,
-      page,
-      limit,
-      keyword
-    )
+  const { products, total } = await productService.getProductsByWarehouseID(
+    warehouseID,
+    page,
+    limit,
+    keyword
+  )
 
-    res.status(200).json({ success: true, products, total })
-  } catch (error) {
-    next(error)
-  }
-}
+  res.status(200).json({ success: true, products, total })
+})
 
-export const addProducts = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const products: ProductUploadInput[] = req.body
-    const result = await productService.addProducts(products)
+export const addProducts = asyncHandler(async (req: Request, res: Response) => {
+  const products: ProductUploadInput[] = req.body
+  const result = await productService.addProducts(products)
+  res.status(200).json({ success: true, result })
+})
 
-    return res.status(200).json({ success: true, result })
-  } catch (error) {
-    next(error)
-  }
-}
-
-export const getProduct = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const barCode = req.query.barCode as string
-    const product = await productService.getProductByBarCode(barCode)
-
-    res.json({ success: true, product })
-  } catch (err) {
-    next(err)
-  }
-}
+export const getProduct = asyncHandler(async (req: Request, res: Response) => {
+  const barCode = req.query.barCode as string
+  const product = await productService.getProductByBarCode(barCode)
+  res.status(200).json({ success: true, product })
+})

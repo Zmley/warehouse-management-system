@@ -2,7 +2,7 @@ import Task from './task.model'
 import Inventory from 'routes/inventory/inventory.model'
 import Bin from 'routes/bins/bin.model'
 import AppError from 'utils/appError'
-import { Op, Sequelize, WhereOptions } from 'sequelize'
+import { Op, Sequelize, Transaction, WhereOptions } from 'sequelize'
 import { UserRole, TaskStatus } from 'constants/index'
 import { TaskWithJoin } from 'types/task'
 import {
@@ -11,8 +11,12 @@ import {
 } from 'routes/inventory/inventory.service'
 import { getBinByBinCode } from 'routes/bins/bin.service'
 import Account from 'routes/accounts/accounts.model'
-import { moveInventoriesToBin } from 'routes/carts/cart.service'
+import {
+  moveInventoriesToBin,
+  unloadByBinCode
+} from 'routes/carts/cart.service'
 import httpStatus from 'constants/httpStatus'
+import { sequelize } from 'config/db'
 
 export const hasActiveTask = async (
   accountID: string
@@ -174,79 +178,6 @@ export const binsToPick = async (
 
   return { ...task.toJSON(), sourceBins }
 }
-
-// export const getTaskByAccountID = async (
-//   accountID: string,
-//   warehouseID: string
-// ) => {
-//   const myCurrentTask = await Task.findOne({
-//     where: {
-//       accepterID: accountID,
-//       status: TaskStatus.IN_PROCESS
-//     }
-//   })
-
-//   if (!myCurrentTask) return
-
-//   let sourceBins = []
-
-//   if (myCurrentTask.sourceBinID) {
-//     const sourceBin = await Bin.findOne({
-//       where: { binID: myCurrentTask.sourceBinID },
-//       attributes: ['binID', 'binCode']
-//     })
-
-//     const matchingInventory = await Inventory.findOne({
-//       where: {
-//         binID: myCurrentTask.sourceBinID,
-//         productCode: myCurrentTask.productCode
-//       },
-//       attributes: ['inventoryID', 'quantity', 'productCode']
-//     })
-
-//     if (sourceBin) {
-//       sourceBins = [
-//         {
-//           inventoryID: matchingInventory?.inventoryID || null,
-//           productCode: myCurrentTask.productCode,
-//           quantity: matchingInventory?.quantity || 0,
-//           bin: sourceBin
-//         }
-//       ]
-//     }
-//   } else {
-//     const inventories = await Inventory.findAll({
-//       where: { productCode: myCurrentTask.productCode },
-//       include: [
-//         {
-//           model: Bin,
-//           as: 'bin',
-//           where: {
-//             warehouseID,
-//             type: 'INVENTORY'
-//           },
-//           attributes: ['binID', 'binCode']
-//         }
-//       ],
-//       attributes: ['inventoryID', 'productCode', 'quantity']
-//     })
-
-//     sourceBins = inventories
-//   }
-
-//   const destinationBin = await Bin.findOne({
-//     where: { binID: myCurrentTask.destinationBinID },
-//     attributes: ['binCode']
-//   })
-
-//   const destinationBinCode = destinationBin?.binCode || '--'
-
-//   return {
-//     ...myCurrentTask.toJSON(),
-//     sourceBins,
-//     destinationBinCode
-//   }
-// }
 
 export const getTaskByAccountID = async (
   accountID: string,
@@ -653,4 +584,47 @@ export const completeTaskByAdmin = async (
   return {
     message: '✅ Task completed and inventory updated successfully.'
   }
+}
+
+export const cancelByTransportWorker = async (
+  taskID: string,
+  cartID: string
+) => {
+  return sequelize.transaction(async (t: Transaction) => {
+    const task = await Task.findByPk(taskID, { transaction: t })
+    if (!task) {
+      throw new AppError(
+        httpStatus.NOT_FOUND,
+        'Task not found',
+        'TASK_NOT_FOUND'
+      )
+    }
+    if (task.status !== TaskStatus.IN_PROCESS) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        '❌ Only in-process tasks can be cancelled',
+        'TASK_NOT_IN_PROCESS'
+      )
+    }
+
+    const cartInventories = await getCartInventories(cartID)
+
+    if (cartInventories.length > 0) {
+      const unloadProductList = cartInventories.map(i => ({
+        inventoryID: i.inventoryID,
+        quantity: i.quantity
+      }))
+
+      const sourceBin = await Bin.findByPk(task.sourceBinID, { transaction: t })
+      if (sourceBin?.binCode) {
+        await unloadByBinCode(sourceBin.binCode, unloadProductList)
+      }
+    }
+
+    task.status = TaskStatus.PENDING
+    task.accepterID = null
+    await task.save({ transaction: t })
+
+    return task
+  })
 }
