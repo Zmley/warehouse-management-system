@@ -14,6 +14,7 @@ import UndoIcon from '@mui/icons-material/Undo'
 import { InventoryItem } from 'types/inventory'
 import { sanitizeQuantityInput } from 'utils/inputHelpers'
 import { useTranslation } from 'react-i18next'
+import { useTaskContext } from 'contexts/task'
 
 interface Props {
   taskType: string
@@ -38,6 +39,7 @@ const InventoryListCard: React.FC<Props> = ({
   const [errorOpen, setErrorOpen] = React.useState(false)
   const [errorMessage, setErrorMessage] = React.useState('')
   const { t } = useTranslation()
+  const { myTask } = useTaskContext()
 
   const handleInputChange = (inventoryID: string, value: string) => {
     const numericValue = sanitizeQuantityInput(value)
@@ -55,6 +57,7 @@ const InventoryListCard: React.FC<Props> = ({
   }
 
   const isCartEmpty = inventories.length === 0
+  const shouldLookDisabled = !!myTask || isCartEmpty
 
   return (
     <Box>
@@ -69,7 +72,7 @@ const InventoryListCard: React.FC<Props> = ({
               <IconButton
                 size='small'
                 onClick={onReturnClick}
-                disabled={isCartEmpty}
+                disabled={shouldLookDisabled}
                 sx={{
                   position: 'absolute',
                   right: 0,
@@ -77,15 +80,15 @@ const InventoryListCard: React.FC<Props> = ({
                   backgroundColor: 'white',
                   boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
                   '&:hover': {
-                    backgroundColor: isCartEmpty ? 'white' : '#f1f1f1'
+                    backgroundColor: shouldLookDisabled ? 'white' : '#f1f1f1'
                   },
-                  opacity: isCartEmpty ? 0.4 : 1,
-                  cursor: isCartEmpty ? 'not-allowed' : 'pointer'
+                  opacity: shouldLookDisabled ? 0.4 : 1,
+                  cursor: shouldLookDisabled ? 'not-allowed' : 'pointer'
                 }}
               >
                 <UndoIcon
                   fontSize='small'
-                  color={isCartEmpty ? 'disabled' : 'primary'}
+                  color={shouldLookDisabled ? 'disabled' : 'primary'}
                 />
               </IconButton>
             </span>
