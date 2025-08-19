@@ -168,7 +168,11 @@
     "loading": "正在创建任务...",
     "create": "创建任务",
     "outOfStock": "创建缺货任务",
-    "cancel": "取消"
+    "cancel": "取消",
+  "error": {
+        "taskDuplicate": "该任务已存在",
+      "unknown": "未知错误"
+    }
   },
   "success": {
     "pickerTitle": "拣货任务已创建！",
@@ -204,8 +208,11 @@
     "error": {
       "noProductCode": "❌ 请选择产品编码。",
       "noPickupBin": "❌ 未找到取货货位。",
-      "fetchFailed": "❌ 获取货位信息失败。"
+      "fetchFailed": "❌ 获取货位信息失败。",
+        "taskDuplicate": "该任务已存在",
+      "unknown": "未知错误"
     }
+
   },
 
   "unload": {

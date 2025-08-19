@@ -55,12 +55,10 @@ export const useTask = () => {
       if (res?.data.success && res?.data.task) {
         return true
       } else {
-        // 后端统一返回 errorCode
         setError(res?.data.errorCode || 'UNKNOWN_ERROR')
         return false
       }
     } catch (err: any) {
-      // 捕获网络/非业务错误
       const code = err?.response?.data?.errorCode || 'UNKNOWN_ERROR'
       setError(code)
       console.error('❌ Accept task failed:', err)

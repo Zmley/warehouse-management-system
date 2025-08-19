@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next'
 import { usePickerTasks } from 'hooks/usePickerTask'
 import { useBin } from 'hooks/useBin'
 import { useProduct } from 'hooks/useProduct'
+import { PICKER_TASK_ERROR_CODE } from 'utils/errorCodes'
 
 interface Props {
   onSuccess?: () => void
@@ -232,9 +233,21 @@ const CreatePickerTask: React.FC<Props> = ({ onSuccess }) => {
           : t('picker.createTask')}
       </Button>
 
-      {(localError || error) && (
+      {/* {(localError || error) && (
         <Typography color='error' sx={{ mt: 3, fontWeight: 500 }}>
           {localError || error}
+        </Typography>
+      )} */}
+
+      {(localError || error) && (
+        <Typography color='error' sx={{ mt: 3, fontWeight: 500 }}>
+          {localError
+            ? localError
+            : t(
+                error
+                  ? PICKER_TASK_ERROR_CODE[error] || 'createTask.error.unknown'
+                  : 'createTask.error.unknown'
+              )}
         </Typography>
       )}
     </Card>

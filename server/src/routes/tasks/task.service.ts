@@ -449,25 +449,73 @@ export const getTasksByWarehouseID = async (
   return mapTasks(tasks)
 }
 
+// export const checkIfTaskDuplicate = async (
+//   productCode: string,
+//   destinationBinCode: string,
+//   sourceBinCode?: string
+// ) => {
+//   try {
+//     const destinationBin = await getBinByBinCode(destinationBinCode)
+//     if (!destinationBin) {
+//       throw new AppError(
+//         404,
+//         `❌ Bin with code ${destinationBinCode} not found.`
+//       )
+//     }
+
+//     let sourceBinID: string | undefined
+//     if (sourceBinCode) {
+//       const sourceBin = await getBinByBinCode(sourceBinCode)
+//       if (!sourceBin) {
+//         throw new AppError(404, `❌ Bin with code ${sourceBinCode} not found.`)
+//       }
+//       sourceBinID = sourceBin.binID
+//     }
+
+//     const where: WhereOptions = {
+//       productCode,
+//       destinationBinID: destinationBin.binID,
+//       status: [TaskStatus.PENDING, TaskStatus.IN_PROCESS]
+//     }
+
+//     if (sourceBinID) {
+//       where.sourceBinID = sourceBinID
+//     }
+
+//     const existing = await Task.findOne({ where })
+
+//     if (existing) {
+//       const msg = sourceBinID
+//         ? `❌ Task already exists for product ${productCode} from source ${sourceBinCode} to destination ${destinationBinCode}.`
+//         : `❌ Task for product ${productCode} in Pick up bin ${destinationBinCode} already exists.`
+
+//       throw new AppError(400, msg)
+//     }
+
+//     return destinationBin
+//   } catch (err: unknown) {
+//     console.error('❌ Task duplicate check failed:', err)
+//     if (err instanceof AppError) throw err
+//     throw new AppError(500, '❌ Unexpected error during task duplication check')
+//   }
+// }
+
 export const checkIfTaskDuplicate = async (
   productCode: string,
   destinationBinCode: string,
   sourceBinCode?: string
-) => {
+): Promise<Bin> => {
   try {
     const destinationBin = await getBinByBinCode(destinationBinCode)
     if (!destinationBin) {
-      throw new AppError(
-        404,
-        `❌ Bin with code ${destinationBinCode} not found.`
-      )
+      throw new AppError(httpStatus.NOT_FOUND, '', 'DEST_BIN_NOT_FOUND')
     }
 
     let sourceBinID: string | undefined
     if (sourceBinCode) {
       const sourceBin = await getBinByBinCode(sourceBinCode)
       if (!sourceBin) {
-        throw new AppError(404, `❌ Bin with code ${sourceBinCode} not found.`)
+        throw new AppError(httpStatus.NOT_FOUND, '', 'SOURCE_BIN_NOT_FOUND')
       }
       sourceBinID = sourceBin.binID
     }
@@ -475,28 +523,26 @@ export const checkIfTaskDuplicate = async (
     const where: WhereOptions = {
       productCode,
       destinationBinID: destinationBin.binID,
-      status: [TaskStatus.PENDING, TaskStatus.IN_PROCESS]
+      status: { [Op.in]: [TaskStatus.PENDING, TaskStatus.IN_PROCESS] }
     }
-
     if (sourceBinID) {
-      where.sourceBinID = sourceBinID
+      Object.assign(where, { sourceBinID })
     }
 
     const existing = await Task.findOne({ where })
-
     if (existing) {
-      const msg = sourceBinID
-        ? `❌ Task already exists for product ${productCode} from source ${sourceBinCode} to destination ${destinationBinCode}.`
-        : `❌ Task for product ${productCode} in Pick up bin ${destinationBinCode} already exists.`
-
-      throw new AppError(400, msg)
+      throw new AppError(httpStatus.CONFLICT, '', 'TASK_DUPLICATE')
     }
 
     return destinationBin
-  } catch (err: unknown) {
-    console.error('❌ Task duplicate check failed:', err)
+  } catch (err) {
     if (err instanceof AppError) throw err
-    throw new AppError(500, '❌ Unexpected error during task duplication check')
+    throw new AppError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      '',
+      'INTERNAL_SERVER_ERROR',
+      false
+    )
   }
 }
 

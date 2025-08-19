@@ -168,7 +168,12 @@
     "loading": "Creating Task...",
     "create": "Create Task",
     "outOfStock": "Create Out-of-Stock Task",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+
+    "error": {
+        "taskDuplicate": "This task already exists",
+      "unknown": "Unknown error"
+    }
   },
   "success": {
     "pickerTitle": "Pick-up Task Created!",
@@ -205,7 +210,9 @@
     "error": {
       "noProductCode": "❌ Please select a product code.",
       "noPickupBin": "❌ Pickup bin not found.",
-      "fetchFailed": "❌ Failed to fetch bin info."
+      "fetchFailed": "❌ Failed to fetch bin info.",
+              "taskDuplicate": "This task already exists"
+
     }
   },
 

@@ -1,3 +1,4 @@
+// pages/CreateTask.tsx
 import React, { useState, useEffect } from 'react'
 import {
   Box,
@@ -16,6 +17,7 @@ import { usePickerTasks } from 'hooks/usePickerTask'
 import { useBin } from 'hooks/useBin'
 import { Bin } from 'types/bin'
 import { useTranslation } from 'react-i18next'
+import { CREATE_TASK_ERROR_CODE } from 'utils/errorCodes' // ← 新增
 
 const CreateTask = () => {
   const { t } = useTranslation()
@@ -33,6 +35,12 @@ const CreateTask = () => {
 
   const { createTask, isLoading, error } = usePickerTasks()
   const { fetchBinCodesByProductCode } = useBin()
+
+  // 把 error(string|null) 安全映射到 i18n key
+  const getCreateTaskErrorKey = (code: string | null) =>
+    code
+      ? CREATE_TASK_ERROR_CODE[code] || 'createTask.error.unknown'
+      : 'createTask.error.unknown'
 
   useEffect(() => {
     const getSources = async () => {
@@ -54,10 +62,8 @@ const CreateTask = () => {
   const handleSubmit = async () => {
     if (!productCode || !bin?.binCode) return
 
-    const task = await createTask(bin.binCode, productCode)
-    if (task) {
-      navigate('/success')
-    }
+    const res = await createTask(bin.binCode, productCode)
+    if (res) navigate('/success')
   }
 
   return (
@@ -130,11 +136,7 @@ const CreateTask = () => {
                     value={code}
                     control={<Radio />}
                     label={code}
-                    sx={{
-                      '& .MuiFormControlLabel-label': {
-                        fontWeight: 500
-                      }
-                    }}
+                    sx={{ '& .MuiFormControlLabel-label': { fontWeight: 500 } }}
                   />
                 ))}
               </RadioGroup>
@@ -241,7 +243,7 @@ const CreateTask = () => {
               textAlign='center'
               mb={2}
             >
-              {error}
+              {t(getCreateTaskErrorKey(error))}
             </Typography>
           )}
         </Card>
