@@ -6,7 +6,6 @@ import { AuthContext } from 'contexts/auth'
 import Dashboard from 'pages/Dashboard'
 import PickerScanPage from 'pages/Picker/Scan'
 import CreateTaskPage from 'pages/Picker/CreateTask'
-
 import { TransportWorkCartProvider } from 'contexts/cart'
 import ScannedProductPage from 'pages/Picker/ScannedProductPage'
 

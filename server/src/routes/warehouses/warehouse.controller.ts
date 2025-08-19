@@ -7,13 +7,13 @@ export const getWarehouse = asyncHandler(
   async (req: Request, res: Response) => {
     const { warehouseID } = req.params
     const warehouse = await warehouseService.getWarehouseByID(warehouseID)
-    res.status(httpStatus.OK).json({ success: true, warehouse })
+    res.status(httpStatus.OK).json(warehouse)
   }
 )
 
 export const getWarehouses = asyncHandler(
   async (_req: Request, res: Response) => {
     const warehouses = await warehouseService.getWarehouses()
-    res.status(httpStatus.OK).json({ success: true, warehouses })
+    res.status(httpStatus.OK).json(warehouses)
   }
 )
