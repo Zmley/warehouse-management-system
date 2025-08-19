@@ -12,6 +12,7 @@ import {
 import { getBinByBinCode } from 'routes/bins/bin.service'
 import Account from 'routes/accounts/accounts.model'
 import { moveInventoriesToBin } from 'routes/carts/cart.service'
+import HttpStatusCodes from 'constants/httpStatusCodes'
 
 export const hasActiveTask = async (
   accountID: string
@@ -66,27 +67,40 @@ export const validateTaskAcceptance = async (
   accountID: string,
   taskID: string,
   cartID: string
-) => {
+): Promise<void> => {
   const isActive = await hasActiveTask(accountID)
   if (isActive) {
-    throw new AppError(409, '❌ You already have an active task in progress.')
+    throw new AppError(
+      HttpStatusCodes.CONFLICT,
+      '❌ You already have an active task in progress.',
+      'TASK_ALREADY_ACTIVE'
+    )
   }
 
   const cartInventories = await getCartInventories(cartID)
   if (cartInventories.length > 0) {
     throw new AppError(
-      409,
-      '❌ Please unload your cart before accepting a new task.'
+      HttpStatusCodes.CONFLICT,
+      '❌ Please unload your cart before accepting a new task.',
+      'CART_NOT_EMPTY'
     )
   }
 
   const task = await Task.findOne({ where: { taskID } })
   if (!task) {
-    throw new AppError(404, '❌ Task not found.')
+    throw new AppError(
+      HttpStatusCodes.NOT_FOUND,
+      '❌ Task not found.',
+      'TASK_NOT_FOUND'
+    )
   }
 
   if (task.status !== TaskStatus.PENDING) {
-    throw new AppError(400, '❌ Task is already in progress.')
+    throw new AppError(
+      HttpStatusCodes.BAD_REQUEST,
+      '❌ Task is already in progress.',
+      'TASK_NOT_PENDING'
+    )
   }
 }
 

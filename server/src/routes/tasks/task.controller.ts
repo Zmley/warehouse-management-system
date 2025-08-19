@@ -4,10 +4,10 @@ import * as taskService from 'routes/tasks/task.service'
 import * as binService from 'routes/bins/bin.service'
 import * as inventoryService from 'routes/inventory/inventory.service'
 import * as cartsService from 'routes/carts/cart.service'
-
 import Task from './task.model'
 import AppError from 'utils/appError'
 import Bin from 'routes/bins/bin.model'
+import HttpStatusCodes from 'constants/httpStatusCodes'
 
 export const acceptTask = async (
   req: Request,
@@ -26,7 +26,7 @@ export const acceptTask = async (
       accepterID: accountID
     })
 
-    res.status(200).json({
+    res.status(HttpStatusCodes.OK).json({
       success: true,
       message: '✅ Task accepted successfully and is now in progress',
       task
@@ -193,8 +193,9 @@ export const createTask = async (
     )
 
     if (!sourceBinCode) {
-      const destinationBin =
-        await binService.getBinByBinCode(destinationBinCode)
+      const destinationBin = await binService.getBinByBinCode(
+        destinationBinCode
+      )
 
       const task = await taskService.binsToPick(
         destinationBin.binCode,

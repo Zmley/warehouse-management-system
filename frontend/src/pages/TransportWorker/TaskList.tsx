@@ -12,7 +12,6 @@ import {
   Alert,
   IconButton
 } from '@mui/material'
-import { motion, AnimatePresence } from 'framer-motion'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
 import { useTask } from 'hooks/useTask'
@@ -20,6 +19,7 @@ import { Task } from 'types/task'
 import PullToRefresh from 'react-simple-pull-to-refresh'
 import { useTaskContext } from 'contexts/task'
 import { useTranslation } from 'react-i18next'
+import { ERROR_CODE } from 'utils/errorCodes'
 
 interface TaskListProps {
   setView: (view: 'tasks' | 'cart') => void
@@ -89,7 +89,6 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
     [tasks, showOutOfStock]
   )
 
-  // ✅ 只返回唯一 binCode（不带数量）
   const formatSourceBinsUnique = (sourceBins?: SourceBinView[]) => {
     if (!sourceBins || sourceBins.length === 0) return ''
     const seen = new Set<string>()
@@ -180,164 +179,155 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
             {t('taskList.empty')}
           </Typography>
         ) : (
-          <AnimatePresence mode='wait'>
-            <motion.div
-              key={showOutOfStock ? 'out-of-stock' : 'pending'}
-              initial={{ x: showOutOfStock ? 100 : -100, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: showOutOfStock ? -100 : 100, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              {filteredTasks.map((task: Task) => {
-                const isOutOfStock =
-                  !task.sourceBins || task.sourceBins.length === 0
+          <Box>
+            {filteredTasks.map((task: Task) => {
+              const isOutOfStock =
+                !task.sourceBins || task.sourceBins.length === 0
 
-                // ✅ 只显示唯一 binCode
-                const sourceBinsLabel = formatSourceBinsUnique(
-                  task.sourceBins as unknown as SourceBinView[]
-                )
-                const firstBinCode = sourceBinsLabel.split(' / ')[0] ?? ''
-                const isAisleTask = firstBinCode.startsWith('AISLE-')
+              const sourceBinsLabel = formatSourceBinsUnique(
+                task.sourceBins as unknown as SourceBinView[]
+              )
+              const firstBinCode = sourceBinsLabel.split(' / ')[0] ?? ''
+              const isAisleTask = firstBinCode.startsWith('AISLE-')
 
-                const cardBorderColor = isAisleTask ? '#059669' : '#2563eb'
-                const cardBgColor = isAisleTask ? '#ecfdf5' : '#eff6ff'
+              const cardBorderColor = isAisleTask ? '#059669' : '#2563eb'
+              const cardBgColor = isAisleTask ? '#ecfdf5' : '#eff6ff'
 
-                return (
-                  <Card
-                    key={task.taskID}
-                    variant='outlined'
-                    sx={{
-                      mb: 2,
-                      height: 155,
-                      borderRadius: 3,
-                      backgroundColor: cardBgColor,
-                      border: `1.5px solid ${cardBorderColor}`,
-                      boxShadow: '0 2px 6px #0000000D'
-                    }}
-                  >
-                    <CardContent sx={{ py: 1, px: 1.5 }}>
-                      <Grid container spacing={1}>
-                        <Grid item xs={12} textAlign='center'>
-                          <Typography
-                            variant='caption'
-                            color='text.secondary'
-                            fontSize={11}
-                          >
-                            {t('taskList.sourceBin')}
-                          </Typography>
-
-                          {isOutOfStock ? (
-                            <Typography
-                              fontSize={12}
-                              fontWeight='medium'
-                              sx={{ color: '#d32f2f' }}
-                            >
-                              {t('taskList.outOfStock')}
-                            </Typography>
-                          ) : (
-                            <Box
-                              sx={{
-                                overflowX:
-                                  (task.sourceBins?.length ?? 0) > 5
-                                    ? 'auto'
-                                    : 'visible',
-                                whiteSpace: 'nowrap',
-                                fontSize: 13,
-                                fontWeight: 'bold'
-                              }}
-                            >
-                              {sourceBinsLabel}
-                            </Box>
-                          )}
-                        </Grid>
-
-                        <Grid item xs={4} textAlign='center'>
-                          <Typography
-                            variant='caption'
-                            color='text.secondary'
-                            fontSize={11}
-                          >
-                            {t('taskList.product')}
-                          </Typography>
-                          <Typography fontWeight='bold' fontSize={13}>
-                            {task.productCode}
-                          </Typography>
-                        </Grid>
-
-                        <Grid item xs={4} textAlign='center'>
-                          <Typography
-                            variant='caption'
-                            color='text.secondary'
-                            fontSize={11}
-                          >
-                            {t('taskList.quantity')}
-                          </Typography>
-                          <Typography fontWeight='bold' fontSize={13}>
-                            {task.quantity || 'ALL'}
-                          </Typography>
-                        </Grid>
-
-                        <Grid item xs={4} textAlign='center'>
-                          <Typography
-                            variant='caption'
-                            color='text.secondary'
-                            fontSize={11}
-                          >
-                            {t('taskList.targetBin')}
-                          </Typography>
-                          <Typography fontWeight='bold' fontSize={13}>
-                            {task.destinationBinCode || '--'}
-                          </Typography>
-                        </Grid>
-                      </Grid>
-
-                      <Divider sx={{ my: 1 }} />
-
-                      <Box
-                        display='flex'
-                        justifyContent='space-between'
-                        alignItems='center'
-                      >
+              return (
+                <Card
+                  key={task.taskID}
+                  variant='outlined'
+                  sx={{
+                    mb: 2,
+                    height: 155,
+                    borderRadius: 3,
+                    backgroundColor: cardBgColor,
+                    border: `1.5px solid ${cardBorderColor}`,
+                    boxShadow: '0 2px 6px #0000000D'
+                  }}
+                >
+                  <CardContent sx={{ py: 1, px: 1.5 }}>
+                    <Grid container spacing={1}>
+                      <Grid item xs={12} textAlign='center'>
                         <Typography
                           variant='caption'
                           color='text.secondary'
                           fontSize={11}
-                          sx={{ whiteSpace: 'pre-line' }}
                         >
-                          {`${t('taskList.createDate')}: ${new Date(task.createdAt).toLocaleString()}\n${t(
-                            'taskList.creator'
-                          )}: ${task.creator?.firstName || '--'} ${task.creator?.lastName || ''}`}
+                          {t('taskList.sourceBin')}
                         </Typography>
 
-                        <Button
-                          variant='contained'
-                          onClick={() => handleAccept(task.taskID)}
-                          disabled={isOutOfStock || loadingTasks[task.taskID]}
-                          color={isAisleTask ? 'success' : 'primary'}
-                          sx={{
-                            fontSize: 11,
-                            px: 2,
-                            py: 0.5,
-                            borderRadius: 2,
-                            textTransform: 'uppercase',
-                            fontWeight: 600,
-                            minHeight: 30,
-                            opacity: isOutOfStock ? 0.5 : 1
-                          }}
+                        {isOutOfStock ? (
+                          <Typography
+                            fontSize={12}
+                            fontWeight='medium'
+                            sx={{ color: '#d32f2f' }}
+                          >
+                            {t('taskList.outOfStock')}
+                          </Typography>
+                        ) : (
+                          <Box
+                            sx={{
+                              overflowX:
+                                (task.sourceBins?.length ?? 0) > 5
+                                  ? 'auto'
+                                  : 'visible',
+                              whiteSpace: 'nowrap',
+                              fontSize: 13,
+                              fontWeight: 'bold'
+                            }}
+                          >
+                            {sourceBinsLabel}
+                          </Box>
+                        )}
+                      </Grid>
+
+                      <Grid item xs={4} textAlign='center'>
+                        <Typography
+                          variant='caption'
+                          color='text.secondary'
+                          fontSize={11}
                         >
-                          {loadingTasks[task.taskID]
-                            ? t('taskList.loading')
-                            : isAisleTask
-                              ? t('taskList.takeOver')
-                              : t('taskList.accept')}
-                        </Button>
-                      </Box>
-                    </CardContent>
-                  </Card>
-                )
-              })}
-            </motion.div>
-          </AnimatePresence>
+                          {t('taskList.product')}
+                        </Typography>
+                        <Typography fontWeight='bold' fontSize={13}>
+                          {task.productCode}
+                        </Typography>
+                      </Grid>
+
+                      <Grid item xs={4} textAlign='center'>
+                        <Typography
+                          variant='caption'
+                          color='text.secondary'
+                          fontSize={11}
+                        >
+                          {t('taskList.quantity')}
+                        </Typography>
+                        <Typography fontWeight='bold' fontSize={13}>
+                          {task.quantity || 'ALL'}
+                        </Typography>
+                      </Grid>
+
+                      <Grid item xs={4} textAlign='center'>
+                        <Typography
+                          variant='caption'
+                          color='text.secondary'
+                          fontSize={11}
+                        >
+                          {t('taskList.targetBin')}
+                        </Typography>
+                        <Typography fontWeight='bold' fontSize={13}>
+                          {task.destinationBinCode || '--'}
+                        </Typography>
+                      </Grid>
+                    </Grid>
+
+                    <Divider sx={{ my: 1 }} />
+
+                    <Box
+                      display='flex'
+                      justifyContent='space-between'
+                      alignItems='center'
+                    >
+                      <Typography
+                        variant='caption'
+                        color='text.secondary'
+                        fontSize={11}
+                        sx={{ whiteSpace: 'pre-line' }}
+                      >
+                        {`${t('taskList.createDate')}: ${new Date(task.createdAt).toLocaleString()}\n${t(
+                          'taskList.creator'
+                        )}: ${task.creator?.firstName || '--'} ${task.creator?.lastName || ''}`}
+                      </Typography>
+
+                      <Button
+                        variant='contained'
+                        onClick={() => handleAccept(task.taskID)}
+                        disabled={isOutOfStock || loadingTasks[task.taskID]}
+                        color={isAisleTask ? 'success' : 'primary'}
+                        sx={{
+                          fontSize: 11,
+                          px: 2,
+                          py: 0.5,
+                          borderRadius: 2,
+                          textTransform: 'uppercase',
+                          fontWeight: 600,
+                          minHeight: 30,
+                          opacity: isOutOfStock ? 0.5 : 1
+                        }}
+                      >
+                        {loadingTasks[task.taskID]
+                          ? t('taskList.loading')
+                          : isAisleTask
+                            ? t('taskList.takeOver')
+                            : t('taskList.accept')}
+                      </Button>
+                    </Box>
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </Box>
         )}
 
         <Snackbar
@@ -352,7 +342,9 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
             variant='filled'
             sx={{ width: '100%' }}
           >
-            {error || t('taskList.error.unknown')}
+            {error
+              ? t(ERROR_CODE[error] || 'taskList.error.unknown')
+              : t('taskList.error.unknown')}
           </Alert>
         </Snackbar>
       </Box>

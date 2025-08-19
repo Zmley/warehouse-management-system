@@ -25,20 +25,44 @@ export const useTask = () => {
     }
   }
 
+  // const acceptTask = async (taskID: string): Promise<boolean> => {
+  //   setIsLoading(true)
+  //   setError(null)
+  //   try {
+  //     const res = await acceptTaskAPI(taskID)
+  //     if (res?.data.success && res?.data.task) {
+  //       return true
+  //     } else {
+  //       setError(res?.data.error || '❌ Failed to accept task.')
+  //       return false
+  //     }
+  //   } catch (err: any) {
+  //     const msg = err?.response?.data?.error || '❌ Failed to accept task'
+  //     setError(msg)
+  //     console.error('❌ Accept task failed:', err)
+  //     return false
+  //   } finally {
+  //     setIsLoading(false)
+  //   }
+  // }
+
   const acceptTask = async (taskID: string): Promise<boolean> => {
     setIsLoading(true)
     setError(null)
     try {
       const res = await acceptTaskAPI(taskID)
+
       if (res?.data.success && res?.data.task) {
         return true
       } else {
-        setError(res?.data.error || '❌ Failed to accept task.')
+        // 后端统一返回 errorCode
+        setError(res?.data.errorCode || 'UNKNOWN_ERROR')
         return false
       }
     } catch (err: any) {
-      const msg = err?.response?.data?.error || '❌ Failed to accept task'
-      setError(msg)
+      // 捕获网络/非业务错误
+      const code = err?.response?.data?.errorCode || 'UNKNOWN_ERROR'
+      setError(code)
       console.error('❌ Accept task failed:', err)
       return false
     } finally {

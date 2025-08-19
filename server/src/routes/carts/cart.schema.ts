@@ -19,11 +19,13 @@ const SelectedItemSchema = Joi.object({
 export const CartLoadBodySchema = Joi.object({
   binCode: Joi.string().trim(),
   selectedItems: Joi.array().items(SelectedItemSchema).min(1).optional(),
-
   productList: Joi.array().items(ProductQtySchema).min(1)
 })
   .xor('binCode', 'productList')
-
+  .messages({
+    'object.xor':
+      'Request body must include either productList or binCode, not both.'
+  })
   .unknown(false)
 
 const UnloadItemSchema = Joi.object({
@@ -37,8 +39,7 @@ const UnloadItemSchema = Joi.object({
   targetInventoryID: Joi.when('merge', {
     is: true,
     then: Joi.string().trim().required().messages({
-      'any.required':
-        'When "merge" is true, "targetInventoryID" is required to specify the target inventory to merge into.'
+      'any.required': 'When "merge" is true, "targetInventoryID" is required.'
     }),
     otherwise: Joi.string().trim().optional()
   })

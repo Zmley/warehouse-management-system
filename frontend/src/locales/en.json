@@ -32,6 +32,13 @@
     "status": {
       "pending": "Pending",
       "outOfStock": "Out of Stock"
+    },
+    "error": {
+      "taskAlreadyActive": "You already have an active task in progress.",
+      "cartNotEmpty": "Please unload your cart before accepting a new task.",
+      "taskNotFound": "Task not found.",
+      "taskNotPending": "Task is already in progress.",
+      "unknown": "Something went wrong. Please try again."
     }
   },
   "cart": {
@@ -92,7 +99,10 @@
     "invalidProductCode": "invalid product barcode, please make sure scan the barcode",
     "switchToScan": "switch To Scan",
     "inputBinCode": "Input BinCode",
-    "manualInputButton": "Manual Input Product and Quantity"
+    "manualInputButton": "Manual Input Product and Quantity",
+
+    "onlyLoadFromAssigned": "You can only load from assigned bins: {{allowed}} (received: {{received}}).",
+    "onlyUnloadToAssigned": "You can only unload to assigned bins: {{allowed}} (received: {{received}})."
   },
   "inventory": {
     "total": "Total",
@@ -169,7 +179,9 @@
     "confirmTitle": "Confirm items to load from {{binCode}}",
     "productQuantity": "Product Quantity",
     "inputQuantity": "input Quantity",
-    "confirm": "confirm Load to Forklift"
+    "confirm": "confirm Load to Forklift",
+        "selectAtLeastOne": "Please select at least one item to load."
+
   },
 
   "inventorySearch": {

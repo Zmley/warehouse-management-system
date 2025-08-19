@@ -28,16 +28,19 @@
     "loading": "加载中...",
     "outOfStock": "缺货",
     "canceling": "取消中",
-    "error": {
-      "❌ You already have an active task in progress.": "❌ 您已有一个进行中的任务",
-      "❌ Failed to accept task": "❌ 接受任务失败",
-      "unknown": "❌ 发生未知错误"
-    },
+   
     "creator": "创建人员",
 
     "status": {
       "pending": "待处理",
       "outOfStock": "缺货"
+    },
+    "error": {
+      "taskAlreadyActive": "你已经有一个进行中的任务。",
+      "cartNotEmpty": "接受新任务前，请先卸空购物车。",
+      "taskNotFound": "任务不存在。",
+      "taskNotPending": "任务已在进行中。",
+      "unknown": "发生错误，请稍后重试。"
     }
   },
   "cart": {
@@ -98,7 +101,9 @@
     "manualInputProductCodeTitle": "手动输入产品编码",
     "switchToScan": "切换回扫描",
     "inputBinCode": "输入货位编号",
-    "manualInputButton": "手动录入产品和数量"
+    "manualInputButton": "手动录入产品和数量",
+       "onlyLoadFromAssigned": "仅允许从分配的来源库位加载：{{allowed}}（当前：{{received}}）",
+    "onlyUnloadToAssigned": "仅允许卸到分配的库位：{{allowed}}（当前：{{received}}）"
   },
   "inventory": {
     "total": "叉车上总数",
@@ -174,7 +179,9 @@
     "confirmTitle": " 当前{{binCode}} 内产品",
     "productQuantity": "库存数量",
     "inputQuantity": "装入数量",
-    "confirm": "确认装货到叉车"
+    "confirm": "确认装货到叉车",
+        "selectAtLeastOne": "请至少选择一个要装载的产品。"
+
   },
 
   "inventorySearch": {

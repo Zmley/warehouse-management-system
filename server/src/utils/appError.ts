@@ -1,23 +1,25 @@
-// centralized error object that derives from Node’s Error
+// src/utils/appError.ts
+import HttpStatusCodes from 'constants/httpStatusCodes'
+
 export default class AppError extends Error {
-  public readonly name: string
-
-  public readonly httpCode: number
-
+  public readonly httpCode: HttpStatusCodes
   public readonly isOperational: boolean
+  public readonly errorCode?: string
 
   constructor(
-    httpCode: number,
-    description: string,
+    httpCode: HttpStatusCodes,
+    message: string,
+    errorCode?: string,
     isOperational: boolean = true
   ) {
-    super(description)
-
-    Object.setPrototypeOf(this, new.target.prototype) // restore prototype chain
+    super(message)
+    this.name = 'AppError'
+    Object.setPrototypeOf(this, new.target.prototype)
 
     this.httpCode = httpCode
+    this.errorCode = errorCode
     this.isOperational = isOperational
 
-    Error.captureStackTrace(this)
+    Error.captureStackTrace?.(this, AppError)
   }
 }
