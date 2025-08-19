@@ -7,7 +7,7 @@ import * as cartsService from 'routes/carts/cart.service'
 import Task from './task.model'
 import AppError from 'utils/appError'
 import Bin from 'routes/bins/bin.model'
-import HttpStatusCodes from 'constants/httpStatusCodes'
+import httpStatus from 'constants/httpStatus'
 
 export const acceptTask = async (
   req: Request,
@@ -26,9 +26,8 @@ export const acceptTask = async (
       accepterID: accountID
     })
 
-    res.status(HttpStatusCodes.OK).json({
+    res.status(httpStatus.OK).json({
       success: true,
-      message: '✅ Task accepted successfully and is now in progress',
       task
     })
   } catch (error) {

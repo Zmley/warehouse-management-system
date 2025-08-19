@@ -1,6 +1,6 @@
 // src/middlewares/errorHandling.ts
 import { Request, Response, NextFunction } from 'express'
-import HttpStatusCodes from 'constants/httpStatusCodes'
+import HttpStatusCodes from 'constants/httpStatus'
 import AppError from 'utils/appError'
 import { isCelebrateError } from 'celebrate'
 
