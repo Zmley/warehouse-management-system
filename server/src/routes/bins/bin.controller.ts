@@ -1,6 +1,12 @@
+import { BinType } from 'constants/index'
+import httpStatus from 'constants/httpStatus'
 import { Request, Response } from 'express'
 import * as binService from 'routes/bins/bin.service'
-import { getPickBinByProductCode } from 'routes/bins/bin.service'
+import {
+  getPickBinByProductCode,
+  UpdateBinInput,
+  updateSingleBin
+} from 'routes/bins/bin.service'
 import { asyncHandler } from 'utils/asyncHandler'
 
 export const getBin = asyncHandler(async (req: Request, res: Response) => {
@@ -147,3 +153,107 @@ export const deleteBin = asyncHandler(async (req: Request, res: Response) => {
 
   res.json({ success: true })
 })
+
+export const updateBinsController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { updates } = req.body as { updates: UpdateBinInput[] }
+
+    // 基本校验
+    if (!Array.isArray(updates) || updates.length === 0) {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        success: false,
+        errorCode: 'INVALID_PAYLOAD',
+        message: 'updates must be a non-empty array'
+      })
+    }
+
+    // 每项至少需要 binID
+    const invalid = updates.find(
+      u => !u || typeof u.binID !== 'string' || !u.binID
+    )
+    if (invalid) {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        success: false,
+        errorCode: 'BIN_ID_REQUIRED',
+        message: 'Each update item must include a valid binID'
+      })
+    }
+
+    const result = await binService.updateBins(updates)
+
+    // 所有成功
+    if (result.failedCount === 0) {
+      return res.status(httpStatus.OK).json({
+        success: true,
+        updatedCount: result.updatedCount,
+        failedCount: result.failedCount,
+        results: result.results
+      })
+    }
+
+    // 部分成功 — 207 Multi-Status（前端可根据 results 逐条提示）
+    if (result.updatedCount > 0 && result.failedCount > 0) {
+      return res.status(httpStatus.MULTI_STATUS).json({
+        success: false,
+        errorCode: 'PARTIAL_FAILURE',
+        updatedCount: result.updatedCount,
+        failedCount: result.failedCount,
+        results: result.results
+      })
+    }
+
+    // 全部失败
+    return res.status(httpStatus.BAD_REQUEST).json({
+      success: false,
+      errorCode: 'UPDATE_FAILED',
+      updatedCount: result.updatedCount,
+      failedCount: result.failedCount,
+      results: result.results
+    })
+  }
+)
+
+///////////////////////////////////
+
+export type UpdateBinDto = {
+  binCode?: string
+  type?: BinType
+  defaultProductCodes?: string | null
+}
+
+/**
+ * PATCH /api/bins/:binID
+ * 单条更新：可同时/部分更新 binCode / type / defaultProductCodes
+ */
+export const updateBinController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { binID } = req.params as { binID: string }
+
+    // 只白名单接收允许的字段
+    const { binCode, type, defaultProductCodes } = req.body ?? {}
+
+    const payload: UpdateBinDto = {}
+
+    if (binCode !== undefined) {
+      // 统一转为字符串并去掉首尾空格（空串等同不更新，留给 service 里处理）
+      payload.binCode = String(binCode).trim()
+    }
+
+    if (type !== undefined) {
+      payload.type = type as BinType
+    }
+
+    if (defaultProductCodes !== undefined) {
+      // 允许传 null；字符串交由 service 做规范化（去空格/去重/空置为 null）
+      payload.defaultProductCodes =
+        defaultProductCodes === null ? null : String(defaultProductCodes)
+    }
+
+    const bin = await updateSingleBin(binID, payload)
+
+    res.status(200).json({
+      success: true,
+      bin
+    })
+  }
+)
