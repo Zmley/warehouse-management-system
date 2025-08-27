@@ -156,7 +156,9 @@
   "pickerBottomBar": {
     "taskList": "Task List",
     "createTask": "Create Task",
-    "archivedTask": "Archived Task"
+    "archivedTask": "Archived Task",
+        "inventory": "Inventory"
+
   },
   "createTask": {
     "title": "Create A New Task",

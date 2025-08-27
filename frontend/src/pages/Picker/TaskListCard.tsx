@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import {
   Box,
   Typography,
@@ -8,7 +8,8 @@ import {
   Divider,
   CircularProgress,
   Snackbar,
-  Alert
+  Alert,
+  Chip
 } from '@mui/material'
 import PullToRefresh from 'react-simple-pull-to-refresh'
 import { usePickerTasks } from 'hooks/usePickerTask'
@@ -19,6 +20,11 @@ interface Props {
   status: TaskCategoryEnum
 }
 
+type SourceBinView = {
+  bin?: { binCode?: string }
+  quantity?: number
+}
+
 const TaskListCard: React.FC<Props> = ({ status }) => {
   const { t } = useTranslation()
   const { tasks, fetchTasks } = usePickerTasks()
@@ -26,7 +32,6 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
   const [hasFetched, setHasFetched] = useState(false)
   const [open, setOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const filteredTasks = tasks.filter(task => task.status === status)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -38,8 +43,8 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
         setOpen(true)
       }
     }
-
     fetchData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleManualRefresh = async () => {
@@ -51,128 +56,269 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
     }
   }
 
+  const filteredTasks = useMemo(
+    () => tasks.filter(task => task.status === status),
+    [tasks, status]
+  )
+
   return (
     <PullToRefresh
       onRefresh={handleManualRefresh}
-      refreshingContent={
-        <Box sx={{ textAlign: 'center', py: 3 }}>
-          <CircularProgress size={28} thickness={5} />
-          <Typography variant='caption' display='block' sx={{ mt: 1 }}>
-            {t('taskListCard.refreshing')}
+      pullingContent={<></>}
+      refreshingContent={<></>}
+    >
+      <Box p={2} pt={0} pb={10}>
+        {/* 顶部下拉提示（与 TaskList 保持一致） */}
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            mb: 1,
+            position: 'relative'
+          }}
+        >
+          <Typography
+            sx={{
+              flex: 1,
+              textAlign: 'center',
+              color: 'text.secondary',
+              fontSize: 13,
+              fontStyle: 'italic'
+            }}
+          >
+            {t('taskList.pullToRefresh')}
           </Typography>
         </Box>
-      }
-    >
-      <Box p={2} pb={10}>
+
+        {/* Loading / Empty */}
         {!hasFetched ? (
           <Box display='flex' justifyContent='center' mt={6}>
-            <CircularProgress />
+            <CircularProgress size={30} thickness={5} />
           </Box>
         ) : filteredTasks.length === 0 ? (
-          <Typography color='text.secondary' textAlign='center'>
-            {t('taskListCard.empty', { status })}
-          </Typography>
-        ) : (
-          filteredTasks.map(task => (
-            <Card
-              key={task.taskID}
-              variant='outlined'
-              sx={{
-                mb: 3,
-                borderRadius: 3,
-                backgroundColor: '#eff6ff',
-                border: '1.5px solid #2563eb',
-                boxShadow: '0 2px 6px #0000000D'
-              }}
+          <>
+            <Typography
+              color='text.secondary'
+              textAlign='center'
+              sx={{ mt: 6, fontSize: 14 }}
             >
-              <CardContent sx={{ py: 1.5, px: 2 }}>
-                <Grid container spacing={1.5}>
-                  <Grid item xs={12} textAlign='center'>
-                    <Typography variant='caption' color='text.secondary'>
-                      {t('taskList.sourceBin')}
-                    </Typography>
-                    <Box sx={{ fontWeight: 'bold', fontSize: 15, mt: 0.5 }}>
-                      {task.sourceBins && task.sourceBins.length > 0 ? (
-                        task.sourceBins
-                          .map((inv: any) => inv.bin?.binCode)
-                          .filter(Boolean)
-                          .join(' / ')
-                      ) : (
-                        <Box
-                          display='flex'
-                          justifyContent='center'
-                          alignItems='center'
-                          gap={0.5}
+              {t('taskList.emptyTitle') || t('taskListCard.empty', { status })}
+            </Typography>
+            <Typography
+              color='text.disabled'
+              textAlign='center'
+              sx={{ mt: 0.5, fontSize: 12 }}
+            >
+              {t('taskList.emptyHint') || ''}
+            </Typography>
+          </>
+        ) : (
+          <Box>
+            {filteredTasks.map(task => {
+              const bins = (task.sourceBins as unknown as SourceBinView[]) || []
+              const uniqueCodes = Array.from(
+                new Set(bins.map(b => b?.bin?.binCode ?? '--'))
+              )
+              const display = uniqueCodes.slice(0, 3)
+              const rest = uniqueCodes.length - display.length
+
+              const firstBin = uniqueCodes[0] ?? ''
+              const isAisleTask = firstBin.startsWith('AISLE-')
+
+              const cardBorderColor = isAisleTask ? '#059669' : '#2563eb'
+              const cardBg = isAisleTask
+                ? 'linear-gradient(180deg,#ecfdf5 0%, #f6fffb 100%)'
+                : 'linear-gradient(180deg,#eff6ff 0%, #f7faff 100%)'
+
+              const outOfStock = uniqueCodes.length === 0
+
+              return (
+                <Card
+                  key={task.taskID}
+                  variant='outlined'
+                  sx={{
+                    mb: 1.5,
+                    borderRadius: 3,
+                    background: cardBg,
+                    border: `1.5px solid ${cardBorderColor}`,
+                    boxShadow: '0 6px 12px rgba(16,24,40,0.06)',
+                    transition: 'transform .08s ease',
+                    '&:active': { transform: 'scale(0.998)' }
+                  }}
+                >
+                  <CardContent sx={{ py: 1, px: 1.25 }}>
+                    {/* SourceBins（Chip + 折叠/+N） */}
+                    <Grid container spacing={1}>
+                      <Grid item xs={12} textAlign='center'>
+                        <Typography
+                          variant='caption'
+                          sx={{
+                            color: 'text.secondary',
+                            opacity: 0.8,
+                            fontSize: 11
+                          }}
                         >
+                          {t('taskList.sourceBin')}
+                        </Typography>
+
+                        {outOfStock ? (
                           <Typography
-                            fontSize={14}
-                            fontWeight='medium'
-                            sx={{ color: '#d32f2f' }}
+                            sx={{
+                              mt: 0.5,
+                              fontSize: 12,
+                              fontWeight: 600,
+                              color: '#d32f2f'
+                            }}
                           >
                             {t('taskList.outOfStock')}
                           </Typography>
-                        </Box>
+                        ) : (
+                          <Box
+                            sx={{
+                              mt: 0.5,
+                              display: 'flex',
+                              justifyContent: 'center',
+                              gap: 0.5,
+                              flexWrap: 'nowrap',
+                              overflowX: 'auto',
+                              px: 0.5,
+                              '&::-webkit-scrollbar': { display: 'none' }
+                            }}
+                          >
+                            {display.map(code => (
+                              <Chip
+                                key={code}
+                                label={code}
+                                size='small'
+                                sx={{
+                                  height: 22,
+                                  borderRadius: '999px',
+                                  fontSize: 11,
+                                  fontWeight: 600,
+                                  bgcolor: isAisleTask ? '#dcfce7' : '#dbeafe',
+                                  border: `1px solid ${isAisleTask ? '#86efac' : '#93c5fd'}`
+                                }}
+                              />
+                            ))}
+                            {rest > 0 && (
+                              <Chip
+                                label={`+${rest}`}
+                                size='small'
+                                sx={{
+                                  height: 22,
+                                  borderRadius: '999px',
+                                  fontSize: 11,
+                                  bgcolor: '#f3f4f6',
+                                  border: '1px solid #e5e7eb'
+                                }}
+                              />
+                            )}
+                          </Box>
+                        )}
+                      </Grid>
+
+                      {/* 三列主信息 */}
+                      <Grid item xs={4} textAlign='center'>
+                        <Typography
+                          variant='caption'
+                          sx={{
+                            color: 'text.secondary',
+                            opacity: 0.8,
+                            fontSize: 11
+                          }}
+                        >
+                          {t('taskList.product')}
+                        </Typography>
+                        <Typography
+                          sx={{
+                            fontWeight: 800,
+                            fontSize: 14,
+                            letterSpacing: 0.2
+                          }}
+                        >
+                          {task.productCode}
+                        </Typography>
+                      </Grid>
+
+                      <Grid item xs={4} textAlign='center'>
+                        <Typography
+                          variant='caption'
+                          sx={{
+                            color: 'text.secondary',
+                            opacity: 0.8,
+                            fontSize: 11
+                          }}
+                        >
+                          {t('taskList.quantity')}
+                        </Typography>
+                        <Typography
+                          sx={{
+                            fontWeight: 800,
+                            fontSize: 14,
+                            letterSpacing: 0.2
+                          }}
+                        >
+                          {task.quantity || 'ALL'}
+                        </Typography>
+                      </Grid>
+
+                      <Grid item xs={4} textAlign='center'>
+                        <Typography
+                          variant='caption'
+                          sx={{
+                            color: 'text.secondary',
+                            opacity: 0.8,
+                            fontSize: 11
+                          }}
+                        >
+                          {t('taskList.targetBin')}
+                        </Typography>
+                        <Typography
+                          sx={{
+                            fontWeight: 800,
+                            fontSize: 14,
+                            letterSpacing: 0.2
+                          }}
+                        >
+                          {task.destinationBinCode || '--'}
+                        </Typography>
+                      </Grid>
+                    </Grid>
+
+                    <Divider sx={{ my: 1 }} />
+
+                    {/* 底部信息 */}
+                    <Box
+                      display='flex'
+                      justifyContent='space-between'
+                      alignItems='center'
+                    >
+                      <Typography
+                        variant='caption'
+                        color='text.secondary'
+                        fontSize={11}
+                        sx={{ whiteSpace: 'pre-line' }}
+                      >
+                        {`${t('taskList.createDate')}: ${new Date(task.createdAt).toLocaleString()}`}
+                      </Typography>
+
+                      {status === 'COMPLETED' && (
+                        <Typography
+                          sx={{
+                            fontWeight: 800,
+                            fontSize: 11,
+                            color: 'success.main'
+                          }}
+                        >
+                          {t('taskListCard.completed')}
+                        </Typography>
                       )}
                     </Box>
-                  </Grid>
-
-                  <Grid item xs={4} textAlign='center'>
-                    <Typography variant='caption' color='text.secondary'>
-                      {t('taskList.product')}
-                    </Typography>
-                    <Typography fontWeight='bold' fontSize={14}>
-                      {task.productCode}
-                    </Typography>
-                  </Grid>
-
-                  <Grid item xs={4} textAlign='center'>
-                    <Typography variant='caption' color='text.secondary'>
-                      {t('taskList.quantity')}
-                    </Typography>
-                    <Typography fontWeight='bold' fontSize={14}>
-                      {task.quantity || 'ALL'}
-                    </Typography>
-                  </Grid>
-
-                  <Grid item xs={4} textAlign='center'>
-                    <Typography variant='caption' color='text.secondary'>
-                      {t('taskList.targetBin')}
-                    </Typography>
-                    <Typography fontWeight='bold' fontSize={14}>
-                      {task.destinationBinCode || '--'}
-                    </Typography>
-                  </Grid>
-                </Grid>
-
-                <Divider sx={{ my: 1.5 }} />
-
-                <Box
-                  display='flex'
-                  justifyContent='space-between'
-                  alignItems='center'
-                >
-                  <Typography
-                    variant='caption'
-                    color='text.secondary'
-                    fontSize={12}
-                  >
-                    {t('taskList.createDate')}:{' '}
-                    {new Date(task.createdAt).toLocaleString()}
-                  </Typography>
-
-                  {status === 'COMPLETED' && (
-                    <Typography
-                      fontWeight='bold'
-                      fontSize={12}
-                      color='success.main'
-                    >
-                      {t('taskListCard.completed')}
-                    </Typography>
-                  )}
-                </Box>
-              </CardContent>
-            </Card>
-          ))
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </Box>
         )}
       </Box>
 

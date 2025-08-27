@@ -98,8 +98,12 @@ const Dashboard: React.FC = () => {
   const isPicker = userProfile.role === 'PICKER'
   const isTransportWorker = userProfile.role === 'TRANSPORT_WORKER'
   const [taskStatus, setTaskStatus] = useState(TaskCategoryEnum.PENDING)
+  const [pickerView, setPickerView] = useState<
+    'task' | 'archived' | 'inventory'
+  >('task')
   const navigate = useNavigate()
 
+  // —— Picker 视图 —— //
   if (isPicker) {
     return (
       <Box sx={{ height: '100vh', backgroundColor: '#F7F9FC' }}>
@@ -109,14 +113,18 @@ const Dashboard: React.FC = () => {
 
         <Box
           sx={{
-            paddingTop: `${TOPBAR_HEIGHT + 16}px`, // ✅ 初始有 16px 间距
+            paddingTop: `${TOPBAR_HEIGHT + 16}px`,
             paddingBottom: `${BOTTOMBAR_HEIGHT}px`,
             height: '100vh',
             overflowY: 'auto',
             WebkitOverflowScrolling: 'touch'
           }}
         >
-          <PickerCreatedTaskList status={taskStatus} />
+          {pickerView === 'inventory' ? (
+            <InventoryPage />
+          ) : (
+            <PickerCreatedTaskList status={taskStatus} />
+          )}
         </Box>
 
         <Box
@@ -131,18 +139,24 @@ const Dashboard: React.FC = () => {
           }}
         >
           <PickerBottombar
-            selectedView={
-              taskStatus === TaskCategoryEnum.PENDING ? 'task' : 'archived'
-            }
-            onTaskListClick={() => setTaskStatus(TaskCategoryEnum.PENDING)}
-            onArchivedClick={() => setTaskStatus(TaskCategoryEnum.COMPLETED)}
+            selectedView={pickerView}
+            onTaskListClick={() => {
+              setPickerView('task')
+              setTaskStatus(TaskCategoryEnum.PENDING)
+            }}
+            onArchivedClick={() => {
+              setPickerView('archived')
+              setTaskStatus(TaskCategoryEnum.COMPLETED)
+            }}
             onCreateTaskClick={() => navigate('/picker-scan-bin')}
+            onInventoryClick={() => setPickerView('inventory')}
           />
         </Box>
       </Box>
     )
   }
 
+  // —— Transport Worker 视图 —— //
   if (isTransportWorker) {
     return (
       <TransportWorkCartProvider>

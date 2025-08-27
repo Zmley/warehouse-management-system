@@ -156,7 +156,9 @@
   "pickerBottomBar": {
     "taskList": "任务列表",
     "createTask": "创建任务",
-    "archivedTask": "已完成任务"
+    "archivedTask": "已完成",
+        "inventory": "库存"
+
   },
   "createTask": {
     "title": "创建新任务",
