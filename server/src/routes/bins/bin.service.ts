@@ -134,16 +134,13 @@ export const getBins = async (
     const k = keyword.trim()
     const escaped = escapeLike(k)
 
-    // 同时匹配 binCode 和 defaultProductCodes
     Object.assign(where, {
       [Op.and]: [
-        { warehouseID }, // 再加一遍保证作用域
+        { warehouseID },
         ...(type ? [{ type }] : []),
         {
           [Op.or]: [
-            // binCode 仍然保持“前缀匹配”
             { binCode: { [Op.iLike]: `${escaped}%` } },
-            // 产品码在 CSV 字符串任意位置
             { defaultProductCodes: { [Op.iLike]: `%${escaped}%` } }
           ]
         }
@@ -306,7 +303,6 @@ import { Transaction, UniqueConstraintError } from 'sequelize'
 import { sequelize } from 'config/db'
 import { BinType } from 'constants/index'
 
-/** 单条更新入参 */
 export type UpdateBinInput = {
   binID: string
   binCode?: string
@@ -314,7 +310,6 @@ export type UpdateBinInput = {
   defaultProductCodes?: string | null
 }
 
-/** 批量更新返回 */
 export type UpdateBinsResult = {
   success: boolean
   updatedCount: number
@@ -325,20 +320,18 @@ export type UpdateBinsResult = {
   >
 }
 
-/** 内部：对已加载的实体做就地更新（可复用） */
 async function updateBinByEntity(
   bin: Bin,
   patch: Omit<UpdateBinInput, 'binID'>,
   t?: Transaction
 ): Promise<Bin> {
-  // 可选字段才更新
   if (typeof patch.binCode !== 'undefined') {
     bin.binCode = patch.binCode
   }
   if (typeof patch.type !== 'undefined') {
-    // 简单校验可选枚举
     if (!Object.values(BinType).includes(patch.type)) {
       const err = new Error('Invalid bin type')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ;(err as any).errorCode = 'INVALID_BIN_TYPE'
       throw err
     }
@@ -403,6 +396,7 @@ export async function updateBins(
       await t.commit()
       updatedCount++
       results.push({ binID: patch.binID, success: true, bin: updated })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       await t.rollback()
 
@@ -439,6 +433,7 @@ export async function updateBinByID(input: UpdateBinInput): Promise<Bin> {
   const bin = await Bin.findByPk(input.binID)
   if (!bin) {
     const err = new Error('Bin not found')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ;(err as any).errorCode = 'BIN_NOT_FOUND'
     throw err
   }
@@ -472,14 +467,6 @@ function normalizeCodes(codes?: string | null): string | null {
   return uniq.length ? uniq.join(',') : null
 }
 
-/**
- * 单条更新：支持 binCode / type / defaultProductCodes（部分字段可选）
- * 可能抛出：
- * - 404 BIN_NOT_FOUND
- * - 409 BIN_CODE_DUPLICATE
- * - 400 BIN_TYPE_INVALID
- * - 409 PRODUCT_CODE_ALREADY_ASSIGNED（当同仓库其它 bin 已含某产品码时）
- */
 export async function updateSingleBin(binID: string, payload: UpdateBinDto) {
   return sequelize.transaction(async (t: Transaction) => {
     const bin = await Bin.findByPk(binID, { transaction: t })
@@ -487,7 +474,6 @@ export async function updateSingleBin(binID: string, payload: UpdateBinDto) {
 
     const updates: Partial<Bin> = {}
 
-    // 1) binCode
     if ('binCode' in payload) {
       const newCode = payload.binCode?.trim()
       if (newCode && newCode !== bin.binCode) {
@@ -498,10 +484,8 @@ export async function updateSingleBin(binID: string, payload: UpdateBinDto) {
         if (dup) throw new AppError(409, 'BIN_CODE_DUPLICATE')
         updates.binCode = newCode
       }
-      // 如果传入的是空字符串，等同不改；不做清空 binCode 的行为
     }
 
-    // 2) type
     if ('type' in payload) {
       const newType = payload.type
       if (newType && !Object.values(BinType).includes(newType)) {
@@ -523,7 +507,6 @@ export async function updateSingleBin(binID: string, payload: UpdateBinDto) {
             where: {
               binID: { [Op.ne]: binID },
               warehouseID: bin.warehouseID,
-              // 简单 like，与你现有日志里的行为一致
               defaultProductCodes: { [Op.iLike]: `%${code}%` }
             },
             transaction: t

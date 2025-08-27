@@ -181,7 +181,6 @@ export const updateBinsController = asyncHandler(
 
     const result = await binService.updateBins(updates)
 
-    // 所有成功
     if (result.failedCount === 0) {
       return res.status(httpStatus.OK).json({
         success: true,
@@ -191,7 +190,6 @@ export const updateBinsController = asyncHandler(
       })
     }
 
-    // 部分成功 — 207 Multi-Status（前端可根据 results 逐条提示）
     if (result.updatedCount > 0 && result.failedCount > 0) {
       return res.status(httpStatus.MULTI_STATUS).json({
         success: false,
@@ -202,7 +200,6 @@ export const updateBinsController = asyncHandler(
       })
     }
 
-    // 全部失败
     return res.status(httpStatus.BAD_REQUEST).json({
       success: false,
       errorCode: 'UPDATE_FAILED',
