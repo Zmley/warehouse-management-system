@@ -17,10 +17,10 @@ import {
 import Autocomplete from '@mui/material/Autocomplete'
 import { useTheme } from '@mui/material/styles'
 import SearchIcon from '@mui/icons-material/Search'
-import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner'
 import CloseIcon from '@mui/icons-material/Close'
 import ClearIcon from '@mui/icons-material/Clear'
-import QrCode2Icon from '@mui/icons-material/QrCode2'
+import ViewWeekIcon from '@mui/icons-material/ViewWeek'
+import DocumentScannerIcon from '@mui/icons-material/DocumentScanner'
 import { useProduct } from 'hooks/useProduct'
 import { ProductType } from 'types/product'
 import ProductCard from './ProductCard'
@@ -37,7 +37,7 @@ declare global {
   }
 }
 
-const QueryProductInline: React.FC = () => {
+const SearchProduct: React.FC = () => {
   const { t } = useTranslation()
   const { fetchProduct, fetchProductCodes, productCodes } = useProduct()
 
@@ -220,7 +220,6 @@ const QueryProductInline: React.FC = () => {
           overflow: 'hidden'
         }}
       >
-        {/* 标题条（紧凑） */}
         <Box
           sx={{
             display: 'flex',
@@ -232,13 +231,12 @@ const QueryProductInline: React.FC = () => {
             bgcolor: '#fff'
           }}
         >
-          <QrCode2Icon fontSize='small' />
+          <ViewWeekIcon fontSize='small' />
           <Typography variant='subtitle1' fontWeight={800}>
             {t('queryProduct.title')}
           </Typography>
         </Box>
 
-        {/* 输入/扫码区（学习 CreateTask 的卡片样式，保持紧凑） */}
         <CardContent sx={{ p: { xs: 1.25, sm: 2 }, pb: 1 }}>
           <Paper
             variant='outlined'
@@ -313,7 +311,7 @@ const QueryProductInline: React.FC = () => {
                           spacing={0.5}
                           sx={{ pl: 1 }}
                         >
-                          <QrCode2Icon fontSize='small' />
+                          <ViewWeekIcon fontSize='small' />
                           {params.InputProps.startAdornment}
                         </Stack>
                       ),
@@ -368,7 +366,11 @@ const QueryProductInline: React.FC = () => {
                 {!showScanner ? (
                   <Button
                     variant='outlined'
-                    startIcon={<QrCodeScannerIcon />}
+                    startIcon={
+                      <DocumentScannerIcon
+                        sx={{ transform: 'rotate(90deg)' }}
+                      />
+                    }
                     onClick={handleOpenScanner}
                     disabled={loading}
                     fullWidth={isXs}
@@ -393,7 +395,6 @@ const QueryProductInline: React.FC = () => {
               </Stack>
             </Stack>
 
-            {/* 扫码预览（紧凑边框） */}
             {showScanner && (
               <Box
                 className='query-product-inline-scanner'
@@ -411,7 +412,6 @@ const QueryProductInline: React.FC = () => {
           </Paper>
         </CardContent>
 
-        {/* 结果区（保持紧凑） */}
         <CardContent
           sx={{
             pt: 0,
@@ -446,13 +446,12 @@ const QueryProductInline: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* 提示 */}
       <Snackbar
         open={snackOpen}
         autoHideDuration={2500}
         onClose={() => setSnackOpen(false)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        sx={{ mb: 'env(safe-area-inset-bottom)' }}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        sx={{ mt: 'env(safe-area-inset-top)' }}
       >
         {error ? (
           <Alert
@@ -476,4 +475,4 @@ const QueryProductInline: React.FC = () => {
   )
 }
 
-export default QueryProductInline
+export default SearchProduct

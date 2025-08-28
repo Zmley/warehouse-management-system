@@ -12,7 +12,7 @@ import { useCart } from 'hooks/useCart'
 import Cart from 'pages/TransportWorker/Cart'
 import InventoryPage from 'pages/TransportWorker/Inventory'
 import { useLocation, useNavigate } from 'react-router-dom'
-import QueryProductInline from 'pages/Picker/QueryProductInline'
+import QueryProductInline from 'pages/Picker/SearchProduct'
 
 const TOPBAR_HEIGHT = 64
 const BOTTOMBAR_HEIGHT = 64
