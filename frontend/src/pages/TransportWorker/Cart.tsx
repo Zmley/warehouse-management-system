@@ -162,7 +162,6 @@ const Cart = () => {
           }}
         >
           <CardContent>
-            {/* ✅ 这里给 InventoryListCard 传递 onReturnClick */}
             <InventoryListCard
               taskType='Worker Self Performance'
               inventories={inventoriesInCart}
@@ -270,7 +269,6 @@ const Cart = () => {
         </Card>
       </Box>
 
-      {/* ✅ 卸货确认 Drawer */}
       <Drawer
         anchor='bottom'
         open={confirmUnloadDrawer}
@@ -304,7 +302,6 @@ const Cart = () => {
         </Button>
       </Drawer>
 
-      {/* ✅ 退回确认 Drawer */}
       <Drawer
         anchor='bottom'
         open={confirmReturnDrawer}
@@ -323,9 +320,6 @@ const Cart = () => {
             ? t('cart.confirmReturnToSource')
             : t('cart.confirmReturnToEmptyCart')}
         </Typography>
-        {/* <Typography textAlign='center' mb={2} fontSize={18}>
-          {getSourceBinCode()}
-        </Typography> */}
 
         <Typography textAlign='center' mb={2} fontSize={18}>
           {getSourceBinCode() === 'staging-area'
@@ -343,7 +337,7 @@ const Cart = () => {
             setConfirmReturnDrawer(false)
           }}
         >
-          确认退回
+          Confirm
         </Button>
       </Drawer>
     </Box>

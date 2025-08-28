@@ -28,7 +28,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           '&:last-child': { pb: 1 }
         }}
       >
-        {/* 顶部：主信息一行（尽量少占高） */}
         <Stack
           direction='row'
           alignItems='center'
@@ -95,7 +94,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             </Typography>
           </Stack>
 
-          {/* 如果需要把 binCode 再列出来（除顶部 Chip 外），可保留此行；不需要可删掉 */}
           {product.binCode && (
             <Stack direction='row' spacing={0.75}>
               <Typography
