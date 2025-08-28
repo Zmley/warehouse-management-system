@@ -1,33 +1,47 @@
 // pages/CreateTask.tsx
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import {
   Box,
-  Button,
-  Container,
   Typography,
   Card,
-  Paper,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
-  CircularProgress
+  CardContent,
+  Button,
+  Chip,
+  Stack,
+  Divider,
+  CircularProgress,
+  useMediaQuery,
+  Paper
 } from '@mui/material'
+import { useTheme } from '@mui/material/styles'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { usePickerTasks } from 'hooks/usePickerTask'
 import { useBin } from 'hooks/useBin'
 import { Bin } from 'types/bin'
 import { useTranslation } from 'react-i18next'
-import { CREATE_TASK_ERROR_CODE } from 'utils/errorCodes' // ← 新增
+import { CREATE_TASK_ERROR_CODE } from 'utils/errorCodes'
 
-const CreateTask = () => {
+const BORDER = '#e5e7eb'
+const PRIMARY = '#2563eb'
+const DANGER_BG = '#fff7f7'
+const SECTION_BG = '#f9fafb'
+
+const CreateTask: React.FC = () => {
   const { t } = useTranslation()
+  const theme = useTheme()
+  const isSmUp = useMediaQuery(theme.breakpoints.up('sm'))
   const navigate = useNavigate()
   const location = useLocation()
   const bin: Bin = location.state?.bin
 
-  const productOptions = bin?.defaultProductCodes?.split(',') || []
-  const [productCode, setProductCode] = useState(productOptions[0] || '')
+  const productOptions = (bin?.defaultProductCodes || '')
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean)
 
+  const [productCode, setProductCode] = useState<string>(
+    productOptions[0] || ''
+  )
   const [sourceBins, setSourceBins] = useState<
     { binCode: string; quantity: number }[]
   >([])
@@ -36,181 +50,280 @@ const CreateTask = () => {
   const { createTask, isLoading, error } = usePickerTasks()
   const { fetchBinCodesByProductCode } = useBin()
 
-  // 把 error(string|null) 安全映射到 i18n key
   const getCreateTaskErrorKey = (code: string | null) =>
     code
       ? CREATE_TASK_ERROR_CODE[code] || 'createTask.error.unknown'
       : 'createTask.error.unknown'
 
   useEffect(() => {
-    const getSources = async () => {
-      if (productCode) {
-        try {
-          const response = await fetchBinCodesByProductCode(productCode)
-          setSourceBins(response)
-          setSourceError(response.length === 0)
-        } catch (err) {
-          console.error('❌ Failed to fetch source bins:', err)
-          setSourceBins([])
-          setSourceError(true)
-        }
+    const run = async () => {
+      if (!productCode) {
+        setSourceBins([])
+        setSourceError(false)
+        return
+      }
+      try {
+        const res = await fetchBinCodesByProductCode(productCode)
+        setSourceBins(res || [])
+        setSourceError(!res || res.length === 0)
+      } catch {
+        setSourceBins([])
+        setSourceError(true)
       }
     }
-    getSources()
+    run()
   }, [productCode, fetchBinCodesByProductCode])
 
   const handleSubmit = async () => {
     if (!productCode || !bin?.binCode) return
-
-    const res = await createTask(bin.binCode, productCode)
-    if (res) navigate('/success')
+    const ok = await createTask(bin.binCode, productCode)
+    if (ok) navigate('/success')
   }
+
+  const productButtonSx = (active: boolean) => ({
+    px: 2,
+    height: 48,
+    borderRadius: '999px',
+    border: `1.5px solid ${active ? PRIMARY : BORDER}`,
+    bgcolor: active ? '#f4f7ff' : '#fff',
+    color: '#111827',
+    fontWeight: 800,
+    letterSpacing: 0.2,
+    textTransform: 'none' as const,
+    boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+    '&:active': { transform: 'scale(0.995)' }
+  })
+
+  const productWrap = useMemo(
+    () => (
+      <Stack direction='row' gap={1} flexWrap='wrap'>
+        {productOptions.length ? (
+          productOptions.map(code => {
+            const active = code === productCode
+            return (
+              <Button
+                key={code}
+                variant='contained'
+                onClick={() => setProductCode(code)}
+                sx={productButtonSx(active)}
+              >
+                {code}
+              </Button>
+            )
+          })
+        ) : (
+          <Typography color='text.secondary'>--</Typography>
+        )}
+      </Stack>
+    ),
+    [productOptions, productCode]
+  )
 
   return (
     <Box
       sx={{
-        minHeight: '100vh',
-        background: 'linear-gradient(to right, #e0f7fa, #f1f8e9)',
+        minHeight: '100dvh',
+        bgcolor: '#fafafa',
         display: 'flex',
         justifyContent: 'center',
-        alignItems: 'center',
-        py: 4
+        p: { xs: 1, sm: 2 }
       }}
     >
-      <Container maxWidth='sm'>
-        <Card
-          elevation={6}
-          sx={{
-            p: 4,
-            borderRadius: 5,
-            backgroundColor: 'white',
-            boxShadow: '0 10px 20px #00000014'
-          }}
-        >
+      <Card
+        elevation={0}
+        sx={{
+          width: '100%',
+          maxWidth: 880,
+          borderRadius: 3,
+          border: `1px solid ${BORDER}`,
+          background: '#fff',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden'
+        }}
+      >
+        <CardContent sx={{ p: { xs: 1.25, sm: 2 } }}>
+          {/* 标题 */}
           <Typography
-            variant='h5'
-            fontWeight='bold'
-            gutterBottom
-            align='center'
+            variant='h6'
+            sx={{ fontWeight: 800, color: '#111827', mb: 1 }}
           >
             {t('createTask.title')}
           </Typography>
 
-          {/* ✅ Target Bin */}
-          <Box
-            display='flex'
-            justifyContent='space-between'
-            alignItems='center'
-            my={2}
+          {/* 目标货位 */}
+          <Paper
+            variant='outlined'
+            sx={{
+              p: { xs: 1, sm: 1.25 },
+              borderRadius: 2,
+              borderColor: BORDER,
+              background: SECTION_BG,
+              display: 'grid',
+              gridTemplateColumns: isSmUp ? '160px 1fr' : '1fr',
+              gap: 1,
+              mb: 1.25
+            }}
           >
-            <Typography fontWeight='bold'>
+            <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: 0.5 }}>
               {t('createTask.targetBin')}
             </Typography>
-            <Paper
-              variant='outlined'
+            <Chip
+              label={bin?.binCode || '--'}
               sx={{
-                px: 2,
-                py: 0.5,
-                backgroundColor: '#fff3e0',
-                borderRadius: 2
+                height: 28,
+                borderRadius: '999px',
+                fontWeight: 800,
+                bgcolor: '#fff',
+                border: `1.5px solid ${BORDER}`,
+                color: '#111827'
               }}
-            >
-              <Typography fontWeight='bold'>{bin?.binCode || '-'}</Typography>
-            </Paper>
-          </Box>
+            />
+          </Paper>
 
-          {/* ✅ Product Code */}
-          <Box my={2}>
-            <Typography fontWeight='bold' gutterBottom>
+          <Divider sx={{ my: 1, borderColor: BORDER }} />
+
+          {/* 产品编码 */}
+          <Box
+            sx={{
+              p: { xs: 1, sm: 1.25 },
+              borderRadius: 2,
+              border: `1px solid ${BORDER}`,
+              background: SECTION_BG,
+              mb: 1.25
+            }}
+          >
+            <Typography
+              sx={{ fontSize: 12, color: 'text.secondary', mb: 1, ml: 0.5 }}
+            >
               {t('createTask.productCode')}
             </Typography>
-            {productOptions.length > 1 ? (
-              <RadioGroup
-                value={productCode}
-                onChange={e => setProductCode(e.target.value)}
-                sx={{ pl: 1 }}
-              >
-                {productOptions.map(code => (
-                  <FormControlLabel
-                    key={code}
-                    value={code}
-                    control={<Radio />}
-                    label={code}
-                    sx={{ '& .MuiFormControlLabel-label': { fontWeight: 500 } }}
-                  />
-                ))}
-              </RadioGroup>
-            ) : (
-              <Paper
-                variant='outlined'
+            {productWrap}
+          </Box>
+
+          {/* 来源货位 */}
+          <Box
+            sx={{
+              p: { xs: 1, sm: 1.25 },
+              borderRadius: 2,
+              border: `1px solid ${BORDER}`,
+              background: sourceError ? DANGER_BG : SECTION_BG
+            }}
+          >
+            <Stack
+              direction='row'
+              alignItems='center'
+              spacing={1}
+              sx={{ mb: 1 }}
+            >
+              <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
+                {t('createTask.sourceBins')}
+              </Typography>
+              {isLoading && <CircularProgress size={16} thickness={5} />}
+              {sourceError && !isLoading && (
+                <Typography
+                  sx={{ fontSize: 12, color: '#b91c1c', fontWeight: 700 }}
+                >
+                  {t('createTask.noMatchingBins')}
+                </Typography>
+              )}
+            </Stack>
+
+            {!isLoading && !sourceError && (
+              <Box
                 sx={{
-                  px: 2,
-                  py: 0.5,
-                  backgroundColor: '#e3f2fd',
-                  borderRadius: 2,
-                  display: 'inline-block'
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: 0.5
                 }}
               >
-                <Typography fontWeight='bold'>{productCode}</Typography>
-              </Paper>
+                {sourceBins.length ? (
+                  sourceBins.map(({ binCode, quantity }) => (
+                    <Chip
+                      key={binCode}
+                      label={`${binCode} · ${t('createTask.qty')}: ${quantity}`}
+                      size='small'
+                      sx={{
+                        height: 24,
+                        borderRadius: '999px',
+                        bgcolor: '#fff',
+                        border: `1px solid ${BORDER}`,
+                        fontSize: 11,
+                        fontWeight: 700,
+                        color: '#111827'
+                      }}
+                    />
+                  ))
+                ) : (
+                  <Typography color='text.secondary' fontSize={12}>
+                    -
+                  </Typography>
+                )}
+              </Box>
             )}
           </Box>
 
-          {/* ✅ Source Bins */}
-          <Box
-            display='flex'
-            justifyContent='space-between'
-            alignItems='flex-start'
-            my={2}
-          >
-            <Typography fontWeight='bold' sx={{ mt: 0.5 }}>
-              {t('createTask.sourceBins')}
-            </Typography>
-            <Paper
-              variant='outlined'
-              sx={{
-                px: 2,
-                py: 1,
-                backgroundColor: sourceError ? '#ffcdd2' : '#f0f4c3',
-                borderRadius: 2,
-                minWidth: '180px'
-              }}
+          {/* 错误提示 */}
+          {error && (
+            <Typography
+              color='error'
+              fontWeight={700}
+              textAlign='center'
+              sx={{ mt: 1 }}
             >
-              {isLoading ? (
-                <Box display='flex' justifyContent='center'>
-                  <CircularProgress size={20} />
-                </Box>
-              ) : sourceError ? (
-                <Typography fontWeight='bold'>
-                  {t('createTask.noMatchingBins')}
-                </Typography>
-              ) : sourceBins.length ? (
-                <Box>
-                  {sourceBins.map(({ binCode, quantity }) => (
-                    <Typography key={binCode} fontSize={14}>
-                      {binCode} ({t('createTask.qty')}: {quantity})
-                    </Typography>
-                  ))}
-                </Box>
-              ) : (
-                <Typography>-</Typography>
-              )}
-            </Paper>
-          </Box>
+              {t(getCreateTaskErrorKey(error))}
+            </Typography>
+          )}
+        </CardContent>
 
-          {/* ✅ Create Button */}
+        {/* 底部按钮 */}
+        <Box
+          sx={{
+            position: 'sticky',
+            bottom: 0,
+            px: { xs: 1.25, sm: 2 },
+            py: 1.25,
+            borderTop: `1px solid ${BORDER}`,
+            bgcolor: '#fff',
+            display: 'flex',
+            gap: 1,
+            flexWrap: isSmUp ? 'nowrap' : 'wrap'
+          }}
+        >
+          <Button
+            variant='outlined'
+            color='inherit'
+            onClick={() => navigate('/')}
+            sx={{
+              borderRadius: 14,
+              textTransform: 'none',
+              fontWeight: 800,
+              fontSize: 16,
+              height: 64,
+              px: 3,
+              flex: isSmUp ? '0 0 240px' : '1 1 100%',
+              borderColor: BORDER
+            }}
+          >
+            {t('createTask.cancel')}
+          </Button>
+
           <Button
             variant='contained'
-            color='primary'
-            fullWidth
-            disabled={!productCode || isLoading}
             onClick={handleSubmit}
+            disabled={!productCode || isLoading}
             sx={{
-              borderRadius: '12px',
+              borderRadius: 14,
               textTransform: 'none',
-              fontWeight: 'bold',
-              py: 1,
-              mb: 2
+              fontWeight: 800,
+              fontSize: 16,
+              height: 64,
+              px: 3,
+              flex: '1 1 auto',
+              bgcolor: PRIMARY,
+              '&:hover': { bgcolor: '#1e4fd6' },
+              boxShadow: '0 6px 12px rgba(0,0,0,0.10)'
             }}
           >
             {isLoading
@@ -219,35 +332,8 @@ const CreateTask = () => {
                 ? t('createTask.outOfStock')
                 : t('createTask.create')}
           </Button>
-
-          <Button
-            variant='outlined'
-            color='error'
-            fullWidth
-            onClick={() => navigate('/')}
-            sx={{
-              borderWidth: 2,
-              borderRadius: '12px',
-              textTransform: 'none',
-              fontWeight: 'bold',
-              py: 1
-            }}
-          >
-            ❌ {t('createTask.cancel')}
-          </Button>
-
-          {error && (
-            <Typography
-              color='error'
-              fontWeight='bold'
-              textAlign='center'
-              mb={2}
-            >
-              {t(getCreateTaskErrorKey(error))}
-            </Typography>
-          )}
-        </Card>
-      </Container>
+        </Box>
+      </Card>
     </Box>
   )
 }

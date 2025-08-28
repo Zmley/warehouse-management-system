@@ -13,7 +13,8 @@
     "cart": "叉车",
     "publish": "发布任务",
     "inventory": "库存",
-    "completed": "已完成"
+    "completed": "已完成",
+    "query": "查询产品"
   },
   "taskList": {
     "pullToRefresh": "↓ 下拉刷新任务",
@@ -157,7 +158,10 @@
     "taskList": "任务列表",
     "createTask": "创建任务",
     "archivedTask": "已完成",
-        "inventory": "库存"
+        "inventory": "库存",
+
+                "queryProduct": "查询产品"
+
 
   },
   "createTask": {
@@ -230,5 +234,28 @@
   },
   "common": {
     "qty": "数量 {{qty}}"
+  },
+
+
+   "queryProduct": {
+    "title": "查询产品",
+    "helper": "输入产品条码或代码（Ctrl/⌘+K 聚焦输入，Esc 关闭相机）",
+    "helperMobile": "输入条码/代码 · 支持扫码",
+    "inputLabel": "产品条码 / 代码",
+    "inputPlaceholder": "输入或扫码",
+    "searchBtn": "查询",
+    "searching": "查询中…",
+    "scanBtn": "扫码",
+    "closeScannerBtn": "关闭相机",
+    "emptyText": "输入或扫描产品条码，即可查看产品信息与所在库位。",
+    "notFound": "未找到该产品",
+    "errorInit": "无法初始化相机/扫码。请检查浏览器权限或许可证。",
+    "errorEmpty": "请输入或扫描条码",
+    "errorQuery": "查询失败",
+    "success": "查询成功",
+    "fromScan": "来自扫码",
+    "fromSuggest": "来自联想",
+    "fromManual": "手动输入",
+    "help": "帮助"
   }
 }

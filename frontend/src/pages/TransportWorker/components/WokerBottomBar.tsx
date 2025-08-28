@@ -3,6 +3,7 @@ import { Box, Typography } from '@mui/material'
 import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined'
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined'
 import AddIcon from '@mui/icons-material/Add'
+import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined'
 import { useTranslation } from 'react-i18next'
 
 interface BottomBarProps {
@@ -10,7 +11,8 @@ interface BottomBarProps {
   onTaskListClick: () => void
   onPublishClick: () => void
   onInventoryClick: () => void
-  activeTab: 'tasks' | 'publish' | 'cart' | 'inventory'
+  onQueryClick: () => void
+  activeTab: 'tasks' | 'publish' | 'cart' | 'inventory' | 'query'
 }
 
 const WokerBottomBar: React.FC<BottomBarProps> = ({
@@ -18,6 +20,7 @@ const WokerBottomBar: React.FC<BottomBarProps> = ({
   onTaskListClick,
   onPublishClick,
   onInventoryClick,
+  onQueryClick,
   activeTab
 }) => {
   const { t } = useTranslation()
@@ -53,6 +56,16 @@ const WokerBottomBar: React.FC<BottomBarProps> = ({
         label={t('bottombar.tasks')}
         onClick={onTaskListClick}
         isActive={activeTab === 'tasks'}
+      />
+
+      {/* Query (产品查询) —— 新增 */}
+      <BottomBarItem
+        icon={
+          <SearchOutlinedIcon sx={{ fontSize: 22, color: getColor('query') }} />
+        }
+        label={t('bottombar.query')}
+        onClick={onQueryClick}
+        isActive={activeTab === 'query'}
       />
 
       {/* Publish */}
@@ -131,9 +144,7 @@ const BottomBarItem: React.FC<{
       height: '100%',
       backgroundColor: isActive ? '#f0f9ff' : 'transparent',
       transition: 'background-color 0.3s ease-in-out',
-      '&:hover': {
-        backgroundColor: '#f3f4f6'
-      }
+      '&:hover': { backgroundColor: '#f3f4f6' }
     }}
   >
     <Box

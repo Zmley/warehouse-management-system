@@ -13,7 +13,8 @@
     "cart": "ForkLift",
     "publish": "Publish Task",
     "inventory": "inventory",
-    "completed": "completed"
+    "completed": "completed",
+    "query": "Search"
   },
   "taskList": {
     "pullToRefresh": "↓ Pull down to refresh tasks",
@@ -156,8 +157,9 @@
   "pickerBottomBar": {
     "taskList": "Task List",
     "createTask": "Create Task",
-    "archivedTask": "Archived Task",
-        "inventory": "Inventory"
+    "archivedTask": "Archived",
+        "inventory": "Inventory",
+        "queryProduct": "Product"
 
   },
   "createTask": {
@@ -231,5 +233,27 @@
   },
   "common": {
     "qty": "Qty {{qty}}"
+  },
+
+    "queryProduct": {
+    "title": "Search Product",
+    "helper": "Enter product barcode or code (Ctrl/⌘+K focus, Esc close scanner)",
+    "helperMobile": "Enter barcode/code · Support scan",
+    "inputLabel": "Product Barcode / Code",
+    "inputPlaceholder": "Enter or Scan",
+    "searchBtn": "Search",
+    "searching": "Searching…",
+    "scanBtn": "Scan",
+    "closeScannerBtn": "Close Scanner",
+    "emptyText": "Enter or scan a product code to view details and bin location.",
+    "notFound": "Product not found",
+    "errorInit": "Failed to initialize camera/scanner. Please check browser permission or license.",
+    "errorEmpty": "Please input or scan a barcode",
+    "errorQuery": "Query failed",
+    "success": "Query successful",
+    "fromScan": "From Scan",
+    "fromSuggest": "From Suggestion",
+    "fromManual": "From Manual Input",
+    "help": "Help"
   }
 }

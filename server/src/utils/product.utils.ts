@@ -3,7 +3,6 @@ import { Op } from 'sequelize'
 import { ProductUploadInput } from 'types/product'
 import Product from 'routes/products/product.model'
 import AppError from './appError'
-//
 
 export const getOffset = (page: number, limit: number): number => {
   return (page - 1) * limit

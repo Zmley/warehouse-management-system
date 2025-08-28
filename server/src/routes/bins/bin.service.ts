@@ -91,33 +91,6 @@ export const getBinCodesInWarehouse = async (
 
 const escapeLike = (s: string) => s.replace(/([\\%_])/g, '\\$1')
 
-// export const getBins = async (
-//   warehouseID: string,
-//   page: number,
-//   limit: number,
-//   type?: string,
-//   keyword?: string
-// ) => {
-//   const offset = (page - 1) * limit
-
-//   const where: WhereOptions = { warehouseID }
-//   if (type) where.type = type
-
-//   if (keyword && keyword.trim() !== '') {
-//     const escaped = escapeLike(keyword.trim())
-//     where.binCode = { [Op.iLike]: `${escaped}%` }
-//   }
-
-//   const { rows, count } = await Bin.findAndCountAll({
-//     where,
-//     limit,
-//     offset,
-//     order: [['binCode', 'ASC']]
-//   })
-
-//   return { data: rows, total: count }
-// }
-
 export const getBins = async (
   warehouseID: string,
   page: number,
@@ -297,8 +270,6 @@ export const deleteBinByBInID = async (binID: string): Promise<boolean> => {
   return result > 0
 }
 
-///////////////////////////////////////////////////////
-
 import { Transaction, UniqueConstraintError } from 'sequelize'
 import { sequelize } from 'config/db'
 import { BinType } from 'constants/index'
@@ -448,15 +419,12 @@ export async function updateBinByID(input: UpdateBinInput): Promise<Bin> {
   )
 }
 
-/////////////////////////////
-
 export type UpdateBinDto = {
   binCode?: string
   type?: BinType
   defaultProductCodes?: string | null
 }
 
-/** 规范化 defaultProductCodes：去空格/空值/去重，最终为空时返回 null */
 function normalizeCodes(codes?: string | null): string | null {
   if (codes == null) return null
   const arr = String(codes)
@@ -494,12 +462,10 @@ export async function updateSingleBin(binID: string, payload: UpdateBinDto) {
       if (newType) updates.type = newType
     }
 
-    // 3) defaultProductCodes
     if ('defaultProductCodes' in payload) {
       const normalized = normalizeCodes(payload.defaultProductCodes ?? null)
       updates.defaultProductCodes = normalized
 
-      // 可选：避免同仓库其它 bin（不含自己）也包含同样的产品码
       if (normalized) {
         const codes = normalized.split(',')
         for (const code of codes) {

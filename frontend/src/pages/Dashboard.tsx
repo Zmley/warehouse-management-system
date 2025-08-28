@@ -12,11 +12,11 @@ import { useCart } from 'hooks/useCart'
 import Cart from 'pages/TransportWorker/Cart'
 import InventoryPage from 'pages/TransportWorker/Inventory'
 import { useLocation, useNavigate } from 'react-router-dom'
+import QueryProductInline from 'pages/Picker/QueryProductInline'
 
 const TOPBAR_HEIGHT = 64
 const BOTTOMBAR_HEIGHT = 64
 
-// ✅ 顶部固定 TopBar
 const TopBarFixed = ({ userName }: { userName: string }) => (
   <Box
     sx={{
@@ -33,6 +33,25 @@ const TopBarFixed = ({ userName }: { userName: string }) => (
   </Box>
 )
 
+const ContentShell: React.FC<{
+  topPad?: number
+  children: React.ReactNode
+}> = ({ topPad = 16, children }) => (
+  <Box
+    sx={{
+      position: 'relative',
+      height: `calc(100dvh - ${TOPBAR_HEIGHT + topPad}px - ${BOTTOMBAR_HEIGHT}px)`,
+      mt: `${TOPBAR_HEIGHT + topPad}px`,
+      mb: `${BOTTOMBAR_HEIGHT}px`,
+      overflow: 'hidden',
+      display: 'flex',
+      flexDirection: 'column'
+    }}
+  >
+    {children}
+  </Box>
+)
+
 const TransportWorkerContent: React.FC<{ userName: string }> = ({
   userName
 }) => {
@@ -43,33 +62,53 @@ const TransportWorkerContent: React.FC<{ userName: string }> = ({
   const defaultView =
     location.state?.view === 'cart' ? 'cart' : isCartEmpty ? 'tasks' : 'cart'
 
-  const [view, setView] = useState<'cart' | 'tasks' | 'inventory'>(defaultView)
+  const [view, setView] = useState<'cart' | 'tasks' | 'inventory' | 'query'>(
+    defaultView
+  )
 
   useEffect(() => {
-    if (!isCartEmpty) {
-      setView('cart')
-    }
+    if (!isCartEmpty) setView('cart')
   }, [isCartEmpty])
 
   return (
-    <Box sx={{ height: '100vh', backgroundColor: '#F7F9FC' }}>
+    <Box sx={{ height: '100dvh', backgroundColor: '#F7F9FC' }}>
       <TopBarFixed userName={userName} />
 
-      <Box
-        sx={{
-          paddingTop: `${TOPBAR_HEIGHT + 4}px`,
-          paddingBottom: `${BOTTOMBAR_HEIGHT}px`,
-          height: '100vh',
-          overflowY: 'auto',
-          WebkitOverflowScrolling: 'touch'
-        }}
-      >
-        {view === 'cart' && <Cart />}
-        {view === 'tasks' && <PendingTaskList setView={setView} />}
-        {view === 'inventory' && <InventoryPage />}
-      </Box>
+      <ContentShell topPad={4}>
+        {view === 'cart' && (
+          <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+            <Cart />
+          </Box>
+        )}
 
-      {/* ✅ 底部固定条 */}
+        {view === 'tasks' && (
+          <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+            <PendingTaskList setView={setView as any} />
+          </Box>
+        )}
+
+        {view === 'inventory' && (
+          <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+            <InventoryPage />
+          </Box>
+        )}
+
+        {/* ★ 新增：产品查询页 */}
+        {view === 'query' && (
+          <Box
+            sx={{
+              flex: 1,
+              minHeight: 0,
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column'
+            }}
+          >
+            <QueryProductInline />
+          </Box>
+        )}
+      </ContentShell>
+
       <Box
         sx={{
           position: 'fixed',
@@ -86,7 +125,8 @@ const TransportWorkerContent: React.FC<{ userName: string }> = ({
           onTaskListClick={() => setView('tasks')}
           onInventoryClick={() => setView('inventory')}
           onPublishClick={() => navigate('/picker-scan-bin')}
-          activeTab={view}
+          onQueryClick={() => setView('query')}
+          activeTab={view} //
         />
       </Box>
     </Box>
@@ -103,27 +143,47 @@ const Dashboard: React.FC = () => {
   >('task')
   const navigate = useNavigate()
 
-  // —— Picker 视图 —— //
   if (isPicker) {
     return (
-      <Box sx={{ height: '100vh', backgroundColor: '#F7F9FC' }}>
+      <Box sx={{ height: '100dvh', backgroundColor: '#F7F9FC' }}>
         <TopBarFixed
           userName={`${userProfile.firstName} ${userProfile.lastName}`}
         />
-
         <Box
           sx={{
-            paddingTop: `${TOPBAR_HEIGHT + 16}px`,
-            paddingBottom: `${BOTTOMBAR_HEIGHT}px`,
-            height: '100vh',
-            overflowY: 'auto',
-            WebkitOverflowScrolling: 'touch'
+            position: 'fixed',
+            top: `${TOPBAR_HEIGHT + 16}px`,
+            bottom: `${BOTTOMBAR_HEIGHT}px`,
+            left: 0,
+            right: 0,
+            overflow: 'hidden',
+            backgroundColor: '#F7F9FC',
+            display: 'flex',
+            flexDirection: 'column'
           }}
         >
           {pickerView === 'inventory' ? (
-            <InventoryPage />
+            <Box
+              sx={{
+                flex: 1,
+                minHeight: 0,
+                display: 'flex',
+                flexDirection: 'column'
+              }}
+            >
+              <QueryProductInline />
+            </Box>
           ) : (
-            <PickerCreatedTaskList status={taskStatus} />
+            <Box
+              sx={{
+                flex: 1,
+                minHeight: 0,
+                overflowY: 'auto',
+                WebkitOverflowScrolling: 'touch'
+              }}
+            >
+              <PickerCreatedTaskList status={taskStatus} />
+            </Box>
           )}
         </Box>
 
@@ -156,7 +216,6 @@ const Dashboard: React.FC = () => {
     )
   }
 
-  // —— Transport Worker 视图 —— //
   if (isTransportWorker) {
     return (
       <TransportWorkCartProvider>

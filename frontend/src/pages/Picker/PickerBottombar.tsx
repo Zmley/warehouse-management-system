@@ -6,14 +6,14 @@ import { useTranslation } from 'react-i18next'
 import AssignmentIcon from '@mui/icons-material/Assignment'
 import AddCircleIcon from '@mui/icons-material/AddCircle'
 import ArchiveIcon from '@mui/icons-material/Archive'
-import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined'
+import SearchIcon from '@mui/icons-material/Search'
 
 interface PickerBottomBarProps {
   selectedView: 'task' | 'archived' | 'inventory'
   onTaskListClick: () => void
   onCreateTaskClick: () => void
   onArchivedClick: () => void
-  onInventoryClick: () => void
+  onInventoryClick?: () => void
 }
 
 const PickerBottombar: React.FC<PickerBottomBarProps> = ({
@@ -57,8 +57,8 @@ const PickerBottombar: React.FC<PickerBottomBarProps> = ({
       />
 
       <BottomNavigationAction
-        label={t('pickerBottomBar.inventory')}
-        icon={<Inventory2OutlinedIcon />}
+        label={t('pickerBottomBar.queryProduct')}
+        icon={<SearchIcon />}
         value='inventory'
         onClick={onInventoryClick}
         sx={{ minWidth: '25%' }}

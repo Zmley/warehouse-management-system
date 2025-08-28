@@ -34,6 +34,14 @@ export const addProducts = asyncHandler(async (req: Request, res: Response) => {
 
 export const getProduct = asyncHandler(async (req: Request, res: Response) => {
   const barCode = req.query.barCode as string
-  const product = await productService.getProductByBarCode(barCode)
+  const productCode = (req.query.productCode as string) || barCode
+
+  let product
+  try {
+    product = await productService.getProductByBarCode(barCode)
+  } catch {
+    product = await productService.getProductByProductCode(productCode)
+  }
+
   res.status(200).json({ success: true, product })
 })

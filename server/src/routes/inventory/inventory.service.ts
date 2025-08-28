@@ -5,7 +5,6 @@ import { Op, WhereOptions, Order, col } from 'sequelize'
 import { InventoryUploadType } from 'types/inventory'
 import AppError from 'utils/appError'
 import { buildBinCodeToIDMap } from 'utils/bin.utils'
-// import { getExistingInventoryPairs } from 'utils/inventory.utils'
 
 export const getInventoriesByCartID = async (
   cartID: string
@@ -101,7 +100,6 @@ export const deleteByInventoryID = async (
   }
 }
 
-// services/inventoryService.ts
 export const updateByInventoryIDs = async (
   updates: {
     inventoryID: string
@@ -141,7 +139,6 @@ export const addInventories = async (inventoryList: InventoryUploadType[]) => {
     return { success: true, insertedCount: 0, updatedCount: 0 }
   }
 
-  // 仍然用 binCode -> binID 做映射
   const bins = await getBinsByBinCodes(inventoryList)
   const binCodeToBinID = buildBinCodeToIDMap(bins)
 
@@ -158,7 +155,6 @@ export const addInventories = async (inventoryList: InventoryUploadType[]) => {
 
         if (!binID) return
 
-        // 不再检查是否已存在，永远 create 一条新记录
         await Inventory.create({
           binID,
           productCode: cleanProductCode,

@@ -25,27 +25,6 @@ export const useTask = () => {
     }
   }
 
-  // const acceptTask = async (taskID: string): Promise<boolean> => {
-  //   setIsLoading(true)
-  //   setError(null)
-  //   try {
-  //     const res = await acceptTaskAPI(taskID)
-  //     if (res?.data.success && res?.data.task) {
-  //       return true
-  //     } else {
-  //       setError(res?.data.error || '❌ Failed to accept task.')
-  //       return false
-  //     }
-  //   } catch (err: any) {
-  //     const msg = err?.response?.data?.error || '❌ Failed to accept task'
-  //     setError(msg)
-  //     console.error('❌ Accept task failed:', err)
-  //     return false
-  //   } finally {
-  //     setIsLoading(false)
-  //   }
-  // }
-
   const acceptTask = async (taskID: string): Promise<boolean> => {
     setIsLoading(true)
     setError(null)

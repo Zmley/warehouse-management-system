@@ -53,8 +53,6 @@ router.patch(
 
 router.delete('/:binID', deleteBin)
 
-/////////////
-
 router.patch('/:binID', /* auth, */ updateBinController)
 
 export default router

@@ -93,8 +93,6 @@ export const useBin = () => {
     }
   }
 
-  ///////////////////////////////
-
   const fetchAvailableBinCodes = useCallback(
     async (
       productCode: string

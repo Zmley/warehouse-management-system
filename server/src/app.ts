@@ -22,10 +22,9 @@ const corsOrigins = [
 
 const corsOptions = {
   origin: corsOrigins,
-  //改pr 这些链接放到env里
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // The methods you want to allow
-  credentials: true, // This allows session cookies to be sent back and forth
-  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true,
+  optionsSuccessStatus: 200
 }
 
 setupAssociations()

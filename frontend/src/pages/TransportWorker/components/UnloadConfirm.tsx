@@ -263,7 +263,6 @@ const UnloadConfirm: React.FC<UnloadConfirmProps> = ({
     await submitUnload(finalItems)
   }
 
-  // ------- 样式 -------
   const panePaperSx = {
     p: 1,
     borderRadius: 2,
@@ -349,7 +348,6 @@ const UnloadConfirm: React.FC<UnloadConfirmProps> = ({
     )
   })
 
-  // ---------------- Render ----------------
   const Content = (
     <Box sx={{ p: frameless ? 0 : 0 }}>
       <Paper variant='outlined' sx={panePaperSx}>

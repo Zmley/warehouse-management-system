@@ -141,3 +141,37 @@ export const getProductByBarCode = async (barCode: string) => {
     binCode
   }
 }
+
+export const getProductByProductCode = async (productCode: string) => {
+  const product = await Product.findOne({
+    where: { productCode }
+  })
+
+  if (!product) {
+    throw new AppError(
+      404,
+      `❌ Product with productCode ${productCode} not found`
+    )
+  }
+
+  const candidateBins = await Bin.findAll({
+    where: {
+      defaultProductCodes: {
+        [Op.like]: `%${productCode}%`
+      }
+    },
+    attributes: ['binCode', 'defaultProductCodes']
+  })
+
+  const matchedBin = candidateBins.find(bin => {
+    const codes = bin.defaultProductCodes?.split(',').map(c => c.trim()) || []
+    return codes.includes(productCode)
+  })
+
+  const binCode = matchedBin?.binCode ?? null
+
+  return {
+    ...product.toJSON(),
+    binCode
+  }
+}
