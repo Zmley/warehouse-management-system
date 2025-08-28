@@ -28,53 +28,72 @@ export const getProductsByWarehouseID = async (
   const offset = getOffset(page, limit)
   const whereClause = buildProductWhereClause(keyword)
 
-  const { rows, count } = await Inventory.findAndCountAll({
-    attributes: [
-      'productCode',
-      [Sequelize.fn('SUM', Sequelize.col('quantity')), 'quantity']
-    ],
-    include: [
-      {
-        model: Bin,
-        as: 'bin',
-        attributes: [],
-        where: {
-          warehouseID,
-          type: {
-            [Op.in]: [BinType.INVENTORY]
-          }
-        }
-      },
-      {
-        model: Product,
-        as: 'product',
-        attributes: ['barCode', 'boxType', 'createdAt'],
-        where: whereClause
-      }
-    ],
-    group: [
-      'Inventory.productCode',
-      'product.barCode',
-      'product.boxType',
-      'product.createdAt'
-    ],
+  const { rows: prodRows, count } = await Product.findAndCountAll({
+    attributes: ['productCode', 'barCode', 'boxType', 'createdAt'],
+    where: whereClause,
     order: [['productCode', 'ASC']],
     offset,
-    limit,
-    raw: true
+    limit
   })
 
-  const products = rows.map(row => ({
-    productCode: row.productCode,
-    totalQuantity: row.quantity,
-    barCode: row['product.barCode'],
-    boxType: row['product.boxType'],
-    createdAt: row['product.createdAt']
+  type ProductPlain = {
+    productCode: string
+    barCode: string
+    boxType: string
+    createdAt: Date
+  }
+
+  const prodPlain: ProductPlain[] = prodRows.map(
+    r => r.get({ plain: true }) as ProductPlain
+  )
+  const productCodes: string[] = prodPlain.map(p => p.productCode)
+
+  type InvAgg = { productCode: string; quantity: string | number }
+
+  let quantityMap: Record<string, number> = Object.create(null)
+
+  if (productCodes.length > 0) {
+    const invRows = (await Inventory.findAll({
+      attributes: [
+        'productCode',
+        [Sequelize.fn('SUM', Sequelize.col('quantity')), 'quantity']
+      ],
+      where: {
+        productCode: { [Op.in]: productCodes }
+      },
+      include: [
+        {
+          model: Bin,
+          as: 'bin',
+          attributes: [],
+          required: true,
+          where: {
+            warehouseID,
+            type: { [Op.in]: [BinType.INVENTORY] }
+          }
+        }
+      ],
+      group: ['Inventory.productCode'],
+      raw: true
+    })) as InvAgg[]
+
+    quantityMap = invRows.reduce<Record<string, number>>((acc, r) => {
+      acc[r.productCode] = Number(r.quantity) || 0
+      return acc
+    }, Object.create(null))
+  }
+
+  const products = prodPlain.map(p => ({
+    productCode: p.productCode,
+    totalQuantity: quantityMap[p.productCode] ?? 0,
+    barCode: p.barCode,
+    boxType: p.boxType,
+    createdAt: p.createdAt
   }))
 
   return {
     products,
-    total: count.length
+    total: count
   }
 }
 
