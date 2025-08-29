@@ -337,7 +337,7 @@ const Cart = () => {
             setConfirmReturnDrawer(false)
           }}
         >
-          Confirm
+          {t('cart.confirm')}
         </Button>
       </Drawer>
     </Box>

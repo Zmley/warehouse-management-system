@@ -35,7 +35,6 @@ type FixedCartRow = {
 
 type PillOption = { value: string; label: string }
 
-/** 胶囊下拉（仅在可合并时出现） */
 const PillSelect = React.memo(function PillSelect({
   value,
   options,

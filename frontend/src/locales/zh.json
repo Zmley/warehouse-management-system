@@ -65,7 +65,8 @@
     "confirmReturnToSource": "确认退回到来源货位？",
     "confirmReturnToEmptyCart": "确认退回到 emptyCart（过道货）？",
 
-    "stagingArea": "暂存区"
+    "stagingArea": "暂存区",
+    "confirm": "确认"
   },
   "scan": {
     "scanBin": "扫描码",

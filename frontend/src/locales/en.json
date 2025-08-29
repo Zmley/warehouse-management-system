@@ -62,7 +62,8 @@
     "confirmReturnToSource": "Confirm return to source bin?",
     "confirmReturnToEmptyCart": "Confirm return to emptyCart (aisle goods)?",
 
-    "stagingArea": "staging-area"
+    "stagingArea": "staging-area",
+    "confirm": "Confirm"
   },
   "scan": {
     "scanBin": "Scan Code",
