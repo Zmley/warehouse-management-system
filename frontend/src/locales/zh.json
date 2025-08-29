@@ -108,10 +108,13 @@
   },
   "inventory": {
     "total": "叉车上总数",
-    "offload": "卸载数量",
+    "offload": "卸货数量",
     "quantityExceed": "数量不能超过库存总数 ({{quantity}})",
     "currentCargoInForklift": "叉车内货物",
-    "returnToSource": "退回来源货位"
+    "returnToSource": "退回来源货位",
+  "pickupBin": "捡货库位"
+
+
   },
   "addToCart": {
     "invalidQuantity": "❌ 无效的数量",

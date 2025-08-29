@@ -6,22 +6,61 @@ import { InventoryUploadType } from 'types/inventory'
 import AppError from 'utils/appError'
 import { buildBinCodeToIDMap } from 'utils/bin.utils'
 
+// export const getInventoriesByCartID = async (
+//   cartID: string
+// ): Promise<{
+//   hasProduct: boolean
+//   inventories: Inventory[]
+// }> => {
+//   const inventories = await Inventory.findAll({
+//     where: { binID: cartID }
+//   })
+
+//   const hasProduct = inventories.length > 0
+
+//   return {
+//     hasProduct,
+//     inventories
+//   }
+// }
+
 export const getInventoriesByCartID = async (
   cartID: string
 ): Promise<{
   hasProduct: boolean
-  inventories: Inventory[]
+  inventories: (Inventory & { pickupBinCode: string[] })[]
 }> => {
-  const inventories = await Inventory.findAll({
-    where: { binID: cartID }
+  const inventories = await Inventory.findAll({ where: { binID: cartID } })
+  if (!inventories.length) return { hasProduct: false, inventories: [] }
+
+  const productCodes = inventories.map(i => i.productCode)
+
+  const bins = await Bin.findAll({
+    where: {
+      [Op.or]: productCodes.map(c => ({
+        defaultProductCodes: { [Op.like]: `%${c}%` }
+      }))
+    },
+    attributes: ['binCode', 'defaultProductCodes']
   })
 
-  const hasProduct = inventories.length > 0
+  const productToBins = bins.reduce<Record<string, string[]>>((acc, bin) => {
+    const codes = (bin.defaultProductCodes || '').split(',').map(c => c.trim())
+    codes.forEach(code => {
+      if (productCodes.includes(code)) {
+        acc[code] = [...(acc[code] || []), bin.binCode]
+      }
+    })
+    return acc
+  }, {})
 
-  return {
-    hasProduct,
-    inventories
-  }
+  const inventoriesWithBins = inventories.map(inv =>
+    Object.assign(inv.get({ plain: true }), {
+      pickupBinCode: productToBins[inv.productCode] || []
+    })
+  )
+
+  return { hasProduct: true, inventories: inventoriesWithBins }
 }
 
 export const getInventoriesByWarehouseID = async (

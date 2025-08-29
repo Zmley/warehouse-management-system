@@ -111,7 +111,12 @@
     "quantityExceed": "Quantity cannot exceed total ({{quantity}})",
     "currentCargoInForklift": "current Cargo In Forklift",
 
-    "returnToSource": "Return to Source Bin"
+    "returnToSource": "Return to Source Bin",
+
+      "pickupBin": "Pickup Bin"
+
+
+
   },
   "addToCart": {
     "invalidQuantity": "❌ Invalid quantity",
