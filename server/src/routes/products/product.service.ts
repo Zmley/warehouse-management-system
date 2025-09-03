@@ -207,6 +207,18 @@ export const getLowStockProductsByWarehouseID = async (
   const offset = getOffset(page, limit)
   const whereClause = buildProductWhereClause(keyword)
 
+  const qty = Number(maxQty)
+  const qtyAgg = Sequelize.fn(
+    'COALESCE',
+    Sequelize.fn('SUM', Sequelize.col('inventories.quantity')),
+    0
+  )
+
+  const having =
+    qty === 0
+      ? Sequelize.where(qtyAgg, Op.eq, 0)
+      : Sequelize.where(qtyAgg, Op.lte, qty)
+
   const { rows, count } = await Product.findAndCountAll({
     attributes: [
       'productID',
@@ -214,14 +226,7 @@ export const getLowStockProductsByWarehouseID = async (
       'barCode',
       'boxType',
       'createdAt',
-      [
-        Sequelize.fn(
-          'COALESCE',
-          Sequelize.fn('SUM', Sequelize.col('inventories.quantity')),
-          0
-        ),
-        'totalQuantity'
-      ]
+      [qtyAgg, 'totalQuantity']
     ],
     where: whereClause,
     include: [
@@ -251,9 +256,7 @@ export const getLowStockProductsByWarehouseID = async (
       'Product.boxType',
       'Product.createdAt'
     ],
-    having: Sequelize.literal(
-      `COALESCE(SUM("inventories"."quantity"), 0) < ${Number(maxQty)}`
-    ),
+    having,
     order: [['productCode', 'ASC']],
     limit,
     offset,
@@ -263,7 +266,6 @@ export const getLowStockProductsByWarehouseID = async (
   const total = Array.isArray(count) ? count.length : (count as number)
 
   const products = rows.map(r => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const p = r.get({ plain: true }) as any
     return {
       productCode: p.productCode,
