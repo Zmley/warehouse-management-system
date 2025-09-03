@@ -3,7 +3,8 @@ import {
   getProductCodes,
   getProducts,
   addProducts,
-  getProduct
+  getProduct,
+  getLowStock
 } from './product.controller'
 
 import roleAllow from 'middlewares/roleAllow.middleware'
@@ -34,5 +35,8 @@ router.post(
   validateAddProducts,
   addProducts
 )
+///////////////////////////////
+
+router.get('/low-stock', roleAllow([UserRole.ADMIN]), getLowStock)
 
 export default router

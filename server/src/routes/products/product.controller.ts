@@ -2,6 +2,7 @@ import { Request, Response } from 'express'
 import * as productService from './product.service'
 import { ProductUploadInput } from 'types/product'
 import { asyncHandler } from 'utils/asyncHandler'
+import { getLowStockProductsByWarehouseID } from './product.service'
 
 export const getProductCodes = asyncHandler(
   async (_req: Request, res: Response) => {
@@ -44,4 +45,35 @@ export const getProduct = asyncHandler(async (req: Request, res: Response) => {
   }
 
   res.status(200).json({ success: true, product })
+})
+
+///////////////////////////////////////////////////////////////////////////////////
+
+export const getLowStock = asyncHandler(async (req: Request, res: Response) => {
+  const warehouseID = String(req.query.warehouseID || '')
+  const page = Number(req.query.page || 1)
+  const limit = Number(req.query.limit || 100)
+  const maxQty = Number(req.query.maxQty) // 必填
+  const keyword = req.query.keyword ? String(req.query.keyword) : undefined
+
+  if (!warehouseID) {
+    return res
+      .status(400)
+      .json({ success: false, error: 'warehouseID required' })
+  }
+  if (!Number.isFinite(maxQty)) {
+    return res
+      .status(400)
+      .json({ success: false, error: 'maxQty required (number)' })
+  }
+
+  const { products, total } = await getLowStockProductsByWarehouseID(
+    warehouseID,
+    page,
+    limit,
+    maxQty,
+    keyword
+  )
+
+  res.status(200).json({ success: true, products, total })
 })

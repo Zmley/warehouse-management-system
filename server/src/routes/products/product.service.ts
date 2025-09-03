@@ -194,3 +194,85 @@ export const getProductByProductCode = async (productCode: string) => {
     binCode
   }
 }
+
+////////////////////////////////////////////////////////////
+
+export const getLowStockProductsByWarehouseID = async (
+  warehouseID: string,
+  page: number,
+  limit: number,
+  maxQty: number,
+  keyword?: string
+) => {
+  const offset = getOffset(page, limit)
+  const whereClause = buildProductWhereClause(keyword)
+
+  const { rows, count } = await Product.findAndCountAll({
+    attributes: [
+      'productID',
+      'productCode',
+      'barCode',
+      'boxType',
+      'createdAt',
+      [
+        Sequelize.fn(
+          'COALESCE',
+          Sequelize.fn('SUM', Sequelize.col('inventories.quantity')),
+          0
+        ),
+        'totalQuantity'
+      ]
+    ],
+    where: whereClause,
+    include: [
+      {
+        model: Inventory,
+        as: 'inventories',
+        attributes: [],
+        required: false,
+        include: [
+          {
+            model: Bin,
+            as: 'bin',
+            attributes: [],
+            required: false,
+            where: {
+              warehouseID,
+              type: { [Op.in]: [BinType.INVENTORY] }
+            }
+          }
+        ]
+      }
+    ],
+    group: [
+      'Product.productID',
+      'Product.productCode',
+      'Product.barCode',
+      'Product.boxType',
+      'Product.createdAt'
+    ],
+    having: Sequelize.literal(
+      `COALESCE(SUM("inventories"."quantity"), 0) < ${Number(maxQty)}`
+    ),
+    order: [['productCode', 'ASC']],
+    limit,
+    offset,
+    subQuery: false
+  })
+
+  const total = Array.isArray(count) ? count.length : (count as number)
+
+  const products = rows.map(r => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const p = r.get({ plain: true }) as any
+    return {
+      productCode: p.productCode,
+      totalQuantity: Number(p.totalQuantity) || 0,
+      barCode: p.barCode,
+      boxType: p.boxType,
+      createdAt: p.createdAt
+    }
+  })
+
+  return { products, total }
+}
