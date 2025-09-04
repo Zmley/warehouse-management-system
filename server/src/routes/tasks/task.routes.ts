@@ -35,11 +35,24 @@ router.post(
   taskController.cancelTask
 )
 
+// router.get(
+//   '/',
+//   roleAllow([UserRole.ADMIN, UserRole.TRANSPORT_WORKER, UserRole.PICKER]),
+//   celebrate({ [Segments.QUERY]: GetTasksQuerySchema }),
+//   taskController.getTasks
+// )
+
 router.get(
   '/',
   roleAllow([UserRole.ADMIN, UserRole.TRANSPORT_WORKER, UserRole.PICKER]),
   celebrate({ [Segments.QUERY]: GetTasksQuerySchema }),
-  taskController.getTasks
+  (req, res, next) => {
+    const { role } = res.locals
+    if (role === UserRole.ADMIN) {
+      return taskController.getAdminTasks(req, res, next)
+    }
+    return taskController.getTasks(req, res, next)
+  }
 )
 
 router.post(

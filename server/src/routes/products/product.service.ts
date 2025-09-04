@@ -266,6 +266,7 @@ export const getLowStockProductsByWarehouseID = async (
   const total = Array.isArray(count) ? count.length : (count as number)
 
   const products = rows.map(r => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const p = r.get({ plain: true }) as any
     return {
       productCode: p.productCode,

@@ -5,6 +5,7 @@ import * as binService from 'routes/bins/bin.service'
 import Task from './task.model'
 import AppError from 'utils/appError'
 import { asyncHandler } from 'utils/asyncHandler'
+import { getAdminTasksByWarehouseID } from 'routes/tasks/task.service'
 
 export const acceptTask = asyncHandler(async (req, res) => {
   const { accountID, cartID } = res.locals
@@ -50,25 +51,60 @@ export const cancelTask = asyncHandler(async (req, res) => {
   res.status(httpStatus.OK).json({ success: true, task })
 })
 
+// export const getTasks = asyncHandler(async (req, res) => {
+//   const { role, accountID, warehouseID: localWarehouseID } = res.locals
+//   const queryWarehouseID = req.query.warehouseID as string | undefined
+//   const { keyword, status: rawStatus } = req.query
+
+//   let warehouseID: string
+//   let status: string | undefined = undefined
+
+//   if (role === UserRole.ADMIN) {
+//     if (typeof queryWarehouseID !== 'string' || !queryWarehouseID) {
+//       throw new AppError(
+//         httpStatus.BAD_REQUEST,
+//         'Admin must provide a valid warehouseID in query',
+//         'WAREHOUSE_ID_REQUIRED'
+//       )
+//     }
+//     warehouseID = queryWarehouseID
+//     if (typeof rawStatus === 'string') status = rawStatus
+//   } else if (role === UserRole.PICKER) {
+//     warehouseID = localWarehouseID
+//     status = 'ALL'
+//   } else if (role === UserRole.TRANSPORT_WORKER) {
+//     warehouseID = localWarehouseID
+//     status = TaskStatus.PENDING
+//   } else {
+//     throw new AppError(
+//       httpStatus.FORBIDDEN,
+//       '❌ Unauthorized role',
+//       'ROLE_FORBIDDEN'
+//     )
+//   }
+
+//   const tasksWithBinCodes = await taskService.getTasksByWarehouseID(
+//     warehouseID,
+//     role,
+//     accountID,
+//     typeof keyword === 'string' ? keyword : undefined,
+//     status
+//   )
+
+//   res.status(httpStatus.OK).json({
+//     success: true,
+//     tasks: tasksWithBinCodes
+//   })
+// })
+
 export const getTasks = asyncHandler(async (req, res) => {
   const { role, accountID, warehouseID: localWarehouseID } = res.locals
-  const queryWarehouseID = req.query.warehouseID as string | undefined
-  const { keyword, status: rawStatus } = req.query
+  const { keyword } = req.query
 
   let warehouseID: string
-  let status: string | undefined = undefined
+  let status: string | undefined
 
-  if (role === UserRole.ADMIN) {
-    if (typeof queryWarehouseID !== 'string' || !queryWarehouseID) {
-      throw new AppError(
-        httpStatus.BAD_REQUEST,
-        'Admin must provide a valid warehouseID in query',
-        'WAREHOUSE_ID_REQUIRED'
-      )
-    }
-    warehouseID = queryWarehouseID
-    if (typeof rawStatus === 'string') status = rawStatus
-  } else if (role === UserRole.PICKER) {
+  if (role === UserRole.PICKER) {
     warehouseID = localWarehouseID
     status = 'ALL'
   } else if (role === UserRole.TRANSPORT_WORKER) {
@@ -77,12 +113,12 @@ export const getTasks = asyncHandler(async (req, res) => {
   } else {
     throw new AppError(
       httpStatus.FORBIDDEN,
-      '❌ Unauthorized role',
+      'Admin should use /api/admin/tasks',
       'ROLE_FORBIDDEN'
     )
   }
 
-  const tasksWithBinCodes = await taskService.getTasksByWarehouseID(
+  const tasks = await taskService.getTasksByWarehouseID(
     warehouseID,
     role,
     accountID,
@@ -92,7 +128,7 @@ export const getTasks = asyncHandler(async (req, res) => {
 
   res.status(httpStatus.OK).json({
     success: true,
-    tasks: tasksWithBinCodes
+    tasks
   })
 })
 
@@ -178,4 +214,38 @@ export const updateTask = asyncHandler(async (req, res) => {
   }
 
   res.status(httpStatus.OK).json({ success: true, task: updatedTask })
+})
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+export const getAdminTasks = asyncHandler(async (req, res) => {
+  const { role } = res.locals
+
+  if (role !== UserRole.ADMIN) {
+    throw new AppError(httpStatus.FORBIDDEN, '❌ Admin only', 'ROLE_FORBIDDEN')
+  }
+
+  const warehouseID = req.query.warehouseID as string | undefined
+  if (typeof warehouseID !== 'string' || !warehouseID) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'Admin must provide a valid warehouseID in query',
+      'WAREHOUSE_ID_REQUIRED'
+    )
+  }
+
+  const rawStatus =
+    typeof req.query.status === 'string' ? req.query.status : undefined
+  const rawKeyword =
+    typeof req.query.keyword === 'string' ? req.query.keyword : undefined
+
+  const status = rawStatus?.trim() || undefined
+  const keyword = rawKeyword?.trim() || undefined
+
+  const tasks = await getAdminTasksByWarehouseID(warehouseID, keyword, status)
+
+  res.status(httpStatus.OK).json({
+    success: true,
+    tasks
+  })
 })

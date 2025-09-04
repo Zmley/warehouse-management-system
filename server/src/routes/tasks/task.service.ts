@@ -623,3 +623,24 @@ export const cancelByTransportWorker = async (
     return task
   })
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+export const getAdminTasksByWarehouseID = async (
+  warehouseID: string,
+  keyword?: string,
+  status?: string
+) => {
+  const whereClause = getAdminWhereClause(
+    (status || '').toUpperCase().trim() || undefined,
+    (keyword || '').trim() || undefined
+  )
+  const includeClause = getIncludeClause(warehouseID)
+
+  const tasks = (await Task.findAll({
+    where: whereClause,
+    include: includeClause,
+    order: [['updatedAt', 'DESC']]
+  })) as unknown as TaskWithJoin[]
+
+  return tasks.length ? mapTasks(tasks) : []
+}
