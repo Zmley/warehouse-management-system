@@ -1,5 +1,6 @@
-import { WhereOptions } from 'sequelize/types'
-import { Op } from 'sequelize'
+import { Op, Sequelize } from 'sequelize'
+import type { Order, OrderItem, WhereOptions } from 'sequelize'
+
 import { ProductUploadInput } from 'types/product'
 import Product from 'routes/products/product.model'
 import AppError from './appError'
@@ -61,4 +62,37 @@ export const handleProductInsertion = async (
       )
     }
   }
+}
+//////////////////////////////
+
+const orderLenBucket = Sequelize.literal(`
+  CASE
+    WHEN char_length("Product"."productCode") = 8 THEN 0
+    WHEN char_length("Product"."productCode") = 7 THEN 1
+    WHEN char_length("Product"."productCode") = 6 THEN 2
+    ELSE 3
+  END
+`)
+
+const orderStartDigit = Sequelize.literal(`
+  CASE WHEN "Product"."productCode" ~ '^[0-9]' THEN 0 ELSE 1 END
+`)
+
+const orderNumeric = Sequelize.literal(`
+  NULLIF(regexp_replace("Product"."productCode", '[^0-9]', '', 'g'), '')::bigint
+`)
+
+const orderSuffix = Sequelize.literal(`
+  COALESCE(SUBSTRING("Product"."productCode" FROM '([A-Za-z]+)$'), '')
+`)
+
+export function buildProductOrderClause(): Order {
+  const order: OrderItem[] = [
+    [orderLenBucket, 'ASC'],
+    [orderStartDigit, 'ASC'],
+    [orderNumeric, 'ASC'],
+    [orderSuffix, 'ASC'],
+    ['productID', 'ASC']
+  ]
+  return order
 }
