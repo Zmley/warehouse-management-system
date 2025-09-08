@@ -216,8 +216,6 @@ export const updateTask = asyncHandler(async (req, res) => {
   res.status(httpStatus.OK).json({ success: true, task: updatedTask })
 })
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
-
 export const getAdminTasks = asyncHandler(async (req, res) => {
   const { role } = res.locals
 

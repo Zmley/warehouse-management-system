@@ -44,7 +44,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             {product.productCode}
           </Typography>
 
-          {/* binCode 行内展示，节省高度 */}
           {product.binCode && (
             <Chip
               label={product.binCode}
@@ -56,7 +55,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           )}
         </Stack>
 
-        {/* 次要信息：压缩为三行，小字、紧凑行距 */}
         <Box sx={{ display: 'grid', rowGap: 0.25 }}>
           <Stack direction='row' spacing={0.75}>
             <Typography

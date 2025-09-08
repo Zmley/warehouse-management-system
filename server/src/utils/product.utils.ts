@@ -63,7 +63,6 @@ export const handleProductInsertion = async (
     }
   }
 }
-//////////////////////////////
 
 const orderLenBucket = Sequelize.literal(`
   CASE

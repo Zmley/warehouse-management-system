@@ -6,24 +6,6 @@ import { InventoryUploadType } from 'types/inventory'
 import AppError from 'utils/appError'
 import { buildBinCodeToIDMap } from 'utils/bin.utils'
 
-// export const getInventoriesByCartID = async (
-//   cartID: string
-// ): Promise<{
-//   hasProduct: boolean
-//   inventories: Inventory[]
-// }> => {
-//   const inventories = await Inventory.findAll({
-//     where: { binID: cartID }
-//   })
-
-//   const hasProduct = inventories.length > 0
-
-//   return {
-//     hasProduct,
-//     inventories
-//   }
-// }
-
 export const getInventoriesByCartID = async (
   cartID: string
 ): Promise<{

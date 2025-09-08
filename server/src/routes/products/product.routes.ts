@@ -36,7 +36,6 @@ router.post(
   validateAddProducts,
   addProducts
 )
-///////////////////////////////
 
 router.get('/low-stock', roleAllow([UserRole.ADMIN]), getLowStock)
 
