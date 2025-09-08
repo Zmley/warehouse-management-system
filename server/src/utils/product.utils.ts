@@ -95,3 +95,20 @@ export function buildProductOrderClause(): Order {
   ]
   return order
 }
+
+export const PRODUCT_GROUP = [
+  'Product.productID',
+  'Product.productCode',
+  'Product.barCode',
+  'Product.boxType',
+  'Product.createdAt'
+] as const
+
+export type ProductLowRowPlain = {
+  productID: string
+  productCode: string
+  barCode: string | null
+  boxType: string | null
+  createdAt: Date
+  totalQuantity: number | string | null
+}

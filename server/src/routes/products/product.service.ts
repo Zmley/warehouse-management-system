@@ -6,7 +6,9 @@ import {
   getOffset,
   buildProductWhereClause,
   handleProductInsertion,
-  buildProductOrderClause
+  buildProductOrderClause,
+  PRODUCT_GROUP,
+  ProductLowRowPlain
 } from 'utils/product.utils'
 import { ProductUploadInput } from 'types/product'
 import { BinType } from 'constants/index'
@@ -221,23 +223,6 @@ const INVENTORY_INCLUDE = (warehouseID: string) => [
     ]
   }
 ]
-
-const PRODUCT_GROUP = [
-  'Product.productID',
-  'Product.productCode',
-  'Product.barCode',
-  'Product.boxType',
-  'Product.createdAt'
-] as const
-
-type ProductLowRowPlain = {
-  productID: string
-  productCode: string
-  barCode: string | null
-  boxType: string | null
-  createdAt: Date
-  totalQuantity: number | string | null
-}
 
 export const getLowStockProductsByWarehouseID = async (
   warehouseID: string,
