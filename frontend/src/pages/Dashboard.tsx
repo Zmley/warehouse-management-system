@@ -93,7 +93,6 @@ const TransportWorkerContent: React.FC<{ userName: string }> = ({
           </Box>
         )}
 
-        {/* ★ 新增：产品查询页 */}
         {view === 'query' && (
           <Box
             sx={{

@@ -92,7 +92,6 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
         }
       >
         <Box p={2} pt={0} pb={10}>
-          {/* 顶部提示 */}
           <Box
             sx={{
               display: 'flex',
@@ -114,7 +113,6 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
             </Typography>
           </Box>
 
-          {/* Loading / Empty */}
           {!hasFetched ? (
             <Box display='flex' justifyContent='center' mt={6}>
               <CircularProgress size={30} thickness={5} />
@@ -173,7 +171,6 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
                     }}
                   >
                     <CardContent sx={{ py: 1, px: 1.25 }}>
-                      {/* SourceBins */}
                       <Grid container spacing={1}>
                         <Grid item xs={12} textAlign='center'>
                           <Typography
@@ -245,7 +242,6 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
                           )}
                         </Grid>
 
-                        {/* 三列主信息 */}
                         <Grid item xs={4} textAlign='center'>
                           <Typography
                             variant='caption'
@@ -315,7 +311,6 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
 
                       <Divider sx={{ my: 1 }} />
 
-                      {/* 底部信息 */}
                       <Box
                         display='flex'
                         justifyContent='space-between'

@@ -88,7 +88,6 @@ const WokerBottomBar: React.FC<BottomBarProps> = ({
         isActive={activeTab === 'publish'}
       />
 
-      {/* Cart */}
       <BottomBarItem
         icon={
           <Box
@@ -108,7 +107,6 @@ const WokerBottomBar: React.FC<BottomBarProps> = ({
         isActive={activeTab === 'cart'}
       />
 
-      {/* Inventory */}
       <BottomBarItem
         icon={
           <Inventory2OutlinedIcon

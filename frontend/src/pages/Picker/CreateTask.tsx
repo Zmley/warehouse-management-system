@@ -144,7 +144,6 @@ const CreateTask: React.FC = () => {
         }}
       >
         <CardContent sx={{ p: { xs: 1.25, sm: 2 } }}>
-          {/* 标题 */}
           <Typography
             variant='h6'
             sx={{ fontWeight: 800, color: '#111827', mb: 1 }}
@@ -152,7 +151,6 @@ const CreateTask: React.FC = () => {
             {t('createTask.title')}
           </Typography>
 
-          {/* 目标货位 */}
           <Paper
             variant='outlined'
             sx={{
@@ -184,7 +182,6 @@ const CreateTask: React.FC = () => {
 
           <Divider sx={{ my: 1, borderColor: BORDER }} />
 
-          {/* 产品编码 */}
           <Box
             sx={{
               p: { xs: 1, sm: 1.25 },
@@ -202,7 +199,6 @@ const CreateTask: React.FC = () => {
             {productWrap}
           </Box>
 
-          {/* 来源货位 */}
           <Box
             sx={{
               p: { xs: 1, sm: 1.25 },
@@ -264,7 +260,6 @@ const CreateTask: React.FC = () => {
             )}
           </Box>
 
-          {/* 错误提示 */}
           {error && (
             <Typography
               color='error'
@@ -277,7 +272,6 @@ const CreateTask: React.FC = () => {
           )}
         </CardContent>
 
-        {/* 底部按钮 */}
         <Box
           sx={{
             position: 'sticky',

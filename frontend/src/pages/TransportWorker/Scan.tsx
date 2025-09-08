@@ -326,7 +326,6 @@ const Scan = () => {
           }}
         />
 
-        {/* 手动输入按钮：UNLOAD 模式下禁用（与原逻辑一致） */}
         <Button
           fullWidth
           disabled={!!myTask || scanMode === ScanMode.UNLOAD}
