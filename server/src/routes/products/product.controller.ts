@@ -47,38 +47,6 @@ export const getProduct = asyncHandler(async (req: Request, res: Response) => {
   res.status(200).json({ success: true, product })
 })
 
-///////////////////////////////////////////////////////////////////////////////////
-
-// export const getLowStock = asyncHandler(async (req: Request, res: Response) => {
-//   const warehouseID = String(req.query.warehouseID || '')
-//   const page = Number(req.query.page || 1)
-//   const limit = Number(req.query.limit || 100)
-//   const maxQty = Number(req.query.maxQty)
-//   const keyword = req.query.keyword ? String(req.query.keyword) : undefined
-
-//   if (!warehouseID) {
-//     return res
-//       .status(400)
-//       .json({ success: false, error: 'warehouseID required' })
-//   }
-//   if (!Number.isFinite(maxQty)) {
-//     return res
-//       .status(400)
-//       .json({ success: false, error: 'maxQty required (number)' })
-//   }
-
-//   const { products, total } = await getLowStockProductsByWarehouseID(
-//     warehouseID,
-//     page,
-//     limit,
-//     maxQty,
-//     keyword
-//   )
-
-//   res.status(200).json({ success: true, products, total })
-// })
-
-// test////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 export const getLowStock = asyncHandler(async (req: Request, res: Response) => {
   const warehouseID = String(req.query.warehouseID || '')
   const page = Number(req.query.page || 1)
@@ -109,8 +77,6 @@ export const getLowStock = asyncHandler(async (req: Request, res: Response) => {
 
   res.status(200).json({ success: true, products, total })
 })
-
-//////////////////////////////////////////////////////////////////////////////
 
 export const getBoxTypes = asyncHandler(async (req: Request, res: Response) => {
   const keyword =

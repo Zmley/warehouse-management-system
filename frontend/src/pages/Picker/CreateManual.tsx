@@ -233,12 +233,6 @@ const CreatePickerTask: React.FC<Props> = ({ onSuccess }) => {
           : t('picker.createTask')}
       </Button>
 
-      {/* {(localError || error) && (
-        <Typography color='error' sx={{ mt: 3, fontWeight: 500 }}>
-          {localError || error}
-        </Typography>
-      )} */}
-
       {(localError || error) && (
         <Typography color='error' sx={{ mt: 3, fontWeight: 500 }}>
           {localError
