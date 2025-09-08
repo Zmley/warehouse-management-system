@@ -35,13 +35,6 @@ router.post(
   taskController.cancelTask
 )
 
-// router.get(
-//   '/',
-//   roleAllow([UserRole.ADMIN, UserRole.TRANSPORT_WORKER, UserRole.PICKER]),
-//   celebrate({ [Segments.QUERY]: GetTasksQuerySchema }),
-//   taskController.getTasks
-// )
-
 router.get(
   '/',
   roleAllow([UserRole.ADMIN, UserRole.TRANSPORT_WORKER, UserRole.PICKER]),

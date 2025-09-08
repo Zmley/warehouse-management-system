@@ -114,10 +114,7 @@
 
     "returnToSource": "Return to Source Bin",
 
-      "pickupBin": "Pickup Bin"
-
-
-
+    "pickupBin": "Pickup Bin"
   },
   "addToCart": {
     "invalidQuantity": "❌ Invalid quantity",
@@ -164,9 +161,8 @@
     "taskList": "Task List",
     "createTask": "Create Task",
     "archivedTask": "Archived",
-        "inventory": "Inventory",
-        "queryProduct": "Product"
-
+    "inventory": "Inventory",
+    "queryProduct": "Product"
   },
   "createTask": {
     "title": "Create A New Task",
@@ -181,7 +177,7 @@
     "cancel": "Cancel",
 
     "error": {
-        "taskDuplicate": "This task already exists",
+      "taskDuplicate": "This task already exists",
       "unknown": "Unknown error"
     }
   },
@@ -221,8 +217,7 @@
       "noProductCode": "❌ Please select a product code.",
       "noPickupBin": "❌ Pickup bin not found.",
       "fetchFailed": "❌ Failed to fetch bin info.",
-              "taskDuplicate": "This task already exists"
-
+      "taskDuplicate": "This task already exists"
     }
   },
 
@@ -241,7 +236,7 @@
     "qty": "Qty {{qty}}"
   },
 
-    "queryProduct": {
+  "queryProduct": {
     "title": "Search Product",
     "helper": "Enter product barcode or code (Ctrl/⌘+K focus, Esc close scanner)",
     "helperMobile": "Enter barcode/code · Support scan",

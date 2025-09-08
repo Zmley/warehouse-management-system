@@ -113,9 +113,7 @@
     "quantityExceed": "数量不能超过库存总数 ({{quantity}})",
     "currentCargoInForklift": "叉车内货物",
     "returnToSource": "退回来源货位",
-  "pickupBin": "捡货库位"
-
-
+    "pickupBin": "捡货库位"
   },
   "addToCart": {
     "invalidQuantity": "❌ 无效的数量",
@@ -162,11 +160,9 @@
     "taskList": "任务列表",
     "createTask": "创建任务",
     "archivedTask": "已完成",
-        "inventory": "库存",
+    "inventory": "库存",
 
-                "queryProduct": "查询产品"
-
-
+    "queryProduct": "查询产品"
   },
   "createTask": {
     "title": "创建新任务",
@@ -179,8 +175,8 @@
     "create": "创建任务",
     "outOfStock": "创建缺货任务",
     "cancel": "取消",
-  "error": {
-        "taskDuplicate": "该任务已存在",
+    "error": {
+      "taskDuplicate": "该任务已存在",
       "unknown": "未知错误"
     }
   },
@@ -219,10 +215,9 @@
       "noProductCode": "❌ 请选择产品编码。",
       "noPickupBin": "❌ 未找到取货货位。",
       "fetchFailed": "❌ 获取货位信息失败。",
-        "taskDuplicate": "该任务已存在",
+      "taskDuplicate": "该任务已存在",
       "unknown": "未知错误"
     }
-
   },
 
   "unload": {
@@ -240,8 +235,7 @@
     "qty": "数量 {{qty}}"
   },
 
-
-   "queryProduct": {
+  "queryProduct": {
     "title": "查询产品",
     "helper": "输入产品条码或代码（Ctrl/⌘+K 聚焦输入，Esc 关闭相机）",
     "helperMobile": "输入条码/代码 · 支持扫码",

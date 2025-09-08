@@ -46,7 +46,6 @@ const WokerBottomBar: React.FC<BottomBarProps> = ({
         zIndex: 1200
       }}
     >
-      {/* Task List */}
       <BottomBarItem
         icon={
           <AssignmentOutlinedIcon
@@ -58,7 +57,6 @@ const WokerBottomBar: React.FC<BottomBarProps> = ({
         isActive={activeTab === 'tasks'}
       />
 
-      {/* Query (产品查询) —— 新增 */}
       <BottomBarItem
         icon={
           <SearchOutlinedIcon sx={{ fontSize: 22, color: getColor('query') }} />
@@ -68,7 +66,6 @@ const WokerBottomBar: React.FC<BottomBarProps> = ({
         isActive={activeTab === 'query'}
       />
 
-      {/* Publish */}
       <BottomBarItem
         icon={
           <Box

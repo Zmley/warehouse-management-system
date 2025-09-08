@@ -124,7 +124,6 @@ const InventoryListCard: React.FC<Props> = ({
                 fontSize: 12
               }}
             >
-              {/* 勾选框 */}
               <Checkbox
                 size='small'
                 checked={item.selected}
@@ -132,7 +131,6 @@ const InventoryListCard: React.FC<Props> = ({
                 sx={{ p: 0.5, mr: 1 }}
               />
 
-              {/* 产品信息 */}
               <Box sx={{ flex: 1, minWidth: 120 }}>
                 <Typography fontSize={13} fontWeight={600}>
                   #{inv?.productCode} ({inv?.quantity})
