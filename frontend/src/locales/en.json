@@ -104,7 +104,29 @@
     "manualInputButton": "Manual Input Product and Quantity",
 
     "onlyLoadFromAssigned": "You can only load from assigned bins: {{allowed}} (received: {{received}}).",
-    "onlyUnloadToAssigned": "You can only unload to assigned bins: {{allowed}} (received: {{received}})."
+    "onlyUnloadToAssigned": "You can only unload to assigned bins: {{allowed}} (received: {{received}}).",
+
+     "modes": {
+      "gun": "Scanner",
+      "camera": "Phone",
+      "manual": "Manual"
+    } ,
+
+   "unload": {
+    "onlyBinCodeGun": "In unload mode with a handheld scanner, only bin codes are allowed (no product barcodes or multi-product input)."
+  },
+
+    "camera":"Phone",
+  "scanner": "Scanner",
+
+  "gun": {
+"placeholder": "Press the button on scanner gun"
+}
+
+
+  
+  
+    
   },
   "inventory": {
     "total": "Total",
@@ -233,7 +255,9 @@
     "error": "Failed to unload items."
   },
   "common": {
-    "qty": "Qty {{qty}}"
+    "qty": "Qty {{qty}}",
+        "cancel": "Cancel"
+
   },
 
   "queryProduct": {
@@ -257,4 +281,9 @@
     "fromManual": "From Manual Input",
     "help": "Help"
   }
+
+
+
+
+
 }

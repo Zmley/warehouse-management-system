@@ -105,7 +105,27 @@
     "inputBinCode": "输入货位编号",
     "manualInputButton": "手动录入产品和数量",
     "onlyLoadFromAssigned": "仅允许从分配的来源库位加载：{{allowed}}（当前：{{received}}）",
-    "onlyUnloadToAssigned": "仅允许卸到分配的库位：{{allowed}}（当前：{{received}}）"
+    "onlyUnloadToAssigned": "仅允许卸到分配的库位：{{allowed}}（当前：{{received}}）",
+      "modes": {
+      "gun": "扫描枪",
+      "camera": "手机",
+      "manual": "手动输入"
+    },
+     "unload": {
+    "onlyBinCodeGun": "卸货时仅允许扫描货位编码（不支持商品条码或多产品输入）"
+  },
+  "camera":"手机",
+  "scanner": "扫描枪",
+
+
+
+
+"gun": {
+
+"placeholder": "请直接按扫描按钮"
+
+}
+
   },
   "inventory": {
     "total": "叉车上总数",
@@ -232,7 +252,8 @@
     "error": "卸货失败。"
   },
   "common": {
-    "qty": "数量 {{qty}}"
+    "qty": "数量 {{qty}}",
+        "cancel": "取消"
   },
 
   "queryProduct": {
