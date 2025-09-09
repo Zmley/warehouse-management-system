@@ -1,4 +1,3 @@
-// src/pages/Scan/ScanGunPanel.tsx
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Box, Typography, Drawer, TextField, Paper } from '@mui/material'
@@ -302,11 +301,10 @@ export default function HandheldScanerPanel() {
         }}
         PaperProps={{
           sx: {
-            maxHeight: { xs: '75vh', sm: '70vh' },
-            overflowY: 'auto',
+            height: '90vh',
+            maxHeight: '90vh',
+            overflow: 'hidden',
             borderRadius: '0 0 16px 16px',
-            p: 0,
-            overflowX: 'hidden',
             bgcolor: '#fff',
             width: '100vw',
             boxSizing: 'border-box'
@@ -315,7 +313,7 @@ export default function HandheldScanerPanel() {
       >
         {scanMode === ScanMode.UNLOAD ? (
           scannedBinCode ? (
-            <Box sx={{ p: 2 }}>
+            <Box sx={{ p: 2, height: '100%', overflowY: 'auto' }}>
               <UnloadConfirm
                 frameless
                 binCode={scannedBinCode}
@@ -330,7 +328,7 @@ export default function HandheldScanerPanel() {
             </Box>
           ) : null
         ) : scannedBinCode && inventoryList.length > 0 ? (
-          <Box sx={{ p: 2 }}>
+          <Box sx={{ p: 2, height: '100%', overflowY: 'auto' }}>
             <LoadConfirm
               binCode={scannedBinCode}
               inventories={inventoryList}
@@ -342,7 +340,7 @@ export default function HandheldScanerPanel() {
             />
           </Box>
         ) : (
-          <Box sx={{ p: 2 }}>
+          <Box sx={{ p: 2, height: '100%', overflowY: 'auto' }}>
             <MultiProductInputBox
               productOptions={productCodes}
               onSubmit={async items => {

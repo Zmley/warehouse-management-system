@@ -151,7 +151,6 @@ export default function CameraPanel() {
         }
       }
 
-      // 视作 binCode：校验任务来源/目标
       const { ok, allowed } = isBinAllowedForMode(ScanMode.LOAD, trimmed)
       if (!ok) {
         setError(

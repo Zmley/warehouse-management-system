@@ -7,7 +7,7 @@ import KeyboardAltIcon from '@mui/icons-material/KeyboardAlt'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
-import ScanGun from './HandheldScanerPanel'
+import HandheldScanerPanel from './HandheldScanerPanel'
 import ManualInputPanel from './ManualInputPanel'
 import CameraPanel from './CameraPanel'
 
@@ -49,7 +49,7 @@ export default function Scan() {
   const Panel = useMemo(() => {
     if (mode === 'camera') return <CameraPanel />
     if (mode === 'manual') return <ManualInputPanel />
-    return <ScanGun />
+    return <HandheldScanerPanel />
   }, [mode])
 
   return (

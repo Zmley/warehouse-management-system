@@ -29,10 +29,14 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ open, onClose }) => {
   const { userProfile, handleLogout } = useAuth()
   const { t, i18n } = useTranslation()
 
-  const initialMode = useMemo<Mode>(() => {
-    const saved = (localStorage.getItem('scanMode') || 'gun') as Mode
-    return saved === 'camera' ? 'camera' : 'gun'
-  }, [])
+  const getInitialMode = (): Mode => {
+    const saved = (localStorage.getItem('scanMode') as Mode | null) || null
+    if (saved === 'camera' || saved === 'gun') return saved
+    localStorage.setItem('scanMode', 'camera')
+    return 'camera'
+  }
+
+  const initialMode = useMemo<Mode>(getInitialMode, [])
   const [mode, setMode] = useState<Mode>(initialMode)
 
   const handleModeChange = (_: unknown, next: Mode | null) => {
@@ -82,6 +86,7 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ open, onClose }) => {
           </IconButton>
         </Box>
 
+        {/* 内容 */}
         <Box sx={{ p: 2, overflowY: 'auto' }}>
           <Stack direction='row' alignItems='center' spacing={2} sx={{ mb: 2 }}>
             <Avatar src='/profile.jpg' sx={{ width: 50, height: 50 }} />
@@ -155,17 +160,16 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ open, onClose }) => {
           >
             <ToggleButton value='camera' aria-label='camera'>
               <SmartphoneIcon sx={{ mr: 0.5, fontSize: 18 }} />
-              {t('scan.camera')}
+              {t('scan.camera', 'Phone')}
             </ToggleButton>
             <ToggleButton value='gun' aria-label='gun'>
               <QrCodeScannerIcon sx={{ mr: 0.5, fontSize: 18 }} />
-              {t('scan.scanner')}
+              {t('scan.scanner', 'Barcode Scanner')}
             </ToggleButton>
           </ToggleButtonGroup>
 
           <Divider sx={{ my: 1 }} />
 
-          {/* 退出登录 */}
           <Button
             variant='outlined'
             fullWidth

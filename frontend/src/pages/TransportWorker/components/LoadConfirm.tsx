@@ -45,6 +45,7 @@ const LoadConfirm: React.FC<LoadConfirmProps> = ({ binCode, inventories }) => {
   const scanMode = (localStorage.getItem('scanMode') || 'gun') as
     | 'camera'
     | 'gun'
+  const cardBodyMaxH = scanMode === 'camera' ? '68vh' : '58vh'
 
   useEffect(() => {
     const isTaskMode = !!myTask?.productCode && myTask?.quantity !== undefined
@@ -112,9 +113,7 @@ const LoadConfirm: React.FC<LoadConfirmProps> = ({ binCode, inventories }) => {
     }
 
     for (const item of selectedItems) {
-      if (item.loadQuantity > item.quantity) {
-        return false
-      }
+      if (item.loadQuantity > item.quantity) return false
     }
 
     return true
@@ -159,7 +158,14 @@ const LoadConfirm: React.FC<LoadConfirmProps> = ({ binCode, inventories }) => {
         boxShadow: '0 2px 6px #00000010'
       }}
     >
-      <CardContent sx={{ p: 1 }}>
+      <CardContent
+        sx={{
+          p: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          maxHeight: cardBodyMaxH
+        }}
+      >
         <Typography
           fontWeight={600}
           fontSize={11}
@@ -173,7 +179,7 @@ const LoadConfirm: React.FC<LoadConfirmProps> = ({ binCode, inventories }) => {
 
         <Box
           sx={{
-            maxHeight: scanMode === 'camera' ? '60vh' : '45vh',
+            flex: 1,
             overflowY: 'auto',
             pr: 1
           }}
@@ -254,15 +260,10 @@ const LoadConfirm: React.FC<LoadConfirmProps> = ({ binCode, inventories }) => {
           </Typography>
         )}
 
-        <Box mt={2} textAlign='center'>
+        <Box mt={1.25} textAlign='center'>
           <ArrowDownwardIcon
-            sx={{
-              color: '#1976d2',
-              fontSize: 24,
-              mb: 0.5
-            }}
+            sx={{ color: '#1976d2', fontSize: 22, mb: 0.25 }}
           />
-
           <Button
             variant='contained'
             color='primary'
@@ -270,10 +271,12 @@ const LoadConfirm: React.FC<LoadConfirmProps> = ({ binCode, inventories }) => {
             disabled={loading}
             fullWidth
             sx={{
-              height: 44,
+              height: 40,
               fontWeight: 600,
               fontSize: 13,
-              borderRadius: 2
+              borderRadius: 2,
+              mt: 0.5,
+              mb: 0.25
             }}
           >
             {t('load.confirm')}
