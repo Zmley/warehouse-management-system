@@ -1,7 +1,12 @@
 {
   "profile": {
     "title": "个人资料",
-    "signOut": "退出登录"
+    "signOut": "退出登录",
+        "role": "工作类型",
+         "language": "语言",
+    "lang": { "zh": "中文", "en": "English" },
+        "defaultScanMode": "默认扫描模式"
+
   },
   "topbar": {
     "greeting": "你好，{{name}}",

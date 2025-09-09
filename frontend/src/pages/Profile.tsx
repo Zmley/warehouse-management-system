@@ -35,7 +35,6 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ open, onClose }) => {
     localStorage.setItem('scanMode', 'camera')
     return 'camera'
   }
-
   const initialMode = useMemo<Mode>(getInitialMode, [])
   const [mode, setMode] = useState<Mode>(initialMode)
 
@@ -50,6 +49,11 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ open, onClose }) => {
     if (!next) return
     i18n.changeLanguage(next)
   }
+
+  const rawRole = userProfile?.role || ''
+  const roleLabel =
+    (rawRole && t(`profile.roles.${rawRole}`, { defaultValue: rawRole })) ||
+    t('profile.noRole', 'N/A')
 
   return (
     <Drawer anchor='left' open={open} onClose={onClose}>
@@ -75,18 +79,17 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ open, onClose }) => {
           }}
         >
           <Typography variant='h6' fontWeight='bold'>
-            {t('profile.title', 'Profile')}
+            {t('profile.title')}
           </Typography>
           <IconButton
             onClick={onClose}
-            aria-label={t('common.close', 'Close')}
+            aria-label={t('common.close')}
             sx={{ position: 'absolute', right: 8, top: 6 }}
           >
             <CloseIcon />
           </IconButton>
         </Box>
 
-        {/* 内容 */}
         <Box sx={{ p: 2, overflowY: 'auto' }}>
           <Stack direction='row' alignItems='center' spacing={2} sx={{ mb: 2 }}>
             <Avatar src='/profile.jpg' sx={{ width: 50, height: 50 }} />
@@ -103,14 +106,14 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ open, onClose }) => {
           <Divider sx={{ my: 1 }} />
 
           <Typography fontSize={13} fontWeight='bold' sx={{ mb: 0.25 }}>
-            {t('profile.role', 'Role')}:
+            {t('profile.role')}
           </Typography>
-          <Typography sx={{ mb: 1 }}>{userProfile?.role}</Typography>
+          <Typography sx={{ mb: 1 }}>{roleLabel}</Typography>
 
           <Divider sx={{ my: 1 }} />
 
           <Typography fontSize={13} fontWeight='bold' sx={{ mb: 0.5 }}>
-            {t('profile.language', 'Language')}
+            {t('profile.language')}
           </Typography>
           <ToggleButtonGroup
             exclusive
@@ -118,6 +121,7 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ open, onClose }) => {
             onChange={handleLangChange}
             fullWidth
             size='small'
+            aria-label={t('profile.language')}
             sx={{
               mb: 1.25,
               '& .MuiToggleButton-root': {
@@ -131,12 +135,16 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ open, onClose }) => {
               }
             }}
           >
-            <ToggleButton value='zh'>中文</ToggleButton>
-            <ToggleButton value='en'>English</ToggleButton>
+            <ToggleButton value='zh' aria-label={t('profile.lang.zh')}>
+              {t('profile.lang.zh')}
+            </ToggleButton>
+            <ToggleButton value='en' aria-label={t('profile.lang.en')}>
+              {t('profile.lang.en')}
+            </ToggleButton>
           </ToggleButtonGroup>
 
           <Typography fontSize={13} fontWeight='bold' sx={{ mb: 0.5 }}>
-            {t('profile.defaultScanMode', 'Default Scan Mode')}
+            {t('profile.defaultScanMode')}
           </Typography>
           <ToggleButtonGroup
             exclusive
@@ -145,6 +153,7 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ open, onClose }) => {
             fullWidth
             color='primary'
             size='small'
+            aria-label={t('profile.defaultScanMode')}
             sx={{
               mb: 1.25,
               '& .MuiToggleButton-root': {
@@ -158,13 +167,13 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ open, onClose }) => {
               }
             }}
           >
-            <ToggleButton value='camera' aria-label='camera'>
+            <ToggleButton value='camera' aria-label={t('scan.camera')}>
               <SmartphoneIcon sx={{ mr: 0.5, fontSize: 18 }} />
-              {t('scan.camera', 'Phone')}
+              {t('scan.camera')}
             </ToggleButton>
-            <ToggleButton value='gun' aria-label='gun'>
+            <ToggleButton value='gun' aria-label={t('scan.scanner')}>
               <QrCodeScannerIcon sx={{ mr: 0.5, fontSize: 18 }} />
-              {t('scan.scanner', 'Barcode Scanner')}
+              {t('scan.scanner')}
             </ToggleButton>
           </ToggleButtonGroup>
 
@@ -175,13 +184,14 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ open, onClose }) => {
             fullWidth
             size='small'
             startIcon={<LogoutIcon />}
+            aria-label={t('profile.signOut')}
             onClick={() => {
               handleLogout()
               onClose()
             }}
             sx={{ fontSize: '0.85rem', py: 0.5 }}
           >
-            {t('profile.signOut', 'Sign out')}
+            {t('profile.signOut')}
           </Button>
         </Box>
       </Box>

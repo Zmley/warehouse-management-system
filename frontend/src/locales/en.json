@@ -1,7 +1,12 @@
 {
   "profile": {
     "title": "Profile",
-    "signOut": "Sign Out"
+    "signOut": "Sign Out",
+        "role": "Role",
+          "language": "Language",
+    "lang": { "zh": "中文", "en": "English" },
+    "defaultScanMode": "Default Scan Mode"
+
   },
   "topbar": {
     "greeting": "Hello, {{name}}",
