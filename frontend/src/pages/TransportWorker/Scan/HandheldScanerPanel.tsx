@@ -302,7 +302,7 @@ export default function HandheldScanerPanel() {
         }}
         PaperProps={{
           sx: {
-            maxHeight: '90vh',
+            maxHeight: { xs: '75vh', sm: '70vh' },
             overflowY: 'auto',
             borderRadius: '0 0 16px 16px',
             p: 0,

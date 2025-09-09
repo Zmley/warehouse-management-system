@@ -145,7 +145,6 @@ function SegmentedControl({
         }}
       />
 
-      {/* 选项按钮 */}
       {options.map((opt, i) => {
         const active = i === activeIndex
         const Icon = opt.Icon

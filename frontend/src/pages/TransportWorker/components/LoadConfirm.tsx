@@ -42,6 +42,10 @@ const LoadConfirm: React.FC<LoadConfirmProps> = ({ binCode, inventories }) => {
 
   const taskProductCode = myTask?.productCode
 
+  const scanMode = (localStorage.getItem('scanMode') || 'gun') as
+    | 'camera'
+    | 'gun'
+
   useEffect(() => {
     const isTaskMode = !!myTask?.productCode && myTask?.quantity !== undefined
 
@@ -169,7 +173,7 @@ const LoadConfirm: React.FC<LoadConfirmProps> = ({ binCode, inventories }) => {
 
         <Box
           sx={{
-            maxHeight: '60vh',
+            maxHeight: scanMode === 'camera' ? '60vh' : '45vh',
             overflowY: 'auto',
             pr: 1
           }}
