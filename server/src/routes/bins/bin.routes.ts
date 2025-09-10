@@ -9,7 +9,8 @@ import {
   checkIfPickUpBin,
   updateDefaultProductCodes,
   deleteBin,
-  updateBinController
+  updateBinController,
+  getBinColumns
 } from './bin.controller'
 import roleAllow from 'middlewares/roleAllow.middleware'
 import { UserRole } from 'constants/index'
@@ -54,5 +55,7 @@ router.patch(
 router.delete('/:binID', deleteBin)
 
 router.patch('/:binID', /* auth, */ updateBinController)
+
+router.get('/columns', getBinColumns)
 
 export default router

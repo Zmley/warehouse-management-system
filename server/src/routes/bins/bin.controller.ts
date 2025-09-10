@@ -243,3 +243,13 @@ export const updateBinController = asyncHandler(
     })
   }
 )
+
+////////////////////////////////////////
+
+export const getBinColumns = asyncHandler(
+  async (req: Request, res: Response) => {
+    const warehouseID = (req.query.warehouseID as string) || undefined
+    const columns = await binService.getBinColumnsInWarehouse(warehouseID)
+    res.status(200).json({ success: true, columns })
+  }
+)

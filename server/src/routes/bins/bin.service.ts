@@ -490,3 +490,35 @@ export async function updateSingleBin(binID: string, payload: UpdateBinDto) {
     return bin
   })
 }
+
+//////////////////////////////////////////////////////////////////////////
+
+export async function getBinColumnsInWarehouse(
+  warehouseID?: string
+): Promise<string[]> {
+  const where: Record<string, unknown> = {
+    binCode: { [Op.ne]: null }
+  }
+  if (warehouseID) where.warehouseID = warehouseID
+
+  const rows: Array<{ binCode: string }> = await Bin.findAll({
+    attributes: ['binCode'],
+    where,
+    raw: true
+  })
+
+  const set = new Set<string>()
+  for (const r of rows) {
+    const s = (r.binCode || '').trim()
+    if (!s) continue
+    const idx = s.indexOf('-')
+    if (idx > 0) {
+      set.add(s.substring(0, idx).toUpperCase())
+    }
+  }
+
+  set.add('HQ')
+  set.add('WALL')
+
+  return Array.from(set).sort()
+}

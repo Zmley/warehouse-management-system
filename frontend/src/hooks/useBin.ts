@@ -4,6 +4,7 @@ import {
   getBinByBinCode,
   getBinCodes,
   getBinCodesByProductCode,
+  getBinColumns,
   getPickupBinsByProductCode
 } from 'api/bin'
 import { Bin } from 'types/bin'
@@ -19,6 +20,10 @@ export const useBin = () => {
   const warehouseID = userProfile?.warehouseID
 
   const [pickupBinCode, setPickupBinCode] = useState<string | null>(null)
+
+  const [columns, setColumns] = useState<string[]>([])
+
+  const [loading, setLoading] = useState(false)
 
   const fetchBinCodesByProductCode = useCallback(
     async (
@@ -137,6 +142,23 @@ export const useBin = () => {
     }
   }, [])
 
+  ////////////////////////////////////////////////////
+
+  const fetchBinColumns = useCallback(async (warehouseID?: string) => {
+    try {
+      setLoading(true)
+      setError(null)
+      const res = await getBinColumns(warehouseID)
+      setColumns(res.data?.columns || [])
+    } catch (err: any) {
+      console.error('❌ Failed to fetch bin columns:', err)
+      setError(err?.message || 'Failed to fetch bin columns')
+      setColumns([])
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
   return {
     fetchBinCodesByProductCode,
     fetchBinByCode,
@@ -147,6 +169,9 @@ export const useBin = () => {
     checkBinType,
     fetchAvailableBinCodes,
     getPickUpBinByProductCode,
-    pickupBinCode
+    pickupBinCode,
+    columns,
+    loading,
+    fetchBinColumns
   }
 }
