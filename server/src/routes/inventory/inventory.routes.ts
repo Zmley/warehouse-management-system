@@ -37,21 +37,21 @@ router.get(
 
 router.post(
   '/',
-  roleAllow([UserRole.ADMIN]),
+  roleAllow([UserRole.ADMIN, UserRole.TRANSPORT_WORKER]),
   celebrate({ [Segments.BODY]: AddInventoriesSchema }),
   addInventories
 )
 
 router.put(
   '/',
-  roleAllow([UserRole.ADMIN]),
+  roleAllow([UserRole.ADMIN, UserRole.TRANSPORT_WORKER]),
   celebrate({ [Segments.BODY]: UpdateInventoriesSchema }),
   updateInventories
 )
 
 router.delete(
   '/:inventoryID',
-  roleAllow([UserRole.ADMIN]),
+  roleAllow([UserRole.ADMIN, UserRole.TRANSPORT_WORKER]),
   celebrate({ [Segments.PARAMS]: InventoryIDParamSchema }),
   deleteInventory
 )

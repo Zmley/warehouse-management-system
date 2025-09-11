@@ -45,8 +45,33 @@ export const getInventoriesByCartID = async (
   return { hasProduct: true, inventories: inventoriesWithBins }
 }
 
-const escapeLikePrefix = (input: string) =>
-  input.replace(/([\\_%])/g, '\\$1') + '%'
+type SortField = 'binCode' | 'updatedAt'
+type SortOrder = 'ASC' | 'DESC'
+
+function normalizeCount(count: unknown): number {
+  if (typeof count === 'number') return count
+  if (Array.isArray(count)) return count.length
+  if (count && typeof count === 'object') {
+    const arr = count as Array<{ count?: number }>
+    if (Array.isArray(arr) && typeof arr[0]?.count === 'number') {
+      return arr[0].count!
+    }
+  }
+  return 0
+}
+
+export interface InventoryDTO {
+  inventoryID: string | null
+  binID: string
+  productCode: string | null
+  quantity: number | null
+  createdAt: Date | null
+  updatedAt: Date | null
+  bin: {
+    binCode: string
+    binID: string
+  }
+}
 
 export const getInventoriesByWarehouseID = async (
   warehouseID: string,
@@ -54,8 +79,8 @@ export const getInventoriesByWarehouseID = async (
   page = 1,
   limit = 20,
   keyword?: string,
-  opts: { sortBy?: 'binCode' | 'updatedAt'; sortOrder?: 'ASC' | 'DESC' } = {}
-) => {
+  opts: { sortBy?: SortField; sortOrder?: SortOrder } = {}
+): Promise<{ inventories: InventoryDTO[]; totalCount: number }> => {
   try {
     const { sortBy = 'updatedAt', sortOrder = 'DESC' } = opts
 
@@ -70,23 +95,23 @@ export const getInventoriesByWarehouseID = async (
 
     if (keyword && keyword.trim() !== '') {
       const k = keyword.trim()
-      const likePrefix = escapeLikePrefix(k)
-
-      Object.assign(binWhere, {
-        binCode: { [Op.iLike]: likePrefix }
-      })
+      Object.assign(binWhere, { binCode: { [Op.iLike]: `${k}%` } })
       filteredByBinCode = true
 
       const invRows = await Inventory.findAll({
         attributes: ['binID'],
-        where: { productCode: { [Op.iLike]: likePrefix } },
+        where: { productCode: { [Op.iLike]: `${k}%` } },
         group: ['binID'],
         raw: true
       })
-      extraBinIDsByProduct = invRows.map(r => (r as any).binID as string)
+      extraBinIDsByProduct = invRows.map(row =>
+        String((row as unknown as { binID: string }).binID)
+      )
     }
 
-    const latestInvSubq = `(SELECT MAX(inv."updatedAt") FROM "inventory" AS inv WHERE inv."binID" = "Bin"."binID")`
+    const latestInvSubq =
+      `(SELECT MAX(inv."updatedAt") FROM "inventory" AS inv ` +
+      `WHERE inv."binID" = "Bin"."binID")`
 
     const binOrder: Order =
       sortBy === 'binCode'
@@ -97,7 +122,7 @@ export const getInventoriesByWarehouseID = async (
             [col('binCode'), 'ASC']
           ]
 
-    let { rows: bins, count } = await (Bin as any).findAndCountAll({
+    let queryResult = await Bin.findAndCountAll({
       where: binWhere,
       attributes: [
         'binID',
@@ -135,7 +160,7 @@ export const getInventoriesByWarehouseID = async (
     if (
       keyword &&
       filteredByBinCode &&
-      bins.length === 0 &&
+      queryResult.rows.length === 0 &&
       extraBinIDsByProduct.length > 0
     ) {
       const whereByProduct: WhereOptions = {
@@ -144,7 +169,7 @@ export const getInventoriesByWarehouseID = async (
         binID: { [Op.in]: extraBinIDsByProduct }
       }
 
-      const ret = await (Bin as any).findAndCountAll({
+      queryResult = await Bin.findAndCountAll({
         where: whereByProduct,
         attributes: [
           'binID',
@@ -157,11 +182,7 @@ export const getInventoriesByWarehouseID = async (
             as: 'inventories',
             required: true,
             separate: true,
-            where: {
-              productCode: {
-                [Op.iLike]: escapeLikePrefix(keyword!.trim())
-              }
-            },
+            where: { productCode: { [Op.iLike]: `${keyword!.trim()}%` } },
             attributes: [
               'inventoryID',
               'binID',
@@ -183,23 +204,17 @@ export const getInventoriesByWarehouseID = async (
         distinct: true,
         raw: false
       })
-      bins = ret.rows
-      count = ret.count
     }
 
-    const totalCount =
-      typeof count === 'number'
-        ? count
-        : Array.isArray(count)
-        ? count.length
-        : 0
+    const totalCount = normalizeCount(queryResult.count)
 
-    const inventories = bins.flatMap((b: any) => {
-      const binIDVal = b.get('binID') as string
-      const binCodeVal = b.get('binCode') as string
-      const invs: any[] = b.inventories || []
+    const inventories: InventoryDTO[] = queryResult.rows.flatMap(binRow => {
+      const binIDVal = binRow.getDataValue('binID')
+      const binCodeVal = binRow.getDataValue('binCode')
+      const invs =
+        (binRow as unknown as { inventories?: Inventory[] }).inventories ?? []
 
-      if (!invs.length) {
+      if (!invs || invs.length === 0) {
         return [
           {
             inventoryID: null,
@@ -214,12 +229,12 @@ export const getInventoriesByWarehouseID = async (
       }
 
       return invs.map(inv => ({
-        inventoryID: inv.get('inventoryID'),
-        binID: inv.get('binID'),
-        productCode: inv.get('productCode'),
-        quantity: inv.get('quantity'),
-        createdAt: inv.get('createdAt'),
-        updatedAt: inv.get('updatedAt'),
+        inventoryID: inv.getDataValue('inventoryID'),
+        binID: inv.getDataValue('binID'),
+        productCode: inv.getDataValue('productCode'),
+        quantity: inv.getDataValue('quantity'),
+        createdAt: inv.getDataValue('createdAt'),
+        updatedAt: inv.getDataValue('updatedAt'),
         bin: {
           binCode: binCodeVal,
           binID: binIDVal
