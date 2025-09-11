@@ -1,15 +1,7 @@
 import { getBinsByBinCodes } from 'routes/bins/bin.service'
 import { Inventory } from './inventory.model'
 import { Bin } from 'routes/bins/bin.model'
-import {
-  Op,
-  WhereOptions,
-  Order,
-  col,
-  fn,
-  literal,
-  FindAttributeOptions
-} from 'sequelize'
+import { Op, WhereOptions, Order, col, literal } from 'sequelize'
 import { InventoryUploadType } from 'types/inventory'
 import AppError from 'utils/appError'
 import { buildBinCodeToIDMap } from 'utils/bin.utils'
@@ -53,61 +45,8 @@ export const getInventoriesByCartID = async (
   return { hasProduct: true, inventories: inventoriesWithBins }
 }
 
-// export const getInventoriesByWarehouseID = async (
-//   warehouseID: string,
-//   binID?: string,
-//   page = 1,
-//   limit = 20,
-//   keyword?: string,
-//   opts: { sortBy?: 'binCode' | 'updatedAt'; sortOrder?: 'ASC' | 'DESC' } = {}
-// ) => {
-//   const { sortBy = 'updatedAt', sortOrder = 'DESC' } = opts
-
-//   const binWhere: WhereOptions = {
-//     warehouseID,
-//     type: { [Op.in]: ['INVENTORY'] }
-//   }
-//   if (binID) Object.assign(binWhere, { binID })
-
-//   const where: WhereOptions = {}
-//   if (keyword) {
-//     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-//     ;(where as any)[Op.or] = [
-//       { productCode: keyword },
-//       { ['$bin.binCode$']: keyword }
-//     ]
-//   }
-
-//   const order: Order =
-//     sortBy === 'binCode'
-//       ? [
-//           [col('bin.binCode'), sortOrder],
-//           ['updatedAt', 'DESC']
-//         ]
-//       : [
-//           ['updatedAt', sortOrder],
-//           [col('bin.binCode'), 'ASC']
-//         ]
-
-//   const result = await Inventory.findAndCountAll({
-//     where,
-//     include: [
-//       {
-//         model: Bin,
-//         as: 'bin',
-//         attributes: ['binCode', 'binID'],
-//         where: binWhere
-//       }
-//     ],
-//     distinct: true,
-//     subQuery: false,
-//     offset: (page - 1) * limit,
-//     limit,
-//     order
-//   })
-
-//   return result
-// }
+const escapeLikePrefix = (input: string) =>
+  input.replace(/([\\_%])/g, '\\$1') + '%'
 
 export const getInventoriesByWarehouseID = async (
   warehouseID: string,
@@ -131,29 +70,29 @@ export const getInventoriesByWarehouseID = async (
 
     if (keyword && keyword.trim() !== '') {
       const k = keyword.trim()
-      Object.assign(binWhere, { binCode: k })
+      const likePrefix = escapeLikePrefix(k)
+
+      Object.assign(binWhere, {
+        binCode: { [Op.iLike]: likePrefix }
+      })
       filteredByBinCode = true
 
       const invRows = await Inventory.findAll({
         attributes: ['binID'],
-        where: { productCode: k },
+        where: { productCode: { [Op.iLike]: likePrefix } },
         group: ['binID'],
         raw: true
       })
       extraBinIDsByProduct = invRows.map(r => (r as any).binID as string)
     }
 
-    // 每个 bin 的最新库存时间（用于对 Bin 排序）
     const latestInvSubq = `(SELECT MAX(inv."updatedAt") FROM "inventory" AS inv WHERE inv."binID" = "Bin"."binID")`
 
-    // Bin 排序规则：
-    // - binCode：直接按 binCode
-    // - updatedAt：先把 NULL 放最后，再按时间，再按 binCode 稳定次序
     const binOrder: Order =
       sortBy === 'binCode'
         ? [[col('binCode'), sortOrder]]
         : [
-            [literal(`(${latestInvSubq}) IS NULL`), 'ASC'], // 非空在前、空在后
+            [literal(`(${latestInvSubq}) IS NULL`), 'ASC'],
             [literal(latestInvSubq), sortOrder],
             [col('binCode'), 'ASC']
           ]
@@ -218,7 +157,11 @@ export const getInventoriesByWarehouseID = async (
             as: 'inventories',
             required: true,
             separate: true,
-            where: { productCode: keyword!.trim() },
+            where: {
+              productCode: {
+                [Op.iLike]: escapeLikePrefix(keyword!.trim())
+              }
+            },
             attributes: [
               'inventoryID',
               'binID',
@@ -251,7 +194,6 @@ export const getInventoriesByWarehouseID = async (
         ? count.length
         : 0
 
-    // 统一返回；空货位的三个字段按你的要求返回 'none'
     const inventories = bins.flatMap((b: any) => {
       const binIDVal = b.get('binID') as string
       const binCodeVal = b.get('binCode') as string
