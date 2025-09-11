@@ -30,26 +30,20 @@ const TopBar: React.FC<TopBarProps> = ({ userName }) => {
     <>
       <Box
         sx={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 1100,
           height: 56,
+
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           px: 2,
           backgroundColor: '#f9fafb',
-          boxShadow: '0px 1px 3px #0000000F'
+          boxShadow: '0px 2px 3px #0000000F'
         }}
       >
-        {/* Left menu icon */}
         <IconButton onClick={() => setDrawerOpen(true)}>
           <MenuIcon sx={{ fontSize: 24, color: '#333' }} />
         </IconButton>
 
-        {/* Center title */}
         <Typography
           variant='subtitle1'
           sx={{
@@ -62,7 +56,6 @@ const TopBar: React.FC<TopBarProps> = ({ userName }) => {
           {t('topbar.greeting', { name: userName })}
         </Typography>
 
-        {/* Right language toggle */}
         <FormControlLabel
           control={
             <Switch

@@ -30,15 +30,16 @@ export const useTask = () => {
     setError(null)
     try {
       const res = await acceptTaskAPI(taskID)
+
       if (res?.data.success && res?.data.task) {
         return true
       } else {
-        setError(res?.data.error || '❌ Failed to accept task.')
+        setError(res?.data.errorCode || 'UNKNOWN_ERROR')
         return false
       }
     } catch (err: any) {
-      const msg = err?.response?.data?.error || '❌ Failed to accept task'
-      setError(msg)
+      const code = err?.response?.data?.errorCode || 'UNKNOWN_ERROR'
+      setError(code)
       console.error('❌ Accept task failed:', err)
       return false
     } finally {

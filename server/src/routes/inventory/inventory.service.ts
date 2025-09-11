@@ -1,28 +1,48 @@
 import { getBinsByBinCodes } from 'routes/bins/bin.service'
 import { Inventory } from './inventory.model'
 import { Bin } from 'routes/bins/bin.model'
-import { Op, Sequelize, WhereOptions } from 'sequelize'
+import { Op, WhereOptions, Order, col } from 'sequelize'
 import { InventoryUploadType } from 'types/inventory'
 import AppError from 'utils/appError'
 import { buildBinCodeToIDMap } from 'utils/bin.utils'
-import { getExistingInventoryPairs } from 'utils/inventory.utils'
 
 export const getInventoriesByCartID = async (
   cartID: string
 ): Promise<{
   hasProduct: boolean
-  inventories: Inventory[]
+  inventories: (Inventory & { pickupBinCode: string[] })[]
 }> => {
-  const inventories = await Inventory.findAll({
-    where: { binID: cartID }
+  const inventories = await Inventory.findAll({ where: { binID: cartID } })
+  if (!inventories.length) return { hasProduct: false, inventories: [] }
+
+  const productCodes = inventories.map(i => i.productCode)
+
+  const bins = await Bin.findAll({
+    where: {
+      [Op.or]: productCodes.map(c => ({
+        defaultProductCodes: { [Op.like]: `%${c}%` }
+      }))
+    },
+    attributes: ['binCode', 'defaultProductCodes']
   })
 
-  const hasProduct = inventories.length > 0
+  const productToBins = bins.reduce<Record<string, string[]>>((acc, bin) => {
+    const codes = (bin.defaultProductCodes || '').split(',').map(c => c.trim())
+    codes.forEach(code => {
+      if (productCodes.includes(code)) {
+        acc[code] = [...(acc[code] || []), bin.binCode]
+      }
+    })
+    return acc
+  }, {})
 
-  return {
-    hasProduct,
-    inventories
-  }
+  const inventoriesWithBins = inventories.map(inv =>
+    Object.assign(inv.get({ plain: true }), {
+      pickupBinCode: productToBins[inv.productCode] || []
+    })
+  )
+
+  return { hasProduct: true, inventories: inventoriesWithBins }
 }
 
 export const getInventoriesByWarehouseID = async (
@@ -30,27 +50,36 @@ export const getInventoriesByWarehouseID = async (
   binID?: string,
   page = 1,
   limit = 20,
-  keyword?: string
+  keyword?: string,
+  opts: { sortBy?: 'binCode' | 'updatedAt'; sortOrder?: 'ASC' | 'DESC' } = {}
 ) => {
+  const { sortBy = 'updatedAt', sortOrder = 'DESC' } = opts
+
   const binWhere: WhereOptions = {
     warehouseID,
-    type: {
-      [Op.in]: ['INVENTORY', 'CART']
-    }
+    type: { [Op.in]: ['INVENTORY'] }
   }
-
-  if (binID) {
-    Object.assign(binWhere, { binID })
-  }
+  if (binID) Object.assign(binWhere, { binID })
 
   const where: WhereOptions = {}
-
   if (keyword) {
-    where[Op.or as keyof WhereOptions] = [
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(where as any)[Op.or] = [
       { productCode: keyword },
-      Sequelize.where(Sequelize.col('bin.binCode'), keyword)
-    ] as unknown as WhereOptions[]
+      { ['$bin.binCode$']: keyword }
+    ]
   }
+
+  const order: Order =
+    sortBy === 'binCode'
+      ? [
+          [col('bin.binCode'), sortOrder],
+          ['updatedAt', 'DESC']
+        ]
+      : [
+          ['updatedAt', sortOrder],
+          [col('bin.binCode'), 'ASC']
+        ]
 
   const result = await Inventory.findAndCountAll({
     where,
@@ -62,9 +91,11 @@ export const getInventoriesByWarehouseID = async (
         where: binWhere
       }
     ],
+    distinct: true,
+    subQuery: false,
     offset: (page - 1) * limit,
     limit,
-    order: [[Sequelize.col('bin.binCode'), 'ASC']]
+    order
   })
 
   return result
@@ -90,38 +121,47 @@ export const deleteByInventoryID = async (
   }
 }
 
-export const updateByInventoryID = async (
-  inventoryID: string,
-  updatedFields: { quantity?: number; productID?: string; binID?: string }
+export const updateByInventoryIDs = async (
+  updates: {
+    inventoryID: string
+    quantity?: number
+    productCode?: string
+  }[]
 ) => {
   try {
-    const inventoryItem = await Inventory.findByPk(inventoryID)
-    if (!inventoryItem) {
-      throw new Error('Inventory item not found')
-    }
+    const results = await Promise.all(
+      updates.map(async update => {
+        const { inventoryID, quantity, productCode } = update
+        const inventoryItem = await Inventory.findByPk(inventoryID)
 
-    await inventoryItem.update(updatedFields)
+        if (!inventoryItem) {
+          return {
+            inventoryID,
+            success: false,
+            message: 'Inventory item not found'
+          }
+        }
 
-    return { success: true, updatedItem: inventoryItem }
+        await inventoryItem.update({ quantity, productCode })
+        return { inventoryID, success: true, updatedItem: inventoryItem }
+      })
+    )
+
+    return results
   } catch (error) {
-    if (error instanceof AppError) throw error
-
-    throw new Error(`Failed to update inventory item: ${error.message}`)
+    throw new Error(`Failed to bulk update inventories: ${error.message}`)
   }
 }
 
 export const addInventories = async (inventoryList: InventoryUploadType[]) => {
   let insertedCount = 0
-  let updatedCount = 0
 
   if (inventoryList.length === 0) {
-    return { insertedCount: 0, updatedCount: 0 }
+    return { success: true, insertedCount: 0, updatedCount: 0 }
   }
 
   const bins = await getBinsByBinCodes(inventoryList)
   const binCodeToBinID = buildBinCodeToIDMap(bins)
-  const allBinIDs = bins.map(bin => bin.binID)
-  const existingPairs = await getExistingInventoryPairs(allBinIDs)
 
   const BATCH_SIZE = 5
 
@@ -136,29 +176,20 @@ export const addInventories = async (inventoryList: InventoryUploadType[]) => {
 
         if (!binID) return
 
-        const pairKey = `${binID}-${cleanProductCode}`
-
-        if (existingPairs.has(pairKey)) {
-          await Inventory.update(
-            { quantity: item.quantity },
-            { where: { binID, productCode: cleanProductCode } }
-          )
-          updatedCount++
-        } else {
-          await Inventory.create({
-            binID,
-            productCode: cleanProductCode,
-            quantity: item.quantity
-          })
-          insertedCount++
-        }
+        await Inventory.create({
+          binID,
+          productCode: cleanProductCode,
+          quantity: item.quantity
+        })
+        insertedCount++
       })
     )
   }
 
   return {
+    success: true,
     insertedCount,
-    updatedCount
+    updatedCount: 0
   }
 }
 

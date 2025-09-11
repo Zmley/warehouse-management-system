@@ -6,19 +6,22 @@ import { useTranslation } from 'react-i18next'
 import AssignmentIcon from '@mui/icons-material/Assignment'
 import AddCircleIcon from '@mui/icons-material/AddCircle'
 import ArchiveIcon from '@mui/icons-material/Archive'
+import SearchIcon from '@mui/icons-material/Search'
 
 interface PickerBottomBarProps {
-  selectedView: 'task' | 'archived'
+  selectedView: 'task' | 'archived' | 'inventory'
   onTaskListClick: () => void
   onCreateTaskClick: () => void
   onArchivedClick: () => void
+  onInventoryClick?: () => void
 }
 
 const PickerBottombar: React.FC<PickerBottomBarProps> = ({
   selectedView,
   onTaskListClick,
   onCreateTaskClick,
-  onArchivedClick
+  onArchivedClick,
+  onInventoryClick
 }) => {
   const navigate = useNavigate()
   const { t } = useTranslation()
@@ -42,7 +45,7 @@ const PickerBottombar: React.FC<PickerBottomBarProps> = ({
         icon={<AssignmentIcon />}
         value='task'
         onClick={onTaskListClick}
-        sx={{ minWidth: '33.33%' }}
+        sx={{ minWidth: '25%' }}
       />
 
       <BottomNavigationAction
@@ -50,7 +53,15 @@ const PickerBottombar: React.FC<PickerBottomBarProps> = ({
         icon={<AddCircleIcon />}
         value=''
         onClick={onCreateTaskClick || (() => navigate('/picker-scan-bin'))}
-        sx={{ minWidth: '33.33%' }}
+        sx={{ minWidth: '25%' }}
+      />
+
+      <BottomNavigationAction
+        label={t('pickerBottomBar.queryProduct')}
+        icon={<SearchIcon />}
+        value='inventory'
+        onClick={onInventoryClick}
+        sx={{ minWidth: '25%' }}
       />
 
       <BottomNavigationAction
@@ -58,7 +69,7 @@ const PickerBottombar: React.FC<PickerBottomBarProps> = ({
         icon={<ArchiveIcon />}
         value='archived'
         onClick={onArchivedClick}
-        sx={{ minWidth: '33.33%' }}
+        sx={{ minWidth: '25%' }}
       />
     </BottomNavigation>
   )

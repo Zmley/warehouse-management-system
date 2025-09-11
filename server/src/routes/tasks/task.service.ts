@@ -2,7 +2,7 @@ import Task from './task.model'
 import Inventory from 'routes/inventory/inventory.model'
 import Bin from 'routes/bins/bin.model'
 import AppError from 'utils/appError'
-import { Op, Sequelize, WhereOptions } from 'sequelize'
+import { Op, Sequelize, Transaction, WhereOptions } from 'sequelize'
 import { UserRole, TaskStatus } from 'constants/index'
 import { TaskWithJoin } from 'types/task'
 import {
@@ -11,7 +11,12 @@ import {
 } from 'routes/inventory/inventory.service'
 import { getBinByBinCode } from 'routes/bins/bin.service'
 import Account from 'routes/accounts/accounts.model'
-import { moveInventoriesToBin } from 'routes/carts/cart.service'
+import {
+  moveInventoriesToBin,
+  unloadByBinCode
+} from 'routes/carts/cart.service'
+import httpStatus from 'constants/httpStatus'
+import { sequelize } from 'config/db'
 
 export const hasActiveTask = async (
   accountID: string
@@ -66,27 +71,40 @@ export const validateTaskAcceptance = async (
   accountID: string,
   taskID: string,
   cartID: string
-) => {
+): Promise<void> => {
   const isActive = await hasActiveTask(accountID)
   if (isActive) {
-    throw new AppError(409, '❌ You already have an active task in progress.')
+    throw new AppError(
+      httpStatus.CONFLICT,
+      '❌ You already have an active task in progress.',
+      'TASK_ALREADY_ACTIVE'
+    )
   }
 
   const cartInventories = await getCartInventories(cartID)
   if (cartInventories.length > 0) {
     throw new AppError(
-      409,
-      '❌ Please unload your cart before accepting a new task.'
+      httpStatus.CONFLICT,
+      '❌ Please unload your cart before accepting a new task.',
+      'CART_NOT_EMPTY'
     )
   }
 
   const task = await Task.findOne({ where: { taskID } })
   if (!task) {
-    throw new AppError(404, '❌ Task not found.')
+    throw new AppError(
+      httpStatus.NOT_FOUND,
+      '❌ Task not found.',
+      'TASK_NOT_FOUND'
+    )
   }
 
   if (task.status !== TaskStatus.PENDING) {
-    throw new AppError(400, '❌ Task is already in progress.')
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      '❌ Task is already in progress.',
+      'TASK_NOT_PENDING'
+    )
   }
 }
 
@@ -174,7 +192,13 @@ export const getTaskByAccountID = async (
 
   if (!myCurrentTask) return
 
-  let sourceBins = []
+  const productCode = myCurrentTask.productCode
+  let sourceBins: Array<{
+    inventoryID?: string | null
+    productCode: string
+    quantity: number
+    bin: { binID?: string; binCode?: string }
+  }> = []
 
   if (myCurrentTask.sourceBinID) {
     const sourceBin = await Bin.findOne({
@@ -182,42 +206,75 @@ export const getTaskByAccountID = async (
       attributes: ['binID', 'binCode']
     })
 
-    const matchingInventory = await Inventory.findOne({
-      where: {
-        binID: myCurrentTask.sourceBinID,
-        productCode: myCurrentTask.productCode
-      },
-      attributes: ['inventoryID', 'quantity', 'productCode']
-    })
-
     if (sourceBin) {
+      const row = await Inventory.findOne({
+        where: {
+          binID: myCurrentTask.sourceBinID,
+          productCode
+        },
+        attributes: [
+          [Sequelize.fn('SUM', Sequelize.col('quantity')), 'totalQuantity']
+        ],
+        raw: true
+      })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const totalQuantity = Number((row as any)?.totalQuantity ?? 0)
+
       sourceBins = [
         {
-          inventoryID: matchingInventory?.inventoryID || null,
-          productCode: myCurrentTask.productCode,
-          quantity: matchingInventory?.quantity || 0,
-          bin: sourceBin
+          inventoryID: null,
+          productCode,
+          quantity: totalQuantity,
+          bin: {
+            binID: sourceBin.binID,
+            binCode: sourceBin.binCode
+          }
         }
+      ]
+    } else {
+      sourceBins = [
+        { inventoryID: null, productCode, quantity: 0, bin: { binCode: '--' } }
       ]
     }
   } else {
-    const inventories = await Inventory.findAll({
-      where: { productCode: myCurrentTask.productCode },
+    const rows = await Inventory.findAll({
+      where: { productCode },
+      attributes: [
+        [Sequelize.col('bin.binID'), 'binID'],
+        [Sequelize.col('bin.binCode'), 'binCode'],
+        [
+          Sequelize.fn('SUM', Sequelize.col('Inventory.quantity')),
+          'totalQuantity'
+        ]
+      ],
       include: [
         {
           model: Bin,
           as: 'bin',
+          attributes: [],
+          required: true,
           where: {
             warehouseID,
             type: 'INVENTORY'
-          },
-          attributes: ['binID', 'binCode']
+          }
         }
       ],
-      attributes: ['inventoryID', 'productCode', 'quantity']
+      group: ['bin.binID', 'bin.binCode'],
+      raw: true
     })
 
-    sourceBins = inventories
+    sourceBins = rows.map(r => ({
+      inventoryID: null,
+      productCode,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      quantity: Number((r as any).totalQuantity ?? 0),
+      bin: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        binID: (r as any).binID,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        binCode: (r as any).binCode
+      }
+    }))
   }
 
   const destinationBin = await Bin.findOne({
@@ -396,21 +453,18 @@ export const checkIfTaskDuplicate = async (
   productCode: string,
   destinationBinCode: string,
   sourceBinCode?: string
-) => {
+): Promise<Bin> => {
   try {
     const destinationBin = await getBinByBinCode(destinationBinCode)
     if (!destinationBin) {
-      throw new AppError(
-        404,
-        `❌ Bin with code ${destinationBinCode} not found.`
-      )
+      throw new AppError(httpStatus.NOT_FOUND, '', 'DEST_BIN_NOT_FOUND')
     }
 
     let sourceBinID: string | undefined
     if (sourceBinCode) {
       const sourceBin = await getBinByBinCode(sourceBinCode)
       if (!sourceBin) {
-        throw new AppError(404, `❌ Bin with code ${sourceBinCode} not found.`)
+        throw new AppError(httpStatus.NOT_FOUND, '', 'SOURCE_BIN_NOT_FOUND')
       }
       sourceBinID = sourceBin.binID
     }
@@ -418,28 +472,26 @@ export const checkIfTaskDuplicate = async (
     const where: WhereOptions = {
       productCode,
       destinationBinID: destinationBin.binID,
-      status: [TaskStatus.PENDING, TaskStatus.IN_PROCESS]
+      status: { [Op.in]: [TaskStatus.PENDING, TaskStatus.IN_PROCESS] }
     }
-
     if (sourceBinID) {
-      where.sourceBinID = sourceBinID
+      Object.assign(where, { sourceBinID })
     }
 
     const existing = await Task.findOne({ where })
-
     if (existing) {
-      const msg = sourceBinID
-        ? `❌ Task already exists for product ${productCode} from source ${sourceBinCode} to destination ${destinationBinCode}.`
-        : `❌ Task for product ${productCode} in Pick up bin ${destinationBinCode} already exists.`
-
-      throw new AppError(400, msg)
+      throw new AppError(httpStatus.CONFLICT, '', 'TASK_DUPLICATE')
     }
 
     return destinationBin
-  } catch (err: unknown) {
-    console.error('❌ Task duplicate check failed:', err)
+  } catch (err) {
     if (err instanceof AppError) throw err
-    throw new AppError(500, '❌ Unexpected error during task duplication check')
+    throw new AppError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      '',
+      'INTERNAL_SERVER_ERROR',
+      false
+    )
   }
 }
 
@@ -527,4 +579,67 @@ export const completeTaskByAdmin = async (
   return {
     message: '✅ Task completed and inventory updated successfully.'
   }
+}
+
+export const cancelByTransportWorker = async (
+  taskID: string,
+  cartID: string
+) => {
+  return sequelize.transaction(async (t: Transaction) => {
+    const task = await Task.findByPk(taskID, { transaction: t })
+    if (!task) {
+      throw new AppError(
+        httpStatus.NOT_FOUND,
+        'Task not found',
+        'TASK_NOT_FOUND'
+      )
+    }
+    if (task.status !== TaskStatus.IN_PROCESS) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        '❌ Only in-process tasks can be cancelled',
+        'TASK_NOT_IN_PROCESS'
+      )
+    }
+
+    const cartInventories = await getCartInventories(cartID)
+
+    if (cartInventories.length > 0) {
+      const unloadProductList = cartInventories.map(i => ({
+        inventoryID: i.inventoryID,
+        quantity: i.quantity
+      }))
+
+      const sourceBin = await Bin.findByPk(task.sourceBinID, { transaction: t })
+      if (sourceBin?.binCode) {
+        await unloadByBinCode(sourceBin.binCode, unloadProductList)
+      }
+    }
+
+    task.status = TaskStatus.PENDING
+    task.accepterID = null
+    await task.save({ transaction: t })
+
+    return task
+  })
+}
+
+export const getAdminTasksByWarehouseID = async (
+  warehouseID: string,
+  keyword?: string,
+  status?: string
+) => {
+  const whereClause = getAdminWhereClause(
+    (status || '').toUpperCase().trim() || undefined,
+    (keyword || '').trim() || undefined
+  )
+  const includeClause = getIncludeClause(warehouseID)
+
+  const tasks = (await Task.findAll({
+    where: whereClause,
+    include: includeClause,
+    order: [['updatedAt', 'DESC']]
+  })) as unknown as TaskWithJoin[]
+
+  return tasks.length ? mapTasks(tasks) : []
 }

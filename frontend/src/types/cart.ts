@@ -1,4 +1,3 @@
-// types/cart.ts
 export interface UnloadInventory {
   inventoryID: string
   quantity: number

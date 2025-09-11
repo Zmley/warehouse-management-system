@@ -86,8 +86,6 @@ const Login: React.FC = () => {
           </Alert>
         )}
 
-        {/* Username + domain */}
-        {/* Username + domain */}
         <Box
           sx={{
             display: 'flex',

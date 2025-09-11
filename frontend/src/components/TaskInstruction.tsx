@@ -161,7 +161,6 @@ const TaskInstruction: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Cancel Drawer */}
       <Drawer
         anchor='bottom'
         open={openCancelDrawer}
@@ -178,10 +177,6 @@ const TaskInstruction: React.FC = () => {
         <Typography textAlign='center' fontWeight='bold' fontSize={18} mb={2}>
           {t('taskInstruction.confirmCancelTitle')}
         </Typography>
-
-        {/* <Typography textAlign='center' mb={3} color='text.secondary'>
-          {t('taskInstruction.confirmCancelSubtitle')}
-        </Typography> */}
 
         {hasCargo && (
           <Typography textAlign='center' mb={3} color='text.secondary'>

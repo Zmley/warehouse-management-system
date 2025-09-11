@@ -15,6 +15,7 @@ import { InventoryItem } from 'types/inventory'
 import { useNavigate } from 'react-router-dom'
 import { useTaskContext } from 'contexts/task'
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
+import { setSourceBinCode } from 'utils/Storages'
 
 interface LoadConfirmProps {
   binCode: string
@@ -44,14 +45,18 @@ const LoadConfirm: React.FC<LoadConfirmProps> = ({ binCode, inventories }) => {
   useEffect(() => {
     const isTaskMode = !!myTask?.productCode && myTask?.quantity !== undefined
 
-    const newList = inventories.map(item => {
-      const isTaskProduct = item.productCode === myTask?.productCode
-      const selected = isTaskMode ? isTaskProduct : true
+    const firstTaskIdx = isTaskMode
+      ? inventories.findIndex(it => it.productCode === myTask?.productCode)
+      : -1
+
+    const newList = inventories.map((item, idx) => {
+      const selected = isTaskMode ? idx === firstTaskIdx : true
+
       const quantity = selected
         ? isTaskMode
           ? myTask?.quantity === 0
             ? item.quantity
-            : myTask.quantity
+            : (myTask?.quantity as number)
           : item.quantity
         : 0
 
@@ -128,6 +133,7 @@ const LoadConfirm: React.FC<LoadConfirmProps> = ({ binCode, inventories }) => {
       const result = await loadCart({ binCode, selectedItems })
 
       if (result.success) {
+        setSourceBinCode(binCode)
         navigate('/success')
       } else {
         setError(result.error || t('load.error'))

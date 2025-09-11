@@ -37,16 +37,16 @@ export const usePickerTasks = () => {
         warehouseID: userProfile.warehouseID
       })
 
-      if (res.data.success) {
+      if (res.data?.success) {
         return res
       } else {
-        setError(res.data.error || '❌ Failed to create task')
+        const code = res.data?.errorCode || 'UNKNOWN_ERROR'
+        setError(code)
         return null
       }
     } catch (err: any) {
-      const message =
-        err.response?.data?.error || err.message || '❌ Unexpected error'
-      setError(message)
+      const code = err?.response?.data?.errorCode || 'UNKNOWN_ERROR'
+      setError(code)
       return null
     } finally {
       setIsLoading(false)
@@ -81,17 +81,19 @@ export const usePickerTasks = () => {
         destinationBinCode
       })
 
-      if (!result.data?.success) {
-        const backendError =
-          result.data?.error || '❌ Pick task creation failed'
-        throw new Error(backendError)
+      if (!result?.data?.success) {
+        const code = result?.data?.errorCode || 'UNKNOWN_ERROR'
+        const err = new Error(code)
+        // @ts-expect-error
+        err.code = code
+        throw err
       }
 
-      return result.data.task
+      return result.data.task as CreateTaskPayload
     } catch (err: any) {
-      const message =
-        err?.response?.data?.error || err?.message || '❌ Failed to create task'
-      setError(message)
+      const code =
+        err?.response?.data?.errorCode || err?.code || 'UNKNOWN_ERROR'
+      setError(code)
       return null
     } finally {
       setIsLoading(false)

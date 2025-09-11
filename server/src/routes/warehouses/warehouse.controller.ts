@@ -1,28 +1,19 @@
-import { Request, Response, NextFunction } from 'express'
+import { Request, Response } from 'express'
 import * as warehouseService from './warehouse.service'
+import { asyncHandler } from 'utils/asyncHandler'
+import httpStatus from 'constants/httpStatus'
 
-export const getWarehouse = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  const { warehouseID } = req.params
-  try {
+export const getWarehouse = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { warehouseID } = req.params
     const warehouse = await warehouseService.getWarehouseByID(warehouseID)
-    res.status(200).json(warehouse)
-  } catch (error) {
-    next(error)
+    res.status(httpStatus.OK).json(warehouse)
   }
-}
-export const getWarehouses = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
+)
+
+export const getWarehouses = asyncHandler(
+  async (_req: Request, res: Response) => {
     const warehouses = await warehouseService.getWarehouses()
-    res.status(200).json(warehouses)
-  } catch (error) {
-    next(error)
+    res.status(httpStatus.OK).json(warehouses)
   }
-}
+)

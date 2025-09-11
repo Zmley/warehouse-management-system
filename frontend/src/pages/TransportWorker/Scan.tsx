@@ -16,6 +16,7 @@ import { useInventory } from 'hooks/useInventory'
 import { useProduct } from 'hooks/useProduct'
 import { useTaskContext } from 'contexts/task'
 import LoadConfirm from './components/LoadConfirm'
+import UnloadConfirm from './components/UnloadConfirm'
 import MultiProductInputBox from './components/ManualInputBox'
 import { ScanMode } from 'constants/index'
 
@@ -27,29 +28,37 @@ declare global {
 
 const license = process.env.REACT_APP_DYNAMSOFT_LICENSE || ''
 
-const ScanBin = () => {
+const Scan = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
   const scannerRef = useRef<any>(null)
   const scannedRef = useRef(false)
 
-  const { unloadCart, loadCart } = useCart()
+  const { loadCart } = useCart()
   const { fetchBinCodes, binCodes } = useBin()
   const { fetchInventoriesByBinCode } = useInventory()
   const { fetchProduct, loadProducts, productCodes } = useProduct()
   const { myTask } = useTaskContext()
 
   const scanMode: ScanMode = location.state?.mode ?? ScanMode.LOAD
-  const unloadProductList = location.state?.unloadProductList ?? []
+
+  const unloadProductList =
+    (location.state?.unloadProductList as
+      | { inventoryID: string; productCode: string; quantity: number }[]
+      | undefined) ?? []
 
   const [manualInput, setManualInput] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [scannedBinCode, setScannedBinCode] = useState<string | null>(null)
-  const [inventoryList, setInventoryList] = useState([])
+  const [inventoryList, setInventoryList] = useState<any[]>([])
   const [showDrawer, setShowDrawer] = useState(false)
   const [defaultManualItems, setDefaultManualItems] = useState<
     { productCode: string; quantity: string }[]
+  >([])
+
+  const [unloadCartItems, setUnloadCartItems] = useState<
+    { inventoryID: string; productCode: string; quantity: number }[]
   >([])
 
   useEffect(() => {
@@ -75,6 +84,34 @@ const ScanBin = () => {
       .filter(Boolean) as { productCode: string; quantity: string }[]
   }
 
+  const getAllowedLoadBins = (): string[] => {
+    const bins =
+      myTask?.sourceBins?.map((x: any) => x?.bin?.binCode).filter(Boolean) ?? []
+    return [...new Set(bins)]
+  }
+
+  const getAllowedUnloadBins = (): string[] => {
+    const candidates = [
+      myTask?.destinationBinCode,
+      myTask?.sourceBinCodes
+    ].filter(Boolean) as string[]
+    return [...new Set(candidates)]
+  }
+
+  const isBinAllowedForMode = (
+    mode: ScanMode,
+    binCode: string
+  ): { ok: boolean; allowed: string[] } => {
+    if (!myTask) return { ok: true, allowed: [] }
+    if (mode === ScanMode.LOAD) {
+      const allowed = getAllowedLoadBins()
+      return { ok: allowed.includes(binCode), allowed }
+    } else {
+      const allowed = getAllowedUnloadBins()
+      return { ok: allowed.includes(binCode), allowed }
+    }
+  }
+
   const handleScanOrManualSubmit = async (code: string) => {
     const trimmed = code.trim()
     if (!trimmed) {
@@ -94,10 +131,23 @@ const ScanBin = () => {
 
     try {
       if (scanMode === ScanMode.UNLOAD) {
-        const result = await unloadCart(trimmed, unloadProductList)
+        const { ok, allowed } = isBinAllowedForMode(ScanMode.UNLOAD, trimmed)
+        if (!ok) {
+          stopScanner()
+          setError(
+            t('scan.onlyUnloadToAssigned', {
+              allowed: allowed.join(', '),
+              received: trimmed
+            })
+          )
+          return
+        }
+
         stopScanner()
-        if (result.success) return navigate('/success')
-        else throw new Error(result.error)
+        setScannedBinCode(trimmed)
+        setUnloadCartItems(unloadProductList)
+        setShowDrawer(true)
+        return
       }
 
       if (trimmed.includes(':') || trimmed.includes(',')) {
@@ -120,6 +170,18 @@ const ScanBin = () => {
           setShowDrawer(true)
           return
         }
+      }
+
+      const { ok, allowed } = isBinAllowedForMode(ScanMode.LOAD, trimmed)
+      if (!ok) {
+        stopScanner()
+        setError(
+          t('scan.onlyLoadFromAssigned', {
+            allowed: allowed.join(', '),
+            received: trimmed
+          })
+        )
+        return
       }
 
       const result = await fetchInventoriesByBinCode(trimmed)
@@ -330,40 +392,64 @@ const ScanBin = () => {
             maxHeight: '90vh',
             overflowY: 'auto',
             borderRadius: '0 0 16px 16px',
-            p: 2,
-            bgcolor: '#fff'
+            p: 0,
+            overflowX: 'hidden',
+            bgcolor: '#fff',
+            width: '100vw',
+            boxSizing: 'border-box'
           }
         }}
       >
-        {scannedBinCode && inventoryList.length > 0 ? (
-          <LoadConfirm
-            binCode={scannedBinCode}
-            inventories={inventoryList}
-            onSuccess={() => {
-              setShowDrawer(false)
-              setScannedBinCode(null)
-              setInventoryList([])
-              navigate('/success')
-            }}
-          />
+        {scanMode === ScanMode.UNLOAD ? (
+          scannedBinCode ? (
+            <Box sx={{ p: 2 }}>
+              <UnloadConfirm
+                frameless
+                binCode={scannedBinCode}
+                cartItems={unloadCartItems}
+                onSuccess={() => {
+                  setShowDrawer(false)
+                  setScannedBinCode(null)
+                  setUnloadCartItems([])
+                  navigate('/success')
+                }}
+                onError={msg => setError(msg || t('scan.operationError'))}
+              />
+            </Box>
+          ) : null
+        ) : scannedBinCode && inventoryList.length > 0 ? (
+          <Box sx={{ p: 2 }}>
+            <LoadConfirm
+              binCode={scannedBinCode}
+              inventories={inventoryList}
+              onSuccess={() => {
+                setShowDrawer(false)
+                setScannedBinCode(null)
+                setInventoryList([])
+                navigate('/success')
+              }}
+            />
+          </Box>
         ) : (
-          <MultiProductInputBox
-            productOptions={productCodes}
-            onSubmit={async items => {
-              const result = await loadCart({ productList: items })
-              if (!result.success) {
-                setError(result.error || t('scan.operationError'))
-                return
-              }
-              navigate('/success')
-            }}
-            onCancel={handleCancel}
-            defaultItems={defaultManualItems}
-          />
+          <Box sx={{ p: 2 }}>
+            <MultiProductInputBox
+              productOptions={productCodes}
+              onSubmit={async items => {
+                const result = await loadCart({ productList: items })
+                if (!result.success) {
+                  setError(result.error || t('scan.operationError'))
+                  return
+                }
+                navigate('/success')
+              }}
+              onCancel={handleCancel}
+              defaultItems={defaultManualItems}
+            />
+          </Box>
         )}
       </Drawer>
     </Box>
   )
 }
 
-export default ScanBin
+export default Scan

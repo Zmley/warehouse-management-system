@@ -17,6 +17,8 @@ import { useTranslation } from 'react-i18next'
 import { useCart } from 'hooks/useCart'
 import { ScanMode } from 'constants/index'
 
+import { getSourceBinCode } from 'utils/Storages'
+
 const Cart = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -25,6 +27,7 @@ const Cart = () => {
   const { unloadCart } = useCart()
 
   const [confirmUnloadDrawer, setConfirmUnloadDrawer] = useState(false)
+  const [confirmReturnDrawer, setConfirmReturnDrawer] = useState(false)
 
   const defaultUnloadList = useMemo(() => {
     if (!inventoriesInCart.length) return []
@@ -120,6 +123,21 @@ const Cart = () => {
     }
   }
 
+  const handleReturnConfirm = async () => {
+    const selectedToUnload = inventoryListReadyToUnload
+      .filter(item => item.selected)
+      .map(({ inventoryID, quantity }) => ({ inventoryID, quantity }))
+
+    const binCode = getSourceBinCode() || 'emptyCart'
+    const result = await unloadCart(binCode, selectedToUnload)
+
+    if (result?.success) {
+      navigate('/success')
+    } else {
+      console.error('Return failed:', result?.error)
+    }
+  }
+
   return (
     <Box
       display='flex'
@@ -150,6 +168,7 @@ const Cart = () => {
               selectedList={inventoryListReadyToUnload}
               onQuantityChange={handleQuantityChange}
               onSelectionChange={handleSelectionChange}
+              onReturnClick={() => setConfirmReturnDrawer(true)}
             />
 
             {overLimit && (
@@ -250,7 +269,6 @@ const Cart = () => {
         </Card>
       </Box>
 
-      {/* Unload Confirmation Drawer */}
       <Drawer
         anchor='bottom'
         open={confirmUnloadDrawer}
@@ -281,6 +299,45 @@ const Cart = () => {
           }}
         >
           {t('cart.confirmNow')}
+        </Button>
+      </Drawer>
+
+      <Drawer
+        anchor='bottom'
+        open={confirmReturnDrawer}
+        onClose={() => setConfirmReturnDrawer(false)}
+        PaperProps={{
+          sx: {
+            borderTopLeftRadius: 16,
+            borderTopRightRadius: 16,
+            p: 3,
+            height: 250
+          }
+        }}
+      >
+        <Typography textAlign='center' mb={2} fontWeight='bold'>
+          {getSourceBinCode()
+            ? t('cart.confirmReturnToSource')
+            : t('cart.confirmReturnToEmptyCart')}
+        </Typography>
+
+        <Typography textAlign='center' mb={2} fontSize={18}>
+          {getSourceBinCode() === 'staging-area'
+            ? t('cart.stagingArea')
+            : getSourceBinCode()}
+        </Typography>
+
+        <Button
+          variant='contained'
+          color='primary'
+          fullWidth
+          sx={{ height: 100, borderRadius: 2, fontWeight: 600, fontSize: 16 }}
+          onClick={async () => {
+            await handleReturnConfirm()
+            setConfirmReturnDrawer(false)
+          }}
+        >
+          {t('cart.confirm')}
         </Button>
       </Drawer>
     </Box>

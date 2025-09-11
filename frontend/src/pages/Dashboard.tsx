@@ -12,6 +12,10 @@ import { useCart } from 'hooks/useCart'
 import Cart from 'pages/TransportWorker/Cart'
 import InventoryPage from 'pages/TransportWorker/Inventory'
 import { useLocation, useNavigate } from 'react-router-dom'
+import QueryProductInline from 'pages/Picker/SearchProduct'
+
+const TOPBAR_HEIGHT = 64
+const BOTTOMBAR_HEIGHT = 64
 
 const TopBarFixed = ({ userName }: { userName: string }) => (
   <Box
@@ -20,12 +24,31 @@ const TopBarFixed = ({ userName }: { userName: string }) => (
       top: 0,
       left: 0,
       right: 0,
+      height: `${TOPBAR_HEIGHT}px`,
       zIndex: 1300,
-      backgroundColor: '#fff',
-      boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.08)'
+      backgroundColor: '#f9fafb'
     }}
   >
     <TopBar userName={userName} />
+  </Box>
+)
+
+const ContentShell: React.FC<{
+  topPad?: number
+  children: React.ReactNode
+}> = ({ topPad = 16, children }) => (
+  <Box
+    sx={{
+      position: 'relative',
+      height: `calc(100dvh - ${TOPBAR_HEIGHT + topPad}px - ${BOTTOMBAR_HEIGHT}px)`,
+      mt: `${TOPBAR_HEIGHT + topPad}px`,
+      mb: `${BOTTOMBAR_HEIGHT}px`,
+      overflow: 'hidden',
+      display: 'flex',
+      flexDirection: 'column'
+    }}
+  >
+    {children}
   </Box>
 )
 
@@ -39,47 +62,70 @@ const TransportWorkerContent: React.FC<{ userName: string }> = ({
   const defaultView =
     location.state?.view === 'cart' ? 'cart' : isCartEmpty ? 'tasks' : 'cart'
 
-  const [view, setView] = useState<'cart' | 'tasks' | 'inventory'>(defaultView)
+  const [view, setView] = useState<'cart' | 'tasks' | 'inventory' | 'query'>(
+    defaultView
+  )
 
   useEffect(() => {
-    if (!isCartEmpty) {
-      setView('cart')
-    }
+    if (!isCartEmpty) setView('cart')
   }, [isCartEmpty])
 
   return (
-    <Box
-      sx={{
-        height: '100vh',
-        backgroundColor: '#F7F9FC',
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'relative'
-      }}
-    >
+    <Box sx={{ height: '100dvh', backgroundColor: '#F7F9FC' }}>
       <TopBarFixed userName={userName} />
+
+      <ContentShell topPad={4}>
+        {view === 'cart' && (
+          <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+            <Cart />
+          </Box>
+        )}
+
+        {view === 'tasks' && (
+          <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+            <PendingTaskList setView={setView as any} />
+          </Box>
+        )}
+
+        {view === 'inventory' && (
+          <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+            <InventoryPage />
+          </Box>
+        )}
+
+        {view === 'query' && (
+          <Box
+            sx={{
+              flex: 1,
+              minHeight: 0,
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column'
+            }}
+          >
+            <QueryProductInline />
+          </Box>
+        )}
+      </ContentShell>
 
       <Box
         sx={{
-          flex: 1,
-          pt: '72px',
-          pb: '90px',
-          overflowY: 'auto',
-          WebkitOverflowScrolling: 'touch'
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: `${BOTTOMBAR_HEIGHT}px`,
+          backgroundColor: '#fff',
+          zIndex: 1300
         }}
       >
-        {view === 'cart' && <Cart />}
-        {view === 'tasks' && <PendingTaskList setView={setView} />}
-        {view === 'inventory' && <InventoryPage />}
-      </Box>
-
-      <Box sx={{ zIndex: 1300 }}>
         <WokerBottombar
           onCartClick={() => setView('cart')}
           onTaskListClick={() => setView('tasks')}
           onInventoryClick={() => setView('inventory')}
           onPublishClick={() => navigate('/picker-scan-bin')}
-          activeTab={view}
+          onQueryClick={() => setView('query')}
+          activeTab={view} //
         />
       </Box>
     </Box>
@@ -91,35 +137,78 @@ const Dashboard: React.FC = () => {
   const isPicker = userProfile.role === 'PICKER'
   const isTransportWorker = userProfile.role === 'TRANSPORT_WORKER'
   const [taskStatus, setTaskStatus] = useState(TaskCategoryEnum.PENDING)
+  const [pickerView, setPickerView] = useState<
+    'task' | 'archived' | 'inventory'
+  >('task')
   const navigate = useNavigate()
 
   if (isPicker) {
     return (
-      <Box
-        sx={{ height: '100vh', backgroundColor: '#F7F9FC', overflow: 'hidden' }}
-      >
+      <Box sx={{ height: '100dvh', backgroundColor: '#F7F9FC' }}>
         <TopBarFixed
           userName={`${userProfile.firstName} ${userProfile.lastName}`}
         />
         <Box
           sx={{
-            pt: '72px',
-            pb: '90px',
-            height: '100vh',
-            overflowY: 'auto',
-            WebkitOverflowScrolling: 'touch'
+            position: 'fixed',
+            top: `${TOPBAR_HEIGHT + 16}px`,
+            bottom: `${BOTTOMBAR_HEIGHT}px`,
+            left: 0,
+            right: 0,
+            overflow: 'hidden',
+            backgroundColor: '#F7F9FC',
+            display: 'flex',
+            flexDirection: 'column'
           }}
         >
-          <PickerCreatedTaskList status={taskStatus} />
+          {pickerView === 'inventory' ? (
+            <Box
+              sx={{
+                flex: 1,
+                minHeight: 0,
+                display: 'flex',
+                flexDirection: 'column'
+              }}
+            >
+              <QueryProductInline />
+            </Box>
+          ) : (
+            <Box
+              sx={{
+                flex: 1,
+                minHeight: 0,
+                overflowY: 'auto',
+                WebkitOverflowScrolling: 'touch'
+              }}
+            >
+              <PickerCreatedTaskList status={taskStatus} />
+            </Box>
+          )}
         </Box>
-        <Box sx={{ zIndex: 1300 }}>
+
+        <Box
+          sx={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: `${BOTTOMBAR_HEIGHT}px`,
+            backgroundColor: '#fff',
+            zIndex: 1300
+          }}
+        >
           <PickerBottombar
-            selectedView={
-              taskStatus === TaskCategoryEnum.PENDING ? 'task' : 'archived'
-            }
-            onTaskListClick={() => setTaskStatus(TaskCategoryEnum.PENDING)}
-            onArchivedClick={() => setTaskStatus(TaskCategoryEnum.COMPLETED)}
+            selectedView={pickerView}
+            onTaskListClick={() => {
+              setPickerView('task')
+              setTaskStatus(TaskCategoryEnum.PENDING)
+            }}
+            onArchivedClick={() => {
+              setPickerView('archived')
+              setTaskStatus(TaskCategoryEnum.COMPLETED)
+            }}
             onCreateTaskClick={() => navigate('/picker-scan-bin')}
+            onInventoryClick={() => setPickerView('inventory')}
           />
         </Box>
       </Box>

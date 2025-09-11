@@ -1,33 +1,25 @@
-import { Request, Response, NextFunction } from 'express'
+import { BinType } from 'constants/index'
+import httpStatus from 'constants/httpStatus'
+import { Request, Response } from 'express'
 import * as binService from 'routes/bins/bin.service'
-import { getPickBinByProductCode } from 'routes/bins/bin.service'
+import {
+  getPickBinByProductCode,
+  UpdateBinInput,
+  updateSingleBin
+} from 'routes/bins/bin.service'
+import { asyncHandler } from 'utils/asyncHandler'
 
-export const getBin = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const { binCode } = req.params
+export const getBin = asyncHandler(async (req: Request, res: Response) => {
+  const { binCode } = req.params
+  const bin = await binService.getBinByBinCode(binCode)
+  res.status(200).json({
+    success: true,
+    bin
+  })
+})
 
-    const bin = await binService.getBinByBinCode(binCode)
-
-    res.status(200).json({
-      message: 'Bin fetched successfully',
-      success: true,
-      bin: bin
-    })
-  } catch (error) {
-    next(error)
-  }
-}
-
-export const getAvailableBinCodes = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
+export const getAvailableBinCodes = asyncHandler(
+  async (req: Request, res: Response) => {
     const { productCode } = req.params
     const { warehouseID } = res.locals
 
@@ -38,181 +30,216 @@ export const getAvailableBinCodes = async (
 
     res.status(200).json({
       success: true,
-      message: 'Bin codes fetched successfully',
       binCodes
     })
-  } catch (error) {
-    next(error)
   }
-}
+)
 
-export const getBinCodes = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const warehouseID = req.query.warehouseID as string
+export const getBinCodes = asyncHandler(async (req: Request, res: Response) => {
+  const warehouseID = req.query.warehouseID as string
+  const data = await binService.getBinCodesInWarehouse(warehouseID)
+  res.status(200).json({ success: true, data })
+})
 
-    const data = await binService.getBinCodesInWarehouse(warehouseID)
+export const getBins = asyncHandler(async (req: Request, res: Response) => {
+  const { type, keyword, page = '1', limit = '10' } = req.query
+  const warehouseID = req.query.warehouseID as string
 
-    res.status(200).json({ success: true, data })
-  } catch (error) {
-    next(error)
+  const parsedPage = parseInt(page as string, 10)
+  const parsedLimit = parseInt(limit as string, 10)
+
+  const { data, total } = await binService.getBins(
+    warehouseID,
+    parsedPage,
+    parsedLimit,
+    typeof type === 'string' ? type : undefined,
+    typeof keyword === 'string' ? keyword : undefined
+  )
+
+  res.status(200).json({ data, total })
+})
+
+export const addBins = asyncHandler(async (req: Request, res: Response) => {
+  const binList = req.body
+
+  if (!Array.isArray(binList)) {
+    res.status(400).json({ success: false, message: 'Invalid payload format' })
+    return
   }
-}
 
-export const getBins = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const { type, keyword, page = '1', limit = '10' } = req.query
+  const result = await binService.addBins(binList)
 
-    const warehouseID = req.query.warehouseID as string
+  res.status(200).json({
+    success: true,
+    insertedCount: result.insertedCount,
+    updatedCount: result.updatedCount
+  })
+})
 
-    const parsedPage = parseInt(page as string, 10)
-    const parsedLimit = parseInt(limit as string, 10)
-
-    const { data, total } = await binService.getBins(
-      warehouseID,
-      parsedPage,
-      parsedLimit,
-      typeof type === 'string' ? type : undefined,
-      typeof keyword === 'string' ? keyword : undefined
-    )
-    res.status(200).json({ data, total })
-  } catch (error) {
-    next(error)
-  }
-}
-
-export const addBins = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const binList = req.body
-
-    if (!Array.isArray(binList)) {
-      res
-        .status(400)
-        .json({ success: false, message: 'Invalid payload format' })
-      return
-    }
-
-    const result = await binService.addBins(binList)
-
-    res.status(200).json({
-      success: true,
-      insertedCount: result.insertedCount,
-      updatedCount: result.updatedCount
-    })
-  } catch (err) {
-    next(err)
-  }
-}
-
-export const getPickUpBin = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
+export const getPickUpBin = asyncHandler(
+  async (req: Request, res: Response) => {
     const { warehouseID } = res.locals
-
     const { productCode } = req.params
 
     if (!productCode || !warehouseID) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: '❌ Missing productCode or warehouseID'
       })
+      return
     }
 
     const bins = await getPickBinByProductCode(
       String(productCode),
       String(warehouseID)
     )
-
     res.json({ success: true, data: bins })
-  } catch (error) {
-    next(error)
   }
-}
+)
 
-export const checkIfPickUpBin = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
+export const checkIfPickUpBin = asyncHandler(
+  async (req: Request, res: Response) => {
     const { binCode } = req.params
 
     if (!binCode) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: '❌ Missing binCode'
       })
+      return
     }
 
     const isPickUp = await binService.isPickUpBin(binCode)
-
-    res.status(200).json({
-      success: isPickUp
-      // isPickUpBin: isPickUp
-    })
-  } catch (error) {
-    next(error)
+    res.status(200).json({ success: isPickUp })
   }
-}
+)
 
-export const updateDefaultProductCodes = async (req, res) => {
-  const { binID } = req.params
-  const { defaultProductCodes } = req.body
+export const updateDefaultProductCodes = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { binID } = req.params
+    const { defaultProductCodes } = req.body
 
-  if (!binID) {
-    return res.status(400).json({ success: false, error: 'binID is required' })
-  }
-  if (!defaultProductCodes && defaultProductCodes !== '') {
-    return res
-      .status(400)
-      .json({ success: false, error: 'defaultProductCodes is required' })
-  }
+    if (!binID) {
+      res.status(400).json({ success: false, error: 'binID is required' })
+      return
+    }
+    if (!defaultProductCodes && defaultProductCodes !== '') {
+      res
+        .status(400)
+        .json({ success: false, error: 'defaultProductCodes is required' })
+      return
+    }
 
-  try {
     const updatedBin = await binService.updateDefaultProductCodes(
       binID,
       defaultProductCodes
     )
     if (!updatedBin) {
-      return res.status(404).json({ success: false, error: 'Bin not found' })
+      res.status(404).json({ success: false, error: 'Bin not found' })
+      return
     }
-    return res.json({ success: true, data: updatedBin })
-  } catch (error) {
-    console.error('Update bin defaultProductCodes error:', error)
-    return res
-      .status(500)
-      .json({ success: false, error: 'Internal server error' })
+    res.json({ success: true, data: updatedBin })
   }
-}
+)
 
-export const deleteBin = async (req: Request, res: Response) => {
+export const deleteBin = asyncHandler(async (req: Request, res: Response) => {
   const { binID } = req.params
+  const result = await binService.deleteBinByBInID(binID)
 
-  try {
-    const result = await binService.deleteBinByBInID(binID)
+  if (!result) {
+    res.status(404).json({ success: false, error: 'Bin not found' })
+    return
+  }
 
-    if (!result) {
-      return res.status(404).json({ success: false, error: 'Bin not found' })
+  res.json({ success: true })
+})
+
+export const updateBinsController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { updates } = req.body as { updates: UpdateBinInput[] }
+
+    if (!Array.isArray(updates) || updates.length === 0) {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        success: false,
+        errorCode: 'INVALID_PAYLOAD',
+        message: 'updates must be a non-empty array'
+      })
     }
 
-    res.json({ success: true })
-  } catch (err) {
-    res
-      .status(500)
-      .json({ success: false, error: err.message || 'Failed to delete bin' })
+    const invalid = updates.find(
+      u => !u || typeof u.binID !== 'string' || !u.binID
+    )
+    if (invalid) {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        success: false,
+        errorCode: 'BIN_ID_REQUIRED',
+        message: 'Each update item must include a valid binID'
+      })
+    }
+
+    const result = await binService.updateBins(updates)
+
+    if (result.failedCount === 0) {
+      return res.status(httpStatus.OK).json({
+        success: true,
+        updatedCount: result.updatedCount,
+        failedCount: result.failedCount,
+        results: result.results
+      })
+    }
+
+    if (result.updatedCount > 0 && result.failedCount > 0) {
+      return res.status(httpStatus.MULTI_STATUS).json({
+        success: false,
+        errorCode: 'PARTIAL_FAILURE',
+        updatedCount: result.updatedCount,
+        failedCount: result.failedCount,
+        results: result.results
+      })
+    }
+
+    return res.status(httpStatus.BAD_REQUEST).json({
+      success: false,
+      errorCode: 'UPDATE_FAILED',
+      updatedCount: result.updatedCount,
+      failedCount: result.failedCount,
+      results: result.results
+    })
   }
+)
+
+export type UpdateBinDto = {
+  binCode?: string
+  type?: BinType
+  defaultProductCodes?: string | null
 }
+
+export const updateBinController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { binID } = req.params as { binID: string }
+
+    const { binCode, type, defaultProductCodes } = req.body ?? {}
+
+    const payload: UpdateBinDto = {}
+
+    if (binCode !== undefined) {
+      payload.binCode = String(binCode).trim()
+    }
+
+    if (type !== undefined) {
+      payload.type = type as BinType
+    }
+
+    if (defaultProductCodes !== undefined) {
+      payload.defaultProductCodes =
+        defaultProductCodes === null ? null : String(defaultProductCodes)
+    }
+
+    const bin = await updateSingleBin(binID, payload)
+
+    res.status(200).json({
+      success: true,
+      bin
+    })
+  }
+)

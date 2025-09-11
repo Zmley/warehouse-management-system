@@ -13,7 +13,8 @@
     "cart": "ForkLift",
     "publish": "Publish Task",
     "inventory": "inventory",
-    "completed": "completed"
+    "completed": "completed",
+    "query": "Search"
   },
   "taskList": {
     "pullToRefresh": "↓ Pull down to refresh tasks",
@@ -28,7 +29,18 @@
     "loading": "Loading...",
     "outOfStock": "Out of Stock",
     "canceling": "canceling",
-    "creator": "creator"
+    "creator": "creator",
+    "status": {
+      "pending": "Pending",
+      "outOfStock": "Out of Stock"
+    },
+    "error": {
+      "taskAlreadyActive": "You already have an active task in progress.",
+      "cartNotEmpty": "Please unload your cart before accepting a new task.",
+      "taskNotFound": "Task not found.",
+      "taskNotPending": "Task is already in progress.",
+      "unknown": "Something went wrong. Please try again."
+    }
   },
   "cart": {
     "loadedFromBin": "Loaded From Bin",
@@ -45,7 +57,13 @@
     "selectScanMode": "Select scan mode",
     "scanBinCode": "Scan Bin Code",
     "scanProduct": "Scan Product",
-    "disableScanProductDueToTask": "You have an active task. Please finish it before scanning products."
+    "disableScanProductDueToTask": "You have an active task. Please finish it before scanning products.",
+
+    "confirmReturnToSource": "Confirm return to source bin?",
+    "confirmReturnToEmptyCart": "Confirm return to emptyCart (aisle goods)?",
+
+    "stagingArea": "staging-area",
+    "confirm": "Confirm"
   },
   "scan": {
     "scanBin": "Scan Code",
@@ -83,13 +101,20 @@
     "invalidProductCode": "invalid product barcode, please make sure scan the barcode",
     "switchToScan": "switch To Scan",
     "inputBinCode": "Input BinCode",
-    "manualInputButton": "Manual Input Product and Quantity"
+    "manualInputButton": "Manual Input Product and Quantity",
+
+    "onlyLoadFromAssigned": "You can only load from assigned bins: {{allowed}} (received: {{received}}).",
+    "onlyUnloadToAssigned": "You can only unload to assigned bins: {{allowed}} (received: {{received}})."
   },
   "inventory": {
     "total": "Total",
     "offload": "Offload",
     "quantityExceed": "Quantity cannot exceed total ({{quantity}})",
-    "currentCargoInForklift": "current Cargo In Forklift"
+    "currentCargoInForklift": "current Cargo In Forklift",
+
+    "returnToSource": "Return to Source Bin",
+
+    "pickupBin": "Pickup Bin"
   },
   "addToCart": {
     "invalidQuantity": "❌ Invalid quantity",
@@ -135,7 +160,9 @@
   "pickerBottomBar": {
     "taskList": "Task List",
     "createTask": "Create Task",
-    "archivedTask": "Archived Task"
+    "archivedTask": "Archived",
+    "inventory": "Inventory",
+    "queryProduct": "Product"
   },
   "createTask": {
     "title": "Create A New Task",
@@ -147,7 +174,12 @@
     "loading": "Creating Task...",
     "create": "Create Task",
     "outOfStock": "Create Out-of-Stock Task",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+
+    "error": {
+      "taskDuplicate": "This task already exists",
+      "unknown": "Unknown error"
+    }
   },
   "success": {
     "pickerTitle": "Pick-up Task Created!",
@@ -158,7 +190,8 @@
     "confirmTitle": "Confirm items to load from {{binCode}}",
     "productQuantity": "Product Quantity",
     "inputQuantity": "input Quantity",
-    "confirm": "confirm Load to Forklift"
+    "confirm": "confirm Load to Forklift",
+    "selectAtLeastOne": "Please select at least one item to load."
   },
 
   "inventorySearch": {
@@ -183,7 +216,45 @@
     "error": {
       "noProductCode": "❌ Please select a product code.",
       "noPickupBin": "❌ Pickup bin not found.",
-      "fetchFailed": "❌ Failed to fetch bin info."
+      "fetchFailed": "❌ Failed to fetch bin info.",
+      "taskDuplicate": "This task already exists"
     }
+  },
+
+  "unload": {
+    "title": "Ready to unload",
+    "singlePallet": "Single pallet",
+    "palletQty": "Pallet • Qty {{qty}}",
+    "binInventory": "Bin {{binCode}} inventory",
+    "empty": "Empty.",
+    "back": "Back",
+    "unload": "Unload",
+    "unloading": "Unloading…",
+    "error": "Failed to unload items."
+  },
+  "common": {
+    "qty": "Qty {{qty}}"
+  },
+
+  "queryProduct": {
+    "title": "Search Product",
+    "helper": "Enter product barcode or code (Ctrl/⌘+K focus, Esc close scanner)",
+    "helperMobile": "Enter barcode/code · Support scan",
+    "inputLabel": "Product Barcode / Code",
+    "inputPlaceholder": "Enter or Scan",
+    "searchBtn": "Search",
+    "searching": "Searching…",
+    "scanBtn": "Scan",
+    "closeScannerBtn": "Close Scanner",
+    "emptyText": "Enter or scan a product code to view details and bin location.",
+    "notFound": "Product not found",
+    "errorInit": "Failed to initialize camera/scanner. Please check browser permission or license.",
+    "errorEmpty": "Please input or scan a barcode",
+    "errorQuery": "Query failed",
+    "success": "Query successful",
+    "fromScan": "From Scan",
+    "fromSuggest": "From Suggestion",
+    "fromManual": "From Manual Input",
+    "help": "Help"
   }
 }
