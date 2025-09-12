@@ -11,7 +11,9 @@ import {
   CircularProgress,
   InputAdornment,
   Divider,
-  Paper
+  Paper,
+  Snackbar,
+  Alert
 } from '@mui/material'
 import SearchIcon from '@mui/icons-material/Search'
 import EditIcon from '@mui/icons-material/Edit'
@@ -34,11 +36,7 @@ const FONT_SIZE = 12
 const QTY_COL_WIDTH = 100
 
 const INPUT_SX_CENTER = {
-  '& .MuiInputBase-root': {
-    height: CELL_HEIGHT,
-    fontSize: FONT_SIZE,
-    p: 0
-  },
+  '& .MuiInputBase-root': { height: CELL_HEIGHT, fontSize: FONT_SIZE, p: 0 },
   '& .MuiOutlinedInput-input': {
     p: '0 !important',
     height: `${CELL_HEIGHT}px !important`,
@@ -48,11 +46,7 @@ const INPUT_SX_CENTER = {
 } as const
 
 const INPUT_SX_LEFT = {
-  '& .MuiInputBase-root': {
-    height: CELL_HEIGHT,
-    fontSize: FONT_SIZE,
-    p: 0
-  },
+  '& .MuiInputBase-root': { height: CELL_HEIGHT, fontSize: FONT_SIZE, p: 0 },
   '& .MuiOutlinedInput-input': {
     paddingLeft: '10px !important',
     paddingRight: '10px !important',
@@ -76,13 +70,13 @@ type NewRow = { productCode: string; quantity: number | '' }
 type NewRows = Record<string, NewRow[]>
 type EmptyDraft = Record<string, { productCode: string; quantity: number | '' }>
 
-/** 判空：与 admin 一致 */
 const isEmptyBin = (items: InventoryItem[]) =>
   items.length === 1 && !items[0].inventoryID
 
 const InventoryMobileBinCards: React.FC = () => {
   const { t } = useTranslation()
   const [keyword, setKeyword] = useState('')
+  const [searchInput, setSearchInput] = useState('') // 顶部搜索的受控输入
   const [isFetching, setIsFetching] = useState(false)
 
   const {
@@ -99,6 +93,18 @@ const InventoryMobileBinCards: React.FC = () => {
   const [quantityDraft, setQuantityDraft] = useState<DraftQty>({})
   const [newRows, setNewRows] = useState<NewRows>({})
   const [emptyDraft, setEmptyDraft] = useState<EmptyDraft>({})
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
+
+  // —— Snackbar
+  const [snack, setSnack] = useState<{
+    open: boolean
+    message: string
+    severity: 'success' | 'info' | 'warning' | 'error'
+  }>({ open: false, message: '', severity: 'info' })
+  const showSnack = (
+    message: string,
+    severity: 'success' | 'info' | 'warning' | 'error' = 'info'
+  ) => setSnack({ open: true, message, severity })
 
   useEffect(() => {
     fetchProductCodes()
@@ -112,6 +118,13 @@ const InventoryMobileBinCards: React.FC = () => {
     await fetchInventories({ keyword: k, limit: 100 })
     setIsFetching(false)
   }
+
+  // 顶部搜索：预先计算匹配项；只有有匹配时才展开菜单
+  const searchMatches = useMemo(() => {
+    const q = searchInput.trim().toLowerCase()
+    if (!q) return []
+    return productCodes.filter(opt => opt.toLowerCase().includes(q))
+  }, [productCodes, searchInput])
 
   const grouped = useMemo(() => {
     const map: Record<string, InventoryItem[]> = {}
@@ -130,8 +143,13 @@ const InventoryMobileBinCards: React.FC = () => {
 
   const binCodes = useMemo(() => Object.keys(grouped).sort(), [grouped])
 
+  const isProdInvalid = (v: string | undefined) => (v ?? '').trim() === ''
+  const isQtyInvalid = (v: number | '' | undefined) =>
+    v === '' || Number.isNaN(Number(v)) || Number(v) <= 0
+
   const enterEdit = (binCode: string) => {
     setEditingBin(binCode)
+    setPendingDeleteId(null)
     setProductDraft({})
     setQuantityDraft({})
     setNewRows(prev => ({ ...prev, [binCode]: prev[binCode] ?? [] }))
@@ -143,8 +161,10 @@ const InventoryMobileBinCards: React.FC = () => {
       }))
     }
   }
+
   const cancelEdit = (binCode: string) => {
     setEditingBin(null)
+    setPendingDeleteId(null)
     setProductDraft({})
     setQuantityDraft({})
     setNewRows(prev => ({ ...prev, [binCode]: [] }))
@@ -160,31 +180,30 @@ const InventoryMobileBinCards: React.FC = () => {
     const empty = isEmptyBin(items)
     const emptyD = emptyDraft[binCode]
 
-    const invalidOld = items.some(it => {
+    const hasInvalidOld = items.some(it => {
       if (!it.inventoryID) return false
       const key = it.inventoryID
-      const finalP = (productDraft[key] ?? it.productCode ?? '').trim()
-      const finalQ = quantityDraft[key] ?? it.quantity
-      return finalP === '' || finalQ === '' || Number(finalQ) <= 0
+      const finalP = (productDraft[key] ?? it.productCode) as string
+      const finalQ = (quantityDraft[key] ?? it.quantity) as number | ''
+      return isProdInvalid(finalP) || isQtyInvalid(finalQ)
     })
-    const invalidNew =
+
+    const hasInvalidNew =
       !empty &&
       (newRows[binCode] || []).some(r => {
-        const p = (r.productCode || '').trim()
-        const q = r.quantity
-        return p === '' || q === '' || Number(q) <= 0
+        return isProdInvalid(r.productCode) || isQtyInvalid(r.quantity)
       })
-    const invalidEmpty =
+
+    const hasInvalidEmpty =
       empty &&
       !!emptyD &&
-      ((emptyD.productCode || '').trim() === '' ||
-        emptyD.quantity === '' ||
-        Number(emptyD.quantity) <= 0)
+      (isProdInvalid(emptyD.productCode) || isQtyInvalid(emptyD.quantity))
 
-    if (invalidOld || invalidNew || invalidEmpty) {
-      alert(
+    if (hasInvalidOld || hasInvalidNew || hasInvalidEmpty) {
+      showSnack(
         t('inventorySearch.invalidFields') ||
-          'Product Code cannot be empty, Quantity must be > 0.'
+          'Product Code cannot be empty, Quantity must be > 0.',
+        'warning'
       )
       return
     }
@@ -234,30 +253,25 @@ const InventoryMobileBinCards: React.FC = () => {
       if (keyword.trim())
         await fetchInventories({ keyword: keyword.trim(), limit: 100 })
       cancelEdit(binCode)
+      showSnack(t('common.saved') || 'Saved', 'success')
     } finally {
       setIsFetching(false)
     }
   }
 
-  const deleteItem = async (_binCode: string, it: InventoryItem) => {
-    if (!it.inventoryID) return
-    if (
-      !window.confirm(
-        t('inventorySearch.deleteConfirm') || 'Delete this record?'
-      )
-    )
-      return
+  const performDelete = async (inventoryID: string) => {
     setIsFetching(true)
     try {
-      await removeInventory(it.inventoryID)
+      await removeInventory(inventoryID)
       if (keyword.trim())
         await fetchInventories({ keyword: keyword.trim(), limit: 100 })
+      showSnack(t('common.deleted') || 'Deleted', 'success')
     } finally {
       setIsFetching(false)
+      setPendingDeleteId(null)
     }
   }
 
-  /** 组内新增（非空货位） */
   const addRow = (binCode: string) => {
     setNewRows(prev => ({
       ...prev,
@@ -279,25 +293,27 @@ const InventoryMobileBinCards: React.FC = () => {
   }
 
   return (
-    <Box p={1.25} sx={{ mx: 'auto', maxWidth: 560 }}>
+    <Box px={2} py={1} sx={{ mx: 'auto', maxWidth: 560 }}>
+      {/* 顶部搜索：只有有匹配时才展开，不会出现空白下拉 */}
       <Box mb={1}>
         <Autocomplete
           fullWidth
-          options={productCodes}
+          options={searchMatches}
           value={keyword}
+          inputValue={searchInput}
           onChange={(_, v) => {
             const kw = v || ''
             setKeyword(kw)
+            setSearchInput(kw)
             loadByKeyword(kw)
           }}
-          onInputChange={(_, v) => setKeyword(v)}
-          filterOptions={(options, { inputValue }) =>
-            inputValue.trim()
-              ? options.filter(opt =>
-                  opt.toLowerCase().includes(inputValue.toLowerCase())
-                )
-              : []
-          }
+          onInputChange={(_, v) => {
+            setSearchInput(v)
+            setKeyword(v)
+          }}
+          open={searchInput.trim().length > 0 && searchMatches.length > 0}
+          openOnFocus={false}
+          isOptionEqualToValue={(opt, val) => opt === val}
           renderInput={params => (
             <TextField
               {...params}
@@ -326,9 +342,7 @@ const InventoryMobileBinCards: React.FC = () => {
               }}
             />
           )}
-          noOptionsText={
-            keyword.trim() === '' ? '' : t('inventorySearch.noOptions')
-          }
+          noOptionsText='' // 没匹配时不显示“无匹配项”
         />
       </Box>
 
@@ -445,6 +459,14 @@ const InventoryMobileBinCards: React.FC = () => {
                       const key = it.inventoryID ?? ''
                       const showDivider =
                         idx < items.length - 1 || (editing && !empty)
+                      const isDeleting = pendingDeleteId === it.inventoryID
+
+                      const viewProd = (productDraft[key] ??
+                        it.productCode) as string
+                      const viewQty = (quantityDraft[key] ?? it.quantity) as
+                        | number
+                        | ''
+
                       return (
                         <Box
                           key={it.inventoryID ?? `empty-${binCode}`}
@@ -453,6 +475,7 @@ const InventoryMobileBinCards: React.FC = () => {
                             gridTemplateColumns: `1fr ${QTY_COL_WIDTH}px`
                           }}
                         >
+                          {/* 左：产品码 */}
                           <Box
                             sx={{
                               borderRight: `1px solid ${CELL_BORDER}`,
@@ -468,10 +491,7 @@ const InventoryMobileBinCards: React.FC = () => {
                                 <Autocomplete
                                   options={productCodes}
                                   size='small'
-                                  value={
-                                    (productDraft[key] ??
-                                      it.productCode) as string
-                                  }
+                                  value={viewProd}
                                   onChange={(_, v) =>
                                     setProductDraft(prev => ({
                                       ...prev,
@@ -484,9 +504,11 @@ const InventoryMobileBinCards: React.FC = () => {
                                       placeholder='ProductCode'
                                       size='small'
                                       sx={INPUT_SX_LEFT}
+                                      error={isProdInvalid(viewProd)}
                                     />
                                   )}
                                   sx={{ width: '100%' }}
+                                  noOptionsText=''
                                 />
                               ) : (
                                 <Autocomplete
@@ -508,9 +530,13 @@ const InventoryMobileBinCards: React.FC = () => {
                                       placeholder='ProductCode'
                                       size='small'
                                       sx={INPUT_SX_LEFT}
+                                      error={isProdInvalid(
+                                        emptyDraft[binCode]?.productCode ?? ''
+                                      )}
                                     />
                                   )}
                                   sx={{ width: '100%' }}
+                                  noOptionsText=''
                                 />
                               )
                             ) : it.inventoryID ? (
@@ -526,6 +552,7 @@ const InventoryMobileBinCards: React.FC = () => {
                             )}
                           </Box>
 
+                          {/* 右：数量 / 删除确认 */}
                           <Box
                             sx={{
                               minHeight: CELL_HEIGHT,
@@ -537,47 +564,93 @@ const InventoryMobileBinCards: React.FC = () => {
                           >
                             {editing ? (
                               it.inventoryID ? (
-                                <Box
-                                  display='flex'
-                                  alignItems='center'
-                                  gap={0.5}
-                                  sx={{
-                                    width: '100%',
-                                    justifyContent: 'center'
-                                  }}
-                                >
-                                  <TextField
-                                    type='number'
-                                    size='small'
-                                    value={quantityDraft[key] ?? it.quantity}
-                                    onChange={e => {
-                                      const v = e.target.value
-                                      setQuantityDraft(prev => ({
-                                        ...prev,
-                                        [key]: v === '' ? '' : Number(v)
-                                      }))
-                                    }}
-                                    sx={{
-                                      width: QTY_COL_WIDTH - 30,
-                                      ...INPUT_SX_CENTER
-                                    }}
-                                  />
-                                  <Tooltip
-                                    title={
-                                      t('inventorySearch.delete') || 'Delete'
-                                    }
+                                isDeleting ? (
+                                  <Box
+                                    display='flex'
+                                    alignItems='center'
+                                    gap={0.5}
                                   >
-                                    <span>
-                                      <IconButton
-                                        color='error'
-                                        size='small'
-                                        onClick={() => deleteItem(binCode, it)}
-                                      >
-                                        <DeleteIcon fontSize='small' />
-                                      </IconButton>
-                                    </span>
-                                  </Tooltip>
-                                </Box>
+                                    <Tooltip
+                                      title={t('common.confirm') || 'Confirm'}
+                                    >
+                                      <span>
+                                        <IconButton
+                                          color='error'
+                                          size='small'
+                                          onClick={() =>
+                                            performDelete(
+                                              it.inventoryID as string
+                                            )
+                                          }
+                                        >
+                                          <CheckCircleIcon fontSize='small' />
+                                        </IconButton>
+                                      </span>
+                                    </Tooltip>
+                                    <Tooltip
+                                      title={t('common.cancel') || 'Cancel'}
+                                    >
+                                      <span>
+                                        <IconButton
+                                          color='secondary'
+                                          size='small'
+                                          onClick={() =>
+                                            setPendingDeleteId(null)
+                                          }
+                                        >
+                                          <CancelIcon fontSize='small' />
+                                        </IconButton>
+                                      </span>
+                                    </Tooltip>
+                                  </Box>
+                                ) : (
+                                  <Box
+                                    display='flex'
+                                    alignItems='center'
+                                    gap={0.5}
+                                    sx={{
+                                      width: '100%',
+                                      justifyContent: 'center'
+                                    }}
+                                  >
+                                    <TextField
+                                      type='number'
+                                      size='small'
+                                      value={viewQty}
+                                      onChange={e => {
+                                        const v = e.target.value
+                                        setQuantityDraft(prev => ({
+                                          ...prev,
+                                          [key]: v === '' ? '' : Number(v)
+                                        }))
+                                      }}
+                                      sx={{
+                                        width: QTY_COL_WIDTH - 30,
+                                        ...INPUT_SX_CENTER
+                                      }}
+                                      error={isQtyInvalid(viewQty)}
+                                    />
+                                    <Tooltip
+                                      title={
+                                        t('inventorySearch.delete') || 'Delete'
+                                      }
+                                    >
+                                      <span>
+                                        <IconButton
+                                          color='error'
+                                          size='small'
+                                          onClick={() =>
+                                            setPendingDeleteId(
+                                              it.inventoryID || null
+                                            )
+                                          }
+                                        >
+                                          <DeleteIcon fontSize='small' />
+                                        </IconButton>
+                                      </span>
+                                    </Tooltip>
+                                  </Box>
+                                )
                               ) : (
                                 <TextField
                                   type='number'
@@ -598,6 +671,9 @@ const InventoryMobileBinCards: React.FC = () => {
                                     width: QTY_COL_WIDTH - 16,
                                     ...INPUT_SX_CENTER
                                   }}
+                                  error={isQtyInvalid(
+                                    emptyDraft[binCode]?.quantity
+                                  )}
                                 />
                               )
                             ) : it.inventoryID ? (
@@ -624,6 +700,7 @@ const InventoryMobileBinCards: React.FC = () => {
                       )
                     })}
 
+                    {/* 新增行 */}
                     {editing &&
                       !empty &&
                       (newRows[binCode] || []).map((row, idx) => (
@@ -659,9 +736,11 @@ const InventoryMobileBinCards: React.FC = () => {
                                     placeholder='ProductCode'
                                     size='small'
                                     sx={INPUT_SX_LEFT}
+                                    error={isProdInvalid(row.productCode)}
                                   />
                                 )}
                                 sx={{ width: '100%' }}
+                                noOptionsText=''
                               />
                             </Box>
                             <Box
@@ -693,6 +772,7 @@ const InventoryMobileBinCards: React.FC = () => {
                                     width: QTY_COL_WIDTH - 30,
                                     ...INPUT_SX_CENTER
                                   }}
+                                  error={isQtyInvalid(row.quantity)}
                                 />
                                 <Tooltip title='Remove'>
                                   <span>
@@ -718,6 +798,23 @@ const InventoryMobileBinCards: React.FC = () => {
           })}
         </Box>
       )}
+
+      {/* 全局 Snackbar */}
+      <Snackbar
+        open={snack.open}
+        autoHideDuration={2500}
+        onClose={() => setSnack(s => ({ ...s, open: false }))}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setSnack(s => ({ ...s, open: false }))}
+          severity={snack.severity}
+          variant='filled'
+          sx={{ width: '100%' }}
+        >
+          {snack.message}
+        </Alert>
+      </Snackbar>
     </Box>
   )
 }

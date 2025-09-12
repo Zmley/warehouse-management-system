@@ -24,7 +24,7 @@ const TopBarFixed = ({ userName }: { userName: string }) => (
       top: 0,
       left: 0,
       right: 0,
-      height: `${TOPBAR_HEIGHT}px`,
+      height: TOPBAR_HEIGHT,
       zIndex: 1300,
       backgroundColor: '#f9fafb'
     }}
@@ -33,19 +33,20 @@ const TopBarFixed = ({ userName }: { userName: string }) => (
   </Box>
 )
 
-const ContentShell: React.FC<{
-  topPad?: number
-  children: React.ReactNode
-}> = ({ topPad = 16, children }) => (
+const ContentArea: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <Box
     sx={{
-      position: 'relative',
-      height: `calc(100dvh - ${TOPBAR_HEIGHT + topPad}px - ${BOTTOMBAR_HEIGHT}px)`,
-      mt: `${TOPBAR_HEIGHT + topPad}px`,
-      mb: `${BOTTOMBAR_HEIGHT}px`,
-      overflow: 'hidden',
-      display: 'flex',
-      flexDirection: 'column'
+      position: 'fixed',
+      top: TOPBAR_HEIGHT,
+      bottom: BOTTOMBAR_HEIGHT,
+      left: 0,
+      right: 0,
+      overflowY: 'auto',
+      WebkitOverflowScrolling: 'touch',
+      backgroundColor: '#F7F9FC',
+      px: 0,
+      pt: 1.5,
+      pb: 'calc(env(safe-area-inset-bottom, 0px) + 8px)'
     }}
   >
     {children}
@@ -74,39 +75,12 @@ const TransportWorkerContent: React.FC<{ userName: string }> = ({
     <Box sx={{ height: '100dvh', backgroundColor: '#F7F9FC' }}>
       <TopBarFixed userName={userName} />
 
-      <ContentShell topPad={4}>
-        {view === 'cart' && (
-          <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
-            <Cart />
-          </Box>
-        )}
-
-        {view === 'tasks' && (
-          <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
-            <PendingTaskList setView={setView as any} />
-          </Box>
-        )}
-
-        {view === 'inventory' && (
-          <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
-            <InventoryPage />
-          </Box>
-        )}
-
-        {view === 'query' && (
-          <Box
-            sx={{
-              flex: 1,
-              minHeight: 0,
-              overflow: 'hidden',
-              display: 'flex',
-              flexDirection: 'column'
-            }}
-          >
-            <QueryProductInline />
-          </Box>
-        )}
-      </ContentShell>
+      <ContentArea>
+        {view === 'cart' && <Cart />}
+        {view === 'tasks' && <PendingTaskList setView={setView as any} />}
+        {view === 'inventory' && <InventoryPage />}
+        {view === 'query' && <QueryProductInline />}
+      </ContentArea>
 
       <Box
         sx={{
@@ -114,9 +88,10 @@ const TransportWorkerContent: React.FC<{ userName: string }> = ({
           bottom: 0,
           left: 0,
           right: 0,
-          height: `${BOTTOMBAR_HEIGHT}px`,
+          height: BOTTOMBAR_HEIGHT,
           backgroundColor: '#fff',
-          zIndex: 1300
+          zIndex: 1300,
+          pb: 'env(safe-area-inset-bottom, 0px)'
         }}
       >
         <WokerBottombar
@@ -125,7 +100,7 @@ const TransportWorkerContent: React.FC<{ userName: string }> = ({
           onInventoryClick={() => setView('inventory')}
           onPublishClick={() => navigate('/picker-scan-bin')}
           onQueryClick={() => setView('query')}
-          activeTab={view} //
+          activeTab={view}
         />
       </Box>
     </Box>
@@ -148,43 +123,14 @@ const Dashboard: React.FC = () => {
         <TopBarFixed
           userName={`${userProfile.firstName} ${userProfile.lastName}`}
         />
-        <Box
-          sx={{
-            position: 'fixed',
-            top: `${TOPBAR_HEIGHT + 16}px`,
-            bottom: `${BOTTOMBAR_HEIGHT}px`,
-            left: 0,
-            right: 0,
-            overflow: 'hidden',
-            backgroundColor: '#F7F9FC',
-            display: 'flex',
-            flexDirection: 'column'
-          }}
-        >
+
+        <ContentArea>
           {pickerView === 'inventory' ? (
-            <Box
-              sx={{
-                flex: 1,
-                minHeight: 0,
-                display: 'flex',
-                flexDirection: 'column'
-              }}
-            >
-              <QueryProductInline />
-            </Box>
+            <QueryProductInline />
           ) : (
-            <Box
-              sx={{
-                flex: 1,
-                minHeight: 0,
-                overflowY: 'auto',
-                WebkitOverflowScrolling: 'touch'
-              }}
-            >
-              <PickerCreatedTaskList status={taskStatus} />
-            </Box>
+            <PickerCreatedTaskList status={taskStatus} />
           )}
-        </Box>
+        </ContentArea>
 
         <Box
           sx={{
@@ -192,9 +138,10 @@ const Dashboard: React.FC = () => {
             bottom: 0,
             left: 0,
             right: 0,
-            height: `${BOTTOMBAR_HEIGHT}px`,
+            height: BOTTOMBAR_HEIGHT,
             backgroundColor: '#fff',
-            zIndex: 1300
+            zIndex: 1300,
+            pb: 'env(safe-area-inset-bottom, 0px)'
           }}
         >
           <PickerBottombar
