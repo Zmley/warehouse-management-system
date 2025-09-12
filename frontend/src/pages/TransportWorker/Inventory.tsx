@@ -364,363 +364,151 @@ const InventoryMobileBinCards: React.FC = () => {
         />
       </Box>
 
-      {isFetching ? (
-        <Box display='flex' justifyContent='center' mt={3}>
-          <CircularProgress size={28} thickness={5} />
-        </Box>
-      ) : binCodes.length === 0 ? (
+      {binCodes.length === 0 ? (
         <Typography textAlign='center' color='text.secondary' fontSize={13}>
           {t('inventorySearch.noResult')}
         </Typography>
       ) : (
-        <Box>
-          {binCodes.map(binCode => {
-            const items = grouped[binCode] || []
-            const editing = editingBin === binCode
-            const empty = isEmptyBin(items)
+        <Box position='relative'>
+          {isFetching && (
+            <Box
+              sx={{
+                position: 'sticky',
+                top: 0,
+                zIndex: 5,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 1,
+                py: 0.5,
+                mb: 0.5,
+                background: 'rgba(255,255,255,0.9)',
+                backdropFilter: 'blur(2px)',
+                borderRadius: 1
+              }}
+            >
+              <CircularProgress size={16} thickness={5} />
+              <Typography fontSize={12} color='text.secondary'>
+                {t('common.refreshing') || '正在刷新...'}
+              </Typography>
+            </Box>
+          )}
 
-            return (
-              <Card
-                key={binCode}
-                variant='outlined'
-                sx={{
-                  mb: 0.75,
-                  borderRadius: 2,
-                  backgroundColor: CARD_BG,
-                  border: `1.25px solid ${CARD_BORDER}`,
-                  boxShadow: '0 2px 6px #0000000D'
-                }}
-              >
-                <Box
+          <Box>
+            {binCodes.map(binCode => {
+              const items = grouped[binCode] || []
+              const editing = editingBin === binCode
+              const empty = isEmptyBin(items)
+
+              return (
+                <Card
+                  key={binCode}
+                  variant='outlined'
                   sx={{
-                    px: 1,
-                    py: 0.75,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    borderBottom: '1px solid rgba(37,99,235,0.20)'
+                    mb: 0.75,
+                    borderRadius: 2,
+                    backgroundColor: CARD_BG,
+                    border: `1.25px solid ${CARD_BORDER}`,
+                    boxShadow: '0 2px 6px #0000000D'
                   }}
                 >
-                  <Typography
-                    sx={{ color: HEADER_TEXT, fontWeight: 800, fontSize: 16 }}
+                  <Box
+                    sx={{
+                      px: 1,
+                      py: 0.75,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      borderBottom: '1px solid rgba(37,99,235,0.20)'
+                    }}
                   >
-                    {t('inventorySearch.binCode')}：<b>{binCode}</b>
-                  </Typography>
-                  <Box display='flex' alignItems='center' gap={2}>
-                    {!editing ? (
-                      <Tooltip title={t('inventorySearch.edit') || 'Edit'}>
-                        <span>
-                          <IconButton
-                            color='primary'
-                            size='small'
-                            onClick={() => enterEdit(binCode)}
-                          >
-                            <EditIcon fontSize='medium' />
-                          </IconButton>
-                        </span>
-                      </Tooltip>
-                    ) : (
-                      <>
-                        <Tooltip title={t('inventorySearch.save') || 'Save'}>
+                    <Typography
+                      sx={{ color: HEADER_TEXT, fontWeight: 800, fontSize: 16 }}
+                    >
+                      {t('inventorySearch.binCode')}：<b>{binCode}</b>
+                    </Typography>
+                    <Box display='flex' alignItems='center' gap={2}>
+                      {!editing ? (
+                        <Tooltip title={t('inventorySearch.edit') || 'Edit'}>
                           <span>
                             <IconButton
-                              color='success'
+                              color='primary'
                               size='small'
-                              onClick={() => saveBin(binCode)}
+                              onClick={() => enterEdit(binCode)}
                             >
-                              <CheckCircleIcon fontSize='medium' />
+                              <EditIcon fontSize='medium' />
                             </IconButton>
                           </span>
                         </Tooltip>
-                        <Tooltip
-                          title={t('inventorySearch.cancel') || 'Cancel'}
-                        >
-                          <span>
-                            <IconButton
-                              color='secondary'
-                              size='small'
-                              onClick={() => cancelEdit(binCode)}
-                            >
-                              <CancelIcon fontSize='medium' />
-                            </IconButton>
-                          </span>
-                        </Tooltip>
-                        {!empty && (
-                          <Tooltip title={t('common.add') || 'Add'}>
+                      ) : (
+                        <>
+                          <Tooltip title={t('inventorySearch.save') || 'Save'}>
                             <span>
                               <IconButton
-                                color='primary'
+                                color='success'
                                 size='small'
-                                onClick={() => addRow(binCode)}
+                                onClick={() => saveBin(binCode)}
                               >
-                                <AddCircleOutlineIcon fontSize='medium' />
+                                <CheckCircleIcon fontSize='medium' />
                               </IconButton>
                             </span>
                           </Tooltip>
-                        )}
-                      </>
-                    )}
-                  </Box>
-                </Box>
-
-                <CardContent sx={{ p: 1 }}>
-                  <Paper
-                    variant='outlined'
-                    sx={{
-                      borderRadius: 1.5,
-                      overflow: 'hidden',
-                      borderColor: CELL_BORDER,
-                      background: '#fff'
-                    }}
-                  >
-                    {items.map((it, idx) => {
-                      const key = it.inventoryID ?? ''
-                      const showDivider =
-                        idx < items.length - 1 || (editing && !empty)
-                      const isDeleting = pendingDeleteId === it.inventoryID
-
-                      const viewProd = (productDraft[key] ??
-                        it.productCode) as string
-                      const viewQty = (quantityDraft[key] ?? it.quantity) as
-                        | number
-                        | ''
-
-                      return (
-                        <Box
-                          key={it.inventoryID ?? `empty-${binCode}`}
-                          sx={{
-                            display: 'grid',
-                            gridTemplateColumns: `1fr ${QTY_COL_WIDTH}px`
-                          }}
-                        >
-                          <Box
-                            sx={{
-                              borderRight: `1px solid ${CELL_BORDER}`,
-                              minHeight: CELL_HEIGHT,
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              px: 0.5
-                            }}
+                          <Tooltip
+                            title={t('inventorySearch.cancel') || 'Cancel'}
                           >
-                            {editing ? (
-                              it.inventoryID ? (
-                                <Autocomplete
-                                  options={productCodes}
-                                  size='small'
-                                  value={viewProd}
-                                  onChange={(_, v) =>
-                                    setProductDraft(prev => ({
-                                      ...prev,
-                                      [key]: v || ''
-                                    }))
-                                  }
-                                  renderInput={params => (
-                                    <TextField
-                                      {...params}
-                                      placeholder='ProductCode'
-                                      size='small'
-                                      sx={INPUT_SX_LEFT}
-                                      error={isProdInvalid(viewProd)}
-                                    />
-                                  )}
-                                  sx={{ width: '100%' }}
-                                  noOptionsText=''
-                                />
-                              ) : (
-                                <Autocomplete
-                                  options={productCodes}
-                                  size='small'
-                                  value={emptyDraft[binCode]?.productCode ?? ''}
-                                  onChange={(_, v) =>
-                                    setEmptyDraft(prev => ({
-                                      ...prev,
-                                      [binCode]: {
-                                        productCode: v || '',
-                                        quantity: prev[binCode]?.quantity ?? ''
-                                      }
-                                    }))
-                                  }
-                                  renderInput={params => (
-                                    <TextField
-                                      {...params}
-                                      placeholder='ProductCode'
-                                      size='small'
-                                      sx={INPUT_SX_LEFT}
-                                      error={isProdInvalid(
-                                        emptyDraft[binCode]?.productCode ?? ''
-                                      )}
-                                    />
-                                  )}
-                                  sx={{ width: '100%' }}
-                                  noOptionsText=''
-                                />
-                              )
-                            ) : it.inventoryID ? (
-                              <Typography
-                                sx={{ fontSize: FONT_SIZE, color: CELL_TEXT }}
+                            <span>
+                              <IconButton
+                                color='secondary'
+                                size='small'
+                                onClick={() => cancelEdit(binCode)}
                               >
-                                {it.productCode}
-                              </Typography>
-                            ) : (
-                              <Typography
-                                sx={{ fontSize: FONT_SIZE, color: '#94a3b8' }}
-                              />
-                            )}
-                          </Box>
-
-                          <Box
-                            sx={{
-                              minHeight: CELL_HEIGHT,
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              px: 0.5
-                            }}
-                          >
-                            {editing ? (
-                              it.inventoryID ? (
-                                isDeleting ? (
-                                  <Box
-                                    display='flex'
-                                    alignItems='center'
-                                    gap={0.5}
-                                  >
-                                    <Tooltip
-                                      title={t('common.confirm') || 'Confirm'}
-                                    >
-                                      <span>
-                                        <IconButton
-                                          color='error'
-                                          size='small'
-                                          onClick={() =>
-                                            performDelete(
-                                              it.inventoryID as string
-                                            )
-                                          }
-                                        >
-                                          <CheckCircleIcon fontSize='small' />
-                                        </IconButton>
-                                      </span>
-                                    </Tooltip>
-                                    <Tooltip
-                                      title={t('common.cancel') || 'Cancel'}
-                                    >
-                                      <span>
-                                        <IconButton
-                                          color='secondary'
-                                          size='small'
-                                          onClick={() =>
-                                            setPendingDeleteId(null)
-                                          }
-                                        >
-                                          <CancelIcon fontSize='small' />
-                                        </IconButton>
-                                      </span>
-                                    </Tooltip>
-                                  </Box>
-                                ) : (
-                                  <Box
-                                    display='flex'
-                                    alignItems='center'
-                                    gap={0.5}
-                                    sx={{
-                                      width: '100%',
-                                      justifyContent: 'center'
-                                    }}
-                                  >
-                                    <TextField
-                                      type='number'
-                                      size='small'
-                                      value={viewQty}
-                                      onChange={e => {
-                                        const v = e.target.value
-                                        setQuantityDraft(prev => ({
-                                          ...prev,
-                                          [key]: v === '' ? '' : Number(v)
-                                        }))
-                                      }}
-                                      sx={{
-                                        width: QTY_COL_WIDTH - 30,
-                                        ...INPUT_SX_CENTER
-                                      }}
-                                      error={isQtyInvalid(viewQty)}
-                                    />
-                                    <Tooltip
-                                      title={
-                                        t('inventorySearch.delete') || 'Delete'
-                                      }
-                                    >
-                                      <span>
-                                        <IconButton
-                                          color='error'
-                                          size='small'
-                                          onClick={() =>
-                                            setPendingDeleteId(
-                                              it.inventoryID || null
-                                            )
-                                          }
-                                        >
-                                          <DeleteIcon fontSize='small' />
-                                        </IconButton>
-                                      </span>
-                                    </Tooltip>
-                                  </Box>
-                                )
-                              ) : (
-                                <TextField
-                                  type='number'
+                                <CancelIcon fontSize='medium' />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+                          {!empty && (
+                            <Tooltip title={t('common.add') || 'Add'}>
+                              <span>
+                                <IconButton
+                                  color='primary'
                                   size='small'
-                                  value={emptyDraft[binCode]?.quantity ?? ''}
-                                  onChange={e => {
-                                    const v = e.target.value
-                                    setEmptyDraft(prev => ({
-                                      ...prev,
-                                      [binCode]: {
-                                        productCode:
-                                          prev[binCode]?.productCode ?? '',
-                                        quantity: v === '' ? '' : Number(v)
-                                      }
-                                    }))
-                                  }}
-                                  sx={{
-                                    width: QTY_COL_WIDTH - 16,
-                                    ...INPUT_SX_CENTER
-                                  }}
-                                  error={isQtyInvalid(
-                                    emptyDraft[binCode]?.quantity
-                                  )}
-                                />
-                              )
-                            ) : it.inventoryID ? (
-                              <Typography
-                                sx={{
-                                  fontSize: FONT_SIZE,
-                                  color: CELL_TEXT,
-                                  fontWeight: 700
-                                }}
-                              >
-                                {it.quantity}
-                              </Typography>
-                            ) : (
-                              <Typography
-                                sx={{ fontSize: FONT_SIZE, color: '#94a3b8' }}
-                              />
-                            )}
-                          </Box>
-
-                          {showDivider && (
-                            <Divider sx={{ gridColumn: '1 / -1' }} />
+                                  onClick={() => addRow(binCode)}
+                                >
+                                  <AddCircleOutlineIcon fontSize='medium' />
+                                </IconButton>
+                              </span>
+                            </Tooltip>
                           )}
-                        </Box>
-                      )
-                    })}
+                        </>
+                      )}
+                    </Box>
+                  </Box>
 
-                    {editing &&
-                      !empty &&
-                      (newRows[binCode] || []).map((row, idx) => (
-                        <React.Fragment key={`new-${binCode}-${idx}`}>
+                  <CardContent sx={{ p: 1 }}>
+                    <Paper
+                      variant='outlined'
+                      sx={{
+                        borderRadius: 1.5,
+                        overflow: 'hidden',
+                        borderColor: CELL_BORDER,
+                        background: '#fff'
+                      }}
+                    >
+                      {items.map((it, idx) => {
+                        const key = it.inventoryID ?? ''
+                        const showDivider =
+                          idx < items.length - 1 || (editing && !empty)
+                        const isDeleting = pendingDeleteId === it.inventoryID
+
+                        const viewProd = (productDraft[key] ??
+                          it.productCode) as string
+                        const viewQty = (quantityDraft[key] ?? it.quantity) as
+                          | number
+                          | ''
+
+                        return (
                           <Box
+                            key={it.inventoryID ?? `empty-${binCode}`}
                             sx={{
                               display: 'grid',
                               gridTemplateColumns: `1fr ${QTY_COL_WIDTH}px`
@@ -736,28 +524,75 @@ const InventoryMobileBinCards: React.FC = () => {
                                 px: 0.5
                               }}
                             >
-                              <Autocomplete
-                                options={productCodes}
-                                size='small'
-                                value={row.productCode}
-                                onChange={(_, v) =>
-                                  setNewRow(binCode, idx, {
-                                    productCode: v || ''
-                                  })
-                                }
-                                renderInput={params => (
-                                  <TextField
-                                    {...params}
-                                    placeholder='ProductCode'
+                              {editing ? (
+                                it.inventoryID ? (
+                                  <Autocomplete
+                                    options={productCodes}
                                     size='small'
-                                    sx={INPUT_SX_LEFT}
-                                    error={isProdInvalid(row.productCode)}
+                                    value={viewProd}
+                                    onChange={(_, v) =>
+                                      setProductDraft(prev => ({
+                                        ...prev,
+                                        [key]: v || ''
+                                      }))
+                                    }
+                                    renderInput={params => (
+                                      <TextField
+                                        {...params}
+                                        placeholder='ProductCode'
+                                        size='small'
+                                        sx={INPUT_SX_LEFT}
+                                        error={isProdInvalid(viewProd)}
+                                      />
+                                    )}
+                                    sx={{ width: '100%' }}
+                                    noOptionsText=''
                                   />
-                                )}
-                                sx={{ width: '100%' }}
-                                noOptionsText=''
-                              />
+                                ) : (
+                                  <Autocomplete
+                                    options={productCodes}
+                                    size='small'
+                                    value={
+                                      emptyDraft[binCode]?.productCode ?? ''
+                                    }
+                                    onChange={(_, v) =>
+                                      setEmptyDraft(prev => ({
+                                        ...prev,
+                                        [binCode]: {
+                                          productCode: v || '',
+                                          quantity:
+                                            prev[binCode]?.quantity ?? ''
+                                        }
+                                      }))
+                                    }
+                                    renderInput={params => (
+                                      <TextField
+                                        {...params}
+                                        placeholder='ProductCode'
+                                        size='small'
+                                        sx={INPUT_SX_LEFT}
+                                        error={isProdInvalid(
+                                          emptyDraft[binCode]?.productCode ?? ''
+                                        )}
+                                      />
+                                    )}
+                                    sx={{ width: '100%' }}
+                                    noOptionsText=''
+                                  />
+                                )
+                              ) : it.inventoryID ? (
+                                <Typography
+                                  sx={{ fontSize: FONT_SIZE, color: CELL_TEXT }}
+                                >
+                                  {it.productCode}
+                                </Typography>
+                              ) : (
+                                <Typography
+                                  sx={{ fontSize: FONT_SIZE, color: '#94a3b8' }}
+                                />
+                              )}
                             </Box>
+
                             <Box
                               sx={{
                                 minHeight: CELL_HEIGHT,
@@ -767,50 +602,246 @@ const InventoryMobileBinCards: React.FC = () => {
                                 px: 0.5
                               }}
                             >
-                              <Box
-                                display='flex'
-                                alignItems='center'
-                                gap={0.5}
-                                sx={{ width: '100%', justifyContent: 'center' }}
-                              >
-                                <TextField
-                                  type='number'
-                                  size='small'
-                                  value={row.quantity}
-                                  onChange={e => {
-                                    const v = e.target.value
-                                    setNewRow(binCode, idx, {
-                                      quantity: v === '' ? '' : Number(v)
-                                    })
-                                  }}
-                                  sx={{
-                                    width: QTY_COL_WIDTH - 30,
-                                    ...INPUT_SX_CENTER
-                                  }}
-                                  error={isQtyInvalid(row.quantity)}
-                                />
-                                <Tooltip title='Remove'>
-                                  <span>
-                                    <IconButton
-                                      color='error'
-                                      size='small'
-                                      onClick={() => removeNewRow(binCode, idx)}
+                              {editing ? (
+                                it.inventoryID ? (
+                                  isDeleting ? (
+                                    <Box
+                                      display='flex'
+                                      alignItems='center'
+                                      gap={0.5}
                                     >
-                                      <DeleteIcon fontSize='small' />
-                                    </IconButton>
-                                  </span>
-                                </Tooltip>
+                                      <Tooltip
+                                        title={t('common.confirm') || 'Confirm'}
+                                      >
+                                        <span>
+                                          <IconButton
+                                            color='error'
+                                            size='small'
+                                            onClick={() =>
+                                              performDelete(
+                                                it.inventoryID as string
+                                              )
+                                            }
+                                          >
+                                            <CheckCircleIcon fontSize='small' />
+                                          </IconButton>
+                                        </span>
+                                      </Tooltip>
+                                      <Tooltip
+                                        title={t('common.cancel') || 'Cancel'}
+                                      >
+                                        <span>
+                                          <IconButton
+                                            color='secondary'
+                                            size='small'
+                                            onClick={() =>
+                                              setPendingDeleteId(null)
+                                            }
+                                          >
+                                            <CancelIcon fontSize='small' />
+                                          </IconButton>
+                                        </span>
+                                      </Tooltip>
+                                    </Box>
+                                  ) : (
+                                    <Box
+                                      display='flex'
+                                      alignItems='center'
+                                      gap={0.5}
+                                      sx={{
+                                        width: '100%',
+                                        justifyContent: 'center'
+                                      }}
+                                    >
+                                      <TextField
+                                        type='number'
+                                        size='small'
+                                        value={viewQty}
+                                        onChange={e => {
+                                          const v = e.target.value
+                                          setQuantityDraft(prev => ({
+                                            ...prev,
+                                            [key]: v === '' ? '' : Number(v)
+                                          }))
+                                        }}
+                                        sx={{
+                                          width: QTY_COL_WIDTH - 30,
+                                          ...INPUT_SX_CENTER
+                                        }}
+                                        error={isQtyInvalid(viewQty)}
+                                      />
+                                      <Tooltip
+                                        title={
+                                          t('inventorySearch.delete') ||
+                                          'Delete'
+                                        }
+                                      >
+                                        <span>
+                                          <IconButton
+                                            color='error'
+                                            size='small'
+                                            onClick={() =>
+                                              setPendingDeleteId(
+                                                it.inventoryID || null
+                                              )
+                                            }
+                                          >
+                                            <DeleteIcon fontSize='small' />
+                                          </IconButton>
+                                        </span>
+                                      </Tooltip>
+                                    </Box>
+                                  )
+                                ) : (
+                                  <TextField
+                                    type='number'
+                                    size='small'
+                                    value={emptyDraft[binCode]?.quantity ?? ''}
+                                    onChange={e => {
+                                      const v = e.target.value
+                                      setEmptyDraft(prev => ({
+                                        ...prev,
+                                        [binCode]: {
+                                          productCode:
+                                            prev[binCode]?.productCode ?? '',
+                                          quantity: v === '' ? '' : Number(v)
+                                        }
+                                      }))
+                                    }}
+                                    sx={{
+                                      width: QTY_COL_WIDTH - 16,
+                                      ...INPUT_SX_CENTER
+                                    }}
+                                    error={isQtyInvalid(
+                                      emptyDraft[binCode]?.quantity
+                                    )}
+                                  />
+                                )
+                              ) : it.inventoryID ? (
+                                <Typography
+                                  sx={{
+                                    fontSize: FONT_SIZE,
+                                    color: CELL_TEXT,
+                                    fontWeight: 700
+                                  }}
+                                >
+                                  {it.quantity}
+                                </Typography>
+                              ) : (
+                                <Typography
+                                  sx={{ fontSize: FONT_SIZE, color: '#94a3b8' }}
+                                />
+                              )}
+                            </Box>
+
+                            {showDivider && (
+                              <Divider sx={{ gridColumn: '1 / -1' }} />
+                            )}
+                          </Box>
+                        )
+                      })}
+
+                      {editing &&
+                        !empty &&
+                        (newRows[binCode] || []).map((row, idx) => (
+                          <React.Fragment key={`new-${binCode}-${idx}`}>
+                            <Box
+                              sx={{
+                                display: 'grid',
+                                gridTemplateColumns: `1fr ${QTY_COL_WIDTH}px`
+                              }}
+                            >
+                              <Box
+                                sx={{
+                                  borderRight: `1px solid ${CELL_BORDER}`,
+                                  minHeight: CELL_HEIGHT,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  px: 0.5
+                                }}
+                              >
+                                <Autocomplete
+                                  options={productCodes}
+                                  size='small'
+                                  value={row.productCode}
+                                  onChange={(_, v) =>
+                                    setNewRow(binCode, idx, {
+                                      productCode: v || ''
+                                    })
+                                  }
+                                  renderInput={params => (
+                                    <TextField
+                                      {...params}
+                                      placeholder='ProductCode'
+                                      size='small'
+                                      sx={INPUT_SX_LEFT}
+                                      error={isProdInvalid(row.productCode)}
+                                    />
+                                  )}
+                                  sx={{ width: '100%' }}
+                                  noOptionsText=''
+                                />
+                              </Box>
+                              <Box
+                                sx={{
+                                  minHeight: CELL_HEIGHT,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  px: 0.5
+                                }}
+                              >
+                                <Box
+                                  display='flex'
+                                  alignItems='center'
+                                  gap={0.5}
+                                  sx={{
+                                    width: '100%',
+                                    justifyContent: 'center'
+                                  }}
+                                >
+                                  <TextField
+                                    type='number'
+                                    size='small'
+                                    value={row.quantity}
+                                    onChange={e => {
+                                      const v = e.target.value
+                                      setNewRow(binCode, idx, {
+                                        quantity: v === '' ? '' : Number(v)
+                                      })
+                                    }}
+                                    sx={{
+                                      width: QTY_COL_WIDTH - 30,
+                                      ...INPUT_SX_CENTER
+                                    }}
+                                    error={isQtyInvalid(row.quantity)}
+                                  />
+                                  <Tooltip title='Remove'>
+                                    <span>
+                                      <IconButton
+                                        color='error'
+                                        size='small'
+                                        onClick={() =>
+                                          removeNewRow(binCode, idx)
+                                        }
+                                      >
+                                        <DeleteIcon fontSize='small' />
+                                      </IconButton>
+                                    </span>
+                                  </Tooltip>
+                                </Box>
                               </Box>
                             </Box>
-                          </Box>
-                          <Divider />
-                        </React.Fragment>
-                      ))}
-                  </Paper>
-                </CardContent>
-              </Card>
-            )
-          })}
+                            <Divider />
+                          </React.Fragment>
+                        ))}
+                    </Paper>
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </Box>
         </Box>
       )}
 
