@@ -73,6 +73,29 @@ type EmptyDraft = Record<string, { productCode: string; quantity: number | '' }>
 const isEmptyBin = (items: InventoryItem[]) =>
   items.length === 1 && !items[0].inventoryID
 
+const MIN_SUGGEST_CHARS = 1
+const filterProductOptions = (
+  options: string[],
+  state: { inputValue: string }
+) => {
+  const q = (state.inputValue || '').trim().toLowerCase()
+  if (q.length < MIN_SUGGEST_CHARS) return []
+  const out: string[] = []
+  for (let i = 0; i < options.length && out.length < 50; i++) {
+    const o = options[i]
+    if (o.toLowerCase().startsWith(q)) out.push(o)
+  }
+  return out
+}
+
+const PRODUCT_AC_PROPS = {
+  openOnFocus: false,
+  forcePopupIcon: false,
+  filterOptions: filterProductOptions as any,
+  ListboxProps: { style: { maxHeight: 300 } },
+  noOptionsText: '' as const
+}
+
 const InventoryMobileBinCards: React.FC = () => {
   const { t } = useTranslation()
   const [keyword, setKeyword] = useState('')
@@ -180,11 +203,9 @@ const InventoryMobileBinCards: React.FC = () => {
       return isProdInvalid(finalP) || isQtyInvalid(finalQ)
     })
 
-    const hasInvalidNew =
-      !empty &&
-      (newRows[binCode] || []).some(r => {
-        return isProdInvalid(r.productCode) || isQtyInvalid(r.quantity)
-      })
+    const hasInvalidNew = (newRows[binCode] || []).some(r => {
+      return isProdInvalid(r.productCode) || isQtyInvalid(r.quantity)
+    })
 
     const hasInvalidEmpty =
       empty &&
@@ -211,7 +232,7 @@ const InventoryMobileBinCards: React.FC = () => {
           if (finalP !== it.productCode || finalQ !== it.quantity) {
             return {
               inventoryID: it.inventoryID,
-              productCode: finalP,
+              productCode: finalP.trim(),
               quantity: finalQ
             }
           }
@@ -225,25 +246,25 @@ const InventoryMobileBinCards: React.FC = () => {
 
       if (updates.length) await editInventoriesBulk(updates)
 
-      if (empty && emptyD) {
+      if (empty && emptyD && emptyD.productCode.trim()) {
         await addInventory({
           binCode,
           productCode: emptyD.productCode.trim(),
           quantity: Number(emptyD.quantity)
         })
       }
-      if (!empty) {
-        for (const row of newRows[binCode] || []) {
-          await addInventory({
-            binCode,
-            productCode: row.productCode.trim(),
-            quantity: Number(row.quantity)
-          })
-        }
+
+      for (const row of newRows[binCode] || []) {
+        await addInventory({
+          binCode,
+          productCode: row.productCode.trim(),
+          quantity: Number(row.quantity)
+        })
       }
 
       if (keyword.trim())
         await fetchInventories({ keyword: keyword.trim(), limit: 100 })
+
       cancelEdit(binCode)
       showSnack(t('common.saved') || 'Saved', 'success')
     } finally {
@@ -398,7 +419,6 @@ const InventoryMobileBinCards: React.FC = () => {
             {binCodes.map(binCode => {
               const items = grouped[binCode] || []
               const editing = editingBin === binCode
-              const empty = isEmptyBin(items)
 
               return (
                 <Card
@@ -466,19 +486,18 @@ const InventoryMobileBinCards: React.FC = () => {
                               </IconButton>
                             </span>
                           </Tooltip>
-                          {!empty && (
-                            <Tooltip title={t('common.add') || 'Add'}>
-                              <span>
-                                <IconButton
-                                  color='primary'
-                                  size='small'
-                                  onClick={() => addRow(binCode)}
-                                >
-                                  <AddCircleOutlineIcon fontSize='medium' />
-                                </IconButton>
-                              </span>
-                            </Tooltip>
-                          )}
+
+                          <Tooltip title={t('common.add') || 'Add'}>
+                            <span>
+                              <IconButton
+                                color='primary'
+                                size='small'
+                                onClick={() => addRow(binCode)}
+                              >
+                                <AddCircleOutlineIcon fontSize='medium' />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
                         </>
                       )}
                     </Box>
@@ -497,7 +516,8 @@ const InventoryMobileBinCards: React.FC = () => {
                       {items.map((it, idx) => {
                         const key = it.inventoryID ?? ''
                         const showDivider =
-                          idx < items.length - 1 || (editing && !empty)
+                          idx < items.length - 1 ||
+                          (editing && (newRows[binCode]?.length || 0) > 0)
                         const isDeleting = pendingDeleteId === it.inventoryID
 
                         const viewProd = (productDraft[key] ??
@@ -536,6 +556,7 @@ const InventoryMobileBinCards: React.FC = () => {
                                         [key]: v || ''
                                       }))
                                     }
+                                    {...PRODUCT_AC_PROPS}
                                     renderInput={params => (
                                       <TextField
                                         {...params}
@@ -546,7 +567,6 @@ const InventoryMobileBinCards: React.FC = () => {
                                       />
                                     )}
                                     sx={{ width: '100%' }}
-                                    noOptionsText=''
                                   />
                                 ) : (
                                   <Autocomplete
@@ -565,6 +585,7 @@ const InventoryMobileBinCards: React.FC = () => {
                                         }
                                       }))
                                     }
+                                    {...PRODUCT_AC_PROPS}
                                     renderInput={params => (
                                       <TextField
                                         {...params}
@@ -577,7 +598,6 @@ const InventoryMobileBinCards: React.FC = () => {
                                       />
                                     )}
                                     sx={{ width: '100%' }}
-                                    noOptionsText=''
                                   />
                                 )
                               ) : it.inventoryID ? (
@@ -742,7 +762,6 @@ const InventoryMobileBinCards: React.FC = () => {
                       })}
 
                       {editing &&
-                        !empty &&
                         (newRows[binCode] || []).map((row, idx) => (
                           <React.Fragment key={`new-${binCode}-${idx}`}>
                             <Box
@@ -770,6 +789,7 @@ const InventoryMobileBinCards: React.FC = () => {
                                       productCode: v || ''
                                     })
                                   }
+                                  {...PRODUCT_AC_PROPS}
                                   renderInput={params => (
                                     <TextField
                                       {...params}
@@ -780,7 +800,6 @@ const InventoryMobileBinCards: React.FC = () => {
                                     />
                                   )}
                                   sx={{ width: '100%' }}
-                                  noOptionsText=''
                                 />
                               </Box>
                               <Box
