@@ -76,7 +76,7 @@ const isEmptyBin = (items: InventoryItem[]) =>
 const InventoryMobileBinCards: React.FC = () => {
   const { t } = useTranslation()
   const [keyword, setKeyword] = useState('')
-  const [searchInput, setSearchInput] = useState('') // 顶部搜索的受控输入
+  const [searchInput, setSearchInput] = useState('')
   const [isFetching, setIsFetching] = useState(false)
 
   const {
@@ -95,7 +95,6 @@ const InventoryMobileBinCards: React.FC = () => {
   const [emptyDraft, setEmptyDraft] = useState<EmptyDraft>({})
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
 
-  // —— Snackbar
   const [snack, setSnack] = useState<{
     open: boolean
     message: string
@@ -118,13 +117,6 @@ const InventoryMobileBinCards: React.FC = () => {
     await fetchInventories({ keyword: k, limit: 100 })
     setIsFetching(false)
   }
-
-  // 顶部搜索：预先计算匹配项；只有有匹配时才展开菜单
-  const searchMatches = useMemo(() => {
-    const q = searchInput.trim().toLowerCase()
-    if (!q) return []
-    return productCodes.filter(opt => opt.toLowerCase().includes(q))
-  }, [productCodes, searchInput])
 
   const grouped = useMemo(() => {
     const map: Record<string, InventoryItem[]> = {}
@@ -292,26 +284,42 @@ const InventoryMobileBinCards: React.FC = () => {
     })
   }
 
+  const doSearch = () => {
+    const kw = searchInput.trim()
+    if (!kw) return
+    setKeyword(kw)
+    loadByKeyword(kw)
+  }
+
   return (
     <Box px={2} py={1} sx={{ mx: 'auto', maxWidth: 560 }}>
-      {/* 顶部搜索：只有有匹配时才展开，不会出现空白下拉 */}
       <Box mb={1}>
         <Autocomplete
           fullWidth
-          options={searchMatches}
+          options={
+            searchInput.trim()
+              ? productCodes.filter(opt =>
+                  opt.toLowerCase().includes(searchInput.trim().toLowerCase())
+                )
+              : []
+          }
           value={keyword}
           inputValue={searchInput}
           onChange={(_, v) => {
-            const kw = v || ''
-            setKeyword(kw)
-            setSearchInput(kw)
-            loadByKeyword(kw)
+            const val = v || ''
+            setKeyword(val)
+            setSearchInput(val)
           }}
           onInputChange={(_, v) => {
             setSearchInput(v)
             setKeyword(v)
           }}
-          open={searchInput.trim().length > 0 && searchMatches.length > 0}
+          open={
+            searchInput.trim().length > 0 &&
+            productCodes.some(c =>
+              c.toLowerCase().includes(searchInput.trim().toLowerCase())
+            )
+          }
           openOnFocus={false}
           isOptionEqualToValue={(opt, val) => opt === val}
           renderInput={params => (
@@ -320,7 +328,10 @@ const InventoryMobileBinCards: React.FC = () => {
               placeholder={t('inventorySearch.searchPlaceholder')}
               size='small'
               onKeyDown={e => {
-                if (e.key === 'Enter') loadByKeyword(keyword)
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  doSearch()
+                }
               }}
               InputProps={{
                 ...params.InputProps,
@@ -336,13 +347,20 @@ const InventoryMobileBinCards: React.FC = () => {
                 },
                 endAdornment: (
                   <InputAdornment position='end'>
-                    <SearchIcon sx={{ color: '#888', fontSize: 18, mr: 1 }} />
+                    <IconButton
+                      aria-label='search'
+                      onClick={doSearch}
+                      size='small'
+                      sx={{ p: 1 }}
+                    >
+                      <SearchIcon sx={{ color: '#888', fontSize: 18 }} />
+                    </IconButton>
                   </InputAdornment>
                 )
               }}
             />
           )}
-          noOptionsText='' // 没匹配时不显示“无匹配项”
+          noOptionsText=''
         />
       </Box>
 
@@ -388,7 +406,7 @@ const InventoryMobileBinCards: React.FC = () => {
                   >
                     {t('inventorySearch.binCode')}：<b>{binCode}</b>
                   </Typography>
-                  <Box display='flex' alignItems='center' gap={0.25}>
+                  <Box display='flex' alignItems='center' gap={2}>
                     {!editing ? (
                       <Tooltip title={t('inventorySearch.edit') || 'Edit'}>
                         <span>
@@ -397,7 +415,7 @@ const InventoryMobileBinCards: React.FC = () => {
                             size='small'
                             onClick={() => enterEdit(binCode)}
                           >
-                            <EditIcon fontSize='small' />
+                            <EditIcon fontSize='medium' />
                           </IconButton>
                         </span>
                       </Tooltip>
@@ -410,7 +428,7 @@ const InventoryMobileBinCards: React.FC = () => {
                               size='small'
                               onClick={() => saveBin(binCode)}
                             >
-                              <CheckCircleIcon fontSize='small' />
+                              <CheckCircleIcon fontSize='medium' />
                             </IconButton>
                           </span>
                         </Tooltip>
@@ -423,7 +441,7 @@ const InventoryMobileBinCards: React.FC = () => {
                               size='small'
                               onClick={() => cancelEdit(binCode)}
                             >
-                              <CancelIcon fontSize='small' />
+                              <CancelIcon fontSize='medium' />
                             </IconButton>
                           </span>
                         </Tooltip>
@@ -435,7 +453,7 @@ const InventoryMobileBinCards: React.FC = () => {
                                 size='small'
                                 onClick={() => addRow(binCode)}
                               >
-                                <AddCircleOutlineIcon fontSize='small' />
+                                <AddCircleOutlineIcon fontSize='medium' />
                               </IconButton>
                             </span>
                           </Tooltip>
@@ -475,7 +493,6 @@ const InventoryMobileBinCards: React.FC = () => {
                             gridTemplateColumns: `1fr ${QTY_COL_WIDTH}px`
                           }}
                         >
-                          {/* 左：产品码 */}
                           <Box
                             sx={{
                               borderRight: `1px solid ${CELL_BORDER}`,
@@ -552,7 +569,6 @@ const InventoryMobileBinCards: React.FC = () => {
                             )}
                           </Box>
 
-                          {/* 右：数量 / 删除确认 */}
                           <Box
                             sx={{
                               minHeight: CELL_HEIGHT,
@@ -700,7 +716,6 @@ const InventoryMobileBinCards: React.FC = () => {
                       )
                     })}
 
-                    {/* 新增行 */}
                     {editing &&
                       !empty &&
                       (newRows[binCode] || []).map((row, idx) => (
@@ -799,7 +814,6 @@ const InventoryMobileBinCards: React.FC = () => {
         </Box>
       )}
 
-      {/* 全局 Snackbar */}
       <Snackbar
         open={snack.open}
         autoHideDuration={2500}
