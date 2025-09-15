@@ -25,6 +25,36 @@ interface ProfileDrawerProps {
   onClose: () => void
 }
 
+const TOGGLE_GROUP_SX = {
+  mb: 1.25,
+  display: 'flex',
+
+  gap: 1,
+
+  '& .MuiToggleButton-root': {
+    flex: 1,
+    textTransform: 'none',
+    fontSize: '0.8rem',
+    px: 1,
+    py: 0.5,
+    fontWeight: 600,
+    borderColor: '#e6ebf2',
+    color: '#64748b',
+    backgroundColor: '#f9fafb',
+    '&:hover': {
+      backgroundColor: '#f1f5f9'
+    }
+  },
+  '& .MuiToggleButton-root.Mui-selected': {
+    color: '#2563eb',
+    borderColor: '#2563eb',
+    backgroundColor: 'rgba(37, 99, 235, 0.12)',
+    '&:hover': {
+      backgroundColor: 'rgba(37, 99, 235, 0.2)'
+    }
+  }
+} as const
+
 const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ open, onClose }) => {
   const { userProfile, handleLogout } = useAuth()
   const { t, i18n } = useTranslation()
@@ -59,7 +89,7 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ open, onClose }) => {
     <Drawer anchor='left' open={open} onClose={onClose}>
       <Box
         sx={{
-          width: 280,
+          width: 300,
           p: 0,
           display: 'flex',
           flexDirection: 'column',
@@ -67,6 +97,7 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ open, onClose }) => {
         }}
         role='presentation'
       >
+        {/* Header */}
         <Box
           sx={{
             position: 'sticky',
@@ -90,6 +121,7 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ open, onClose }) => {
           </IconButton>
         </Box>
 
+        {/* Body */}
         <Box sx={{ p: 2, overflowY: 'auto' }}>
           <Stack direction='row' alignItems='center' spacing={2} sx={{ mb: 2 }}>
             <Avatar src='/profile.jpg' sx={{ width: 50, height: 50 }} />
@@ -122,18 +154,7 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ open, onClose }) => {
             fullWidth
             size='small'
             aria-label={t('profile.language')}
-            sx={{
-              mb: 1.25,
-              '& .MuiToggleButton-root': {
-                flex: 1,
-                textTransform: 'none',
-                fontSize: '0.8rem',
-                px: 1,
-                py: 0.5,
-                fontWeight: 600,
-                borderColor: '#e6ebf2'
-              }
-            }}
+            sx={TOGGLE_GROUP_SX}
           >
             <ToggleButton value='zh' aria-label={t('profile.lang.zh')}>
               {t('profile.lang.zh')}
@@ -151,28 +172,16 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ open, onClose }) => {
             value={mode}
             onChange={handleModeChange}
             fullWidth
-            color='primary'
             size='small'
             aria-label={t('profile.defaultScanMode')}
-            sx={{
-              mb: 1.25,
-              '& .MuiToggleButton-root': {
-                flex: 1,
-                textTransform: 'none',
-                fontSize: '0.8rem',
-                px: 1,
-                py: 0.5,
-                fontWeight: 600,
-                borderColor: '#e6ebf2'
-              }
-            }}
+            sx={TOGGLE_GROUP_SX}
           >
             <ToggleButton value='camera' aria-label={t('scan.camera')}>
-              <SmartphoneIcon sx={{ mr: 0.5, fontSize: 18 }} />
+              <SmartphoneIcon sx={{ mr: 0.5, fontSize: 16 }} />
               {t('scan.camera')}
             </ToggleButton>
             <ToggleButton value='gun' aria-label={t('scan.scanner')}>
-              <QrCodeScannerIcon sx={{ mr: 0.5, fontSize: 18 }} />
+              <QrCodeScannerIcon sx={{ mr: 0.5, fontSize: 16 }} />
               {t('scan.scanner')}
             </ToggleButton>
           </ToggleButtonGroup>
@@ -189,7 +198,7 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ open, onClose }) => {
               handleLogout()
               onClose()
             }}
-            sx={{ fontSize: '0.85rem', py: 0.5 }}
+            sx={{ fontSize: '0.9rem', py: 0.6 }}
           >
             {t('profile.signOut')}
           </Button>
