@@ -258,7 +258,18 @@
   },
   "common": {
     "qty": "数量 {{qty}}",
-        "cancel": "取消"
+        "cancel": "取消",
+
+
+            "saved": "已保存",
+    "deleted": "已删除",
+    "added": "已新增",
+    "updated": "已更新",
+    "removed": "已移除",
+    "refreshing": "正在刷新…",
+    "confirm": "确认",
+    "add": "新增",
+    "remove": "移除"
   },
 
   "queryProduct": {

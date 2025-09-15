@@ -257,7 +257,18 @@
   },
   "common": {
     "qty": "Qty {{qty}}",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+
+
+          "saved": "Saved",
+    "deleted": "Deleted",
+    "added": "Added",
+    "updated": "Updated",
+    "removed": "Removed",
+    "refreshing": "Refreshing…",
+    "confirm": "Confirm",
+    "add": "Add",
+    "remove": "Remove"
 
   },
 
