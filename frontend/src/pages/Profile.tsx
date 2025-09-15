@@ -17,6 +17,8 @@ import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner'
 import { useAuth } from 'hooks/useAuth'
 import { useTranslation } from 'react-i18next'
 import { useMemo, useState } from 'react'
+import LanguageIcon from '@mui/icons-material/Language'
+import TranslateIcon from '@mui/icons-material/Translate'
 
 type Mode = 'camera' | 'gun'
 
@@ -143,7 +145,6 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ open, onClose }) => {
           <Typography sx={{ mb: 1 }}>{roleLabel}</Typography>
 
           <Divider sx={{ my: 1 }} />
-
           <Typography fontSize={13} fontWeight='bold' sx={{ mb: 0.5 }}>
             {t('profile.language')}
           </Typography>
@@ -157,9 +158,11 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ open, onClose }) => {
             sx={TOGGLE_GROUP_SX}
           >
             <ToggleButton value='zh' aria-label={t('profile.lang.zh')}>
+              <TranslateIcon sx={{ mr: 0.5, fontSize: 16 }} />
               {t('profile.lang.zh')}
             </ToggleButton>
             <ToggleButton value='en' aria-label={t('profile.lang.en')}>
+              <LanguageIcon sx={{ mr: 0.5, fontSize: 16 }} />
               {t('profile.lang.en')}
             </ToggleButton>
           </ToggleButtonGroup>
