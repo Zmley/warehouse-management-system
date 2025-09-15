@@ -133,7 +133,7 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
       >
         <Box
           p={2}
-          pt={1}
+          pt={0.5}
           sx={{
             position: 'relative',
             backgroundColor: '#F7F9FC',
@@ -145,7 +145,7 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
               display: 'grid',
               gridTemplateColumns: '1fr auto 1fr',
               alignItems: 'center',
-              mb: 1
+              mb: 0.25
             }}
           >
             <Box />
@@ -153,7 +153,7 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
               sx={{
                 justifySelf: 'center',
                 color: 'text.secondary',
-                fontSize: 13,
+                fontSize: 12,
                 fontStyle: 'italic'
               }}
             >
@@ -169,7 +169,7 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
             >
               <Typography
                 sx={{
-                  fontSize: 13,
+                  fontSize: 12,
                   fontWeight: 'bold',
                   color: showOutOfStock ? '#d32f2f' : '#2563eb'
                 }}
@@ -185,8 +185,8 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
                 sx={{
                   backgroundColor: '#f0f0f0',
                   borderRadius: '50%',
-                  width: 36,
-                  height: 36
+                  width: 24,
+                  height: 24
                 }}
                 aria-label={
                   showOutOfStock

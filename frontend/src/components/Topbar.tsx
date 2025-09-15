@@ -9,6 +9,7 @@ import {
 import { Menu as MenuIcon } from '@mui/icons-material'
 import { useTranslation } from 'react-i18next'
 import ProfileDrawer from 'pages/Profile'
+import { TOPBAR_HEIGHT } from 'pages/Dashboard'
 
 interface TopBarProps {
   userName: string
@@ -30,7 +31,7 @@ const TopBar: React.FC<TopBarProps> = ({ userName }) => {
     <>
       <Box
         sx={{
-          height: 56,
+          height: TOPBAR_HEIGHT,
 
           display: 'flex',
           alignItems: 'center',

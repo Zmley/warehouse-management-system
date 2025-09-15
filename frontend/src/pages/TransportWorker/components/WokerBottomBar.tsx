@@ -5,6 +5,7 @@ import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined'
 import AddIcon from '@mui/icons-material/Add'
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined'
 import { useTranslation } from 'react-i18next'
+import { BOTTOMBAR_HEIGHT } from 'pages/Dashboard'
 
 interface BottomBarProps {
   onCartClick: () => void
@@ -28,7 +29,7 @@ const WokerBottomBarComponent: React.FC<BottomBarProps> = ({
     (tab: string) => activeTab === tab,
     [activeTab]
   )
-  const colorFor = (tab: string) => (isActive(tab) ? '#2563eb' : '#6b7280') // 提高可读性（灰600）
+  const colorFor = (tab: string) => (isActive(tab) ? '#2563eb' : '#6b7280')
 
   return (
     <Box
@@ -37,7 +38,7 @@ const WokerBottomBarComponent: React.FC<BottomBarProps> = ({
         bottom: 0,
         left: 0,
         right: 0,
-        height: 68,
+        height: BOTTOMBAR_HEIGHT,
         backgroundColor: '#fff',
         boxShadow: '0 -1px 6px rgba(0, 0, 0, 0.06)',
         display: 'flex',
@@ -131,7 +132,6 @@ const BottomBarItem: React.FC<{
     sx={{
       flex: 1,
       display: 'flex',
-      flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
       cursor: 'pointer',
@@ -142,27 +142,36 @@ const BottomBarItem: React.FC<{
   >
     <Box
       sx={{
-        width: 24,
-        height: 24,
         display: 'flex',
+        flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center'
+        transform:
+          'translateY(calc(-6px - (env(safe-area-inset-bottom, 0px) / 2)))'
       }}
     >
-      {icon}
+      <Box
+        sx={{
+          width: 24,
+          height: 24,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
+      >
+        {icon}
+      </Box>
+      <Typography
+        sx={{
+          fontWeight: 500,
+          fontSize: 12,
+          mt: 0.2,
+          color: isActive ? '#2563eb' : '#6b7280',
+          transition: 'color 0.2s ease'
+        }}
+      >
+        {label}
+      </Typography>
     </Box>
-    <Typography
-      sx={{
-        fontWeight: 500,
-        fontSize: 12,
-        mt: 0.4,
-        color: isActive ? '#2563eb' : '#6b7280',
-        transition: 'color 0.2s ease'
-      }}
-    >
-      {label}
-    </Typography>
   </Box>
 )
-
 export default React.memo(WokerBottomBarComponent)

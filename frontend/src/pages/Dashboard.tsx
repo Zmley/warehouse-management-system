@@ -14,8 +14,8 @@ import InventoryPage from 'pages/TransportWorker/Inventory'
 import { useLocation, useNavigate } from 'react-router-dom'
 import QueryProductInline from 'pages/Picker/SearchProduct'
 
-const TOPBAR_HEIGHT = 54
-const BOTTOMBAR_HEIGHT = 68
+export const TOPBAR_HEIGHT = 54
+export const BOTTOMBAR_HEIGHT = 80
 
 const TopBarFixed = ({ userName }: { userName: string }) => (
   <Box
