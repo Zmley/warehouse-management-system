@@ -118,7 +118,12 @@
     },
      "unload": {
     "onlyBinCodeGun": "卸货时仅允许扫描货位编码（不支持商品条码或多产品输入）"
+
+
   },
+
+      "addProducts": "手动添加产品",
+
   "camera":"手机",
   "scanner": "扫描枪",
 

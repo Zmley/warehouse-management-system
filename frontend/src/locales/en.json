@@ -125,7 +125,10 @@
   "scanner": "Scanner",
 
   "gun": {
-"placeholder": "Press the button on scanner gun"
+"placeholder": "Press the button on scanner gun",
+
+
+      "addProducts": "Add Products Manually"
 }
     
   },
