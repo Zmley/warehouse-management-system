@@ -238,7 +238,13 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
                       boxShadow: '0 2px 6px #0000000D'
                     }}
                   >
-                    <CardContent sx={{ py: 1, px: 1.5 }}>
+                    <CardContent
+                      sx={{
+                        py: 1,
+                        px: 1.5,
+                        '&:last-child': { pb: 1 }
+                      }}
+                    >
                       <Grid container spacing={1}>
                         <Grid item xs={12} textAlign='center'>
                           <Typography
