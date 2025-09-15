@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Box } from '@mui/material'
 import TopBar from 'components/Topbar'
 import WokerBottombar from './TransportWorker/components/WokerBottomBar'
@@ -14,8 +14,8 @@ import InventoryPage from 'pages/TransportWorker/Inventory'
 import { useLocation, useNavigate } from 'react-router-dom'
 import QueryProductInline from 'pages/Picker/SearchProduct'
 
-const TOPBAR_HEIGHT = 64
-const BOTTOMBAR_HEIGHT = 64
+const TOPBAR_HEIGHT = 54
+const BOTTOMBAR_HEIGHT = 68
 
 const TopBarFixed = ({ userName }: { userName: string }) => (
   <Box
@@ -45,7 +45,23 @@ const ContentShell: React.FC<{
       mb: `${BOTTOMBAR_HEIGHT}px`,
       overflow: 'hidden',
       display: 'flex',
-      flexDirection: 'column'
+      flexDirection: 'column',
+      backgroundColor: '#F7F9FC'
+    }}
+  >
+    {children}
+  </Box>
+)
+
+const ScrollPanel: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <Box
+    sx={{
+      flex: 1,
+      minHeight: 0,
+      overflowY: 'auto',
+      WebkitOverflowScrolling: 'touch',
+      touchAction: 'pan-y',
+      backgroundColor: '#F7F9FC'
     }}
   >
     {children}
@@ -59,8 +75,10 @@ const TransportWorkerContent: React.FC<{ userName: string }> = ({
   const location = useLocation()
   const navigate = useNavigate()
 
-  const defaultView =
-    location.state?.view === 'cart' ? 'cart' : isCartEmpty ? 'tasks' : 'cart'
+  const defaultView = useMemo<'cart' | 'tasks' | 'inventory' | 'query'>(() => {
+    if (location.state?.view === 'cart') return 'cart'
+    return isCartEmpty ? 'tasks' : 'cart'
+  }, [location.state, isCartEmpty])
 
   const [view, setView] = useState<'cart' | 'tasks' | 'inventory' | 'query'>(
     defaultView
@@ -70,27 +88,36 @@ const TransportWorkerContent: React.FC<{ userName: string }> = ({
     if (!isCartEmpty) setView('cart')
   }, [isCartEmpty])
 
+  const goCart = React.useCallback(() => setView('cart'), [])
+  const goTasks = React.useCallback(() => setView('tasks'), [])
+  const goInventory = React.useCallback(() => setView('inventory'), [])
+  const goQuery = React.useCallback(() => setView('query'), [])
+  const goPublish = React.useCallback(
+    () => navigate('/picker-scan-bin'),
+    [navigate]
+  )
+
   return (
     <Box sx={{ height: '100dvh', backgroundColor: '#F7F9FC' }}>
       <TopBarFixed userName={userName} />
 
       <ContentShell topPad={4}>
         {view === 'cart' && (
-          <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+          <ScrollPanel>
             <Cart />
-          </Box>
+          </ScrollPanel>
         )}
 
         {view === 'tasks' && (
-          <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+          <ScrollPanel>
             <PendingTaskList setView={setView as any} />
-          </Box>
+          </ScrollPanel>
         )}
 
         {view === 'inventory' && (
-          <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+          <ScrollPanel>
             <InventoryPage />
-          </Box>
+          </ScrollPanel>
         )}
 
         {view === 'query' && (
@@ -116,16 +143,17 @@ const TransportWorkerContent: React.FC<{ userName: string }> = ({
           right: 0,
           height: `${BOTTOMBAR_HEIGHT}px`,
           backgroundColor: '#fff',
-          zIndex: 1300
+          zIndex: 1300,
+          pb: 'env(safe-area-inset-bottom, 0px)'
         }}
       >
         <WokerBottombar
-          onCartClick={() => setView('cart')}
-          onTaskListClick={() => setView('tasks')}
-          onInventoryClick={() => setView('inventory')}
-          onPublishClick={() => navigate('/picker-scan-bin')}
-          onQueryClick={() => setView('query')}
-          activeTab={view} //
+          onCartClick={goCart}
+          onTaskListClick={goTasks}
+          onInventoryClick={goInventory}
+          onPublishClick={goPublish}
+          onQueryClick={goQuery}
+          activeTab={view}
         />
       </Box>
     </Box>
@@ -148,6 +176,7 @@ const Dashboard: React.FC = () => {
         <TopBarFixed
           userName={`${userProfile.firstName} ${userProfile.lastName}`}
         />
+
         <Box
           sx={{
             position: 'fixed',
@@ -173,16 +202,9 @@ const Dashboard: React.FC = () => {
               <QueryProductInline />
             </Box>
           ) : (
-            <Box
-              sx={{
-                flex: 1,
-                minHeight: 0,
-                overflowY: 'auto',
-                WebkitOverflowScrolling: 'touch'
-              }}
-            >
+            <ScrollPanel>
               <PickerCreatedTaskList status={taskStatus} />
-            </Box>
+            </ScrollPanel>
           )}
         </Box>
 
@@ -194,7 +216,8 @@ const Dashboard: React.FC = () => {
             right: 0,
             height: `${BOTTOMBAR_HEIGHT}px`,
             backgroundColor: '#fff',
-            zIndex: 1300
+            zIndex: 1300,
+            pb: 'env(safe-area-inset-bottom, 0px)'
           }}
         >
           <PickerBottombar
