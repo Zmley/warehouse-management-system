@@ -31,6 +31,14 @@ const QTY_MIN_W = 60
 const DEL_W = 32
 const GRID_COLS = `minmax(0,1.5fr) minmax(${QTY_MIN_W}px,0.5fr) ${DEL_W}px`
 
+const startsWithFilter = (options: string[], q: string) => {
+  const key = (q || '').trim().toLowerCase()
+  if (!key) return []
+  const list = options.filter(o => o.toLowerCase().startsWith(key))
+  list.sort((a, b) => a.length - b.length || a.localeCompare(b))
+  return list.slice(0, 50)
+}
+
 const MultiProductInputBox: React.FC<MultiProductInputBoxProps> = ({
   productOptions,
   onSubmit,
@@ -46,29 +54,32 @@ const MultiProductInputBox: React.FC<MultiProductInputBoxProps> = ({
     if (defaultItems.length > 0) setInputs(defaultItems)
   }, [defaultItems])
 
-  const handleChange = (
+  const setInputField = (
     index: number,
     field: keyof ProductInput,
     value: string
   ) => {
     setInputs(prev => {
       const next = [...prev]
-      next[index][field] = value
+      next[index] = { ...next[index], [field]: value }
       return next
     })
   }
+
   const handleAdd = () =>
     setInputs(prev => [...prev, { productCode: '', quantity: '' }])
+
   const handleRemove = (index: number) =>
     setInputs(prev => prev.filter((_, i) => i !== index))
 
   const handleSubmit = () => {
     const parsed = inputs
       .map(it => ({
-        productCode: it.productCode.trim(),
+        productCode: (it.productCode || '').trim(),
         quantity: parseInt(it.quantity)
       }))
       .filter(x => x.productCode && !isNaN(x.quantity) && x.quantity > 0)
+
     if (parsed.length > 0) {
       setSourceBinCode('staging-area')
       onSubmit(parsed)
@@ -79,7 +90,6 @@ const MultiProductInputBox: React.FC<MultiProductInputBoxProps> = ({
     <Box
       sx={{
         width: '100%',
-        // ✅ 响应式左右内边距，避免小屏被 padding 撑爆
         px: { xs: 1.5, sm: 2 },
         pt: 0,
         pb: 2,
@@ -87,7 +97,6 @@ const MultiProductInputBox: React.FC<MultiProductInputBoxProps> = ({
         display: 'flex',
         flexDirection: 'column',
         gap: 1,
-        // ✅ 居中 & 限制最大宽度
         maxWidth: 680,
         mx: 'auto',
         boxSizing: 'border-box'
@@ -158,136 +167,124 @@ const MultiProductInputBox: React.FC<MultiProductInputBoxProps> = ({
           <Box />
         </Box>
 
-        {inputs.map((input, index) => (
-          <React.Fragment key={index}>
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: GRID_COLS,
-                alignItems: 'center',
-                columnGap: { xs: 1, sm: 1.5 },
-                px: { xs: 1.5, sm: 2 },
-                py: 0.5,
-                minWidth: 0
-              }}
-            >
-              <Autocomplete
-                options={(function () {
-                  const q = (input.productCode || '').trim().toLowerCase()
-                  if (q.length < 1) return []
-                  return productOptions
-                    .filter(o => o.toLowerCase().startsWith(q))
-                    .slice(0, 50)
-                })()}
-                filterOptions={x => x}
-                inputValue={input.productCode}
-                onInputChange={(_, v) => handleChange(index, 'productCode', v)}
-                value={
-                  productOptions.includes(input.productCode)
-                    ? input.productCode
-                    : undefined
-                }
-                onChange={(_, newValue) => {
-                  handleChange(index, 'productCode', newValue || '')
-                }}
-                open={(function () {
-                  const q = (input.productCode || '').trim().toLowerCase()
-                  if (q.length < 1) return false
-                  const suggestions = productOptions.filter(o =>
-                    o.toLowerCase().startsWith(q)
-                  )
-                  if (suggestions.length === 0) return false
-                  const hasExact = productOptions.some(
-                    o => o.toLowerCase() === q
-                  )
-                  return !hasExact
-                })()}
-                freeSolo={false}
-                openOnFocus={false}
-                forcePopupIcon={false}
-                disableClearable
-                autoHighlight
-                noOptionsText=''
-                renderInput={params => (
-                  <TextField
-                    {...params}
-                    placeholder={t('scan.productCode')}
-                    size='small'
-                    fullWidth
-                    sx={{
-                      backgroundColor: '#fff',
-                      borderRadius: 1,
-                      '& .MuiOutlinedInput-root': { height: 40 },
-                      '& .MuiOutlinedInput-input': {
-                        fontSize: 16,
-                        px: 1.25,
-                        whiteSpace: 'nowrap',
-                        overflowX: 'auto',
-                        textOverflow: 'clip',
-                        WebkitOverflowScrolling: 'touch'
-                      }
-                    }}
-                    InputProps={{
-                      ...params.InputProps,
-                      endAdornment: null
-                    }}
-                  />
-                )}
-                fullWidth
-                ListboxProps={{ style: { maxHeight: 300 } }}
-                sx={{ flex: 5, minWidth: 0 }}
-              />
+        {inputs.map((input, index) => {
+          const selected: string | undefined = productOptions.includes(
+            (input.productCode || '').trim()
+          )
+            ? (input.productCode || '').trim()
+            : undefined
 
-              <TextField
-                placeholder={t('scan.quantity')}
-                type='number'
-                inputProps={{
-                  min: 1,
-                  inputMode: 'numeric',
-                  pattern: '[0-9]*',
-                  style: {
-                    fontSize: 14,
-                    textAlign: 'center',
-                    height: ROW_H - 2
-                  }
-                }}
-                value={input.quantity}
-                onChange={e => handleChange(index, 'quantity', e.target.value)}
-                size='small'
+          return (
+            <React.Fragment key={index}>
+              <Box
                 sx={{
-                  minWidth: 0,
-                  '& .MuiOutlinedInput-root': {
-                    height: ROW_H,
-                    borderRadius: 1,
-                    bgcolor: '#FAFBFC'
-                  },
-                  '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button':
-                    {
-                      WebkitAppearance: 'none',
-                      margin: 0
-                    }
+                  display: 'grid',
+                  gridTemplateColumns: GRID_COLS,
+                  alignItems: 'center',
+                  columnGap: { xs: 1, sm: 1.5 },
+                  px: { xs: 1.5, sm: 2 },
+                  py: 0.5,
+                  minWidth: 0
                 }}
-              />
-
-              <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                <Tooltip title={t('common.delete') || '删除'}>
-                  <span>
-                    <IconButton
-                      color='error'
-                      onClick={() => handleRemove(index)}
+              >
+                <Autocomplete<string, false, false, false>
+                  options={productOptions}
+                  freeSolo={false} // 只能选列表，不能自填
+                  disableClearable={false} // 显示 X，可一键清空
+                  clearOnBlur // 未选择时失焦自动清空输入框
+                  forcePopupIcon={false}
+                  autoHighlight
+                  value={selected}
+                  onChange={(_, newValue) => {
+                    // 只有从下拉选择或点击 X 才会触发
+                    setInputField(index, 'productCode', newValue ?? '')
+                  }}
+                  // 只做前缀匹配的候选过滤
+                  filterOptions={(opts, state) =>
+                    startsWithFilter(opts, state.inputValue)
+                  }
+                  isOptionEqualToValue={(opt, val) => opt === val}
+                  getOptionLabel={o => o}
+                  noOptionsText=''
+                  renderInput={params => (
+                    <TextField
+                      {...params}
+                      placeholder={t('scan.productCode')}
                       size='small'
-                      sx={{ p: 0.75 }}
-                    >
-                      <DeleteIcon fontSize='small' />
-                    </IconButton>
-                  </span>
-                </Tooltip>
-              </Box>
-            </Box>
+                      fullWidth
+                      sx={{
+                        backgroundColor: '#fff',
+                        borderRadius: 1,
+                        '& .MuiOutlinedInput-root': { height: 40 },
+                        '& .MuiOutlinedInput-input': {
+                          fontSize: 16,
+                          px: 1.25,
+                          whiteSpace: 'nowrap',
+                          overflowX: 'auto',
+                          textOverflow: 'clip',
+                          WebkitOverflowScrolling: 'touch'
+                        }
+                      }}
+                    />
+                  )}
+                  fullWidth
+                  ListboxProps={{ style: { maxHeight: 300 } }}
+                  sx={{ flex: 5, minWidth: 0 }}
+                />
 
-            {index < inputs.length - 1 && <Divider sx={{ m: 0 }} />}
-          </React.Fragment>
-        ))}
+                <TextField
+                  placeholder={t('scan.quantity')}
+                  type='number'
+                  inputProps={{
+                    min: 1,
+                    inputMode: 'numeric',
+                    pattern: '[0-9]*',
+                    style: {
+                      fontSize: 14,
+                      textAlign: 'center',
+                      height: ROW_H - 2
+                    }
+                  }}
+                  value={input.quantity}
+                  onChange={e =>
+                    setInputField(index, 'quantity', e.target.value)
+                  }
+                  size='small'
+                  sx={{
+                    minWidth: 0,
+                    '& .MuiOutlinedInput-root': {
+                      height: ROW_H,
+                      borderRadius: 1,
+                      bgcolor: '#FAFBFC'
+                    },
+                    '& input::-webkit-outer-spin-button, & input::-webkit-inner-spin-button':
+                      {
+                        WebkitAppearance: 'none',
+                        margin: 0
+                      }
+                  }}
+                />
+
+                <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                  <Tooltip title={t('common.delete') || '删除'}>
+                    <span>
+                      <IconButton
+                        color='error'
+                        onClick={() => handleRemove(index)}
+                        size='small'
+                        sx={{ p: 0.75 }}
+                      >
+                        <DeleteIcon fontSize='small' />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                </Box>
+              </Box>
+
+              {index < inputs.length - 1 && <Divider sx={{ m: 0 }} />}
+            </React.Fragment>
+          )
+        })}
       </Paper>
 
       <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 1 }}>
