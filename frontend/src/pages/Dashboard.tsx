@@ -10,7 +10,7 @@ import { TaskCategoryEnum } from 'constants/index'
 import { TransportWorkCartProvider } from 'contexts/cart'
 import { useCart } from 'hooks/useCart'
 import Cart from 'pages/TransportWorker/Cart'
-import InventoryPage from 'pages/TransportWorker/Inventory'
+import InventoryPage from 'pages/TransportWorker/inventory/index'
 import { useLocation, useNavigate } from 'react-router-dom'
 import QueryProductInline from 'pages/Picker/SearchProduct'
 

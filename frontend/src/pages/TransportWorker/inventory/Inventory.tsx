@@ -315,73 +315,46 @@ const InventoryMobileBinCards: React.FC = () => {
   return (
     <Box px={2} py={1} sx={{ mx: 'auto', maxWidth: 560 }}>
       <Box mb={1}>
-        <Autocomplete
+        <TextField
           fullWidth
-          options={
-            searchInput.trim()
-              ? productCodes.filter(opt =>
-                  opt.toLowerCase().includes(searchInput.trim().toLowerCase())
-                )
-              : []
-          }
-          value={keyword}
-          inputValue={searchInput}
-          onChange={(_, v) => {
-            const val = v || ''
-            setKeyword(val)
+          placeholder={t('inventorySearch.binSearchPlaceholder')}
+          size='small'
+          value={searchInput}
+          onChange={e => {
+            const val = e.target.value
             setSearchInput(val)
+            setKeyword(val)
           }}
-          onInputChange={(_, v) => {
-            setSearchInput(v)
-            setKeyword(v)
+          onKeyDown={e => {
+            if (e.key === 'Enter') {
+              e.preventDefault()
+              doSearch()
+            }
           }}
-          open={
-            searchInput.trim().length > 0 &&
-            productCodes.some(c =>
-              c.toLowerCase().includes(searchInput.trim().toLowerCase())
+          InputProps={{
+            sx: {
+              pl: 2,
+              pr: 1,
+              py: 0.25,
+              backgroundColor: '#fff',
+              borderRadius: '999px',
+              boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
+              '& fieldset': { border: '1px solid #ccc' },
+              '&:hover fieldset': { borderColor: '#888' }
+            },
+            endAdornment: (
+              <InputAdornment position='end'>
+                <IconButton
+                  aria-label='search'
+                  onClick={doSearch}
+                  size='small'
+                  sx={{ p: 1 }}
+                >
+                  <SearchIcon sx={{ color: '#888', fontSize: 18 }} />
+                </IconButton>
+              </InputAdornment>
             )
-          }
-          openOnFocus={false}
-          isOptionEqualToValue={(opt, val) => opt === val}
-          renderInput={params => (
-            <TextField
-              {...params}
-              placeholder={t('inventorySearch.searchPlaceholder')}
-              size='small'
-              onKeyDown={e => {
-                if (e.key === 'Enter') {
-                  e.preventDefault()
-                  doSearch()
-                }
-              }}
-              InputProps={{
-                ...params.InputProps,
-                sx: {
-                  pl: 2,
-                  pr: 1,
-                  py: 0.25,
-                  backgroundColor: '#fff',
-                  borderRadius: '999px',
-                  boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
-                  '& fieldset': { border: '1px solid #ccc' },
-                  '&:hover fieldset': { borderColor: '#888' }
-                },
-                endAdornment: (
-                  <InputAdornment position='end'>
-                    <IconButton
-                      aria-label='search'
-                      onClick={doSearch}
-                      size='small'
-                      sx={{ p: 1 }}
-                    >
-                      <SearchIcon sx={{ color: '#888', fontSize: 18 }} />
-                    </IconButton>
-                  </InputAdornment>
-                )
-              }}
-            />
-          )}
-          noOptionsText=''
+          }}
         />
       </Box>
 

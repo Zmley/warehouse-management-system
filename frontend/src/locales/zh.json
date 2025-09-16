@@ -231,7 +231,9 @@
     "noResult": "未找到相关库存,或此产品缺货",
     "binCode": "货位编号",
     "productCode": "商品编号",
-    "quantity": "数量"
+    "quantity": "数量" ,
+        "binSearchPlaceholder":"输入binCode或者bincode列， 列如LA 或者 LA-01"
+
   },
   "picker": {
     "title": "创建任务",
@@ -297,5 +299,12 @@
     "fromSuggest": "来自联想",
     "fromManual": "手动输入",
     "help": "帮助"
+  }
+
+  ,
+
+   "inventoryIndex": {
+    "searchTab": "库存查询",
+    "editTab": "库存编辑"
   }
 }

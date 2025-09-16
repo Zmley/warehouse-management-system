@@ -228,7 +228,9 @@
     "noResult": "No inventory found.",
     "binCode": "Bin Code",
     "productCode": "Product Code",
-    "quantity": "Quantity"
+    "quantity": "Quantity",
+
+     "binSearchPlaceholder":"search bincode"
   },
 
   "picker": {
@@ -295,6 +297,11 @@
     "fromSuggest": "From Suggestion",
     "fromManual": "From Manual Input",
     "help": "Help"
+  },
+
+   "inventoryIndex": {
+    "searchTab": "Inventories Search",
+    "editTab": "Inventories Edit"
   }
 
 
