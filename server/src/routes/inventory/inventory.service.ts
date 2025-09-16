@@ -1,19 +1,10 @@
 import { getBinsByBinCodes } from 'routes/bins/bin.service'
 import { Inventory } from './inventory.model'
 import { Bin } from 'routes/bins/bin.model'
-import {
-  Op,
-  WhereOptions,
-  Order,
-  col,
-  literal,
-  ProjectionAlias,
-  fn
-} from 'sequelize'
+import { Op, WhereOptions, Order, col } from 'sequelize'
 import { InventoryUploadType } from 'types/inventory'
 import AppError from 'utils/appError'
 import { buildBinCodeToIDMap } from 'utils/bin.utils'
-import { LiteralType } from 'typescript'
 import { sequelize } from 'config/db'
 
 export const getInventoriesByCartID = async (
@@ -284,6 +275,7 @@ export const getInventoriesByWarehouseID = async (
     if (sortBy === 'updatedAt') {
       const includeBinWhere: WhereOptions = { warehouseID, type: 'INVENTORY' }
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const invWhereAnd: any[] = []
       if (binID) invWhereAnd.push({ binID })
 
@@ -347,6 +339,7 @@ export const getInventoriesByWarehouseID = async (
       })
 
       const inventories: InventoryDTO[] = invRows.map(inv => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const b = (inv as any).bin as Bin | null
         return {
           inventoryID: inv.getDataValue('inventoryID'),
