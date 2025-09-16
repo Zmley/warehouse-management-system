@@ -51,52 +51,6 @@ export const cancelTask = asyncHandler(async (req, res) => {
   res.status(httpStatus.OK).json({ success: true, task })
 })
 
-// export const getTasks = asyncHandler(async (req, res) => {
-//   const { role, accountID, warehouseID: localWarehouseID } = res.locals
-//   const queryWarehouseID = req.query.warehouseID as string | undefined
-//   const { keyword, status: rawStatus } = req.query
-
-//   let warehouseID: string
-//   let status: string | undefined = undefined
-
-//   if (role === UserRole.ADMIN) {
-//     if (typeof queryWarehouseID !== 'string' || !queryWarehouseID) {
-//       throw new AppError(
-//         httpStatus.BAD_REQUEST,
-//         'Admin must provide a valid warehouseID in query',
-//         'WAREHOUSE_ID_REQUIRED'
-//       )
-//     }
-//     warehouseID = queryWarehouseID
-//     if (typeof rawStatus === 'string') status = rawStatus
-//   } else if (role === UserRole.PICKER) {
-//     warehouseID = localWarehouseID
-//     status = 'ALL'
-//   } else if (role === UserRole.TRANSPORT_WORKER) {
-//     warehouseID = localWarehouseID
-//     status = TaskStatus.PENDING
-//   } else {
-//     throw new AppError(
-//       httpStatus.FORBIDDEN,
-//       '❌ Unauthorized role',
-//       'ROLE_FORBIDDEN'
-//     )
-//   }
-
-//   const tasksWithBinCodes = await taskService.getTasksByWarehouseID(
-//     warehouseID,
-//     role,
-//     accountID,
-//     typeof keyword === 'string' ? keyword : undefined,
-//     status
-//   )
-
-//   res.status(httpStatus.OK).json({
-//     success: true,
-//     tasks: tasksWithBinCodes
-//   })
-// })
-
 export const getTasks = asyncHandler(async (req, res) => {
   const { role, accountID, warehouseID: localWarehouseID } = res.locals
   const { keyword } = req.query
