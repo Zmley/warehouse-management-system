@@ -29,7 +29,6 @@ const Inventory: React.FC = () => {
     fetchProductCodes()
   }, [fetchProductCodes])
 
-  // ✅ 关键修复：按新签名传对象，而不是传 string
   const handleSearch = async (code: string) => {
     const kw = code.trim()
     if (!kw) return
@@ -45,6 +44,8 @@ const Inventory: React.FC = () => {
     if (e.key === 'Enter') handleSearch(productCode)
   }
 
+  const norm = (s: string) => (s || '').trim().toLowerCase()
+
   return (
     <Box p={2} sx={{ mx: 'auto' }}>
       <Typography variant='h6' fontWeight={600} mb={2} textAlign='center'>
@@ -59,22 +60,23 @@ const Inventory: React.FC = () => {
       >
         <Autocomplete
           fullWidth
+          freeSolo
           options={productCodes}
-          value={productCode}
-          onChange={(_, newValue) => {
-            const newCode = newValue || ''
-            setProductCode(newCode)
-            // 选择联想项时触发搜索
-            handleSearch(newCode)
+          filterOptions={(options, { inputValue }) => {
+            const q = norm(inputValue)
+            if (!q) return []
+            return options.filter(opt => norm(opt).startsWith(q)).slice(0, 5)
           }}
-          onInputChange={(_, newInput) => setProductCode(newInput || '')}
-          filterOptions={(options, { inputValue }) =>
-            inputValue.trim()
-              ? options.filter(opt =>
-                  opt.toLowerCase().includes(inputValue.toLowerCase())
-                )
-              : []
-          }
+          value={null}
+          inputValue={productCode}
+          onInputChange={(_, v) => setProductCode(v || '')}
+          onChange={(_, v) => {
+            if (typeof v === 'string') {
+              setProductCode(v)
+              handleSearch(v)
+            }
+          }}
+          autoHighlight
           renderInput={params => (
             <TextField
               {...params}
@@ -95,15 +97,7 @@ const Inventory: React.FC = () => {
                 },
                 endAdornment: (
                   <InputAdornment position='end'>
-                    <SearchIcon
-                      sx={{
-                        color: '#888',
-                        fontSize: 20,
-                        cursor: 'default',
-                        mr: 1,
-                        '&:hover': { color: '#333' }
-                      }}
-                    />
+                    <SearchIcon sx={{ color: '#888', fontSize: 20, mr: 1 }} />
                   </InputAdornment>
                 )
               }}
