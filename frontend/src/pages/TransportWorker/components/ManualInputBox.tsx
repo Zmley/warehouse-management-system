@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Box,
   IconButton,
@@ -41,7 +41,6 @@ const MultiProductInputBox: React.FC<MultiProductInputBoxProps> = ({
   const [inputs, setInputs] = useState<ProductInput[]>(
     defaultItems.length > 0 ? defaultItems : [{ productCode: '', quantity: '' }]
   )
-  const inputRefs = useRef<Record<number, HTMLInputElement | null>>({})
 
   useEffect(() => {
     if (defaultItems.length > 0) setInputs(defaultItems)
