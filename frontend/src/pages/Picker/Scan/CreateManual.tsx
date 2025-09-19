@@ -21,7 +21,7 @@ interface Props {
   onClose?: () => void
 }
 
-const CreatePickerTask: React.FC<Props> = ({ onSuccess }) => {
+const CreateManual: React.FC<Props> = ({ onSuccess }) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
 
@@ -248,4 +248,4 @@ const CreatePickerTask: React.FC<Props> = ({ onSuccess }) => {
   )
 }
 
-export default CreatePickerTask
+export default CreateManual

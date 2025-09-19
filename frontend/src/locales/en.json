@@ -117,12 +117,19 @@
       "manual": "Manual"
     } ,
 
+
+
+
+
    "unload": {
     "onlyBinCodeGun": "In unload mode with a handheld scanner, only bin codes are allowed (no product barcodes or multi-product input)."
   },
 
-    "camera":"Phone",
+    "camera":"Phone", 
   "scanner": "Scanner",
+
+          "phone": "Phone",
+
 
   "gun": {
 "placeholder": "Press the button on scanner gun",

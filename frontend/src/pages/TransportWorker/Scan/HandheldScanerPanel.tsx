@@ -174,7 +174,7 @@ export default function HandheldScanerPanel() {
         const product = await fetchProduct(trimmed)
         if (product) {
           setDefaultManualItems([
-            { productCode: product.productCode, quantity: '1' }
+            { productCode: product.productCode, quantity: '' }
           ])
           willOpenDrawer = true
           setShowDrawer(true)
@@ -302,7 +302,7 @@ export default function HandheldScanerPanel() {
         PaperProps={{
           sx: {
             height: '90vh',
-            maxHeight: '90vh',
+            maxHeight: '70vh',
             overflow: 'hidden',
             borderRadius: '0 0 16px 16px',
             bgcolor: '#fff',

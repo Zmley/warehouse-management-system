@@ -14,13 +14,12 @@ import CloseIcon from '@mui/icons-material/Close'
 import LogoutIcon from '@mui/icons-material/Logout'
 import SmartphoneIcon from '@mui/icons-material/Smartphone'
 import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner'
+import LanguageIcon from '@mui/icons-material/Language'
+import TranslateIcon from '@mui/icons-material/Translate'
 import { useAuth } from 'hooks/useAuth'
 import { useTranslation } from 'react-i18next'
 import { useMemo, useState } from 'react'
-import LanguageIcon from '@mui/icons-material/Language'
-import TranslateIcon from '@mui/icons-material/Translate'
-
-type Mode = 'camera' | 'gun'
+import { DeviceType } from 'constants/index'
 
 interface ProfileDrawerProps {
   open: boolean
@@ -30,9 +29,7 @@ interface ProfileDrawerProps {
 const TOGGLE_GROUP_SX = {
   mb: 1.25,
   display: 'flex',
-
   gap: 1,
-
   '& .MuiToggleButton-root': {
     flex: 1,
     textTransform: 'none',
@@ -43,37 +40,36 @@ const TOGGLE_GROUP_SX = {
     borderColor: '#e6ebf2',
     color: '#64748b',
     backgroundColor: '#f9fafb',
-    '&:hover': {
-      backgroundColor: '#f1f5f9'
-    }
+    '&:hover': { backgroundColor: '#f1f5f9' }
   },
   '& .MuiToggleButton-root.Mui-selected': {
     color: '#2563eb',
     borderColor: '#2563eb',
     backgroundColor: 'rgba(37, 99, 235, 0.12)',
-    '&:hover': {
-      backgroundColor: 'rgba(37, 99, 235, 0.2)'
-    }
+    '&:hover': { backgroundColor: 'rgba(37, 99, 235, 0.2)' }
   }
 } as const
+
+const STORAGE_KEY_DEVICE = 'device'
 
 const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ open, onClose }) => {
   const { userProfile, handleLogout } = useAuth()
   const { t, i18n } = useTranslation()
 
-  const getInitialMode = (): Mode => {
-    const saved = (localStorage.getItem('scanMode') as Mode | null) || null
-    if (saved === 'camera' || saved === 'gun') return saved
-    localStorage.setItem('scanMode', 'camera')
-    return 'camera'
+  const getInitialDevice = (): DeviceType => {
+    const raw = localStorage.getItem(STORAGE_KEY_DEVICE) as DeviceType | null
+    if (raw === DeviceType.PHONE || raw === DeviceType.SCANNER) return raw
+    localStorage.setItem(STORAGE_KEY_DEVICE, DeviceType.PHONE)
+    return DeviceType.PHONE
   }
-  const initialMode = useMemo<Mode>(getInitialMode, [])
-  const [mode, setMode] = useState<Mode>(initialMode)
 
-  const handleModeChange = (_: unknown, next: Mode | null) => {
+  const initialDevice = useMemo<DeviceType>(getInitialDevice, [])
+  const [device, setDevice] = useState<DeviceType>(initialDevice)
+
+  const handleDeviceChange = (_: unknown, next: DeviceType | null) => {
     if (!next) return
-    setMode(next)
-    localStorage.setItem('scanMode', next)
+    setDevice(next)
+    localStorage.setItem(STORAGE_KEY_DEVICE, next)
   }
 
   const langValue: 'zh' | 'en' = i18n.language === 'zh' ? 'zh' : 'en'
@@ -91,7 +87,7 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ open, onClose }) => {
     <Drawer anchor='left' open={open} onClose={onClose}>
       <Box
         sx={{
-          width: 300,
+          width: 280,
           p: 0,
           display: 'flex',
           flexDirection: 'column',
@@ -99,7 +95,6 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ open, onClose }) => {
         }}
         role='presentation'
       >
-        {/* Header */}
         <Box
           sx={{
             position: 'sticky',
@@ -123,7 +118,6 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ open, onClose }) => {
           </IconButton>
         </Box>
 
-        {/* Body */}
         <Box sx={{ p: 2, overflowY: 'auto' }}>
           <Stack direction='row' alignItems='center' spacing={2} sx={{ mb: 2 }}>
             <Avatar src='/profile.jpg' sx={{ width: 50, height: 50 }} />
@@ -145,6 +139,7 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ open, onClose }) => {
           <Typography sx={{ mb: 1 }}>{roleLabel}</Typography>
 
           <Divider sx={{ my: 1 }} />
+
           <Typography fontSize={13} fontWeight='bold' sx={{ mb: 0.5 }}>
             {t('profile.language')}
           </Typography>
@@ -168,24 +163,30 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ open, onClose }) => {
           </ToggleButtonGroup>
 
           <Typography fontSize={13} fontWeight='bold' sx={{ mb: 0.5 }}>
-            {t('profile.defaultScanMode')}
+            {t('profile.defaultDevice', 'Default Device')}
           </Typography>
           <ToggleButtonGroup
             exclusive
-            value={mode}
-            onChange={handleModeChange}
+            value={device}
+            onChange={handleDeviceChange}
             fullWidth
             size='small'
-            aria-label={t('profile.defaultScanMode')}
+            aria-label={t('profile.defaultDevice')}
             sx={TOGGLE_GROUP_SX}
           >
-            <ToggleButton value='camera' aria-label={t('scan.camera')}>
+            <ToggleButton
+              value={DeviceType.PHONE}
+              aria-label={t('scan.phone', 'Phone')}
+            >
               <SmartphoneIcon sx={{ mr: 0.5, fontSize: 16 }} />
-              {t('scan.camera')}
+              {t('scan.phone', 'Phone')}
             </ToggleButton>
-            <ToggleButton value='gun' aria-label={t('scan.scanner')}>
+            <ToggleButton
+              value={DeviceType.SCANNER}
+              aria-label={t('scan.scanner', 'Scanner')}
+            >
               <QrCodeScannerIcon sx={{ mr: 0.5, fontSize: 16 }} />
-              {t('scan.scanner')}
+              {t('scan.scanner', 'Scanner')}
             </ToggleButton>
           </ToggleButtonGroup>
 
