@@ -1,4 +1,3 @@
-// src/pages/Scan/CameraPanel.tsx
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Box, Typography, Drawer, Paper, GlobalStyles } from '@mui/material'
@@ -143,7 +142,7 @@ export default function CameraPanel() {
         const product = await fetchProduct(trimmed)
         if (product) {
           setDefaultManualItems([
-            { productCode: product.productCode, quantity: '1' }
+            { productCode: product.productCode, quantity: '' }
           ])
           setShowDrawer(true)
           stopScanner()

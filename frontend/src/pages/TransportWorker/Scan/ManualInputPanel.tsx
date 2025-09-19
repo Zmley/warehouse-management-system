@@ -91,19 +91,16 @@ export default function ManualInputPanel() {
     }
   }
 
-  /** 确认货位 */
   const handleConfirmBin = async () => {
     const trimmed = binInput.trim()
     if (!trimmed) {
       setError(t('scan.enterPrompt'))
-      // 不 blur；让用户继续输入
       refocusInput(10)
       return
     }
 
     setError(null)
     setLoading(true)
-    // 先 blur 一下，移动端收起键盘，看清反馈
     blurInput()
 
     try {
@@ -125,7 +122,6 @@ export default function ManualInputPanel() {
         return
       }
 
-      // LOAD: 校验 + 拉库存
       const { ok, allowed } = isBinAllowedForMode(ScanMode.LOAD, trimmed)
       if (!ok) {
         setError(
@@ -144,9 +140,7 @@ export default function ManualInputPanel() {
         setInventoryList(result.inventories)
         setShowDrawer(true)
       } else {
-        // 没有库存：明确提示，并保持表单简洁
         setError(t('scan.noInventoryFound'))
-        // 这里不立即回焦，给用户看清提示；稍后回焦
         refocusInput()
       }
     } catch (e) {
@@ -158,7 +152,6 @@ export default function ManualInputPanel() {
     }
   }
 
-  /** 打开“手动录入产品”抽屉（与之前保持一致） */
   const openManualProductsDrawer = () => {
     setScannedBinCode(null)
     setInventoryList([])
@@ -180,7 +173,6 @@ export default function ManualInputPanel() {
         }}
       >
         <Stack spacing={1.25}>
-          {/* 货位确认：带联想的紧凑输入区 */}
           <Stack direction='row' spacing={1}>
             <Box sx={{ flex: 1, minWidth: 0 }}>
               <Autocomplete
@@ -229,7 +221,6 @@ export default function ManualInputPanel() {
             </Button>
           </Stack>
 
-          {/* 手动录入产品按钮（打开抽屉） */}
           <Stack direction='row' spacing={1}>
             <Button
               variant='outlined'
@@ -240,7 +231,6 @@ export default function ManualInputPanel() {
             </Button>
           </Stack>
 
-          {/* 错误提示（紧凑样式） */}
           {error && (
             <Typography
               variant='body2'
@@ -254,7 +244,6 @@ export default function ManualInputPanel() {
         </Stack>
       </Paper>
 
-      {/* 顶部抽屉（Unload / Load / 手动录入 共用） */}
       <Drawer
         anchor='top'
         open={showDrawer}
