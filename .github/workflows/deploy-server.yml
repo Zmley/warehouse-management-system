@@ -1,8 +1,8 @@
 name: Deploy Backend to EC2
 
-# on:
-#   release:
-#     types: [published]
+on:
+  release:
+    types: [published]
 
 jobs:
   deploy:
