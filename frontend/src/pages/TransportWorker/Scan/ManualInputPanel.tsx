@@ -40,7 +40,6 @@ export default function ManualInputPanel() {
       | { inventoryID: string; productCode: string; quantity: number }[]
       | undefined) ?? []
 
-  // —— BinCode 联想输入 ——
   const [binInput, setBinInput] = useState<string>('')
   const autoRef = useRef<HTMLInputElement>(null)
   const blurInput = () => autoRef.current?.blur()
@@ -153,6 +152,7 @@ export default function ManualInputPanel() {
   }
 
   const openManualProductsDrawer = () => {
+    if (scanMode === ScanMode.UNLOAD) return
     setScannedBinCode(null)
     setInventoryList([])
     setUnloadCartItems([])
@@ -222,13 +222,15 @@ export default function ManualInputPanel() {
           </Stack>
 
           <Stack direction='row' spacing={1}>
-            <Button
-              variant='outlined'
-              onClick={openManualProductsDrawer}
-              sx={{ fontWeight: 700, borderRadius: 2 }}
-            >
-              {t('scan.manualInputButton')}
-            </Button>
+            {scanMode === ScanMode.LOAD && (
+              <Button
+                variant='outlined'
+                onClick={openManualProductsDrawer}
+                sx={{ fontWeight: 700, borderRadius: 2 }}
+              >
+                {t('scan.manualInputButton')}
+              </Button>
+            )}
           </Stack>
 
           {error && (
@@ -282,19 +284,13 @@ export default function ManualInputPanel() {
             </Box>
           ) : (
             <Box sx={{ p: 1.25 }}>
-              <MultiProductInputBox
-                productOptions={productCodes}
-                onSubmit={async items => {
-                  const result = await loadCart({ productList: items })
-                  if (!result.success) {
-                    setError(result.error || t('scan.operationError'))
-                    return
-                  }
-                  navigate('/success')
-                }}
-                onCancel={() => setShowDrawer(false)}
-                defaultItems={defaultManualItems}
-              />
+              <Typography
+                variant='body2'
+                color='text.secondary'
+                fontWeight={700}
+              >
+                {t('scan.scanBinToProceed', 'Scan a bin to proceed')}
+              </Typography>
             </Box>
           )
         ) : scannedBinCode && inventoryList.length > 0 ? (
