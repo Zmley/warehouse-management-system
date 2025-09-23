@@ -6,7 +6,10 @@ import {
   SignUpCommand,
   AdminConfirmSignUpCommand
 } from '@aws-sdk/client-cognito-identity-provider'
-import { getCognitoErrorMessage } from './accounts.service'
+import {
+  getCognitoErrorMessage,
+  listTransportWorkers
+} from './accounts.service'
 import env from 'config/config'
 import Task from 'routes/tasks/task.model'
 import Account from 'routes/accounts/accounts.model'
@@ -122,5 +125,22 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
   } catch (error) {
     console.error('❌ Failed to refresh token:', error)
     res.status(401).json({ message: 'Refresh token expired or invalid' })
+  }
+}
+
+export async function fetchWorkerNames(req: Request, res: Response) {
+  try {
+    const q = typeof req.query.q === 'string' ? req.query.q : undefined
+    const limit = Number.isFinite(Number(req.query.limit))
+      ? Math.max(1, Math.min(200, Number(req.query.limit)))
+      : 50
+
+    const workers = await listTransportWorkers({ q, limit })
+    res.json({ success: true, workers })
+  } catch (err) {
+    console.error('[fetchWorkerNames] failed:', err)
+    res
+      .status(500)
+      .json({ success: false, error: 'Failed to fetch worker names' })
   }
 }

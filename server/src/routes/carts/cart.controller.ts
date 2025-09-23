@@ -11,7 +11,11 @@ export const load = asyncHandler(async (req: Request, res: Response) => {
   const { binCode, selectedItems, productList } = req.body
 
   if (productList) {
-    const result = await cartService.loadByProductList(productList, cartID)
+    const result = await cartService.loadByProductList(
+      productList,
+      cartID,
+      accountID
+    )
     res.status(200).json({
       success: true,
       message: result.messages.join('\n')
@@ -20,7 +24,7 @@ export const load = asyncHandler(async (req: Request, res: Response) => {
   }
 
   if (binCode) {
-    await cartService.loadByBinCode(binCode, cartID, selectedItems)
+    await cartService.loadByBinCode(binCode, cartID, selectedItems, accountID)
 
     const activeTask = await taskService.hasActiveTask(accountID)
     if (activeTask?.status === TaskStatus.IN_PROCESS) {
@@ -44,7 +48,11 @@ export const unload = asyncHandler(async (req: Request, res: Response) => {
   const task = await taskService.getTaskByAccountID(accountID, warehouseID)
 
   if (task) {
-    const result = await cartService.unloadByBinCode(binCode, unloadProductList)
+    const result = await cartService.unloadByBinCode(
+      binCode,
+      unloadProductList,
+      accountID
+    )
 
     let matchedQuantity: number | undefined
     if (unloadProductList.length === 1)
@@ -61,7 +69,11 @@ export const unload = asyncHandler(async (req: Request, res: Response) => {
       updatedProducts: result.updatedCount
     })
   } else {
-    const result = await cartService.unloadByBinCode(binCode, unloadProductList)
+    const result = await cartService.unloadByBinCode(
+      binCode,
+      unloadProductList,
+      accountID
+    )
     res.status(200).json({
       success: true,
       updatedProducts: result.updatedCount

@@ -6,7 +6,8 @@ import {
   registerUser,
   loginUser,
   getUserInfo,
-  refreshAccessToken
+  refreshAccessToken,
+  fetchWorkerNames
 } from './accounts.controller'
 
 const router = express.Router()
@@ -16,5 +17,7 @@ router.post('/login', loginUser)
 router.post('/refresh-token', refreshAccessToken)
 
 router.get('/me', authenticateToken, currentAccount, getUserInfo)
+
+router.get('/names', fetchWorkerNames)
 
 export default router

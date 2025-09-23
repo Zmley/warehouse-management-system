@@ -583,7 +583,8 @@ export const completeTaskByAdmin = async (
 
 export const cancelByTransportWorker = async (
   taskID: string,
-  cartID: string
+  cartID: string,
+  accountID: string
 ) => {
   return sequelize.transaction(async (t: Transaction) => {
     const task = await Task.findByPk(taskID, { transaction: t })
@@ -612,7 +613,7 @@ export const cancelByTransportWorker = async (
 
       const sourceBin = await Bin.findByPk(task.sourceBinID, { transaction: t })
       if (sourceBin?.binCode) {
-        await unloadByBinCode(sourceBin.binCode, unloadProductList)
+        await unloadByBinCode(sourceBin.binCode, unloadProductList, accountID)
       }
     }
 

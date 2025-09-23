@@ -200,7 +200,6 @@ export default function CameraPanel() {
             border: '0'
           } as CSSStyleDeclaration)
 
-          // 尝试调用视频适配（有的版本带这个 API）
           try {
             cameraView.setVideoFit?.('cover')
           } catch {}
@@ -240,21 +239,17 @@ export default function CameraPanel() {
 
   return (
     <Box>
-      {/* 强制修正 Dynamsoft 内部 dom 的尺寸与适配 */}
       <GlobalStyles
         styles={{
-          /* UI 根容器铺满父容器 */
           '#scanner-view, #scanner-view > *': {
             width: '100%',
             height: '100%'
           },
-          /* 视频容器与视频节点铺满，按 cover 显示避免黑边/挤压 */
           '#scanner-view video': {
             width: '100% !important',
             height: '100% !important',
             objectFit: 'cover !important'
           },
-          /* 隐藏调试徽标/分辨率标签（可选） */
           '#scanner-view .dce-ui-badge, #scanner-view .dce-msg-label': {
             display: 'none !important'
           }
@@ -266,7 +261,6 @@ export default function CameraPanel() {
         sx={{ p: 2, mb: 2, borderRadius: 2, textAlign: 'center' }}
       >
         <Box
-          /* 外层包裹：稳定纵横比，手机竖屏更自然 */
           id='scanner-view'
           sx={{
             width: '100%',
@@ -275,7 +269,6 @@ export default function CameraPanel() {
             borderRadius: 2,
             overflow: 'hidden',
             border: '2px solid #ccc',
-            /* 用 aspect-ratio 优先；不支持时回退到固定高度 */
             aspectRatio: '3 / 4',
             height: { xs: 'auto', sm: 360 }
           }}

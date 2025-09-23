@@ -1,4 +1,3 @@
-// src/pages/PickerScan/index.tsx
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {

@@ -33,7 +33,7 @@ export const getMyTask = asyncHandler(async (req, res) => {
 
 export const cancelTask = asyncHandler(async (req, res) => {
   const { taskID } = req.params
-  const { role, cartID } = res.locals
+  const { role, cartID, accountID } = res.locals
 
   let task: Task | null = null
 
@@ -43,7 +43,7 @@ export const cancelTask = asyncHandler(async (req, res) => {
       status: TaskStatus.CANCELED
     })
   } else if (role === UserRole.TRANSPORT_WORKER) {
-    task = await taskService.cancelByTransportWorker(taskID, cartID)
+    task = await taskService.cancelByTransportWorker(taskID, cartID, accountID)
   } else {
     throw new AppError(httpStatus.FORBIDDEN, 'ROLE_FORBIDDEN', 'ROLE_FORBIDDEN')
   }

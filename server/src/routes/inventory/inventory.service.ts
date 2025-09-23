@@ -715,3 +715,41 @@ export const getInventoriesByBinID = async (
 
   return inventories
 }
+
+////////////
+
+// export const getProductCodesByInventoryIDs = async (ids: string[]) => {
+//   if (!ids?.length) return new Map<string, string>()
+//   const rows = await Inventory.findAll({
+//     where: { inventoryID: ids },
+//     attributes: ['inventoryID', 'productCode']
+//   })
+//   const map = new Map<string, string>()
+//   rows.forEach(r => map.set(r.inventoryID, r.productCode))
+//   return map
+// }
+
+type UnloadRow = {
+  inventoryID: string
+  quantity: number
+  merge?: boolean
+}
+
+export const getFulfillItemsByInventories = async (rows: UnloadRow[]) => {
+  if (!rows?.length) return []
+
+  const ids = rows.map(r => r.inventoryID)
+  const invs = await Inventory.findAll({
+    where: { inventoryID: ids },
+    attributes: ['inventoryID', 'productCode']
+  })
+
+  const codeMap = new Map(invs.map(r => [r.inventoryID, r.productCode]))
+
+  return rows.flatMap(r => {
+    const code = codeMap.get(r.inventoryID)
+    return code
+      ? [{ productCode: code, quantity: r.quantity, isMerged: !!r.merge }]
+      : []
+  })
+}
