@@ -1,31 +1,10 @@
-import { DataTypes, Model, Optional } from 'sequelize'
+import { DataTypes, Model } from 'sequelize'
 import { sequelize } from 'config/db'
 import Bin from 'routes/bins/bin.model'
 import Account from 'routes/accounts/accounts.model'
 import Product from 'routes/products/product.model'
 
-export interface LogAttributes {
-  logID: string
-  productCode: string
-  quantity: number
-  sourceBinID: string | null
-  destinationBinID: string | null
-  accountID: string
-  sessionID: string | null
-  isMerged: boolean
-  createdAt?: Date
-  updatedAt?: Date
-}
-
-export type LogCreationAttributes = Optional<
-  LogAttributes,
-  'logID' | 'sessionID' | 'isMerged' | 'createdAt' | 'updatedAt'
->
-
-export class Log
-  extends Model<LogAttributes, LogCreationAttributes>
-  implements LogAttributes
-{
+export class Log extends Model {
   public logID!: string
   public productCode!: string
   public quantity!: number
@@ -34,17 +13,17 @@ export class Log
   public accountID!: string
   public sessionID!: string | null
   public isMerged!: boolean
-  public readonly createdAt!: Date
-  public readonly updatedAt!: Date
+  public createdAt!: Date
+  public updatedAt!: Date
 }
 
 Log.init(
   {
     logID: {
       type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
       allowNull: false,
-      primaryKey: true,
-      defaultValue: DataTypes.UUIDV4
+      primaryKey: true
     },
     productCode: {
       type: DataTypes.STRING,
@@ -57,18 +36,15 @@ Log.init(
     },
     sourceBinID: {
       type: DataTypes.UUID,
-      allowNull: true,
-      references: { model: 'bin', key: 'binID' }
+      allowNull: true
     },
     destinationBinID: {
       type: DataTypes.UUID,
-      allowNull: true,
-      references: { model: 'bin', key: 'binID' }
+      allowNull: true
     },
     accountID: {
       type: DataTypes.UUID,
-      allowNull: false,
-      references: { model: 'account', key: 'accountID' }
+      allowNull: false
     },
     sessionID: {
       type: DataTypes.UUID,
@@ -81,12 +57,10 @@ Log.init(
     },
     createdAt: {
       type: DataTypes.DATE,
-      allowNull: false,
       defaultValue: DataTypes.NOW
     },
     updatedAt: {
       type: DataTypes.DATE,
-      allowNull: false,
       defaultValue: DataTypes.NOW
     }
   },
@@ -102,16 +76,8 @@ Log.init(
   }
 )
 
-Log.belongsTo(Bin, {
-  foreignKey: 'sourceBinID',
-  as: 'sourceBin',
-  targetKey: 'binID'
-})
-Log.belongsTo(Bin, {
-  foreignKey: 'destinationBinID',
-  as: 'destinationBin',
-  targetKey: 'binID'
-})
+Log.belongsTo(Bin, { foreignKey: 'sourceBinID', as: 'sourceBin' })
+Log.belongsTo(Bin, { foreignKey: 'destinationBinID', as: 'destinationBin' })
 Log.belongsTo(Account, { foreignKey: 'accountID', as: 'account' })
 Log.belongsTo(Product, {
   foreignKey: 'productCode',
