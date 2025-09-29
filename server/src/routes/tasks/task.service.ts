@@ -4,7 +4,6 @@ import Bin from 'routes/bins/bin.model'
 import AppError from 'utils/appError'
 import { Op, Sequelize, Transaction, WhereOptions } from 'sequelize'
 import { UserRole, TaskStatus } from 'constants/index'
-import { TaskWithJoin } from 'types/task'
 import {
   checkInventoryQuantity,
   getCartInventories
@@ -643,4 +642,185 @@ export const getAdminTasksByWarehouseID = async (
   })) as unknown as TaskWithJoin[]
 
   return tasks.length ? mapTasks(tasks) : []
+}
+
+//////////////////////////
+
+export interface PageResult<T> {
+  items: T[]
+  page: number
+  pageSize: number
+  total: number
+  totalPages: number
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type TaskWithJoin = any
+
+const LIKE_OP = sequelize.getDialect() === 'postgres' ? Op.iLike : Op.like
+
+export const getAdminFinishedTasksByWarehouseIDPaginated = async (
+  warehouseID: string,
+  status: 'COMPLETED' | 'CANCELED',
+  page = 1,
+  pageSize = 20,
+  keyword?: string
+): Promise<PageResult<TaskWithJoin>> => {
+  const offset = Math.max(0, (page - 1) * pageSize)
+  const limit = Math.max(1, pageSize)
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const taskWhere: WhereOptions<any> = { status }
+  if (keyword && keyword.trim()) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(taskWhere as any)[Op.or] = [
+      { productCode: { [LIKE_OP]: `%${keyword}%` } }
+    ]
+  }
+
+  const isCompleted = status === 'COMPLETED'
+
+  const mainBinIncludeForFilter = isCompleted
+    ? ({
+        model: Bin,
+        as: 'destinationBin',
+        attributes: [],
+        required: true,
+        where: { warehouseID }
+      } as const)
+    : ({
+        model: Bin,
+        as: 'sourceBin',
+        attributes: [],
+        required: true,
+        where: { warehouseID }
+      } as const)
+
+  const extraBinIncludeForKeyword =
+    keyword && keyword.trim()
+      ? ([
+          isCompleted
+            ? {
+                model: Bin,
+                as: 'destinationBin',
+                attributes: [],
+                required: false,
+                where: { binCode: { [LIKE_OP]: `%${keyword}%` } }
+              }
+            : {
+                model: Bin,
+                as: 'sourceBin',
+                attributes: [],
+                required: false,
+                where: { binCode: { [LIKE_OP]: `%${keyword}%` } }
+              }
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ] as any[])
+      : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ([] as any[])
+
+  const total: number = await Task.count({
+    where: taskWhere,
+    include: [mainBinIncludeForFilter, ...extraBinIncludeForKeyword],
+    distinct: true,
+    col: 'taskID'
+  })
+
+  if (total === 0) {
+    return { items: [], page, pageSize: limit, total: 0, totalPages: 1 }
+  }
+
+  const idRows = await Task.findAll({
+    attributes: ['taskID', 'updatedAt'],
+    where: taskWhere,
+    include: [mainBinIncludeForFilter, ...extraBinIncludeForKeyword],
+    order: [['updatedAt', 'DESC']],
+    offset,
+    limit,
+    subQuery: false
+  })
+
+  const ids = idRows.map(r => r.get('taskID')) as string[]
+  if (ids.length === 0) {
+    return {
+      items: [],
+      page,
+      pageSize: limit,
+      total,
+      totalPages: Math.max(1, Math.ceil(total / limit))
+    }
+  }
+
+  const rows = await Task.findAll({
+    where: { taskID: { [Op.in]: ids } },
+    attributes: [
+      'taskID',
+      'productCode',
+      'quantity',
+      'status',
+      'createdAt',
+      'updatedAt',
+      'destinationBinID',
+      'sourceBinID',
+      'creatorID',
+      'accepterID'
+    ],
+    include: [
+      {
+        model: Bin,
+        as: 'destinationBin',
+        attributes: ['binID', 'binCode', 'warehouseID'],
+        required: false
+      },
+      {
+        model: Bin,
+        as: 'sourceBin',
+        attributes: ['binID', 'binCode', 'warehouseID'],
+        required: false
+      },
+      {
+        model: Account,
+        as: 'accepter',
+        attributes: ['accountID', 'firstName', 'lastName'],
+        required: false
+      },
+      {
+        model: Account,
+        as: 'creator',
+        attributes: ['accountID', 'firstName', 'lastName'],
+        required: false
+      },
+      {
+        model: Inventory,
+        as: 'inventories',
+        required: false,
+        separate: true,
+        attributes: ['inventoryID', 'quantity', 'binID', 'productCode'],
+        include: [
+          {
+            model: Bin,
+            as: 'bin',
+            attributes: ['binID', 'binCode', 'warehouseID'],
+            required: true,
+            where: { warehouseID }
+          }
+        ],
+        order: [['inventoryID', 'ASC']]
+      }
+    ],
+    subQuery: false
+  })
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mapById = new Map<string, any>()
+  rows.forEach(r => mapById.set(r.get('taskID') as string, r))
+  const ordered = ids.map(id => mapById.get(id)).filter(Boolean)
+
+  return {
+    items: ordered,
+    page,
+    pageSize: limit,
+    total,
+    totalPages: Math.max(1, Math.ceil(total / limit))
+  }
 }

@@ -5,7 +5,6 @@ import * as binService from 'routes/bins/bin.service'
 import Task from './task.model'
 import AppError from 'utils/appError'
 import { asyncHandler } from 'utils/asyncHandler'
-import { getAdminTasksByWarehouseID } from 'routes/tasks/task.service'
 
 export const acceptTask = asyncHandler(async (req, res) => {
   const { accountID, cartID } = res.locals
@@ -170,34 +169,141 @@ export const updateTask = asyncHandler(async (req, res) => {
   res.status(httpStatus.OK).json({ success: true, task: updatedTask })
 })
 
-export const getAdminTasks = asyncHandler(async (req, res) => {
-  const { role } = res.locals
+// export const getAdminTasks = asyncHandler(async (req, res) => {
+//   const { role } = res.locals
 
-  if (role !== UserRole.ADMIN) {
-    throw new AppError(httpStatus.FORBIDDEN, '❌ Admin only', 'ROLE_FORBIDDEN')
+//   if (role !== UserRole.ADMIN) {
+//     throw new AppError(httpStatus.FORBIDDEN, '❌ Admin only', 'ROLE_FORBIDDEN')
+//   }
+
+//   const warehouseID = req.query.warehouseID as string | undefined
+//   if (typeof warehouseID !== 'string' || !warehouseID) {
+//     throw new AppError(
+//       httpStatus.BAD_REQUEST,
+//       'Admin must provide a valid warehouseID in query',
+//       'WAREHOUSE_ID_REQUIRED'
+//     )
+//   }
+
+//   const rawStatus =
+//     typeof req.query.status === 'string' ? req.query.status : undefined
+//   const rawKeyword =
+//     typeof req.query.keyword === 'string' ? req.query.keyword : undefined
+
+//   const status = rawStatus?.trim() || undefined
+//   const keyword = rawKeyword?.trim() || undefined
+
+//   const tasks = await getAdminTasksByWarehouseID(warehouseID, keyword, status)
+
+//   res.status(httpStatus.OK).json({
+//     success: true,
+//     tasks
+//   })
+// })
+
+// controllers/admin.tasks.controller.ts
+
+// controllers/admin.tasks.controller.ts
+
+// controllers/admin.tasks.controller.ts
+import { Request, Response, NextFunction } from 'express'
+import {
+  getAdminTasksByWarehouseID,
+  getAdminFinishedTasksByWarehouseIDPaginated
+} from 'routes/tasks/task.service'
+
+export const getAdminTasks = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { role } = res.locals
+    if (role !== UserRole.ADMIN) {
+      throw new AppError(httpStatus.FORBIDDEN, 'Admin only', 'ROLE_FORBIDDEN')
+    }
+
+    const warehouseID =
+      typeof req.query.warehouseID === 'string'
+        ? req.query.warehouseID
+        : undefined
+    if (!warehouseID) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'warehouseID is required',
+        'WAREHOUSE_ID_REQUIRED'
+      )
+    }
+
+    const rawStatus =
+      typeof req.query.status === 'string' ? req.query.status : undefined
+    const rawKeyword =
+      typeof req.query.keyword === 'string' ? req.query.keyword : undefined
+    const status = rawStatus?.trim().toUpperCase() || undefined
+    const keyword = rawKeyword?.trim() || undefined
+
+    const tasks = await getAdminTasksByWarehouseID(warehouseID, keyword, status)
+    res.status(httpStatus.OK).json({ success: true, tasks })
+  } catch (err) {
+    next(err)
   }
+}
 
-  const warehouseID = req.query.warehouseID as string | undefined
-  if (typeof warehouseID !== 'string' || !warehouseID) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      'Admin must provide a valid warehouseID in query',
-      'WAREHOUSE_ID_REQUIRED'
+export const getFinishedTasksController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { role } = res.locals
+    if (role !== UserRole.ADMIN) {
+      throw new AppError(httpStatus.FORBIDDEN, 'Admin only', 'ROLE_FORBIDDEN')
+    }
+
+    const warehouseID =
+      typeof req.query.warehouseID === 'string'
+        ? req.query.warehouseID
+        : undefined
+    if (!warehouseID) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'warehouseID is required',
+        'WAREHOUSE_ID_REQUIRED'
+      )
+    }
+
+    const statusRaw = String(req.query.status || '')
+      .trim()
+      .toUpperCase()
+    if (statusRaw !== 'COMPLETED' && statusRaw !== 'CANCELED') {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        "status must be 'COMPLETED' or 'CANCELED'",
+        'FINISHED_STATUS_REQUIRED'
+      )
+    }
+
+    const keyword =
+      typeof req.query.keyword === 'string' && req.query.keyword.trim()
+        ? req.query.keyword.trim()
+        : undefined
+    const page = Math.max(1, Number(req.query.page) || 1)
+    const pageSize = Math.max(1, Number(req.query.pageSize) || 20)
+
+    const result = await getAdminFinishedTasksByWarehouseIDPaginated(
+      warehouseID,
+      statusRaw as 'COMPLETED' | 'CANCELED',
+      page,
+      pageSize,
+      keyword
     )
+
+    res.status(httpStatus.OK).json({
+      success: true,
+      data: result.items,
+      total: result.total
+    })
+  } catch (err) {
+    next(err)
   }
-
-  const rawStatus =
-    typeof req.query.status === 'string' ? req.query.status : undefined
-  const rawKeyword =
-    typeof req.query.keyword === 'string' ? req.query.keyword : undefined
-
-  const status = rawStatus?.trim() || undefined
-  const keyword = rawKeyword?.trim() || undefined
-
-  const tasks = await getAdminTasksByWarehouseID(warehouseID, keyword, status)
-
-  res.status(httpStatus.OK).json({
-    success: true,
-    tasks
-  })
-})
+}

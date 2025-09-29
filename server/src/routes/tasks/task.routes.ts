@@ -10,7 +10,8 @@ import {
   GetTasksQuerySchema,
   CreateTaskBodySchema,
   UpdateTaskParamsSchema,
-  UpdateTaskBodySchema
+  UpdateTaskBodySchema,
+  GetFinishedTasksQuerySchema
 } from './task.schema'
 
 const router = express.Router()
@@ -33,6 +34,13 @@ router.post(
   roleAllow([UserRole.ADMIN, UserRole.PICKER, UserRole.TRANSPORT_WORKER]),
   celebrate({ [Segments.PARAMS]: CancelTaskParamsSchema }),
   taskController.cancelTask
+)
+
+router.get(
+  '/finished',
+  roleAllow([UserRole.ADMIN]),
+  celebrate({ [Segments.QUERY]: GetFinishedTasksQuerySchema }),
+  taskController.getFinishedTasksController
 )
 
 router.get(
