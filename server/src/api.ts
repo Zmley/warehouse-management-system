@@ -10,6 +10,7 @@ import bin from 'routes/bins/bin.routes'
 import product from 'routes/products/product.routes'
 import warehouse from 'routes/warehouses/warehouse.router'
 import log from 'routes/log/log.routes'
+import trasnfer from 'routes/transfers/transfer.routes'
 
 const router: Router = Router()
 router.use(healthCheck)
@@ -22,5 +23,6 @@ router.use('/bins', bin)
 router.use('/products', product)
 router.use('/warehouses', warehouse)
 router.use('/logs', log)
+router.use('/transfers', trasnfer)
 
 export default router

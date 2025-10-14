@@ -2,12 +2,14 @@ import React, { useState, Suspense } from 'react'
 import { Box, Button, ButtonGroup } from '@mui/material'
 import SearchIcon from '@mui/icons-material/Search'
 import EditIcon from '@mui/icons-material/Edit'
+import LocalShippingIcon from '@mui/icons-material/LocalShipping'
 import { useTranslation } from 'react-i18next'
 
 import InventorySearch from './searchInventory'
 import InventoryEdit from './Inventory'
+import MobileReceive from './MobileReceive'
 
-type TabKey = 'search' | 'edit'
+type TabKey = 'search' | 'edit' | 'receive'
 
 const InventoryIndex: React.FC = () => {
   const [tab, setTab] = useState<TabKey>('search')
@@ -15,6 +17,7 @@ const InventoryIndex: React.FC = () => {
 
   const labelSearch = t('inventoryIndex.searchTab', '库存查询')
   const labelEdit = t('inventoryIndex.editTab', '库存编辑')
+  const labelReceive = t('inventoryIndex.receiveTab', '收货')
 
   return (
     <Box
@@ -28,6 +31,7 @@ const InventoryIndex: React.FC = () => {
         bgcolor: 'transparent'
       }}
     >
+      {/* 顶部按钮组 */}
       <Box
         sx={{
           position: 'sticky',
@@ -54,6 +58,7 @@ const InventoryIndex: React.FC = () => {
             }
           }}
         >
+          {/* 库存查询 */}
           <Button
             startIcon={<SearchIcon />}
             onClick={() => setTab('search')}
@@ -71,6 +76,7 @@ const InventoryIndex: React.FC = () => {
             {labelSearch}
           </Button>
 
+          {/* 库存编辑 */}
           <Button
             startIcon={<EditIcon />}
             onClick={() => setTab('edit')}
@@ -87,9 +93,28 @@ const InventoryIndex: React.FC = () => {
           >
             {labelEdit}
           </Button>
+
+          {/* 收货按钮 */}
+          <Button
+            startIcon={<LocalShippingIcon />}
+            onClick={() => setTab('receive')}
+            variant={tab === 'receive' ? 'contained' : 'text'}
+            sx={{
+              borderRadius: 0,
+              py: 1.25,
+              fontWeight: 700,
+              boxShadow: 'none',
+              ...(tab !== 'receive' && { color: '#1f2937' })
+            }}
+            aria-pressed={tab === 'receive'}
+            aria-label={labelReceive}
+          >
+            {labelReceive}
+          </Button>
         </ButtonGroup>
       </Box>
 
+      {/* 内容区域 */}
       <Box
         sx={{
           flex: 1,
@@ -101,7 +126,9 @@ const InventoryIndex: React.FC = () => {
         }}
       >
         <Suspense fallback={null}>
-          {tab === 'search' ? <InventorySearch /> : <InventoryEdit />}
+          {tab === 'search' && <InventorySearch />}
+          {tab === 'edit' && <InventoryEdit />}
+          {tab === 'receive' && <MobileReceive />} {/* ✅ 新增 */}
         </Suspense>
       </Box>
     </Box>

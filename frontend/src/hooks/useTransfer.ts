@@ -1,0 +1,159 @@
+import { useState, useCallback } from 'react'
+import {
+  cancelTransfer,
+  createTransfer as createTransferAPI,
+  CreateTransferPayload,
+  fetchTransfers,
+  deleteTransfersByTaskID,
+  confirmReceive
+} from 'api/transfer'
+import type {
+  ConfirmItem,
+  FetchTransfersParams,
+  FetchTransfersResponse
+} from 'api/transfer'
+
+export const useTransfer = () => {
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const [transfers, setTransfers] = useState<any[]>([])
+  const [total, setTotal] = useState(0)
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
+
+  const [loading, setLoading] = useState(false)
+
+  const createTransferTask = useCallback(
+    async (payload: CreateTransferPayload) => {
+      try {
+        setIsLoading(true)
+        setError(null)
+
+        const body: CreateTransferPayload = {
+          ...payload,
+          taskID: payload.taskID ?? null
+        }
+
+        const res = await createTransferAPI(body)
+        if (!res.success) {
+          setError(res.message || 'Create transfer failed')
+        }
+        return res
+      } catch (e: any) {
+        const msg =
+          e?.response?.data?.message || e?.message || 'Create transfer failed'
+        setError(msg)
+        return { success: false, message: msg }
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    []
+  )
+
+  /** === 获取 Transfers === */
+  const getTransfers = useCallback(
+    async (params: FetchTransfersParams): Promise<FetchTransfersResponse> => {
+      try {
+        setIsLoading(true)
+        setError(null)
+
+        const res = await fetchTransfers(params)
+        if (!res.success) {
+          throw new Error(res.message || 'Failed to fetch transfers')
+        }
+
+        setTransfers(res.transfers || [])
+        setTotal(res.total ?? 0)
+        setPage(res.page ?? params.page ?? 1)
+
+        return res
+      } catch (e: any) {
+        const msg =
+          e?.response?.data?.message ||
+          e?.message ||
+          'Failed to fetch transfers'
+        setError(msg)
+        return {
+          success: false,
+          transfers: [],
+          total: 0,
+          page: params.page ?? 1,
+          message: msg
+        }
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    []
+  )
+
+  /** === 取消 Transfer === */
+  const cancel = useCallback(async (transferID: string) => {
+    try {
+      setLoading(true)
+      setError(null)
+      await cancelTransfer(transferID)
+      return { success: true }
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.message || err?.message || 'Cancel failed'
+      setError(msg)
+      return { success: false, message: msg }
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  const removeByTaskID = useCallback(
+    async (taskID: string, sourceBinID?: string) => {
+      try {
+        setLoading(true)
+        setError(null)
+        await deleteTransfersByTaskID(taskID, sourceBinID)
+        return { success: true }
+      } catch (err: any) {
+        const msg =
+          err?.response?.data?.message || err?.message || 'Delete failed'
+        setError(msg)
+        return { success: false, message: msg }
+      } finally {
+        setLoading(false)
+      }
+    },
+    []
+  )
+
+  const handleConfirmReceive = async (items: ConfirmItem[]) => {
+    setLoading(true)
+    try {
+      const res = await confirmReceive(items)
+      return res
+    } catch (err: any) {
+      console.error('confirmReceive error:', err)
+      return { success: false, message: err.message }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return {
+    transfers,
+    total,
+    page,
+    pageSize,
+
+    isLoading,
+    error,
+    loading,
+    handleConfirmReceive,
+    createTransferTask,
+    getTransfers,
+    cancel,
+    removeByTaskID,
+
+    setPage,
+    setPageSize
+  }
+}

@@ -18,3 +18,9 @@ export enum DeviceType {
   PHONE = 'PHONE',
   SCANNER = 'SCANNER'
 }
+
+export type TransferStatusUI =
+  | 'PENDING'
+  | 'IN_PROCESS'
+  | 'COMPLETED'
+  | 'CANCELED'

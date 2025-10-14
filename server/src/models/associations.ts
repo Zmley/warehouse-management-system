@@ -1,6 +1,8 @@
 import Product from 'routes/products/product.model'
 import Bin from 'routes/bins/bin.model'
 import Inventory from 'routes/inventory/inventory.model'
+import Task from 'routes/tasks/task.model'
+import Transfer from 'routes/transfers/transfer.model'
 
 export const setupAssociations = () => {
   Bin.hasMany(Inventory, {
@@ -20,4 +22,6 @@ export const setupAssociations = () => {
     targetKey: 'productCode',
     as: 'product'
   })
+
+  Task.hasMany(Transfer, { foreignKey: 'taskID', as: 'transfers' })
 }
