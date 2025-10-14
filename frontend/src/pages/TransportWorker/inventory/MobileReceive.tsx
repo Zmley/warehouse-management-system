@@ -7,57 +7,25 @@ import {
   IconButton,
   Button,
   CircularProgress,
-  Drawer,
   Snackbar,
   Alert,
-  Chip,
-  TextField,
-  InputAdornment,
-  Stack
+  Chip
 } from '@mui/material'
 import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner'
 import RefreshIcon from '@mui/icons-material/Refresh'
 import CheckIcon from '@mui/icons-material/Check'
-import EditIcon from '@mui/icons-material/Edit'
-import DoneAllIcon from '@mui/icons-material/DoneAll'
 import { TransferStatusUI } from 'constants/index'
 import { useTransfer } from 'hooks/useTransfer'
 import { useParams } from 'react-router-dom'
 import { useAuth } from 'hooks/useAuth'
 import { useProduct } from 'hooks/useProduct'
-import ScanPanelLite from './ScanPanelLite'
+import MobileScanConfirm, { PendingLite } from './MobileScanConfirm'
 
 type TransferRow = {
   transferID: string
   productCode: string
   quantity: number
   status: TransferStatusUI
-}
-
-function parseMultiPairs(
-  raw: string
-): Array<{ productCode: string; qty: number }> {
-  const text = (raw || '').trim()
-  if (!text) return []
-  return text
-    .split(/[\n,;]+/)
-    .map(s => s.trim())
-    .filter(Boolean)
-    .map(pair => {
-      const [c, q] = pair.split(':').map(x => x?.trim())
-      const qty = Number(q)
-      if (c && Number.isFinite(qty)) return { productCode: c, qty }
-      return null
-    })
-    .filter(Boolean) as Array<{ productCode: string; qty: number }>
-}
-
-type ConfirmLine = {
-  transferID?: string
-  productCode: string
-  expectedQty: number | null
-  confirmQty: number | ''
-  ok?: boolean
 }
 
 export default function MobileReceive({
@@ -72,12 +40,12 @@ export default function MobileReceive({
   const resolvedWarehouseID =
     propWarehouseID || params.warehouseID || userProfile?.warehouseID || ''
 
-  // useTransfer（两个实例用于分别取 PENDING / IN_PROCESS 列表）
+  // 两个实例分别取 PENDING / IN_PROCESS
   const {
     getTransfers: getPending,
     isLoading: loadingP,
     transfers: transfersP,
-    handleConfirmReceive // ⬅️ 用于确认收货
+    handleConfirmReceive
   } = useTransfer()
   const {
     getTransfers: getInProcess,
@@ -86,19 +54,19 @@ export default function MobileReceive({
   } = useTransfer()
 
   const [updating, setUpdating] = useState(false)
-  const [scanOpen, setScanOpen] = useState(false)
   const [snack, setSnack] = useState<{
     open: boolean
     msg: string
     sev: 'success' | 'error' | 'info'
-  }>({ open: false, msg: '', sev: 'info' })
+  }>({
+    open: false,
+    msg: '',
+    sev: 'info'
+  })
+  const [scanConfirmOpen, setScanConfirmOpen] = useState(false)
 
   const [pending, setPending] = useState<TransferRow[]>([])
   const [inProcess, setInProcess] = useState<TransferRow[]>([])
-
-  const [confirmOpen, setConfirmOpen] = useState(false)
-  const [confirmLines, setConfirmLines] = useState<ConfirmLine[]>([])
-  const [confirmBusy, setConfirmBusy] = useState(false)
 
   const load = useCallback(async () => {
     if (!resolvedWarehouseID) return
@@ -151,141 +119,22 @@ export default function MobileReceive({
 
   const onRefresh = () => resolvedWarehouseID && load()
 
-  // 扫描后打开确认 Drawer（批量）
-  const openConfirmForPairs = (
-    pairs: Array<{ productCode: string; qty: number }>
-  ) => {
-    const byCode = new Map<string, number>()
-    pairs.forEach(p => byCode.set(p.productCode, p.qty))
-
-    const lines: ConfirmLine[] = []
+  // 确认成功后，在本地把对应行从 pending 移到 inProcess
+  const moveToInProcess = (confirmedIDs: string[]) => {
+    const set = new Set(confirmedIDs)
+    const moved: TransferRow[] = []
     const remain: TransferRow[] = []
-
-    for (const row of pending) {
-      const qty = byCode.get(row.productCode)
-      if (typeof qty === 'number') {
-        lines.push({
-          transferID: row.transferID,
-          productCode: row.productCode,
-          expectedQty: row.quantity,
-          confirmQty: qty,
-          ok: qty === row.quantity
-        })
-        byCode.delete(row.productCode)
-      } else {
-        remain.push(row)
-      }
+    for (const r of pending) {
+      if (set.has(r.transferID)) moved.push({ ...r, status: 'IN_PROCESS' })
+      else remain.push(r)
     }
-
-    for (const [code, qty] of byCode.entries()) {
-      lines.push({
-        productCode: code,
-        expectedQty: null,
-        confirmQty: qty,
-        ok: undefined
-      })
-    }
-
-    setConfirmLines(lines)
-    setConfirmOpen(true)
-  }
-
-  // 扫描处理（条码或多对 PRODUCT:QTY）
-  const handleScanned = async (text: string) => {
-    const trimmed = (text || '').trim()
-    if (!trimmed) {
-      setSnack({ open: true, msg: '无效的扫描内容。', sev: 'error' })
-      return
-    }
-
-    const pairs = parseMultiPairs(trimmed)
-    if (pairs.length > 0) {
-      setScanOpen(false)
-      openConfirmForPairs(pairs)
-      return
-    }
-
-    try {
-      const p = await fetchProduct(trimmed) // 单条码 -> 找 productCode
-      const code = p?.productCode || trimmed
-      setScanOpen(false)
-      setConfirmLines([
-        { productCode: code, expectedQty: null, confirmQty: '', ok: undefined }
-      ])
-      setConfirmOpen(true)
-    } catch {
-      setScanOpen(false)
-      setConfirmLines([
-        {
-          productCode: trimmed,
-          expectedQty: null,
-          confirmQty: '',
-          ok: undefined
-        }
-      ])
-      setConfirmOpen(true)
-    }
-  }
-
-  // 点击“确认收货”按钮：调用 hook，并本地移动到 In Process
-  const submitConfirm = async () => {
-    if (confirmBusy) return
-
-    // 基本校验
-    for (const l of confirmLines) {
-      if (l.confirmQty === '' || Number(l.confirmQty) <= 0) {
-        setSnack({ open: true, msg: '请输入有效的确认数量。', sev: 'error' })
-        return
-      }
-    }
-
-    setConfirmBusy(true)
-    try {
-      // 仅提交有 transferID 的项目（任务内的行）
-      const items = confirmLines
-        .filter(l => !!l.transferID)
-        .map(l => ({
-          transferID: l.transferID as string,
-          productCode: l.productCode,
-          quantity: Number(l.confirmQty)
-        }))
-
-      if (items.length > 0) {
-        const res = await handleConfirmReceive(items)
-        if (!res?.success) {
-          setSnack({
-            open: true,
-            msg: res?.message || '确认收货失败',
-            sev: 'error'
-          })
-          return
-        }
-      }
-
-      // 本地把这些行移到 In Process
-      const confirmedIDs = new Set(items.map(i => i.transferID))
-      const moved: TransferRow[] = []
-      const remain: TransferRow[] = []
-      for (const r of pending) {
-        if (confirmedIDs.has(r.transferID)) {
-          moved.push({ ...r, status: 'IN_PROCESS' })
-        } else {
-          remain.push(r)
-        }
-      }
-      setPending(remain)
-      setInProcess(prev => [...moved, ...prev])
-
-      setSnack({
-        open: true,
-        msg: '已确认收货，项目进入 In Process。',
-        sev: 'success'
-      })
-      setConfirmOpen(false)
-      setConfirmLines([])
-    } finally {
-      setConfirmBusy(false)
-    }
+    setPending(remain)
+    setInProcess(prev => [...moved, ...prev])
+    setSnack({
+      open: true,
+      msg: '已确认收货，项目进入 In Process。',
+      sev: 'success'
+    })
   }
 
   const counts = useMemo(
@@ -293,12 +142,6 @@ export default function MobileReceive({
     [pending.length, inProcess.length]
   )
   const busy = updating || loadingP || loadingI
-
-  // Drawer 高度随条目数变化（最小 40vh，最大 88vh）
-  const confirmDrawerHeight = useMemo(
-    () => `clamp(40vh, calc(28vh + ${confirmLines.length} * 12vh), 88vh)`,
-    [confirmLines.length]
-  )
 
   return (
     <Box
@@ -320,6 +163,7 @@ export default function MobileReceive({
           gap: 1
         }}
       >
+        {/* 顶部操作条 */}
         <Paper
           elevation={0}
           sx={{
@@ -332,12 +176,15 @@ export default function MobileReceive({
             alignItems: 'center'
           }}
         >
+          <Typography sx={{ fontWeight: 900, fontSize: 16 }}>
+            托盘收货
+          </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
             <Button
               size='small'
               variant='outlined'
               startIcon={<QrCodeScannerIcon />}
-              onClick={() => setScanOpen(true)}
+              onClick={() => setScanConfirmOpen(true)}
               disabled={!resolvedWarehouseID || busy}
               sx={{ textTransform: 'none', fontWeight: 800, px: 1.25, py: 0.4 }}
             >
@@ -384,7 +231,6 @@ export default function MobileReceive({
                   key={row.transferID}
                   code={row.productCode}
                   qty={row.quantity}
-                  hint='等待扫描确认'
                 />
               ))
             )}
@@ -407,7 +253,6 @@ export default function MobileReceive({
                   key={row.transferID}
                   code={row.productCode}
                   qty={row.quantity}
-                  hint='已扫描'
                   ok
                 />
               ))
@@ -416,127 +261,16 @@ export default function MobileReceive({
         </Box>
       </Box>
 
-      {/* 扫描 Drawer */}
-      <Drawer
-        anchor='bottom'
-        open={scanOpen}
-        onClose={() => setScanOpen(false)}
-        PaperProps={{
-          sx: {
-            p: 1,
-            borderTopLeftRadius: 12,
-            borderTopRightRadius: 12,
-            maxHeight: '70vh'
-          }
-        }}
-      >
-        <ScanPanelLite
-          onScanned={(text: string) => handleScanned(text)}
-          onClose={() => setScanOpen(false)}
-          placeholder='支持：1) 条形码；2) 多对 PRODUCT:QTY（逗号/换行/分号分隔）'
-        />
-      </Drawer>
-
-      {/* 确认收货 Drawer（带底部蓝色按钮，zIndex 提升） */}
-      <Drawer
-        anchor='bottom'
-        open={confirmOpen}
-        onClose={() => setConfirmOpen(false)}
-        PaperProps={{
-          sx: {
-            position: 'relative',
-            borderTopLeftRadius: 14,
-            borderTopRightRadius: 14,
-            height: confirmDrawerHeight,
-            minHeight: '40vh',
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
-            zIndex: 2000
-          }
-        }}
-        slotProps={{ backdrop: { sx: { zIndex: 1999 } } }}
-      >
-        {/* 抓手 + 标题 */}
-        <Box sx={{ p: 1, pt: 1.25 }}>
-          <Box
-            sx={{
-              width: 44,
-              height: 4,
-              bgcolor: '#cbd5e1',
-              borderRadius: 999,
-              mx: 'auto',
-              mb: 1
-            }}
-          />
-          <Typography sx={{ fontWeight: 900, fontSize: 16 }}>
-            确认收货
-          </Typography>
-        </Box>
-
-        {/* 列表（内部滚动，给底部按钮留空） */}
-        <Box sx={{ flex: 1, overflowY: 'auto', px: 1, pb: '120px' }}>
-          {confirmLines.length === 0 ? (
-            <Empty text='暂无需要确认的项目' />
-          ) : (
-            confirmLines.map((l, idx) => (
-              <ConfirmLineRow
-                key={`${l.productCode}-${idx}`}
-                line={l}
-                onChange={val =>
-                  setConfirmLines(prev =>
-                    prev.map((x, i) =>
-                      i === idx ? { ...x, confirmQty: val } : x
-                    )
-                  )
-                }
-              />
-            ))
-          )}
-        </Box>
-
-        {/* 固定底部操作条（蓝色确认） */}
-        <Box
-          sx={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            bgcolor: '#fff',
-            borderTop: '1px solid #e2e8f0',
-            p: 1,
-            pt: 0.75,
-            pb: 'max(12px, env(safe-area-inset-bottom))',
-            boxShadow: '0 -6px 16px rgba(2,6,23,0.06)',
-            zIndex: 2001
-          }}
-        >
-          <Stack direction='row' spacing={1}>
-            <Button
-              variant='outlined'
-              fullWidth
-              onClick={() => setConfirmOpen(false)}
-              disabled={confirmBusy}
-              sx={{ fontWeight: 800 }}
-            >
-              取消
-            </Button>
-            <Button
-              variant='contained'
-              color='primary'
-              fullWidth
-              onClick={submitConfirm}
-              disabled={confirmBusy || confirmLines.length === 0}
-              startIcon={
-                confirmBusy ? <CircularProgress size={16} /> : <DoneAllIcon />
-              }
-              sx={{ fontWeight: 800 }}
-            >
-              确认收货
-            </Button>
-          </Stack>
-        </Box>
-      </Drawer>
+      {/* 扫描 + 确认（独立文件） */}
+      <MobileScanConfirm
+        open={scanConfirmOpen}
+        onClose={() => setScanConfirmOpen(false)}
+        pending={pending as PendingLite[]}
+        fetchProduct={fetchProduct}
+        confirmReceive={handleConfirmReceive}
+        onConfirmedSuccess={moveToInProcess}
+        onError={msg => setSnack({ open: true, msg, sev: 'error' })}
+      />
 
       {/* 全局提示 */}
       <Snackbar
@@ -558,7 +292,7 @@ export default function MobileReceive({
   )
 }
 
-/* ================= 子组件 ================= */
+/* ===== 子组件（保持轻量） ===== */
 
 function Panel({
   title,
@@ -634,12 +368,10 @@ function Panel({
 function RowCard({
   code,
   qty,
-  hint,
   ok
 }: {
   code: string
   qty: number
-  hint: string
   ok?: boolean
 }) {
   return (
@@ -686,15 +418,32 @@ function RowCard({
             variant='outlined'
           />
         </Typography>
-        <Typography
-          variant='caption'
-          color='text.secondary'
-          sx={{ fontSize: 10.5 }}
-        >
-          {hint}
-        </Typography>
       </Box>
       <TickSquare checked={!!ok} />
+    </Box>
+  )
+}
+
+function TickSquare({ checked }: { checked: boolean }) {
+  return (
+    <Box
+      sx={{
+        width: 18,
+        height: 18,
+        borderRadius: 2,
+        border: '2px solid',
+        borderColor: checked ? '#166534' : '#cbd5e1',
+        background: checked ? '#f0fdf4' : 'transparent',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        boxSizing: 'border-box'
+      }}
+      aria-label={checked ? 'matched' : 'unmatched'}
+    >
+      {checked && (
+        <CheckIcon sx={{ fontSize: 12, color: '#166534', lineHeight: 1 }} />
+      )}
     </Box>
   )
 }
@@ -730,146 +479,6 @@ function BusyOverlay() {
       }}
     >
       <CircularProgress size={22} />
-    </Box>
-  )
-}
-
-function TickSquare({ checked }: { checked: boolean }) {
-  return (
-    <Box
-      sx={{
-        width: 18,
-        height: 18,
-        borderRadius: 2,
-        border: '2px solid',
-        borderColor: checked ? '#166534' : '#cbd5e1',
-        background: checked ? '#f0fdf4' : 'transparent',
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        boxSizing: 'border-box'
-      }}
-      aria-label={checked ? 'matched' : 'unmatched'}
-    >
-      {checked && (
-        <CheckIcon sx={{ fontSize: 12, color: '#166534', lineHeight: 1 }} />
-      )}
-    </Box>
-  )
-}
-
-/** 紧凑单行：货号 ｜ 应收（只读）｜ 确认数量（可改）｜ 匹配状态 */
-function ConfirmLineRow({
-  line,
-  onChange
-}: {
-  line: ConfirmLine
-  onChange: (val: number | '') => void
-}) {
-  const showMatch =
-    line.expectedQty != null &&
-    line.confirmQty !== '' &&
-    Number(line.confirmQty) === line.expectedQty
-
-  return (
-    <Box
-      sx={{
-        border: '1px solid #e2e8f0',
-        borderRadius: 2,
-        px: 0.75,
-        py: 0.5,
-        mb: 0.6,
-        bgcolor: '#fff'
-      }}
-    >
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: 'minmax(0,1fr) auto 96px auto',
-          alignItems: 'center',
-          columnGap: 0.75
-        }}
-      >
-        {/* 货号 */}
-        <Typography
-          sx={{
-            fontWeight: 900,
-            fontFamily: 'ui-monospace,Menlo,Consolas,"Courier New",monospace',
-            fontSize: 14,
-            color: '#0f172a',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis'
-          }}
-          title={line.productCode}
-        >
-          {line.productCode}
-        </Typography>
-
-        {/* 应收（只读） */}
-        <Box
-          sx={{
-            border: '1px solid #e5e7eb',
-            borderRadius: 1,
-            px: 0.6,
-            py: 0.35,
-            bgcolor: '#f8fafc',
-            minWidth: 72,
-            textAlign: 'center'
-          }}
-          title='应收数量'
-        >
-          <Typography variant='caption' sx={{ color: '#64748b', mr: 0.3 }}>
-            应收
-          </Typography>
-          <Typography component='span' sx={{ fontWeight: 900 }}>
-            {line.expectedQty ?? '--'}
-          </Typography>
-        </Box>
-
-        {/* 确认数量（可编辑） */}
-        <TextField
-          size='small'
-          label='确认'
-          value={line.confirmQty}
-          onChange={e => {
-            const v = e.target.value.trim()
-            if (v === '') return onChange('')
-            const n = Math.max(0, Math.floor(Number(v)))
-            onChange(Number.isFinite(n) ? n : '')
-          }}
-          inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position='end'>
-                <EditIcon sx={{ fontSize: 16, color: '#64748b' }} />
-              </InputAdornment>
-            )
-          }}
-        />
-
-        {showMatch ? (
-          <Chip
-            size='small'
-            color='success'
-            label='匹配成功'
-            variant='outlined'
-            sx={{ height: 22, fontSize: 11, fontWeight: 800 }}
-          />
-        ) : (
-          <Chip
-            size='small'
-            label='—'
-            variant='outlined'
-            sx={{
-              height: 22,
-              fontSize: 11,
-              color: '#94a3b8',
-              borderColor: '#e2e8f0'
-            }}
-          />
-        )}
-      </Box>
     </Box>
   )
 }
