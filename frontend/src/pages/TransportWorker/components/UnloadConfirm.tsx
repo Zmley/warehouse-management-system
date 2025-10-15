@@ -26,7 +26,6 @@ interface UnloadConfirmProps {
   onSuccess?: () => void
   onError?: (msg?: string) => void
   frameless?: boolean
-  /** 父组件预取到的 bin 库存，传入即“秒开” */
   initialBinInventories?: InventoryItem[]
 }
 
@@ -136,6 +135,7 @@ const UnloadConfirm: React.FC<UnloadConfirmProps> = ({
   const { inventoriesInCart } = useCartContext()
 
   const [submitting, setSubmitting] = useState(false)
+  const [autoUnloading, setAutoUnloading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const [leftList, setLeftList] = useState<FixedCartRow[]>([])
@@ -147,13 +147,11 @@ const UnloadConfirm: React.FC<UnloadConfirmProps> = ({
     {}
   )
 
-  // 读取默认扫描模式，控制卡片内部最大高度
   const scanMode = (localStorage.getItem('scanMode') || 'gun') as
     | 'camera'
     | 'gun'
   const cardBodyMaxH = scanMode === 'camera' ? '68vh' : '80vh'
 
-  /** 由 cartItems + context 规范化左侧列表（逐条渲染，不聚合） */
   useEffect(() => {
     const idToCode = new Map<string, string>()
     for (const it of inventoriesInCart || [])
@@ -170,7 +168,6 @@ const UnloadConfirm: React.FC<UnloadConfirmProps> = ({
     setLeftList(normalized)
   }, [cartItems, inventoriesInCart])
 
-  /** 若父组件未预取，则内部自行拉取，并显示加载转圈 */
   useEffect(() => {
     if (initialBinInventories) return
     let active = true
@@ -190,7 +187,6 @@ const UnloadConfirm: React.FC<UnloadConfirmProps> = ({
     }
   }, [binCode, fetchInventoriesByBinCode, initialBinInventories])
 
-  /** bin 内按 productCode 建索引，用于生成“合并”目标 */
   const binListByCode = useMemo(() => {
     if (!binLoaded || rightList.length === 0)
       return new Map<string, InventoryItem[]>()
@@ -203,7 +199,6 @@ const UnloadConfirm: React.FC<UnloadConfirmProps> = ({
     return map
   }, [binLoaded, rightList])
 
-  /** 左侧逐条数据（不聚合） */
   const incomingRows = useMemo(
     () =>
       leftList.map(it => ({
@@ -214,7 +209,6 @@ const UnloadConfirm: React.FC<UnloadConfirmProps> = ({
     [leftList]
   )
 
-  /** 每个 productCode 的可合并候选（显示为下拉） */
   const targetsByCode = useMemo(() => {
     if (!binLoaded || leftList.length === 0)
       return {} as Record<string, { inventoryID: string; qty: number }[]>
@@ -268,6 +262,7 @@ const UnloadConfirm: React.FC<UnloadConfirmProps> = ({
       onError?.(msg)
     } finally {
       setSubmitting(false)
+      setAutoUnloading(false)
     }
   }
 
@@ -286,6 +281,25 @@ const UnloadConfirm: React.FC<UnloadConfirmProps> = ({
     })
     await submitUnload(finalItems)
   }
+
+  useEffect(() => {
+    if (!binLoaded) return
+    if (rightList.length > 0) return
+    if (leftList.length === 0) return
+    if (submitting || autoUnloading) return
+
+    setAutoUnloading(true)
+    const timer = setTimeout(() => {
+      const payload = leftList.map(r => ({
+        inventoryID: r.inventoryID,
+        quantity: r.quantity
+      }))
+      submitUnload(payload)
+    }, 1000) // ⬅️ 延迟 1 秒
+
+    return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [binLoaded, rightList.length, leftList, submitting])
 
   const panePaperSx = {
     p: 1,
@@ -315,7 +329,6 @@ const UnloadConfirm: React.FC<UnloadConfirmProps> = ({
     color: 'text.secondary'
   } as const
 
-  /** 行组件（只在需要合并的行显示绿色下拉） */
   const ReadyRow = React.memo(function ReadyRow({
     inventoryID,
     code,
@@ -367,7 +380,6 @@ const UnloadConfirm: React.FC<UnloadConfirmProps> = ({
     )
   })
 
-  /** 内容（可滚动体 + 底部固定操作区） */
   const ScrollBody = (
     <Box sx={{ flex: 1, overflowY: 'auto' }}>
       {!binLoaded ? (
@@ -376,7 +388,25 @@ const UnloadConfirm: React.FC<UnloadConfirmProps> = ({
         </Box>
       ) : (
         <>
-          {/* 左：待卸清单 */}
+          {rightList.length === 0 && leftList.length > 0 && (
+            <Paper
+              variant='outlined'
+              sx={{
+                p: 1,
+                mb: 1,
+                borderRadius: 2,
+                bgcolor: '#FFF8E1',
+                borderColor: '#FFD54F'
+              }}
+            >
+              <Typography fontSize={13} fontWeight={800} align='center'>
+                {autoUnloading || submitting
+                  ? t('unload.autoUnloading')
+                  : t('unload.empty') || '货位为空'}
+              </Typography>
+            </Paper>
+          )}
+
           <Paper variant='outlined' sx={panePaperSx}>
             <Typography
               fontWeight={800}
@@ -406,7 +436,6 @@ const UnloadConfirm: React.FC<UnloadConfirmProps> = ({
             />
           </Box>
 
-          {/* 右：货位当前库存 */}
           <Paper variant='outlined' sx={panePaperReadonlySx}>
             <Typography
               fontWeight={800}
@@ -473,7 +502,7 @@ const UnloadConfirm: React.FC<UnloadConfirmProps> = ({
       <Button
         variant='outlined'
         onClick={() => window.history.back()}
-        disabled={submitting}
+        disabled={submitting || autoUnloading}
         sx={{
           height: 44,
           borderRadius: 2,
@@ -486,7 +515,7 @@ const UnloadConfirm: React.FC<UnloadConfirmProps> = ({
       <Button
         variant='contained'
         onClick={submitPerProductDecisions}
-        disabled={submitting}
+        disabled={submitting || autoUnloading}
         sx={{
           height: 44,
           borderRadius: 2,
@@ -494,7 +523,9 @@ const UnloadConfirm: React.FC<UnloadConfirmProps> = ({
           fontWeight: 800
         }}
       >
-        {submitting ? t('unload.unloading') : t('unload.unload')}
+        {submitting || autoUnloading
+          ? t('unload.unloading')
+          : t('unload.unload')}
       </Button>
     </Box>
   )
