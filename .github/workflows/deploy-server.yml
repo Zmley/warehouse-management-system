@@ -27,7 +27,7 @@ jobs:
             echo "Cloning the repository"
             git clone --filter=blob:none --no-checkout https://github.com/Zmley/warehouse-management-system.git
             cd warehouse-management-system
-            git checkout transfer-productions-to-main-warehouse
+            git checkout client-cancel-task-and-unload-to-empty
 
             git sparse-checkout init --cone
             git sparse-checkout set server
