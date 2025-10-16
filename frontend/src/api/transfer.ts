@@ -67,7 +67,23 @@ export interface ConfirmItem {
   quantity: number
 }
 
-export const confirmReceive = async (items: ConfirmItem[]) => {
-  const res = await apiClient.post('/transfers/receive', { items })
+export type ConfirmAction = 'CONFIRM' | 'UNDO_CONFIRM'
+
+// export const confirmReceive = async (items: ConfirmItem[]) => {
+//   const res = await apiClient.post('/transfers/receive', { items })
+//   return res.data
+// }
+
+export const updateReceiveStatus = async (
+  items: ConfirmItem[],
+  action: ConfirmAction = 'CONFIRM'
+) => {
+  const res = await apiClient.post('/transfers/receive', { action, items })
   return res.data
 }
+
+export const confirmReceive = (items: ConfirmItem[]) =>
+  updateReceiveStatus(items, 'CONFIRM')
+
+export const undoConfirmReceive = (items: ConfirmItem[]) =>
+  updateReceiveStatus(items, 'UNDO_CONFIRM')

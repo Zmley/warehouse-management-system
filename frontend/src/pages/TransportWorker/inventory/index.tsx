@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next'
 
 import InventorySearch from './searchInventory'
 import InventoryEdit from './Inventory'
-import MobileReceive from './MobileReceive'
+import MobileReceive from './Receiving/MobileReceive'
 
 type TabKey = 'search' | 'edit' | 'receive'
 

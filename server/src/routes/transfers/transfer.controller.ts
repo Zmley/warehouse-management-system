@@ -3,7 +3,8 @@ import {
   cancelTransferService,
   createTransferService,
   deleteTransfersByTaskService,
-  getTransfersByWarehouseID
+  getTransfersByWarehouseID,
+  updateReceiveStatusService
 } from './transfer.service'
 import httpStatus from 'http-status'
 
@@ -147,21 +148,26 @@ export const deleteTransfersByTaskController = async (
 ///////////////////
 
 // transfer.controller.ts
-import { confirmReceiveService, ConfirmItem } from './transfer.service'
 
-export const confirmReceiveController = async (req: Request, res: Response) => {
+export const updateReceiveStatusController = async (
+  req: Request,
+  res: Response
+) => {
   try {
-    const items = req.body?.items as ConfirmItem[] | undefined
-    if (!items || !Array.isArray(items) || items.length === 0) {
+    const items = req.body?.items
+    const action = req.body?.action
+    const force = !!req.body?.force
+
+    if (!Array.isArray(items) || items.length === 0) {
       return res
         .status(400)
         .json({ success: false, message: 'items is required' })
     }
 
-    const result = await confirmReceiveService(items)
-    return res.json({ success: true, ...result })
-  } catch (err: any) {
-    console.error('confirmReceiveController error:', err)
+    const result = await updateReceiveStatusService(items, action, { force })
+    return res.json({ success: true, action, ...result })
+  } catch (err) {
+    console.error('updateReceiveStatusController error:', err)
     return res.status(500).json({
       success: false,
       message: err?.message || 'Internal server error'

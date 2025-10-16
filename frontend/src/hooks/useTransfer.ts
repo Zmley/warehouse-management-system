@@ -5,7 +5,8 @@ import {
   CreateTransferPayload,
   fetchTransfers,
   deleteTransfersByTaskID,
-  confirmReceive
+  confirmReceive,
+  undoConfirmReceive
 } from 'api/transfer'
 import type {
   ConfirmItem,
@@ -89,7 +90,6 @@ export const useTransfer = () => {
     []
   )
 
-  /** === 取消 Transfer === */
   const cancel = useCallback(async (transferID: string) => {
     try {
       setLoading(true)
@@ -125,13 +125,38 @@ export const useTransfer = () => {
     []
   )
 
+  // const handleConfirmReceive = async (items: ConfirmItem[]) => {
+  //   setLoading(true)
+  //   try {
+  //     const res = await confirmReceive(items)
+  //     return res
+  //   } catch (err: any) {
+  //     console.error('confirmReceive error:', err)
+  //     return { success: false, message: err.message }
+  //   } finally {
+  //     setLoading(false)
+  //   }
+  // }
+
+  // hooks/useTransfer.ts（或你当前放 handleConfirmReceive 的地方）
   const handleConfirmReceive = async (items: ConfirmItem[]) => {
     setLoading(true)
     try {
-      const res = await confirmReceive(items)
-      return res
+      return await confirmReceive(items)
     } catch (err: any) {
       console.error('confirmReceive error:', err)
+      return { success: false, message: err.message }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleUndoConfirmReceive = async (items: ConfirmItem[]) => {
+    setLoading(true)
+    try {
+      return await undoConfirmReceive(items)
+    } catch (err: any) {
+      console.error('undoConfirmReceive error:', err)
       return { success: false, message: err.message }
     } finally {
       setLoading(false)
@@ -152,6 +177,7 @@ export const useTransfer = () => {
     getTransfers,
     cancel,
     removeByTaskID,
+    handleUndoConfirmReceive,
 
     setPage,
     setPageSize

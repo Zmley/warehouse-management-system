@@ -1,10 +1,10 @@
 import { Router } from 'express'
 import {
   cancelTransferController,
-  confirmReceiveController,
   createTransferController,
   deleteTransfersByTaskController,
-  fetchTransfers
+  fetchTransfers,
+  updateReceiveStatusController
 } from './transfer.controller'
 import roleAllow from 'middlewares/roleAllow.middleware'
 import { UserRole } from 'constants/index'
@@ -35,6 +35,6 @@ router.delete(
   deleteTransfersByTaskController
 )
 
-router.post('/receive', confirmReceiveController)
+router.post('/receive', updateReceiveStatusController)
 
 export default router
