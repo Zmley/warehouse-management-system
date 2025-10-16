@@ -959,9 +959,14 @@ export const cancelByTransportWorker = async (
       }
     }
 
-    task.status = TaskStatus.PENDING
-    task.accepterID = null
-    await task.save({ transaction: t })
+    await task.update(
+      {
+        status: TaskStatus.PENDING,
+        accepterID: null,
+        sourceBinID: null
+      },
+      { transaction: t }
+    )
 
     return task
   })

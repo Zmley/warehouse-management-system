@@ -264,7 +264,10 @@
     "back": "返回",
     "unload": "卸下",
     "unloading": "正在卸下…",
-    "error": "卸货失败。"
+    "error": "卸货失败。",
+
+        "autoUnloading": "空货位，自动卸货中…"
+
   },
   "common": {
     "qty": "数量 {{qty}}",

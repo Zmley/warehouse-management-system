@@ -265,7 +265,10 @@
     "back": "Back",
     "unload": "Unload",
     "unloading": "Unloading…",
-    "error": "Failed to unload items."
+    "error": "Failed to unload items.",
+
+            "autoUnloading": "AutoUnloading..."
+
   },
   "common": {
     "qty": "Qty {{qty}}",
