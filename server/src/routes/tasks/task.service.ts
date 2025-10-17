@@ -566,7 +566,6 @@ const getIncludeClause = (warehouseID: string) => {
       ]
     },
 
-    // 当前仓内：同产品的可用库存（保持不变）
     {
       model: Inventory,
       as: 'inventories',
@@ -596,8 +595,6 @@ const getIncludeClause = (warehouseID: string) => {
       ]
     },
 
-    // 其他仓：同产品的可用库存（保持原有筛选）
-    // ★★ 在 bin 下再 include 该 bin 的所有库存（同位同仓，数量>0），用于“顺带返回这个产品所在货位的其他产品”
     {
       model: Inventory,
       as: 'otherInventories',
@@ -659,7 +656,6 @@ const getIncludeClause = (warehouseID: string) => {
       required: false
     },
 
-    // 相关 transfer（保持原样）
     {
       model: Transfer,
       as: 'transfers',

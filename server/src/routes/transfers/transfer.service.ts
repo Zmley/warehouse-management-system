@@ -13,7 +13,7 @@ import { TaskStatus } from '../../constants'
 import Transfer from './transfer.model'
 import { sequelize } from 'config/db'
 import Inventory from 'routes/inventory/inventory.model'
-// import { TransferListParams } from 'types/transfer'
+import Product from 'routes/products/product.model'
 
 const INCLUDE_ALL: Includeable[] = [
   {
@@ -72,34 +72,6 @@ export interface CreateTransferInput {
   createdBy: string
 }
 
-// export const createTransferService = async ({
-//   taskID = null,
-//   sourceWarehouseID,
-//   destinationWarehouseID,
-//   sourceBinID = null,
-//   productCode,
-//   quantity,
-//   createdBy
-// }: CreateTransferInput) => {
-//   const destBin = await Bin.findOne({
-//     where: { warehouseID: destinationWarehouseID, binCode: 'Unloading_Zone' }
-//   })
-//   if (!destBin) throw new Error('Unloading zone not found')
-
-//   return Transfer.create({
-//     taskID,
-//     sourceWarehouseID,
-//     destinationWarehouseID,
-//     sourceBinID,
-//     destinationBinID: destBin.binID,
-//     productCode,
-//     quantity,
-//     status: TaskStatus.PENDING,
-//     createdBy
-//   })
-// }
-
-// service（沿用单条创建，简洁稳定）
 export const createTransferService = async ({
   taskID = null,
   sourceWarehouseID,
@@ -134,6 +106,32 @@ export type TransferListParams = {
   limit?: number
 }
 
+// export const getTransfersByWarehouseID = async ({
+//   warehouseID,
+//   status,
+//   page = 1,
+//   limit = 10
+// }: TransferListParams) => {
+//   const safeLimit = Math.max(1, Math.min(200, Number(limit) || 10))
+//   const offset = Math.max(0, (page - 1) * safeLimit)
+
+//   const where: WhereOptions = {
+//     destinationWarehouseID: warehouseID,
+//     ...(status ? { status } : {})
+//   }
+
+//   const options: FindAndCountOptions = {
+//     where,
+//     include: INCLUDE_ALL,
+//     order: [['updatedAt', 'DESC']],
+//     limit: safeLimit,
+//     offset
+//   }
+
+//   const { rows, count } = await Transfer.findAndCountAll(options)
+//   return { rows, count, page }
+// }
+
 export const getTransfersByWarehouseID = async ({
   warehouseID,
   status,
@@ -150,14 +148,30 @@ export const getTransfersByWarehouseID = async ({
 
   const options: FindAndCountOptions = {
     where,
-    include: INCLUDE_ALL,
+    include: [
+      ...INCLUDE_ALL,
+      {
+        model: Product,
+        as: 'product',
+        attributes: ['productCode', 'boxType']
+      }
+    ],
     order: [['updatedAt', 'DESC']],
     limit: safeLimit,
     offset
   }
 
   const { rows, count } = await Transfer.findAndCountAll(options)
-  return { rows, count, page }
+
+  const data = rows.map(t => {
+    const json = t.toJSON() as any
+    return {
+      ...json,
+      boxType: json.product?.boxType ?? null
+    }
+  })
+
+  return { rows: data, count, page }
 }
 
 ////

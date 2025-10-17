@@ -25,3 +25,9 @@ export const setupAssociations = () => {
 
   Task.hasMany(Transfer, { foreignKey: 'taskID', as: 'transfers' })
 }
+
+Transfer.belongsTo(Product, {
+  as: 'product',
+  foreignKey: 'productCode',
+  targetKey: 'productCode'
+})
