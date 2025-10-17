@@ -1,4 +1,10 @@
-import { FindAndCountOptions, Includeable, Op, WhereOptions } from 'sequelize'
+import {
+  FindAndCountOptions,
+  Includeable,
+  Op,
+  Transaction,
+  WhereOptions
+} from 'sequelize'
 import Bin from '../../routes/bins/bin.model'
 import Warehouse from '../../routes/warehouses/warehouse.model'
 import Account from '../../routes/accounts/accounts.model'
@@ -6,6 +12,7 @@ import Task from '../../routes/tasks/task.model'
 import { TaskStatus } from '../../constants'
 import Transfer from './transfer.model'
 import { sequelize } from 'config/db'
+import Inventory from 'routes/inventory/inventory.model'
 // import { TransferListParams } from 'types/transfer'
 
 const INCLUDE_ALL: Includeable[] = [
@@ -65,6 +72,34 @@ export interface CreateTransferInput {
   createdBy: string
 }
 
+// export const createTransferService = async ({
+//   taskID = null,
+//   sourceWarehouseID,
+//   destinationWarehouseID,
+//   sourceBinID = null,
+//   productCode,
+//   quantity,
+//   createdBy
+// }: CreateTransferInput) => {
+//   const destBin = await Bin.findOne({
+//     where: { warehouseID: destinationWarehouseID, binCode: 'Unloading_Zone' }
+//   })
+//   if (!destBin) throw new Error('Unloading zone not found')
+
+//   return Transfer.create({
+//     taskID,
+//     sourceWarehouseID,
+//     destinationWarehouseID,
+//     sourceBinID,
+//     destinationBinID: destBin.binID,
+//     productCode,
+//     quantity,
+//     status: TaskStatus.PENDING,
+//     createdBy
+//   })
+// }
+
+// service（沿用单条创建，简洁稳定）
 export const createTransferService = async ({
   taskID = null,
   sourceWarehouseID,
@@ -79,19 +114,6 @@ export const createTransferService = async ({
   })
   if (!destBin) throw new Error('Unloading zone not found')
 
-  //   const exists = await Transfer.findOne({
-  //     where: {
-  //       taskID,
-  //       productCode,
-  //       sourceWarehouseID,
-  //       destinationWarehouseID,
-  //       sourceBinID,
-  //       destinationBinID: destBin.binID,
-  //       status: { [Op.in]: [TaskStatus.PENDING, TaskStatus.IN_PROCESS] }
-  //     }
-  //   })
-  //   if (exists) throw new Error('Transfer already exists')
-
   return Transfer.create({
     taskID,
     sourceWarehouseID,
@@ -104,31 +126,6 @@ export const createTransferService = async ({
     createdBy
   })
 }
-
-// export const getTransfersByWarehouseID = async ({
-//   warehouseID,
-//   status,
-//   page = 1
-// }: TransferListParams) => {
-//   const limit = 10
-//   const offset = Math.max(0, (page - 1) * limit)
-
-//   const where: WhereOptions = {
-//     destinationWarehouseID: warehouseID,
-//     ...(status ? { status } : {})
-//   }
-
-//   const options: FindAndCountOptions = {
-//     where,
-//     include: INCLUDE_ALL,
-//     order: [['updatedAt', 'DESC']],
-//     limit,
-//     offset
-//   }
-
-//   const { rows, count } = await Transfer.findAndCountAll(options)
-//   return { rows, count, page }
-// }
 
 export type TransferListParams = {
   warehouseID: string
@@ -204,83 +201,135 @@ export const deleteTransfersByTaskService = async ({
   return { count }
 }
 
-//////////////////
+export const clearInventoryByBinID = async (
+  binID: string,
+  opts?: { hardDelete?: boolean; transaction?: Transaction }
+) => {
+  if (!binID) throw new Error('binID is required')
 
-// export type ConfirmItem = {
-//   transferID: string
-//   productCode: string
-//   productID?: string
-//   quantity: number
-// }
+  const { hardDelete = false, transaction } = opts || {}
 
-// export const confirmReceiveService = async (items: ConfirmItem[]) => {
-//   if (!Array.isArray(items) || items.length === 0) {
-//     throw new Error('items is required')
-//   }
+  if (hardDelete) {
+    const deleted = await Inventory.destroy({
+      where: { binID },
+      transaction
+    })
+    return { success: true, cleared: deleted, mode: 'DELETE' as const }
+  }
+
+  const [affected] = await Inventory.update(
+    { quantity: 0 },
+    { where: { binID }, transaction }
+  )
+  return { success: true, cleared: affected, mode: 'ZERO' as const }
+}
+
+// type ConfirmAction = 'CONFIRM' | 'UNDO_CONFIRM' | 'COMPLETE'
+// type ConfirmItem = { transferID: string; productCode: string }
+
+// export const updateReceiveStatusService = async (
+//   items: ConfirmItem[],
+//   action: ConfirmAction,
+//   opts?: { force?: boolean }
+// ) => {
+//   if (!items?.length) throw new Error('items is required')
 
 //   const updated: Transfer[] = []
 //   const skipped: { transferID: string; reason: string }[] = []
 
-//   for (const it of items) {
-//     try {
-//       const where: WhereOptions = {
-//         transferID: it.transferID,
-//         productCode: it.productCode,
-//         status: TaskStatus.PENDING
-//       }
+//   let from: TaskStatus, to: TaskStatus
 
-//       const t = await Transfer.findOne({ where })
-//       if (!t) {
+//   if (action === 'CONFIRM') {
+//     from = TaskStatus.PENDING
+//     to = TaskStatus.IN_PROCESS
+//   } else if (action === 'UNDO_CONFIRM') {
+//     from = TaskStatus.IN_PROCESS
+//     to = TaskStatus.PENDING
+//   } else if (action === 'COMPLETE') {
+//     from = TaskStatus.IN_PROCESS
+//     to = TaskStatus.COMPLETED
+//   } else {
+//     throw new Error(`Unknown action: ${action}`)
+//   }
+
+//   return sequelize.transaction(async tx => {
+//     for (const it of items) {
+//       try {
+//         const t = await Transfer.findOne({
+//           where: {
+//             transferID: it.transferID,
+//             productCode: it.productCode,
+//             status: from
+//           },
+//           lock: tx.LOCK.UPDATE,
+//           transaction: tx
+//         })
+//         if (!t) {
+//           skipped.push({
+//             transferID: it.transferID,
+//             reason: `Not found or not ${from}`
+//           })
+//           continue
+//         }
+
+//         if (
+//           action === 'UNDO_CONFIRM' &&
+//           !opts?.force &&
+//           t.getDataValue('hasPendingTransfer')
+//         ) {
+//           skipped.push({
+//             transferID: it.transferID,
+//             reason: 'Undo not allowed'
+//           })
+//           continue
+//         }
+
+//         t.status = to
+//         await t.save({ transaction: tx })
+//         updated.push(t)
+//       } catch (e) {
 //         skipped.push({
 //           transferID: it.transferID,
-//           reason: 'Not found or not PENDING'
+//           reason: e?.message || 'Update failed'
 //         })
-//         continue
 //       }
-
-//       t.status = TaskStatus.IN_PROCESS
-//       await t.save()
-
-//       updated.push(t)
-//     } catch (e) {
-//       skipped.push({
-//         transferID: it.transferID,
-//         reason: e?.message || 'Update failed'
-//       })
 //     }
-//   }
-
-//   return {
-//     success: true,
-//     updatedCount: updated.length,
-//     updated,
-//     skipped
-//   }
+//     return {
+//       success: true,
+//       updatedCount: updated.length,
+//       updated,
+//       skipped,
+//       action
+//     }
+//   })
 // }
 
-// types
-type ConfirmAction = 'CONFIRM' | 'UNDO_CONFIRM'
+type ConfirmAction = 'CONFIRM' | 'UNDO_CONFIRM' | 'COMPLETE'
 type ConfirmItem = { transferID: string; productCode: string }
 
 export const updateReceiveStatusService = async (
   items: ConfirmItem[],
-  action: ConfirmAction = 'CONFIRM',
-  { force = false }: { force?: boolean } = {}
+  action: ConfirmAction,
+  opts?: { force?: boolean }
 ) => {
-  if (!Array.isArray(items) || items.length === 0) {
-    throw new Error('items is required')
-  }
+  if (!items?.length) throw new Error('items is required')
 
   const updated: Transfer[] = []
   const skipped: { transferID: string; reason: string }[] = []
 
-  const fromTo =
-    action === 'CONFIRM'
-      ? { must: TaskStatus.PENDING, next: TaskStatus.IN_PROCESS }
-      : { must: TaskStatus.IN_PROCESS, next: TaskStatus.PENDING }
-
-  const skip = (transferID: string, reason: string) =>
-    skipped.push({ transferID, reason })
+  let from: TaskStatus, to: TaskStatus
+  if (action === 'CONFIRM') {
+    from = TaskStatus.PENDING
+    to = TaskStatus.IN_PROCESS
+  } else if (action === 'UNDO_CONFIRM') {
+    from = TaskStatus.IN_PROCESS
+    to = TaskStatus.PENDING
+  } else if (action === 'COMPLETE') {
+    from = TaskStatus.IN_PROCESS
+    to = TaskStatus.COMPLETED
+  } else {
+    throw new Error(`Unknown action: ${action}`)
+  }
 
   return sequelize.transaction(async tx => {
     for (const it of items) {
@@ -289,39 +338,70 @@ export const updateReceiveStatusService = async (
           where: {
             transferID: it.transferID,
             productCode: it.productCode,
-            status: fromTo.must
+            status: from
           },
           lock: tx.LOCK.UPDATE,
           transaction: tx
         })
-
         if (!t) {
-          skip(it.transferID, `Not found or not ${fromTo.must}`)
+          skipped.push({
+            transferID: it.transferID,
+            reason: `Not found or not ${from}`
+          })
           continue
         }
 
-        // 撤销确认时的保护（除非 force）
-        if (action === 'UNDO_CONFIRM' && !force) {
-          if (t.getDataValue('hasPendingTransfer') === true) {
-            skip(it.transferID, 'Downstream transfer exists, undo not allowed')
-            continue
-          }
+        if (
+          action === 'UNDO_CONFIRM' &&
+          !opts?.force &&
+          t.getDataValue('hasPendingTransfer')
+        ) {
+          skipped.push({
+            transferID: it.transferID,
+            reason: 'Undo not allowed'
+          })
+          continue
         }
 
-        t.status = fromTo.next
+        t.status = to
         await t.save({ transaction: tx })
         updated.push(t)
       } catch (e: any) {
-        skip(it.transferID, e?.message || 'Update failed')
+        skipped.push({
+          transferID: it.transferID,
+          reason: e?.message || 'Update failed'
+        })
+      }
+    }
+
+    // ★ 在 COMPLETE 时：根据本次完成的 transfer 的 sourceBinID，删除该货位全部库存
+    if (action === 'COMPLETE' && updated.length) {
+      const binIDs = Array.from(
+        new Set(
+          updated
+            .map(
+              t =>
+                (t.getDataValue?.('sourceBinID') ?? (t as any).sourceBinID) as
+                  | string
+                  | undefined
+            )
+            .filter(Boolean) as string[]
+        )
+      )
+      for (const binID of binIDs) {
+        await clearInventoryByBinID(binID, {
+          hardDelete: true,
+          transaction: tx
+        })
       }
     }
 
     return {
       success: true,
-      action,
       updatedCount: updated.length,
       updated,
-      skipped
+      skipped,
+      action
     }
   })
 }

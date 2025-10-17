@@ -666,7 +666,13 @@ const getIncludeClause = (warehouseID: string) => {
       required: false,
       attributes: ['transferID', 'status', 'taskID'],
       where: {
-        status: { [Op.in]: [TaskStatus.PENDING, TaskStatus.IN_PROCESS] }
+        status: {
+          [Op.in]: [
+            TaskStatus.PENDING,
+            TaskStatus.IN_PROCESS,
+            TaskStatus.COMPLETED
+          ]
+        }
       }
     }
   ]
@@ -711,9 +717,15 @@ const mapTasks = (tasks: TaskWithJoin[]) => {
   return tasks.map(task => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transfers: any[] = task.transfers ?? []
-    const hasPendingTransfer =
-      Array.isArray(transfers) &&
-      transfers.some(t => String(t.status).toUpperCase() === 'PENDING')
+
+    // const hasPendingTransfer =
+    //   Array.isArray(transfers) &&
+    //   transfers.some(t => String(t.status).toUpperCase() === 'PENDING')
+
+    const transferStatus =
+      Array.isArray(transfers) && transfers.length > 0
+        ? String(transfers[0].status).toUpperCase()
+        : null
 
     let sourceBins: unknown[] = []
     if (task.sourceBin) {
@@ -733,15 +745,13 @@ const mapTasks = (tasks: TaskWithJoin[]) => {
     return {
       ...json,
 
-      // 不改 otherInventories，让它保留：
-      // otherInventories[i].bin.inventories === 该其他仓同一货位下的“所有产品库存（数量>0）”
       inventories: undefined,
       sourceBin: undefined,
       transfers: undefined,
 
       sourceBins,
       destinationBinCode: task.destinationBin?.binCode || '--',
-      hasPendingTransfer,
+      transferStatus,
       transfersCount: transfers.length
     }
   })

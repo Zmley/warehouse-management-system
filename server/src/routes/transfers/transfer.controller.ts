@@ -65,19 +65,45 @@ export const fetchTransfers = async (req: Request, res: Response) => {
   }
 }
 
-export const createTransferController = async (req: Request, res: Response) => {
-  try {
-    const transfer = await createTransferService({
-      ...req.body,
-      createdBy: res.locals.accountID
-    })
-    res.status(201).json({ success: true, transfer })
-  } catch (err) {
-    res.status(400).json({
-      success: false,
-      message: err instanceof Error ? err.message : 'Bad request'
-    })
-  }
+// export const createTransferController = async (req: Request, res: Response) => {
+//   try {
+//     const transfer = await createTransferService({
+//       ...req.body,
+//       createdBy: res.locals.accountID
+//     })
+//     res.status(201).json({ success: true, transfer })
+//   } catch (err) {
+//     res.status(400).json({
+//       success: false,
+//       message: err instanceof Error ? err.message : 'Bad request'
+//     })
+//   }
+// }
+
+// controller
+export const createTransfersController = async (
+  req: Request,
+  res: Response
+) => {
+  const createdBy = res.locals.accountID
+  const items = Array.isArray(req.body.items) ? req.body.items : [req.body]
+  if (!items.length)
+    return res.status(400).json({ success: false, message: 'No items' })
+
+  const rs = await Promise.allSettled(
+    items.map(i => createTransferService({ ...i, createdBy }))
+  )
+  const ok = rs
+    .filter(r => r.status === 'fulfilled')
+    .map(r => (r as PromiseFulfilledResult<any>).value)
+  const fail = rs.length - ok.length
+
+  res.status(ok.length ? 201 : 400).json({
+    success: fail === 0,
+    createdCount: ok.length,
+    failedCount: fail,
+    transfers: ok
+  })
 }
 
 ////////////
@@ -149,28 +175,51 @@ export const deleteTransfersByTaskController = async (
 
 // transfer.controller.ts
 
+// export const updateReceiveStatusController = async (
+//   req: Request,
+//   res: Response
+// ) => {
+//   try {
+//     const items = req.body?.items
+//     const action = req.body?.action
+//     const force = !!req.body?.force
+
+//     if (!Array.isArray(items) || items.length === 0) {
+//       return res
+//         .status(400)
+//         .json({ success: false, message: 'items is required' })
+//     }
+
+//     const result = await updateReceiveStatusService(items, action, { force })
+//     return res.json({ success: true, action, ...result })
+//   } catch (err) {
+//     console.error('updateReceiveStatusController error:', err)
+//     return res.status(500).json({
+//       success: false,
+//       message: err?.message || 'Internal server error'
+//     })
+//   }
+// }
+
 export const updateReceiveStatusController = async (
   req: Request,
   res: Response
 ) => {
   try {
-    const items = req.body?.items
-    const action = req.body?.action
-    const force = !!req.body?.force
-
-    if (!Array.isArray(items) || items.length === 0) {
+    const { items, action, force } = req.body
+    if (!Array.isArray(items) || !items.length)
       return res
         .status(400)
         .json({ success: false, message: 'items is required' })
-    }
 
-    const result = await updateReceiveStatusService(items, action, { force })
-    return res.json({ success: true, action, ...result })
-  } catch (err) {
-    console.error('updateReceiveStatusController error:', err)
-    return res.status(500).json({
-      success: false,
-      message: err?.message || 'Internal server error'
+    const result = await updateReceiveStatusService(items, action, {
+      force: !!force
     })
+    res.json(result)
+  } catch (err: any) {
+    console.error('updateReceiveStatusController:', err.message)
+    res
+      .status(500)
+      .json({ success: false, message: err.message || 'Internal error' })
   }
 }

@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import {
   cancelTransferController,
-  createTransferController,
+  createTransfersController,
   deleteTransfersByTaskController,
   fetchTransfers,
   updateReceiveStatusController
@@ -11,10 +11,16 @@ import { UserRole } from 'constants/index'
 
 const router = Router()
 
+// router.post(
+//   '/',
+//   roleAllow([UserRole.ADMIN, UserRole.TRANSPORT_WORKER]),
+//   createTransferController
+// )
+
 router.post(
   '/',
   roleAllow([UserRole.ADMIN, UserRole.TRANSPORT_WORKER]),
-  createTransferController
+  createTransfersController
 )
 
 router.get(
