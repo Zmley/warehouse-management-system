@@ -1,6 +1,5 @@
 import { Request, Response } from 'express'
 import {
-  cancelTransferService,
   createTransferService,
   deleteTransfersByTaskService,
   getTransfersByWarehouseID,
@@ -84,26 +83,26 @@ export const createTransfersController = async (
   })
 }
 
-export const cancelTransferController = async (req: Request, res: Response) => {
-  try {
-    const { transferID } = req.params
-    const transfer = await cancelTransferService({
-      transferID,
-      canceledBy: res.locals.accountID
-    })
+// export const cancelTransferController = async (req: Request, res: Response) => {
+//   try {
+//     const { transferID } = req.params
+//     const transfer = await cancelTransferService({
+//       transferID,
+//       canceledBy: res.locals.accountID
+//     })
 
-    return res.json({
-      success: true,
-      transfer
-    })
-  } catch (err) {
-    console.error('cancelTransferController error:', err)
-    return res.status(400).json({
-      success: false,
-      message: err instanceof Error ? err.message : 'Bad request'
-    })
-  }
-}
+//     return res.json({
+//       success: true,
+//       transfer
+//     })
+//   } catch (err) {
+//     console.error('cancelTransferController error:', err)
+//     return res.status(400).json({
+//       success: false,
+//       message: err instanceof Error ? err.message : 'Bad request'
+//     })
+//   }
+// }
 
 export const deleteTransfersByTaskController = async (
   req: Request,

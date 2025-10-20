@@ -19,7 +19,8 @@ import {
   ConfirmAction,
   ConfirmItem,
   CreateTransferInput,
-  DeleteArgs
+  DeleteArgs,
+  TransferListParams
 } from 'types/transfer'
 
 const INCLUDE_ALL: Includeable[] = [
@@ -96,13 +97,6 @@ export const createTransferService = async ({
   })
 }
 
-export type TransferListParams = {
-  warehouseID: string
-  status?: 'PENDING' | 'IN_PROCESS' | 'COMPLETED' | 'CANCELED'
-  page?: number
-  limit?: number
-}
-
 export const getTransfersByWarehouseID = async ({
   warehouseID,
   status,
@@ -143,26 +137,6 @@ export const getTransfersByWarehouseID = async ({
   })
 
   return { rows: data, count, page }
-}
-
-export const cancelTransferService = async ({
-  transferID
-}: {
-  transferID: string
-  canceledBy: string
-}) => {
-  const t = await Transfer.findByPk(transferID)
-  if (!t) throw new Error('Transfer not found')
-
-  if (![TaskStatus.PENDING].includes(t.status as TaskStatus)) {
-    throw new Error('Only PENDING or IN_PROCESS transfers can be canceled')
-  }
-
-  t.status = TaskStatus.CANCELED
-
-  await t.save()
-
-  return t
 }
 
 export const deleteTransfersByTaskService = async ({

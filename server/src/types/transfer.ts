@@ -11,22 +11,6 @@ export interface PageResult<T> {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type TaskWithJoin = any
 
-export interface TransferListParams {
-  warehouseID: string
-  status?: TaskStatus
-  keyword?: string
-  page?: number
-  pageSize?: number
-  sortField?: 'updatedAt' | 'createdAt'
-  sortOrder?: 'ASC' | 'DESC'
-}
-
-export interface TransferListParams {
-  warehouseID: string
-  status?: TaskStatus
-  page?: number
-}
-
 export type ListQuery = {
   warehouseID: string
   status?: TaskStatus
@@ -52,3 +36,10 @@ export type DeleteArgs = {
 
 export type ConfirmAction = 'CONFIRM' | 'UNDO_CONFIRM' | 'COMPLETE'
 export type ConfirmItem = { transferID: string; productCode: string }
+
+export type TransferListParams = {
+  warehouseID: string
+  status?: TaskStatus
+  page?: number
+  limit?: number
+}

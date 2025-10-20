@@ -1,6 +1,5 @@
 import { Router } from 'express'
 import {
-  cancelTransferController,
   createTransfersController,
   deleteTransfersByTaskController,
   fetchTransfers,
@@ -21,12 +20,6 @@ router.get(
   '/',
   roleAllow([UserRole.ADMIN, UserRole.TRANSPORT_WORKER]),
   fetchTransfers
-)
-
-router.post(
-  '/:transferID/cancel',
-  roleAllow([UserRole.ADMIN, UserRole.TRANSPORT_WORKER]),
-  cancelTransferController
 )
 
 router.delete(
