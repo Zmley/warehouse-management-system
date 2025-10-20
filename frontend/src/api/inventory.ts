@@ -8,16 +8,8 @@ import apiClient from './axiosClient.ts'
 export const getInventoriesByBinCode = async (binCode: string) =>
   apiClient.get(`/inventories/${binCode}`)
 
-// export const getInventories = (params: {
-//   warehouseID: string
-//   keyword?: string
-// }) => apiClient.get('/inventories', { params })
-
 export const getInventories = async (params: GetInventoriesParams) =>
   apiClient.get('/inventories', { params })
-
-// export const getInventories = async (params: GetInventoriesParams) =>
-//   apiClient.get('/inventories', { params })
 
 export const deleteInventory = async (inventoryID: string) =>
   apiClient.delete(`/inventories/${inventoryID}`)

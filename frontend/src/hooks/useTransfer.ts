@@ -14,14 +14,19 @@ import {
   FetchTransfersResponse
 } from 'types/trasnfer'
 
+const pickErrMsg = (e: any, fallback: string) =>
+  e?.response?.data?.message || e?.message || fallback
+
 export const useTransfer = () => {
   const [isLoading, setIsLoading] = useState(false)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
   const [transfers, setTransfers] = useState<any[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
-  const [loading, setLoading] = useState(false)
+
   const createTransferTask = useCallback(
     async (payload: CreateTransferPayload) => {
       try {
@@ -34,13 +39,15 @@ export const useTransfer = () => {
         }
 
         const res = await createTransferAPI(body)
-        if (!res.success) {
-          setError(res.message || 'Create transfer failed')
+        const data = res.data as { success?: boolean; message?: string }
+        if (!data?.success) {
+          const msg = data?.message || 'Create transfer failed'
+          setError(msg)
+          return { success: false, message: msg }
         }
-        return res
+        return data
       } catch (e: any) {
-        const msg =
-          e?.response?.data?.message || e?.message || 'Create transfer failed'
+        const msg = pickErrMsg(e, 'Create transfer failed')
         setError(msg)
         return { success: false, message: msg }
       } finally {
@@ -57,20 +64,19 @@ export const useTransfer = () => {
         setError(null)
 
         const res = await fetchTransfers(params)
-        if (!res.success) {
-          throw new Error(res.message || 'Failed to fetch transfers')
+        const data = res.data as FetchTransfersResponse
+
+        if (!data.success) {
+          throw new Error(data.message || 'Failed to fetch transfers')
         }
 
-        setTransfers(res.transfers || [])
-        setTotal(res.total ?? 0)
-        setPage(res.page ?? params.page ?? 1)
+        setTransfers(data.transfers || [])
+        setTotal(data.total ?? 0)
+        setPage(data.page ?? params.page ?? 1)
 
-        return res
+        return data
       } catch (e: any) {
-        const msg =
-          e?.response?.data?.message ||
-          e?.message ||
-          'Failed to fetch transfers'
+        const msg = pickErrMsg(e, 'Failed to fetch transfers')
         setError(msg)
         return {
           success: false,
@@ -90,11 +96,16 @@ export const useTransfer = () => {
     try {
       setLoading(true)
       setError(null)
-      await cancelTransfer(transferID)
+      const res = await cancelTransfer(transferID)
+      const data = res.data as { success?: boolean; message?: string }
+      if (data?.success === false) {
+        const msg = data.message || 'Cancel failed'
+        setError(msg)
+        return { success: false, message: msg }
+      }
       return { success: true }
     } catch (err: any) {
-      const msg =
-        err?.response?.data?.message || err?.message || 'Cancel failed'
+      const msg = pickErrMsg(err, 'Cancel failed')
       setError(msg)
       return { success: false, message: msg }
     } finally {
@@ -107,11 +118,16 @@ export const useTransfer = () => {
       try {
         setLoading(true)
         setError(null)
-        await deleteTransfersByTaskID(taskID, sourceBinID)
+        const res = await deleteTransfersByTaskID(taskID, sourceBinID)
+        const data = res.data as { success?: boolean; message?: string }
+        if (data?.success === false) {
+          const msg = data.message || 'Delete failed'
+          setError(msg)
+          return { success: false, message: msg }
+        }
         return { success: true }
       } catch (err: any) {
-        const msg =
-          err?.response?.data?.message || err?.message || 'Delete failed'
+        const msg = pickErrMsg(err, 'Delete failed')
         setError(msg)
         return { success: false, message: msg }
       } finally {
@@ -121,42 +137,45 @@ export const useTransfer = () => {
     []
   )
 
-  const handleConfirmReceive = async (items: ConfirmItem[]) => {
+  const handleConfirmReceive = useCallback(async (items: ConfirmItem[]) => {
     setLoading(true)
     try {
-      return await confirmReceive(items)
+      const res = await confirmReceive(items)
+      return res.data
     } catch (err: any) {
-      console.error('confirmReceive error:', err)
-      return { success: false, message: err.message }
+      const msg = pickErrMsg(err, 'Confirm receive failed')
+      return { success: false, message: msg }
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  const handleUndoConfirmReceive = async (items: ConfirmItem[]) => {
+  const handleUndoConfirmReceive = useCallback(async (items: ConfirmItem[]) => {
     setLoading(true)
     try {
-      return await undoConfirmReceive(items)
+      const res = await undoConfirmReceive(items)
+      return res.data
     } catch (err: any) {
-      console.error('undoConfirmReceive error:', err)
-      return { success: false, message: err.message }
+      const msg = pickErrMsg(err, 'Undo confirm failed')
+      return { success: false, message: msg }
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
   return {
     transfers,
     total,
     page,
     pageSize,
     isLoading,
-    error,
     loading,
-    handleConfirmReceive,
-    createTransferTask,
+    error,
     getTransfers,
+    createTransferTask,
     cancel,
     removeByTaskID,
+    handleConfirmReceive,
     handleUndoConfirmReceive,
     setPage,
     setPageSize

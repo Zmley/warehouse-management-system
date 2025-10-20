@@ -1,38 +1,30 @@
-import {
+import apiClient from './axiosClient.ts'
+import type {
   ConfirmAction,
   ConfirmItem,
   CreateTransferPayload,
   FetchTransfersParams,
   FetchTransfersResponse
 } from 'types/trasnfer.js'
-import apiClient from './axiosClient.ts'
 
-export const createTransfer = async (payload: CreateTransferPayload) => {
-  const res = await apiClient.post('/transfers', payload)
-  return res.data
-}
+export const createTransfer = (payload: CreateTransferPayload) =>
+  apiClient.post('/transfers', payload)
 
-export async function fetchTransfers(params: FetchTransfersParams) {
-  const res = await apiClient.get('/transfers', { params })
-  return res.data as FetchTransfersResponse
-}
+export const fetchTransfers = (params: FetchTransfersParams) =>
+  apiClient.get<FetchTransfersResponse>('/transfers', { params })
 
 export const cancelTransfer = (transferID: string) =>
-  apiClient.post(`/transfers/${transferID}/cancel`)
+  apiClient.post(`/transfers/${encodeURIComponent(transferID)}/cancel`)
 
 export const deleteTransfersByTaskID = (taskID: string, sourceBinID?: string) =>
-  apiClient.delete(
-    `/transfers/${encodeURIComponent(taskID)}`,
-    sourceBinID ? { params: { sourceBinID } } : undefined
-  )
+  apiClient.delete(`/transfers/${encodeURIComponent(taskID)}`, {
+    params: sourceBinID ? { sourceBinID } : undefined
+  })
 
-export const updateReceiveStatus = async (
+export const updateReceiveStatus = (
   items: ConfirmItem[],
   action: ConfirmAction = 'CONFIRM'
-) => {
-  const res = await apiClient.post('/transfers/receive', { action, items })
-  return res.data
-}
+) => apiClient.post('/transfers/receive', { action, items })
 
 export const confirmReceive = (items: ConfirmItem[]) =>
   updateReceiveStatus(items, 'CONFIRM')
