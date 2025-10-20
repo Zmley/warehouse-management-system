@@ -65,22 +65,6 @@ export const fetchTransfers = async (req: Request, res: Response) => {
   }
 }
 
-// export const createTransferController = async (req: Request, res: Response) => {
-//   try {
-//     const transfer = await createTransferService({
-//       ...req.body,
-//       createdBy: res.locals.accountID
-//     })
-//     res.status(201).json({ success: true, transfer })
-//   } catch (err) {
-//     res.status(400).json({
-//       success: false,
-//       message: err instanceof Error ? err.message : 'Bad request'
-//     })
-//   }
-// }
-
-// controller
 export const createTransfersController = async (
   req: Request,
   res: Response
@@ -106,7 +90,6 @@ export const createTransfersController = async (
   })
 }
 
-////////////
 export const cancelTransferController = async (req: Request, res: Response) => {
   try {
     const { transferID } = req.params
@@ -128,8 +111,6 @@ export const cancelTransferController = async (req: Request, res: Response) => {
   }
 }
 
-//////////////
-
 export const deleteTransfersByTaskController = async (
   req: Request,
   res: Response
@@ -149,7 +130,7 @@ export const deleteTransfersByTaskController = async (
     const { count } = await deleteTransfersByTaskService({
       taskID,
       sourceBinID,
-      deletedBy: res.locals.accountID // 如需审计，这里可用
+      deletedBy: res.locals.accountID
     })
 
     if (!count) {
@@ -170,36 +151,6 @@ export const deleteTransfersByTaskController = async (
     })
   }
 }
-
-///////////////////
-
-// transfer.controller.ts
-
-// export const updateReceiveStatusController = async (
-//   req: Request,
-//   res: Response
-// ) => {
-//   try {
-//     const items = req.body?.items
-//     const action = req.body?.action
-//     const force = !!req.body?.force
-
-//     if (!Array.isArray(items) || items.length === 0) {
-//       return res
-//         .status(400)
-//         .json({ success: false, message: 'items is required' })
-//     }
-
-//     const result = await updateReceiveStatusService(items, action, { force })
-//     return res.json({ success: true, action, ...result })
-//   } catch (err) {
-//     console.error('updateReceiveStatusController error:', err)
-//     return res.status(500).json({
-//       success: false,
-//       message: err?.message || 'Internal server error'
-//     })
-//   }
-// }
 
 export const updateReceiveStatusController = async (
   req: Request,

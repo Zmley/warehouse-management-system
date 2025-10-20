@@ -1,7 +1,6 @@
 import {
   FindAndCountOptions,
   Includeable,
-  Op,
   Transaction,
   WhereOptions
 } from 'sequelize'
@@ -14,6 +13,8 @@ import Transfer from './transfer.model'
 import { sequelize } from 'config/db'
 import Inventory from 'routes/inventory/inventory.model'
 import Product from 'routes/products/product.model'
+import httpStatus from 'http-status'
+import AppError from 'utils/appError'
 
 const INCLUDE_ALL: Includeable[] = [
   {
@@ -208,10 +209,24 @@ export const deleteTransfersByTaskService = async ({
   taskID,
   sourceBinID
 }: DeleteArgs) => {
+  const task = await Task.findByPk(taskID)
+  if (!task) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Task not found', 'TASK_NOT_FOUND')
+  }
+
+  if (task.status !== TaskStatus.PENDING) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `Only pending tasks can be deleted (current: ${task.status})`,
+      'TASK_NOT_PENDING'
+    )
+  }
+
   const where: WhereOptions = { taskID, status: TaskStatus.PENDING }
   if (sourceBinID) where.sourceBinID = sourceBinID
 
   const count = await Transfer.destroy({ where })
+
   return { count }
 }
 
@@ -237,86 +252,6 @@ export const clearInventoryByBinID = async (
   )
   return { success: true, cleared: affected, mode: 'ZERO' as const }
 }
-
-// type ConfirmAction = 'CONFIRM' | 'UNDO_CONFIRM' | 'COMPLETE'
-// type ConfirmItem = { transferID: string; productCode: string }
-
-// export const updateReceiveStatusService = async (
-//   items: ConfirmItem[],
-//   action: ConfirmAction,
-//   opts?: { force?: boolean }
-// ) => {
-//   if (!items?.length) throw new Error('items is required')
-
-//   const updated: Transfer[] = []
-//   const skipped: { transferID: string; reason: string }[] = []
-
-//   let from: TaskStatus, to: TaskStatus
-
-//   if (action === 'CONFIRM') {
-//     from = TaskStatus.PENDING
-//     to = TaskStatus.IN_PROCESS
-//   } else if (action === 'UNDO_CONFIRM') {
-//     from = TaskStatus.IN_PROCESS
-//     to = TaskStatus.PENDING
-//   } else if (action === 'COMPLETE') {
-//     from = TaskStatus.IN_PROCESS
-//     to = TaskStatus.COMPLETED
-//   } else {
-//     throw new Error(`Unknown action: ${action}`)
-//   }
-
-//   return sequelize.transaction(async tx => {
-//     for (const it of items) {
-//       try {
-//         const t = await Transfer.findOne({
-//           where: {
-//             transferID: it.transferID,
-//             productCode: it.productCode,
-//             status: from
-//           },
-//           lock: tx.LOCK.UPDATE,
-//           transaction: tx
-//         })
-//         if (!t) {
-//           skipped.push({
-//             transferID: it.transferID,
-//             reason: `Not found or not ${from}`
-//           })
-//           continue
-//         }
-
-//         if (
-//           action === 'UNDO_CONFIRM' &&
-//           !opts?.force &&
-//           t.getDataValue('hasPendingTransfer')
-//         ) {
-//           skipped.push({
-//             transferID: it.transferID,
-//             reason: 'Undo not allowed'
-//           })
-//           continue
-//         }
-
-//         t.status = to
-//         await t.save({ transaction: tx })
-//         updated.push(t)
-//       } catch (e) {
-//         skipped.push({
-//           transferID: it.transferID,
-//           reason: e?.message || 'Update failed'
-//         })
-//       }
-//     }
-//     return {
-//       success: true,
-//       updatedCount: updated.length,
-//       updated,
-//       skipped,
-//       action
-//     }
-//   })
-// }
 
 type ConfirmAction = 'CONFIRM' | 'UNDO_CONFIRM' | 'COMPLETE'
 type ConfirmItem = { transferID: string; productCode: string }
@@ -388,7 +323,6 @@ export const updateReceiveStatusService = async (
       }
     }
 
-    // ★ 在 COMPLETE 时：根据本次完成的 transfer 的 sourceBinID，删除该货位全部库存
     if (action === 'COMPLETE' && updated.length) {
       const binIDs = Array.from(
         new Set(

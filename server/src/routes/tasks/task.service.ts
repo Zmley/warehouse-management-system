@@ -642,7 +642,6 @@ const getIncludeClause = (warehouseID: string) => {
       ]
     },
 
-    // 接收/创建人
     {
       model: Account,
       as: 'accepter',
