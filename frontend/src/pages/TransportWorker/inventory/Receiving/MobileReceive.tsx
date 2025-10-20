@@ -69,11 +69,9 @@ export default function MobileReceive({
   const [pending, setPending] = useState<TransferRow[]>([])
   const [inProcess, setInProcess] = useState<TransferRow[]>([])
 
-  // 单一抽屉
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [drawerMode, setDrawerMode] = useState<DrawerMode>('CONFIRM')
   const [drawerLines, setDrawerLines] = useState<DrawerLine[]>([])
-  // 提交所需的原始 items
   const [confirmItems, setConfirmItems] = useState<ConfirmItem[]>([])
   const [undoItems, setUndoItems] = useState<UndoItem[]>([])
 

@@ -2,29 +2,26 @@ import { useState, useCallback } from 'react'
 import {
   cancelTransfer,
   createTransfer as createTransferAPI,
-  CreateTransferPayload,
   fetchTransfers,
   deleteTransfersByTaskID,
   confirmReceive,
   undoConfirmReceive
 } from 'api/transfer'
-import type {
+import {
   ConfirmItem,
+  CreateTransferPayload,
   FetchTransfersParams,
   FetchTransfersResponse
-} from 'api/transfer'
+} from 'types/trasnfer'
 
 export const useTransfer = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
   const [transfers, setTransfers] = useState<any[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
-
   const [loading, setLoading] = useState(false)
-
   const createTransferTask = useCallback(
     async (payload: CreateTransferPayload) => {
       try {
@@ -53,7 +50,6 @@ export const useTransfer = () => {
     []
   )
 
-  /** === 获取 Transfers === */
   const getTransfers = useCallback(
     async (params: FetchTransfersParams): Promise<FetchTransfersResponse> => {
       try {
@@ -125,20 +121,6 @@ export const useTransfer = () => {
     []
   )
 
-  // const handleConfirmReceive = async (items: ConfirmItem[]) => {
-  //   setLoading(true)
-  //   try {
-  //     const res = await confirmReceive(items)
-  //     return res
-  //   } catch (err: any) {
-  //     console.error('confirmReceive error:', err)
-  //     return { success: false, message: err.message }
-  //   } finally {
-  //     setLoading(false)
-  //   }
-  // }
-
-  // hooks/useTransfer.ts（或你当前放 handleConfirmReceive 的地方）
   const handleConfirmReceive = async (items: ConfirmItem[]) => {
     setLoading(true)
     try {
@@ -162,13 +144,11 @@ export const useTransfer = () => {
       setLoading(false)
     }
   }
-
   return {
     transfers,
     total,
     page,
     pageSize,
-
     isLoading,
     error,
     loading,
@@ -178,7 +158,6 @@ export const useTransfer = () => {
     cancel,
     removeByTaskID,
     handleUndoConfirmReceive,
-
     setPage,
     setPageSize
   }
