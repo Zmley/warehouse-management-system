@@ -1,20 +1,12 @@
-import {
-  FindAndCountOptions,
-  Includeable,
-  Transaction,
-  WhereOptions
-} from 'sequelize'
+import { Transaction, WhereOptions } from 'sequelize'
+import { sequelize } from 'config/db'
+import Transfer from './transfer.model'
+import Task from '../../routes/tasks/task.model'
 import Bin from '../../routes/bins/bin.model'
 import Warehouse from '../../routes/warehouses/warehouse.model'
-import Account from '../../routes/accounts/accounts.model'
-import Task from '../../routes/tasks/task.model'
-import { TaskStatus } from '../../constants'
-import Transfer from './transfer.model'
-import { sequelize } from 'config/db'
 import Inventory from 'routes/inventory/inventory.model'
 import Product from 'routes/products/product.model'
-import httpStatus from 'http-status'
-import AppError from 'utils/appError'
+import { TaskStatus } from '../../constants'
 import {
   ConfirmAction,
   ConfirmItem,
@@ -23,54 +15,7 @@ import {
   TransferListParams
 } from 'types/transfer'
 
-const INCLUDE_ALL: Includeable[] = [
-  {
-    model: Task,
-    as: 'task',
-    attributes: ['taskID', 'status', 'productCode', 'quantity']
-  },
-  {
-    model: Bin,
-    as: 'sourceBin',
-    attributes: ['binID', 'binCode', 'warehouseID'],
-    include: [
-      {
-        model: Warehouse,
-        as: 'warehouse',
-        attributes: ['warehouseID', 'warehouseCode']
-      }
-    ]
-  },
-  {
-    model: Bin,
-    as: 'destinationBin',
-    attributes: ['binID', 'binCode', 'warehouseID'],
-    include: [
-      {
-        model: Warehouse,
-        as: 'warehouse',
-        attributes: ['warehouseID', 'warehouseCode']
-      }
-    ]
-  },
-  {
-    model: Warehouse,
-    as: 'sourceWarehouse',
-    attributes: ['warehouseID', 'warehouseCode']
-  },
-  {
-    model: Warehouse,
-    as: 'destinationWarehouse',
-    attributes: ['warehouseID', 'warehouseCode']
-  },
-  {
-    model: Account,
-    as: 'creator',
-    attributes: ['accountID', 'firstName', 'lastName']
-  }
-]
-
-export const createTransferService = async ({
+export const createTransferByTaskID = async ({
   taskID = null,
   sourceWarehouseID,
   destinationWarehouseID,
@@ -111,48 +56,73 @@ export const getTransfersByWarehouseID = async ({
     ...(status ? { status } : {})
   }
 
-  const options: FindAndCountOptions = {
+  const { rows, count } = await Transfer.findAndCountAll({
     where,
     include: [
-      ...INCLUDE_ALL,
       {
-        model: Product,
-        as: 'product',
-        attributes: ['productCode', 'boxType']
-      }
+        model: Task,
+        as: 'task',
+        attributes: ['taskID', 'status', 'productCode', 'quantity']
+      },
+      {
+        model: Bin,
+        as: 'sourceBin',
+        attributes: ['binID', 'binCode', 'warehouseID'],
+        include: [
+          {
+            model: Warehouse,
+            as: 'warehouse',
+            attributes: ['warehouseID', 'warehouseCode']
+          }
+        ]
+      },
+      {
+        model: Bin,
+        as: 'destinationBin',
+        attributes: ['binID', 'binCode', 'warehouseID'],
+        include: [
+          {
+            model: Warehouse,
+            as: 'warehouse',
+            attributes: ['warehouseID', 'warehouseCode']
+          }
+        ]
+      },
+      {
+        model: Warehouse,
+        as: 'sourceWarehouse',
+        attributes: ['warehouseID', 'warehouseCode']
+      },
+      {
+        model: Warehouse,
+        as: 'destinationWarehouse',
+        attributes: ['warehouseID', 'warehouseCode']
+      },
+      { model: Product, as: 'product', attributes: ['productCode', 'boxType'] }
     ],
     order: [['updatedAt', 'DESC']],
     limit: safeLimit,
     offset
-  }
-
-  const { rows, count } = await Transfer.findAndCountAll(options)
+  })
 
   const data = rows.map(t => {
-    const json = t.toJSON()
-    return {
-      ...json,
-      boxType: json.product?.boxType ?? null
-    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const json: any = t.toJSON()
+    return { ...json, boxType: json.product?.boxType ?? null }
   })
 
   return { rows: data, count, page }
 }
 
-export const deleteTransfersByTaskService = async ({
+export const deleteTransfersByTaskID = async ({
   taskID,
   sourceBinID
 }: DeleteArgs) => {
   const task = await Task.findByPk(taskID)
-  if (!task) {
-    throw new AppError(httpStatus.NOT_FOUND, 'Task not found', 'TASK_NOT_FOUND')
-  }
-
+  if (!task) throw new Error('Task not found')
   if (task.status !== TaskStatus.PENDING) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      `Only pending tasks can be deleted (current: ${task.status})`,
-      'TASK_NOT_PENDING'
+    throw new Error(
+      `Only pending tasks can be deleted (current: ${task.status})`
     )
   }
 
@@ -160,7 +130,6 @@ export const deleteTransfersByTaskService = async ({
   if (sourceBinID) where.sourceBinID = sourceBinID
 
   const count = await Transfer.destroy({ where })
-
   return { count }
 }
 
@@ -171,31 +140,24 @@ export const clearInventoryByBinID = async (
   if (!binID) throw new Error('binID is required')
 
   const { hardDelete = false, transaction } = opts || {}
-
   if (hardDelete) {
-    const deleted = await Inventory.destroy({
-      where: { binID },
-      transaction
-    })
-    return { success: true, cleared: deleted, mode: 'DELETE' as const }
+    const cleared = await Inventory.destroy({ where: { binID }, transaction })
+    return { success: true, cleared, mode: 'DELETE' as const }
   }
 
-  const [affected] = await Inventory.update(
+  const [cleared] = await Inventory.update(
     { quantity: 0 },
     { where: { binID }, transaction }
   )
-  return { success: true, cleared: affected, mode: 'ZERO' as const }
+  return { success: true, cleared, mode: 'ZERO' as const }
 }
 
-export const updateReceiveStatusService = async (
+export const updateTransferStatus = async (
   items: ConfirmItem[],
   action: ConfirmAction,
   opts?: { force?: boolean }
 ) => {
   if (!items?.length) throw new Error('items is required')
-
-  const updated: Transfer[] = []
-  const skipped: { transferID: string; reason: string }[] = []
 
   let from: TaskStatus, to: TaskStatus
   if (action === 'CONFIRM') {
@@ -207,9 +169,10 @@ export const updateReceiveStatusService = async (
   } else if (action === 'COMPLETE') {
     from = TaskStatus.IN_PROCESS
     to = TaskStatus.COMPLETED
-  } else {
-    throw new Error(`Unknown action: ${action}`)
-  }
+  } else throw new Error(`Unknown action: ${action}`)
+
+  const updated: Transfer[] = []
+  const skipped: { transferID: string; reason: string }[] = []
 
   return sequelize.transaction(async tx => {
     for (const it of items) {
@@ -234,7 +197,8 @@ export const updateReceiveStatusService = async (
         if (
           action === 'UNDO_CONFIRM' &&
           !opts?.force &&
-          t.getDataValue('hasPendingTransfer')
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (t as any).hasPendingTransfer
         ) {
           skipped.push({
             transferID: it.transferID,
@@ -277,10 +241,10 @@ export const updateReceiveStatusService = async (
 
     return {
       success: true,
+      action,
       updatedCount: updated.length,
       updated,
-      skipped,
-      action
+      skipped
     }
   })
 }

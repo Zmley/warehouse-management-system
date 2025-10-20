@@ -1,9 +1,9 @@
 import { Router } from 'express'
 import {
-  createTransfersController,
-  deleteTransfersByTaskController,
+  createTransfers,
+  deleteTransfersByTask,
   fetchTransfers,
-  updateReceiveStatusController
+  updateReceiveStatus
 } from './transfer.controller'
 import roleAllow from 'middlewares/roleAllow.middleware'
 import { UserRole } from 'constants/index'
@@ -13,7 +13,7 @@ const router = Router()
 router.post(
   '/',
   roleAllow([UserRole.ADMIN, UserRole.TRANSPORT_WORKER]),
-  createTransfersController
+  createTransfers
 )
 
 router.get(
@@ -25,9 +25,9 @@ router.get(
 router.delete(
   '/:taskID',
   roleAllow([UserRole.ADMIN, UserRole.TRANSPORT_WORKER]),
-  deleteTransfersByTaskController
+  deleteTransfersByTask
 )
 
-router.post('/receive', updateReceiveStatusController)
+router.post('/receive', updateReceiveStatus)
 
 export default router

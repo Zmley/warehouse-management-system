@@ -1,81 +1,48 @@
 import { Request, Response } from 'express'
 import {
-  createTransferService,
-  deleteTransfersByTaskService,
+  createTransferByTaskID,
+  deleteTransfersByTaskID,
   getTransfersByWarehouseID,
-  updateReceiveStatusService
+  updateTransferStatus
 } from './transfer.service'
 import httpStatus from 'http-status'
-import { ListQuery } from 'types/transfer'
+import { TaskStatus } from 'constants/index'
 
 export const fetchTransfers = async (req: Request, res: Response) => {
-  try {
-    const {
-      warehouseID,
-      status,
-      page = '1',
-      limit
-    } = req.query as unknown as ListQuery
+  const { warehouseID, status, page = '1', limit } = req.query
 
-    if (!warehouseID) {
-      return res
-        .status(400)
-        .json({ success: false, message: 'warehouseID is required' })
-    }
-
-    const PAGE_DEFAULT = 10
-    const PAGE_MAX = 200
-    const limitNum = Math.min(
-      PAGE_MAX,
-      Math.max(1, Number(limit ?? PAGE_DEFAULT) || PAGE_DEFAULT)
-    )
-
-    const pageNum = Math.max(1, Number(page) || 1)
-
-    const {
-      rows,
-      count,
-      page: currentPage
-    } = await getTransfersByWarehouseID({
-      warehouseID,
-      status,
-      page: pageNum,
-      limit: limitNum
-    })
-
-    res.json({
-      success: true,
-      transfers: rows,
-      total: count,
-      page: currentPage
-    })
-  } catch (err) {
-    console.error('fetchTransfers error:', err)
-    res.status(500).json({
-      success: false,
-      message: err instanceof Error ? err.message : 'Internal error'
-    })
+  if (typeof warehouseID !== 'string') {
+    return res
+      .status(400)
+      .json({ success: false, message: 'warehouseID is required' })
   }
+
+  const limitNum = Math.min(200, Math.max(1, Number(limit) || 10))
+  const pageNum = Math.max(1, Number(page) || 1)
+
+  const { rows, count } = await getTransfersByWarehouseID({
+    warehouseID,
+    status: typeof status === 'string' ? (status as TaskStatus) : undefined,
+    page: pageNum,
+    limit: limitNum
+  })
+
+  res.json({ success: true, transfers: rows, total: count, page: pageNum })
 }
 
-export const createTransfersController = async (
-  req: Request,
-  res: Response
-) => {
+export const createTransfers = async (req: Request, res: Response) => {
   const createdBy = res.locals.accountID
-  const items = Array.isArray(req.body.items) ? req.body.items : [req.body]
+  const items = Array.isArray(req.body?.items) ? req.body.items : [req.body]
   if (!items.length)
     return res.status(400).json({ success: false, message: 'No items' })
 
-  const rs = await Promise.allSettled(
-    items.map(i => createTransferService({ ...i, createdBy }))
+  const settled = await Promise.allSettled(
+    items.map(i => createTransferByTaskID({ ...i, createdBy }))
   )
-  const ok = rs
-    .filter(r => r.status === 'fulfilled')
-    .map(r => (r as PromiseFulfilledResult<unknown>).value)
-  const fail = rs.length - ok.length
+  const ok = settled.flatMap(r => (r.status === 'fulfilled' ? [r.value] : []))
+  const fail = settled.length - ok.length
 
-  res.status(ok.length ? 201 : 400).json({
+  return res.status(ok.length ? 201 : 400).json({
     success: fail === 0,
     createdCount: ok.length,
     failedCount: fail,
@@ -83,87 +50,45 @@ export const createTransfersController = async (
   })
 }
 
-// export const cancelTransferController = async (req: Request, res: Response) => {
-//   try {
-//     const { transferID } = req.params
-//     const transfer = await cancelTransferService({
-//       transferID,
-//       canceledBy: res.locals.accountID
-//     })
-
-//     return res.json({
-//       success: true,
-//       transfer
-//     })
-//   } catch (err) {
-//     console.error('cancelTransferController error:', err)
-//     return res.status(400).json({
-//       success: false,
-//       message: err instanceof Error ? err.message : 'Bad request'
-//     })
-//   }
-// }
-
-export const deleteTransfersByTaskController = async (
-  req: Request,
-  res: Response
-) => {
-  try {
-    const { taskID } = req.params
-    const sourceBinID =
-      typeof req.query.sourceBinID === 'string'
-        ? req.query.sourceBinID
-        : undefined
-    if (!taskID) {
-      return res
-        .status(httpStatus.BAD_REQUEST)
-        .json({ success: false, message: 'No taskID provided' })
-    }
-
-    const { count } = await deleteTransfersByTaskService({
-      taskID,
-      sourceBinID,
-      deletedBy: res.locals.accountID
-    })
-
-    if (!count) {
-      return res.status(httpStatus.NOT_FOUND).json({
-        success: false,
-        message: sourceBinID
-          ? `No pending transfers found for taskID=${taskID} & sourceBinID=${sourceBinID}`
-          : `No pending transfers found for taskID=${taskID}`
-      })
-    }
-
-    return res.status(httpStatus.OK).json({ success: true, count })
-  } catch (err) {
-    console.error('❌ deleteTransfersByTaskController error:', err)
-    return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-      success: false,
-      message: err?.message || 'Internal server error'
-    })
+export const deleteTransfersByTask = async (req: Request, res: Response) => {
+  const { taskID } = req.params
+  const sourceBinID =
+    typeof req.query.sourceBinID === 'string'
+      ? req.query.sourceBinID
+      : undefined
+  if (!taskID) {
+    return res
+      .status(httpStatus.BAD_REQUEST)
+      .json({ success: false, message: 'No taskID provided' })
   }
+
+  const { count } = await deleteTransfersByTaskID({
+    taskID,
+    sourceBinID,
+    deletedBy: res.locals.accountID
+  })
+
+  if (!count) {
+    const msg = sourceBinID
+      ? `No pending transfers found for taskID=${taskID} & sourceBinID=${sourceBinID}`
+      : `No pending transfers found for taskID=${taskID}`
+    return res
+      .status(httpStatus.NOT_FOUND)
+      .json({ success: false, message: msg })
+  }
+
+  return res.status(httpStatus.OK).json({ success: true, count })
 }
 
-export const updateReceiveStatusController = async (
-  req: Request,
-  res: Response
-) => {
-  try {
-    const { items, action, force } = req.body
-    if (!Array.isArray(items) || !items.length)
-      return res
-        .status(400)
-        .json({ success: false, message: 'items is required' })
-
-    const result = await updateReceiveStatusService(items, action, {
-      force: !!force
-    })
-    res.json(result)
-  } catch (err) {
-    console.error('updateReceiveStatusController:', err.message)
-    res
-      .status(500)
-      .json({ success: false, message: err.message || 'Internal error' })
+export const updateReceiveStatus = async (req: Request, res: Response) => {
+  const { items, action, force } = req.body
+  if (!Array.isArray(items) || !items.length) {
+    return res
+      .status(400)
+      .json({ success: false, message: 'items is required' })
   }
+  const result = await updateTransferStatus(items, action, {
+    force: !!force
+  })
+  return res.json(result)
 }
