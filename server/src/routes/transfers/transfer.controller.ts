@@ -7,13 +7,7 @@ import {
   updateReceiveStatusService
 } from './transfer.service'
 import httpStatus from 'http-status'
-
-type ListQuery = {
-  warehouseID: string
-  status?: 'PENDING' | 'IN_PROCESS' | 'COMPLETED' | 'CANCELED'
-  page?: string
-  limit?: string
-}
+import { ListQuery } from 'types/transfer'
 
 export const fetchTransfers = async (req: Request, res: Response) => {
   try {
@@ -79,7 +73,7 @@ export const createTransfersController = async (
   )
   const ok = rs
     .filter(r => r.status === 'fulfilled')
-    .map(r => (r as PromiseFulfilledResult<any>).value)
+    .map(r => (r as PromiseFulfilledResult<unknown>).value)
   const fail = rs.length - ok.length
 
   res.status(ok.length ? 201 : 400).json({
@@ -143,7 +137,7 @@ export const deleteTransfersByTaskController = async (
     }
 
     return res.status(httpStatus.OK).json({ success: true, count })
-  } catch (err: any) {
+  } catch (err) {
     console.error('❌ deleteTransfersByTaskController error:', err)
     return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
       success: false,
@@ -167,7 +161,7 @@ export const updateReceiveStatusController = async (
       force: !!force
     })
     res.json(result)
-  } catch (err: any) {
+  } catch (err) {
     console.error('updateReceiveStatusController:', err.message)
     res
       .status(500)

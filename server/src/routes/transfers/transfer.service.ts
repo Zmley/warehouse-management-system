@@ -15,6 +15,12 @@ import Inventory from 'routes/inventory/inventory.model'
 import Product from 'routes/products/product.model'
 import httpStatus from 'http-status'
 import AppError from 'utils/appError'
+import {
+  ConfirmAction,
+  ConfirmItem,
+  CreateTransferInput,
+  DeleteArgs
+} from 'types/transfer'
 
 const INCLUDE_ALL: Includeable[] = [
   {
@@ -63,16 +69,6 @@ const INCLUDE_ALL: Includeable[] = [
   }
 ]
 
-export interface CreateTransferInput {
-  taskID?: string | null
-  sourceWarehouseID: string
-  destinationWarehouseID: string
-  sourceBinID?: string | null
-  productCode: string
-  quantity: number
-  createdBy: string
-}
-
 export const createTransferService = async ({
   taskID = null,
   sourceWarehouseID,
@@ -107,32 +103,6 @@ export type TransferListParams = {
   limit?: number
 }
 
-// export const getTransfersByWarehouseID = async ({
-//   warehouseID,
-//   status,
-//   page = 1,
-//   limit = 10
-// }: TransferListParams) => {
-//   const safeLimit = Math.max(1, Math.min(200, Number(limit) || 10))
-//   const offset = Math.max(0, (page - 1) * safeLimit)
-
-//   const where: WhereOptions = {
-//     destinationWarehouseID: warehouseID,
-//     ...(status ? { status } : {})
-//   }
-
-//   const options: FindAndCountOptions = {
-//     where,
-//     include: INCLUDE_ALL,
-//     order: [['updatedAt', 'DESC']],
-//     limit: safeLimit,
-//     offset
-//   }
-
-//   const { rows, count } = await Transfer.findAndCountAll(options)
-//   return { rows, count, page }
-// }
-
 export const getTransfersByWarehouseID = async ({
   warehouseID,
   status,
@@ -165,7 +135,7 @@ export const getTransfersByWarehouseID = async ({
   const { rows, count } = await Transfer.findAndCountAll(options)
 
   const data = rows.map(t => {
-    const json = t.toJSON() as any
+    const json = t.toJSON()
     return {
       ...json,
       boxType: json.product?.boxType ?? null
@@ -174,8 +144,6 @@ export const getTransfersByWarehouseID = async ({
 
   return { rows: data, count, page }
 }
-
-////
 
 export const cancelTransferService = async ({
   transferID
@@ -195,14 +163,6 @@ export const cancelTransferService = async ({
   await t.save()
 
   return t
-}
-
-///////////
-
-type DeleteArgs = {
-  taskID: string
-  sourceBinID?: string
-  deletedBy?: string
 }
 
 export const deleteTransfersByTaskService = async ({
@@ -252,9 +212,6 @@ export const clearInventoryByBinID = async (
   )
   return { success: true, cleared: affected, mode: 'ZERO' as const }
 }
-
-type ConfirmAction = 'CONFIRM' | 'UNDO_CONFIRM' | 'COMPLETE'
-type ConfirmItem = { transferID: string; productCode: string }
 
 export const updateReceiveStatusService = async (
   items: ConfirmItem[],
@@ -315,7 +272,7 @@ export const updateReceiveStatusService = async (
         t.status = to
         await t.save({ transaction: tx })
         updated.push(t)
-      } catch (e: any) {
+      } catch (e) {
         skipped.push({
           transferID: it.transferID,
           reason: e?.message || 'Update failed'
@@ -329,7 +286,7 @@ export const updateReceiveStatusService = async (
           updated
             .map(
               t =>
-                (t.getDataValue?.('sourceBinID') ?? (t as any).sourceBinID) as
+                (t.getDataValue?.('sourceBinID') ?? t.sourceBinID) as
                   | string
                   | undefined
             )

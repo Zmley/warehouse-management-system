@@ -11,12 +11,6 @@ import { UserRole } from 'constants/index'
 
 const router = Router()
 
-// router.post(
-//   '/',
-//   roleAllow([UserRole.ADMIN, UserRole.TRANSPORT_WORKER]),
-//   createTransferController
-// )
-
 router.post(
   '/',
   roleAllow([UserRole.ADMIN, UserRole.TRANSPORT_WORKER]),

@@ -26,3 +26,29 @@ export interface TransferListParams {
   status?: TaskStatus
   page?: number
 }
+
+export type ListQuery = {
+  warehouseID: string
+  status?: TaskStatus
+  page?: string
+  limit?: string
+}
+
+export interface CreateTransferInput {
+  taskID?: string | null
+  sourceWarehouseID: string
+  destinationWarehouseID: string
+  sourceBinID?: string | null
+  productCode: string
+  quantity: number
+  createdBy: string
+}
+
+export type DeleteArgs = {
+  taskID: string
+  sourceBinID?: string
+  deletedBy?: string
+}
+
+export type ConfirmAction = 'CONFIRM' | 'UNDO_CONFIRM' | 'COMPLETE'
+export type ConfirmItem = { transferID: string; productCode: string }
