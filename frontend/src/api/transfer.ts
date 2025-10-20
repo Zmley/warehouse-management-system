@@ -2,24 +2,12 @@ import apiClient from './axiosClient.ts'
 import type {
   ConfirmAction,
   ConfirmItem,
-  CreateTransferPayload,
   FetchTransfersParams,
   FetchTransfersResponse
 } from 'types/trasnfer.js'
 
-export const createTransfer = (payload: CreateTransferPayload) =>
-  apiClient.post('/transfers', payload)
-
 export const fetchTransfers = (params: FetchTransfersParams) =>
   apiClient.get<FetchTransfersResponse>('/transfers', { params })
-
-export const cancelTransfer = (transferID: string) =>
-  apiClient.post(`/transfers/${transferID}/cancel`)
-
-export const deleteTransfersByTaskID = (taskID: string, sourceBinID?: string) =>
-  apiClient.delete(`/transfers/${taskID}`, {
-    params: sourceBinID ? { sourceBinID } : undefined
-  })
 
 export const updateReceiveStatus = (
   items: ConfirmItem[],
