@@ -49,31 +49,6 @@ export const useInventory = () => {
     }
   }, [])
 
-  // const fetchInventories = useCallback(
-  //   async (keyword?: string) => {
-  //     setIsLoading(true)
-  //     setError(null)
-
-  //     try {
-  //       const res = await getInventories({
-  //         warehouseID,
-  //         keyword
-  //       })
-  //       setInventories(res.data.inventories)
-  //     } catch (err: any) {
-  //       const message =
-  //         err?.response?.data?.message || '❌ Failed to fetch inventories.'
-  //       setError(message)
-  //       return { success: false, message }
-  //     } finally {
-  //       setIsLoading(false)
-  //     }
-  //   },
-  //   [warehouseID]
-  // )
-
-  /////////////////////////////////////////////////////
-
   const fetchInventories = useCallback(
     async (
       options: Partial<Omit<GetInventoriesParams, 'warehouseID'>> = {}
@@ -189,7 +164,6 @@ export const useInventory = () => {
     error,
     fetchInventoriesByBinCode,
     fetchInventories,
-
     editInventoriesBulk,
     addInventory,
     removeInventory,
