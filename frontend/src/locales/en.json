@@ -309,10 +309,43 @@
     "help": "Help"
   },
 
-   "inventoryIndex": {
-    "searchTab": "Inventories Search",
-    "editTab": "Inventories Edit"
+ "inventoryIndex": { 
+    "searchTab": "Search",
+    "editTab": "Edit",
+    "receiveTab": "Receive",
+    "tablistAria": "tablistAria",
+    "loading": "loading..."
+  },
+
+
+
+    "mobileReceive": {
+    "title": "Pallet Receiving",
+    "refresh": "Refresh",
+    "pendingTitle": "Pending",
+    "inProcessTitle": "In Process",
+    "emptyPending": "No pending items",
+    "emptyInProcess": "No in-process items",
+    "snackConfirmed": "Confirmed. Items moved to In Process.",
+    "snackUndone": "Undo successful. Items moved back to Pending.",
+    "confirmFail": "Receiving confirmation failed",
+    "undoFail": "Undo confirmation failed"
   }
+  ,
+
+
+    "confirmDrawer": {
+    "titleConfirm": "Confirm Receiving",
+    "titleUndo": "Undo Confirmation",
+    "subConfirm": "Total {{count}} lines",
+    "subUndo": "Total {{count}} lines, will move back to Pending",
+    "btnConfirm": "Confirm",
+    "btnUndo": "Undo",
+    "empty": "No data"
+  }
+
+
+
 
 
 

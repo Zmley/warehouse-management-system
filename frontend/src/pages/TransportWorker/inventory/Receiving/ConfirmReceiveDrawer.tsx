@@ -8,6 +8,7 @@ import {
   CircularProgress,
   Chip
 } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 
 export type DrawerLine = {
   productCode: string
@@ -29,6 +30,7 @@ export default function ConfirmReceiveDrawer({
   onClose: () => void
   onSubmit: () => Promise<void> | void
 }) {
+  const { t } = useTranslation()
   const [busy, setBusy] = useState(false)
 
   const handleSubmit = async () => {
@@ -42,12 +44,16 @@ export default function ConfirmReceiveDrawer({
   }
 
   const isUndo = mode === 'UNDO'
-  const title = isUndo ? '撤销确认' : '确认收货'
-  const btnText = isUndo ? '撤销确认' : '确认收货'
-  const btnColor = isUndo ? 'error' : 'primary'
+  const title = isUndo
+    ? t('confirmDrawer.titleUndo')
+    : t('confirmDrawer.titleConfirm')
+  const btnText = isUndo
+    ? t('confirmDrawer.btnUndo')
+    : t('confirmDrawer.btnConfirm')
+  const btnColor: 'error' | 'primary' = isUndo ? 'error' : 'primary'
   const subText = isUndo
-    ? `共 ${lines.length} 行，将撤回到 Pending`
-    : `共 ${lines.length} 行`
+    ? t('confirmDrawer.subUndo', { count: lines.length })
+    : t('confirmDrawer.subConfirm', { count: lines.length })
 
   return (
     <Drawer
@@ -99,7 +105,7 @@ export default function ConfirmReceiveDrawer({
       >
         {lines.length === 0 ? (
           <Box sx={{ py: 6, textAlign: 'center', color: 'text.secondary' }}>
-            <Typography variant='body2'>暂无数据</Typography>
+            <Typography variant='body2'>{t('confirmDrawer.empty')}</Typography>
           </Box>
         ) : (
           lines.map((l, idx) => (
@@ -167,11 +173,11 @@ export default function ConfirmReceiveDrawer({
             disabled={busy}
             sx={{ fontWeight: 800 }}
           >
-            取消
+            {t('common.cancel')}
           </Button>
           <Button
             variant='contained'
-            color={btnColor as any}
+            color={btnColor}
             fullWidth
             onClick={handleSubmit}
             disabled={busy || lines.length === 0}

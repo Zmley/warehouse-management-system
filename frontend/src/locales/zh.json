@@ -309,8 +309,38 @@
 
   ,
 
-   "inventoryIndex": {
+  "inventoryIndex": {
     "searchTab": "库存查询",
-    "editTab": "库存编辑"
+    "editTab": "库存编辑",
+    "receiveTab": "收货",
+    "tablistAria": "库存模块切换",
+    "loading": "加载中..."
   }
+
+  ,
+
+
+    "mobileReceive": {
+    "title": "托盘收货",
+    "refresh": "刷新",
+    "pendingTitle": "Pending",
+    "inProcessTitle": "In Process",
+    "emptyPending": "暂无 Pending 项",
+    "emptyInProcess": "暂无 In Process 项",
+    "snackConfirmed": "已确认收货，项目进入 In Process。",
+    "snackUndone": "已撤销确认，项目返回 Pending。",
+    "confirmFail": "确认收货失败",
+    "undoFail": "撤销确认失败"
+  },
+
+    "confirmDrawer": {
+    "titleConfirm": "确认收货",
+    "titleUndo": "撤销确认",
+    "subConfirm": "共 {{count}} 行",
+    "subUndo": "共 {{count}} 行，将撤回到 Pending",
+    "btnConfirm": "确认收货",
+    "btnUndo": "撤销确认",
+    "empty": "暂无数据"
+  }
+
 }

@@ -15,6 +15,7 @@ import { TransferStatusUI } from 'constants/index'
 import { useTransfer } from 'hooks/useTransfer'
 import { useParams } from 'react-router-dom'
 import { useAuth } from 'hooks/useAuth'
+import { useTranslation } from 'react-i18next'
 import ConfirmReceiveDrawer, {
   DrawerMode,
   DrawerLine
@@ -41,6 +42,7 @@ export default function MobileReceive({
 }: {
   warehouseID?: string
 }) {
+  const { t } = useTranslation()
   const params = useParams<{ warehouseID?: string }>()
   const { userProfile } = useAuth()
   const resolvedWarehouseID =
@@ -144,10 +146,14 @@ export default function MobileReceive({
     setInProcess(prev => [...moved, ...prev])
     setSnack({
       open: true,
-      msg: '已确认收货，项目进入 In Process。',
+      msg: t(
+        'mobileReceive.snackConfirmed',
+        '已确认收货，项目进入 In Process。'
+      ),
       sev: 'success'
     })
   }
+
   const moveToPending = (undoIDs: string[]) => {
     const set = new Set(undoIDs)
     const moved: TransferRow[] = []
@@ -160,7 +166,7 @@ export default function MobileReceive({
     setPending(prev => [...moved, ...prev])
     setSnack({
       open: true,
-      msg: '已撤销确认，项目返回 Pending。',
+      msg: t('mobileReceive.snackUndone', '已撤销确认，项目返回 Pending。'),
       sev: 'success'
     })
   }
@@ -232,7 +238,7 @@ export default function MobileReceive({
       if (!res?.success) {
         setSnack({
           open: true,
-          msg: res?.message || '确认收货失败',
+          msg: res?.message || t('mobileReceive.confirmFail', '确认收货失败'),
           sev: 'error'
         })
         return
@@ -247,7 +253,7 @@ export default function MobileReceive({
       if (!res?.success) {
         setSnack({
           open: true,
-          msg: res?.message || '撤销确认失败',
+          msg: res?.message || t('mobileReceive.undoFail', '撤销确认失败'),
           sev: 'error'
         })
         return
@@ -291,13 +297,14 @@ export default function MobileReceive({
           }}
         >
           <Typography sx={{ fontWeight: 900, fontSize: 16 }}>
-            托盘收货
+            {t('mobileReceive.title', '托盘收货')}
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
             <IconButton
               size='small'
               onClick={onRefresh}
               disabled={!resolvedWarehouseID}
+              aria-label={t('mobileReceive.refresh', '刷新')}
             >
               {busy ? (
                 <CircularProgress size={16} />
@@ -311,17 +318,19 @@ export default function MobileReceive({
         <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
           {/* Pending */}
           <Panel
-            title='Pending'
+            title={t('mobileReceive.pendingTitle', 'Pending')}
             count={counts.p}
             headerBg='#f1f5f9'
             headerBorder='#e5e7eb'
             bodyBorder='#e5e7eb'
-            emptyText='暂无 Pending 项'
+            emptyText={t('mobileReceive.emptyPending', '暂无 Pending 项')}
           >
             {busy ? (
               <BusyOverlay />
             ) : pendingGroups.length === 0 ? (
-              <Empty text='暂无 Pending 项' />
+              <Empty
+                text={t('mobileReceive.emptyPending', '暂无 Pending 项')}
+              />
             ) : (
               pendingGroups.map((group, gi) => {
                 const items: PendingLite[] = group.rows.map(r => ({
@@ -351,16 +360,18 @@ export default function MobileReceive({
 
           {/* In Process */}
           <Panel
-            title='In Process'
+            title={t('mobileReceive.inProcessTitle', 'In Process')}
             count={counts.i}
             headerBg='#dcfce7'
             headerBorder='#bbf7d0'
             bodyBorder='#bbf7d0'
             titleColor='#14532d'
-            emptyText='暂无 In Process 项'
+            emptyText={t('mobileReceive.emptyInProcess', '暂无 In Process 项')}
           >
             {inProcessGroups.length === 0 ? (
-              <Empty text='暂无 In Process 项' />
+              <Empty
+                text={t('mobileReceive.emptyInProcess', '暂无 In Process 项')}
+              />
             ) : (
               inProcessGroups.map((group, gi) => (
                 <PalletButton
@@ -383,7 +394,7 @@ export default function MobileReceive({
         </Box>
       </Box>
 
-      {/* 统一抽屉 */}
+      {/* Drawer */}
       <ConfirmReceiveDrawer
         open={drawerOpen}
         mode={drawerMode}
@@ -392,6 +403,7 @@ export default function MobileReceive({
         onSubmit={handleSubmitDrawer}
       />
 
+      {/* Snackbar */}
       <Snackbar
         open={snack.open}
         autoHideDuration={2200}
@@ -594,6 +606,7 @@ function Empty({ text, sub }: { text: string; sub?: string }) {
     </Box>
   )
 }
+
 function BusyOverlay() {
   return (
     <Box
