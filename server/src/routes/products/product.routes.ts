@@ -1,20 +1,22 @@
 import express from 'express'
 import {
   getProductCodes,
-  getProducts,
+  // getProducts,
   addProducts,
   getProduct,
   getLowStock,
-  getBoxTypes
+  getBoxTypes,
+  getProducts
 } from './product.controller'
 
 import roleAllow from 'middlewares/roleAllow.middleware'
 import { UserRole } from 'constants/index'
 
 import {
-  validateGetProducts,
+  // validateGetProducts,
   validateAddProducts,
-  validateGetProduct
+  validateGetProduct,
+  validateGetProducts
 } from './product.middleware'
 
 const router = express.Router()

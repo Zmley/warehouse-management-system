@@ -1,5 +1,5 @@
 import Product from 'routes/products/product.model'
-import { Op, Sequelize, WhereOptions } from 'sequelize'
+import { literal, Op, Sequelize, WhereOptions } from 'sequelize'
 import { Inventory } from 'routes/inventory/inventory.model'
 import { Bin } from 'routes/bins/bin.model'
 import {
@@ -13,6 +13,7 @@ import {
 import { ProductUploadInput } from 'types/product'
 import { BinType } from 'constants/index'
 import AppError from 'utils/appError'
+import { sequelize } from 'config/db'
 
 export const getProductCodes = async (): Promise<string[]> => {
   const products = await Product.findAll({
@@ -224,6 +225,61 @@ const INVENTORY_INCLUDE = (warehouseID: string) => [
   }
 ]
 
+////////
+
+// export const getLowStockProductsByWarehouseID = async (
+//   warehouseID: string,
+//   page: number,
+//   limit: number,
+//   maxQty: number,
+//   keyword?: string,
+//   boxType?: string
+// ) => {
+//   const offset = getOffset(page, limit)
+
+//   const where: WhereOptions<Product> = {
+//     ...(buildProductWhereClause(keyword) as WhereOptions<Product>),
+//     ...(boxType?.trim() ? { boxType: { [Op.iLike]: boxType.trim() } } : {})
+//   }
+
+//   const qtyAgg = Sequelize.fn(
+//     'COALESCE',
+//     Sequelize.fn('SUM', Sequelize.col('inventories.quantity')),
+//     0
+//   )
+//   const having =
+//     Number(maxQty) === 0
+//       ? Sequelize.where(qtyAgg, Op.eq, 0)
+//       : Sequelize.where(qtyAgg, Op.lte, Number(maxQty))
+
+//   const { rows, count } = await Product.findAndCountAll({
+//     attributes: [...PRODUCT_ATTRS, [qtyAgg, 'totalQuantity']],
+//     where,
+//     include: INVENTORY_INCLUDE(warehouseID),
+//     group: PRODUCT_GROUP as unknown as string[],
+//     having,
+//     order: buildProductOrderClause(),
+//     limit,
+//     offset,
+//     subQuery: false
+//   })
+
+//   const total = Array.isArray(count) ? count.length : (count as number)
+
+//   const products = rows.map(r => {
+//     const p = r.get({ plain: true }) as ProductLowRowPlain
+//     return {
+//       productCode: p.productCode,
+//       totalQuantity: Number(p.totalQuantity ?? 0),
+//       barCode: p.barCode,
+//       boxType: p.boxType,
+//       createdAt: p.createdAt
+//     }
+//   })
+
+//   return { products, total }
+// }
+
 export const getLowStockProductsByWarehouseID = async (
   warehouseID: string,
   page: number,
@@ -239,20 +295,32 @@ export const getLowStockProductsByWarehouseID = async (
     ...(boxType?.trim() ? { boxType: { [Op.iLike]: boxType.trim() } } : {})
   }
 
-  const qtyAgg = Sequelize.fn(
-    'COALESCE',
-    Sequelize.fn('SUM', Sequelize.col('inventories.quantity')),
-    0
-  )
+  // ✅ 仅统计当前仓库 & INVENTORY 类型的库存
+  const wh = sequelize.escape(warehouseID) // 防止 SQL 注入并正确加引号
+  const qtyAggSql = `
+    COALESCE(
+      SUM(
+        CASE
+          WHEN "inventories->bin"."warehouseID" = ${wh}
+           AND "inventories->bin"."type" = 'INVENTORY'
+          THEN "inventories"."quantity"
+          ELSE 0
+        END
+      ),
+      0
+    )
+  `
+  const qtyAgg = literal(qtyAggSql)
+
   const having =
     Number(maxQty) === 0
-      ? Sequelize.where(qtyAgg, Op.eq, 0)
-      : Sequelize.where(qtyAgg, Op.lte, Number(maxQty))
+      ? Sequelize.where(literal(qtyAggSql), Op.eq, 0)
+      : Sequelize.where(literal(qtyAggSql), Op.lte, Number(maxQty))
 
   const { rows, count } = await Product.findAndCountAll({
-    attributes: [...PRODUCT_ATTRS, [qtyAgg, 'totalQuantity']],
+    attributes: [...PRODUCT_ATTRS, [qtyAgg, 'totalQuantity']], // ← 只改这里的聚合
     where,
-    include: INVENTORY_INCLUDE(warehouseID),
+    include: INVENTORY_INCLUDE(warehouseID), // ← 保持不变
     group: PRODUCT_GROUP as unknown as string[],
     having,
     order: buildProductOrderClause(),
