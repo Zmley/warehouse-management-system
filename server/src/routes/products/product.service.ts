@@ -606,6 +606,13 @@ export const getBoxTypes = async (keyword?: string): Promise<string[]> => {
 // }
 
 /** —— 行类型（用于 raw/nest 聚合返回） —— */
+// 类型：当前产品在“其他仓货位”里 + 该货位的所有库存明细
+
+// —— 类型定义 —— //
+type CurAggRow = {
+  productCode: string
+  totalQuantity: number | string
+}
 
 type OtherInvRow = {
   inventoryID: string
@@ -617,7 +624,32 @@ type OtherInvRow = {
     warehouseID: string
     type: string
     warehouse?: { warehouseID: string; warehouseCode: string }
+    inventories?: Array<{
+      inventoryID: string
+      productCode: string
+      quantity: number
+      binID: string
+    }>
   }
+}
+
+type ProductLowDTO = {
+  productCode: string
+  barCode?: string | null
+  boxType?: string | null
+  createdAt?: Date | string | null
+  totalQuantity: number
+  otherInventories: Array<{
+    productCode: string
+    quantity: number // 该 bin 内“本款”的合计
+    binTotal: number // 与 quantity 同义，语义更清楚
+    bin: OtherInvRow['bin'] // 含 warehouse、以及该 bin 内所有有量的 inventories
+  }>
+  // 转运/任务汇总
+  hasPendingTransfer: boolean
+  transferStatus: 'PENDING' | 'IN_PROCESS' | 'COMPLETED' | null
+  transfersCount: number
+  hasPendingOutofstockTask: string | null
 }
 
 export const getLowStockWithOtherWarehouses = async (
@@ -625,8 +657,8 @@ export const getLowStockWithOtherWarehouses = async (
   maxQty: number,
   keyword?: string,
   boxType?: string
-) => {
-  /** 1) 先在 Inventory 表里，按 productCode 统计【当前仓】总数（只算 INVENTORY 类货位，可按需放宽） */
+): Promise<{ products: ProductLowDTO[]; total: number }> => {
+  /** 1) 在当前仓的库存汇总（只算 INVENTORY 货位） */
   const curAgg = await Inventory.findAll({
     attributes: ['productCode', [fn('SUM', col('quantity')), 'totalQuantity']],
     include: [
@@ -635,43 +667,33 @@ export const getLowStockWithOtherWarehouses = async (
         as: 'bin',
         attributes: [],
         required: true,
-        where: {
-          warehouseID,
-          type: BinType.INVENTORY // 如需放宽：{ [Op.in]: [BinType.INVENTORY, BinType.PICK, ...] }
-        }
+        where: { warehouseID, type: BinType.INVENTORY }
       }
     ],
     where: { quantity: { [Op.gt]: 0 } },
     group: ['productCode'],
-    raw: true
+    raw: true // ✅ 关键：返回 plain 对象，便于拿到别名字段 totalQuantity
   })
 
-  // productCode -> 当前仓总数
   const curTotalMap = new Map<string, number>()
-  type CurAggRow = {
-    productCode: string
-    totalQuantity: number | string
-  }
   for (const r of curAgg as unknown as CurAggRow[]) {
     curTotalMap.set(r.productCode, Number(r.totalQuantity ?? 0))
   }
 
-  /** 2) 基于产品基础筛选，选出“在当前仓总数 ≤ maxQty”的产品集合（如果 maxQty=0 就等于 0） */
-  const baseWhere: WhereOptions<any> = {
-    ...(buildProductWhereClause(keyword) as any),
+  /** 2) 先拿基础筛选的产品，再用第1步的总数做“低库存”过滤 */
+  const productBaseWhere: WhereOptions<Product> = {
+    ...(buildProductWhereClause(keyword) as WhereOptions<Product>),
     ...(boxType?.trim()
       ? { boxType: { [Op.iLike]: `%${boxType.trim()}%` } }
       : {})
   }
 
-  // 先取出满足基础筛选的产品（只取需要的字段，避免大表宽联）
   const baseProducts = await Product.findAll({
     attributes: ['productCode', 'barCode', 'boxType', 'createdAt'],
-    where: baseWhere,
+    where: productBaseWhere,
     raw: true
   })
 
-  // 低库存过滤（用第1步的汇总结果）
   const lowStockProducts = baseProducts.filter(p => {
     const qty = curTotalMap.get(p.productCode) ?? 0
     return Number(maxQty) === 0 ? qty === 0 : qty <= Number(maxQty)
@@ -680,7 +702,7 @@ export const getLowStockWithOtherWarehouses = async (
   const productCodes = lowStockProducts.map(p => p.productCode)
   if (productCodes.length === 0) return { products: [], total: 0 }
 
-  /** 3) 找“其他仓”的库存（>0） */
+  /** 3) 找“其他仓”的库存（>0），并把该 bin 的“所有有量库存”也带出来 */
   const otherInvRows = await Inventory.findAll({
     attributes: ['inventoryID', 'productCode', 'quantity'],
     where: {
@@ -695,7 +717,7 @@ export const getLowStockWithOtherWarehouses = async (
         required: true,
         where: {
           warehouseID: { [Op.ne]: warehouseID },
-          type: BinType.INVENTORY // 如需放宽同上
+          type: BinType.INVENTORY
         },
         include: [
           {
@@ -703,6 +725,14 @@ export const getLowStockWithOtherWarehouses = async (
             as: 'warehouse',
             attributes: ['warehouseID', 'warehouseCode'],
             required: false
+          },
+          {
+            // 把该 bin 内“所有有量库存”带出来（任意产品均可）
+            model: Inventory,
+            as: 'inventories',
+            required: false,
+            attributes: ['inventoryID', 'productCode', 'quantity', 'binID'],
+            where: { quantity: { [Op.gt]: 0 } }
           }
         ]
       }
@@ -710,8 +740,25 @@ export const getLowStockWithOtherWarehouses = async (
     raw: false
   })
 
-  // 同一“其他仓 bin”内，该款的数量之和（一个 bin 里同款可能有多条 Inventory，保险起见再汇总一下）
+  // 先按【同款+bin】聚合：求出“该 bin 内本款的合计”
   type BinKey = string
+  const binSumMap = new Map<
+    BinKey,
+    { productCode: string; bin: OtherInvRow['bin']; sum: number }
+  >()
+
+  for (const inv of otherInvRows as unknown as OtherInvRow[]) {
+    const pcode = inv.productCode
+    const bin = inv.bin
+    if (!pcode || !bin?.binID) continue
+    const key = `${pcode}|${bin.binID}`
+    const prev = binSumMap.get(key)
+    const q = Number(inv.quantity || 0)
+    if (!prev) binSumMap.set(key, { productCode: pcode, bin, sum: q })
+    else prev.sum += q
+  }
+
+  // productCode -> 其他仓列表（每项是某个 bin）
   const otherByProduct = new Map<
     string,
     Array<{
@@ -722,48 +769,29 @@ export const getLowStockWithOtherWarehouses = async (
     }>
   >()
 
-  // 先把每个 bin 里该款的数量聚合： productCode+binID -> sum
-  const binSumMap = new Map<
-    BinKey,
-    { productCode: string; bin: any; sum: number }
-  >()
-  for (const inv of otherInvRows as any as OtherInvRow[]) {
-    const p = inv.productCode
-    const b = inv.bin
-    if (!p || !b?.binID) continue
-    const key = `${p}|${b.binID}`
-    const prev = binSumMap.get(key)
-    if (!prev)
-      binSumMap.set(key, {
-        productCode: p,
-        bin: b,
-        sum: Number(inv.quantity || 0)
-      })
-    else prev.sum += Number(inv.quantity || 0)
-  }
-
-  // 再灌回到 productCode -> list
   for (const { productCode, bin, sum } of binSumMap.values()) {
     if (!otherByProduct.has(productCode)) otherByProduct.set(productCode, [])
     otherByProduct.get(productCode)!.push({
       productCode,
-      quantity: sum, // 该 bin 内此款合计
-      binTotal: sum, // 也可以保留同含义字段
+      quantity: sum,
+      binTotal: sum,
       bin
     })
   }
 
-  /** 4) 有些产品虽然低库存，但“其他仓没有货”——剔除它们 */
+  /** 4) 把“其他仓没有货”的产品剔除 */
   const filtered = lowStockProducts.filter(
     p => (otherByProduct.get(p.productCode)?.length ?? 0) > 0
   )
+  const filteredCodes = filtered.map(p => p.productCode)
+  if (filteredCodes.length === 0) return { products: [], total: 0 }
 
-  /** 5) 拉取这些产品在转运/缺货任务上的“状态汇总”（只用轻量字段） */
+  /** 5) 转运/任务的轻量汇总 */
   const transferRows = await Transfer.findAll({
     attributes: ['productCode', 'status'],
     where: {
       destinationWarehouseID: warehouseID,
-      productCode: { [Op.in]: filtered.map(p => p.productCode) },
+      productCode: { [Op.in]: filteredCodes },
       status: { [Op.in]: ['PENDING', 'IN_PROCESS', 'COMPLETED'] }
     },
     raw: true
@@ -774,6 +802,7 @@ export const getLowStockWithOtherWarehouses = async (
     PENDING: 2,
     COMPLETED: 1
   }
+
   const transByProduct = new Map<
     string,
     {
@@ -782,7 +811,11 @@ export const getLowStockWithOtherWarehouses = async (
       transferStatus?: 'PENDING' | 'IN_PROCESS' | 'COMPLETED'
     }
   >()
-  for (const r of transferRows as Array<{ productCode: string; status: any }>) {
+
+  for (const r of transferRows as Array<{
+    productCode: string
+    status: 'PENDING' | 'IN_PROCESS' | 'COMPLETED'
+  }>) {
     const cur = transByProduct.get(r.productCode) || {
       transfersCount: 0,
       hasPendingTransfer: false,
@@ -799,34 +832,39 @@ export const getLowStockWithOtherWarehouses = async (
     transByProduct.set(r.productCode, cur)
   }
 
-  // 缺货 Task（只看 PENDING；按你们模型字段择一过滤）
-  const oosTasks = await Task.findAll({
+  // 仅看 PENDING 的缺货类任务（如你们有 task.type 可在 where 里加 type: 'OUT_OF_STOCK'）
+  const oosTaskRows = await Task.findAll({
     attributes: ['productCode', 'taskID'],
     where: {
-      productCode: { [Op.in]: filtered.map(p => p.productCode) },
+      productCode: { [Op.in]: filteredCodes },
       status: 'PENDING'
     },
     raw: true
   })
+
   const pendingOosMap = new Map<string, string>()
-  for (const t of oosTasks as Array<{ productCode: string; taskID: string }>) {
+  for (const t of oosTaskRows as Array<{
+    productCode: string
+    taskID: string
+  }>) {
     if (!pendingOosMap.has(t.productCode))
       pendingOosMap.set(t.productCode, t.taskID)
   }
 
-  /** 6) 组装返回（并保证 totalQuantity 取自【第1步聚合】） */
-  const products = filtered.map(p => {
+  /** 6) 组装返回（totalQuantity 用【当前仓聚合】保证准确） */
+  const products: ProductLowDTO[] = filtered.map(p => {
     const qty = curTotalMap.get(p.productCode) ?? 0
     const trans = transByProduct.get(p.productCode)
     return {
       productCode: p.productCode,
-      barCode: p.barCode,
-      boxType: p.boxType,
-      createdAt: p.createdAt,
-      totalQuantity: qty, // ✅ 来自 Inventory 聚合的“当前仓总数”，不会被重复行影响
+      barCode: p.barCode || null,
+      boxType: p.boxType || null,
+      createdAt: p.createdAt || null,
+      totalQuantity: qty,
       otherInventories: otherByProduct.get(p.productCode) ?? [],
       hasPendingTransfer: !!trans?.hasPendingTransfer,
-      transferStatus: trans?.transferStatus ?? null,
+      transferStatus:
+        (trans?.transferStatus as ProductLowDTO['transferStatus']) ?? null,
       transfersCount: trans?.transfersCount ?? 0,
       hasPendingOutofstockTask: pendingOosMap.get(p.productCode) ?? null
     }
