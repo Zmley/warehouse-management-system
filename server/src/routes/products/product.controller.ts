@@ -1,4 +1,4 @@
-import { Request, Response } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import * as productService from './product.service'
 import { ProductUploadInput } from 'types/product'
 import { asyncHandler } from 'utils/asyncHandler'
@@ -86,3 +86,48 @@ export const getBoxTypes = asyncHandler(async (req: Request, res: Response) => {
 
   res.status(200).json({ success: true, boxTypes })
 })
+
+//////////////////////////
+
+import AppError from 'utils/appError'
+
+export const getLowStockWithOthers = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const warehouseID = String(req.query.warehouseID || '').trim()
+    if (!warehouseID) {
+      throw new AppError(400, 'warehouseID is required')
+    }
+
+    const maxQty = Number(req.query.maxQty ?? 50)
+    if (!Number.isFinite(maxQty) || maxQty < 0) {
+      throw new AppError(400, 'maxQty must be a non-negative number')
+    }
+
+    const keyword =
+      typeof req.query.keyword === 'string'
+        ? req.query.keyword.trim()
+        : undefined
+    const boxType =
+      typeof req.query.boxType === 'string'
+        ? req.query.boxType.trim()
+        : undefined
+
+    const { products } = await productService.getLowStockWithOtherWarehouses(
+      warehouseID,
+      maxQty,
+      keyword,
+      boxType
+    )
+
+    res.json({
+      success: true,
+      data: { products, total: products.length }
+    })
+  } catch (err) {
+    next(err)
+  }
+}

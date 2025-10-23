@@ -19,6 +19,7 @@ export class Transfer extends Model {
   public createdBy!: string
   public createdAt!: Date
   public updatedAt!: Date | null
+  public batchID: string
 }
 
 Transfer.init(
@@ -91,6 +92,11 @@ Transfer.init(
     updatedAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
+    },
+
+    batchID: {
+      type: DataTypes.UUID,
+      allowNull: false
     }
   },
   {

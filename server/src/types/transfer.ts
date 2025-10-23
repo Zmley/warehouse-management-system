@@ -26,6 +26,7 @@ export interface CreateTransferInput {
   productCode: string
   quantity: number
   createdBy: string
+  batchID?: string
 }
 
 export type DeleteArgs = {

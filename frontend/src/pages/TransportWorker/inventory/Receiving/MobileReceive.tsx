@@ -29,6 +29,7 @@ type TransferRow = {
   taskID?: string | null
   sourceBinID?: string | null
   sourceBinCode?: string | null
+  batchID?: string | null
 }
 
 type PalletGroup = { binCode: string | null; rows: TransferRow[] }
@@ -109,7 +110,8 @@ export default function MobileReceive({
         status: 'PENDING',
         taskID: t?.task?.taskID ?? t?.taskID ?? null,
         sourceBinID: t?.sourceBin?.binID ?? t?.sourceBinID ?? null,
-        sourceBinCode: t?.sourceBin?.binCode ?? t?.sourceBinCode ?? null
+        sourceBinCode: t?.sourceBin?.binCode ?? t?.sourceBinCode ?? null,
+        batchID: t?.batchID ?? null
       }))
     )
   }, [transfersP])
@@ -123,7 +125,8 @@ export default function MobileReceive({
         status: 'IN_PROCESS',
         taskID: t?.task?.taskID ?? t?.taskID ?? null,
         sourceBinID: t?.sourceBin?.binID ?? t?.sourceBinID ?? null,
-        sourceBinCode: t?.sourceBin?.binCode ?? t?.sourceBinCode ?? null
+        sourceBinCode: t?.sourceBin?.binCode ?? t?.sourceBinCode ?? null,
+        batchID: t?.batchID ?? null
       }))
     )
   }, [transfersI])
@@ -177,27 +180,52 @@ export default function MobileReceive({
   )
   const busy = updating || loadingP || loadingI
 
+  /**
+   * 分组规则：
+   *   优先使用：B:{batchID}|S:{sourceBinID}
+   *   兼容旧数据（无 batchID）：LEGACY:S:{sourceBinID}|X:{taskID or transferID}
+   *   注：如果连 sourceBinID 也无，则退回到 SINGLE（极端兜底）
+   */
   const groupByPallet = (rows: TransferRow[]): PalletGroup[] => {
-    const map = new Map<
-      string,
-      { binCode: string | null; rows: TransferRow[] }
-    >()
+    const bucket: Record<string, PalletGroup> = {}
+
     for (const r of rows) {
-      const key =
-        r.taskID && r.sourceBinID
-          ? `T:${r.taskID}__B:${r.sourceBinID}`
-          : `SINGLE:${r.transferID}`
-      const existed = map.get(key)
-      if (existed) existed.rows.push(r)
-      else map.set(key, { binCode: r.sourceBinCode ?? null, rows: [r] })
+      const sourceBinID = r.sourceBinID || null
+      const batchID = r.batchID || null
+
+      let key: string
+      if (batchID && sourceBinID) {
+        key = `B:${batchID}|S:${sourceBinID}`
+      } else if (sourceBinID) {
+        key = `LEGACY:S:${sourceBinID}|X:${r.taskID || r.transferID}`
+      } else {
+        key = `SINGLE:${r.transferID}`
+      }
+
+      if (!bucket[key]) {
+        bucket[key] = {
+          binCode: r.sourceBinCode ?? null,
+          rows: []
+        }
+      }
+      bucket[key].rows.push(r)
     }
-    return Array.from(map.values())
+
+    const groups = Object.values(bucket)
+
+    // 让显示更稳定：按货位编码字母序
+    groups.sort((a, b) => {
+      const A = a.binCode || ''
+      const B = b.binCode || ''
+      return A.localeCompare(B)
+    })
+
+    return groups
   }
 
   const pendingGroups = useMemo(() => groupByPallet(pending), [pending])
   const inProcessGroups = useMemo(() => groupByPallet(inProcess), [inProcess])
 
-  // 打开确认抽屉
   const openConfirmForGroup = (items: PendingLite[]) => {
     setDrawerMode('CONFIRM')
     setDrawerLines(
@@ -214,7 +242,6 @@ export default function MobileReceive({
     setDrawerOpen(true)
   }
 
-  // 打开撤销抽屉
   const openUndoForGroup = (rows: TransferRow[]) => {
     setDrawerMode('UNDO')
     setDrawerLines(

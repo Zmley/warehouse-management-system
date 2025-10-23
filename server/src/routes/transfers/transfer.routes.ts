@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import {
   createTransfers,
-  deleteTransfersByTask,
+  deleteTransfersByIDsCtrl,
   fetchTransfers,
   updateReceiveStatus
 } from './transfer.controller'
@@ -22,10 +22,16 @@ router.get(
   fetchTransfers
 )
 
+// router.delete(
+//   '/:taskID',
+//   roleAllow([UserRole.ADMIN, UserRole.TRANSPORT_WORKER]),
+//   deleteTransfersByTask
+// )
+
 router.delete(
-  '/:taskID',
+  '/',
   roleAllow([UserRole.ADMIN, UserRole.TRANSPORT_WORKER]),
-  deleteTransfersByTask
+  deleteTransfersByIDsCtrl
 )
 
 router.post('/receive', updateReceiveStatus)

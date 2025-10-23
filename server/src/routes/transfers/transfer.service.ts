@@ -1,4 +1,4 @@
-import { Transaction, WhereOptions } from 'sequelize'
+import { Op, Transaction, WhereOptions } from 'sequelize'
 import { sequelize } from 'config/db'
 import Transfer from './transfer.model'
 import Task from '../../routes/tasks/task.model'
@@ -11,9 +11,11 @@ import {
   ConfirmAction,
   ConfirmItem,
   CreateTransferInput,
-  DeleteArgs,
   TransferListParams
 } from 'types/transfer'
+import httpStatus from 'http-status'
+import AppError from 'utils/appError'
+import { updateTaskByTaskID } from 'routes/tasks/task.service'
 
 export const createTransferByTaskID = async ({
   taskID = null,
@@ -22,7 +24,8 @@ export const createTransferByTaskID = async ({
   sourceBinID = null,
   productCode,
   quantity,
-  createdBy
+  createdBy,
+  batchID
 }: CreateTransferInput) => {
   const destBin = await Bin.findOne({
     where: { warehouseID: destinationWarehouseID, binCode: 'Unloading_Zone' }
@@ -38,7 +41,8 @@ export const createTransferByTaskID = async ({
     productCode,
     quantity,
     status: TaskStatus.PENDING,
-    createdBy
+    createdBy,
+    batchID
   })
 }
 
@@ -114,22 +118,43 @@ export const getTransfersByWarehouseID = async ({
   return { rows: data, count, page }
 }
 
-export const deleteTransfersByTaskID = async ({
-  taskID,
-  sourceBinID
-}: DeleteArgs) => {
-  const task = await Task.findByPk(taskID)
-  if (!task) throw new Error('Task not found')
-  if (task.status !== TaskStatus.PENDING) {
-    throw new Error(
-      `Only pending tasks can be deleted (current: ${task.status})`
+export const deleteTransfersByIDs = async ({
+  transferIDs
+}: {
+  transferIDs: string[]
+}) => {
+  if (!Array.isArray(transferIDs) || transferIDs.length === 0) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'No transferIDs provided')
+  }
+
+  const rows = await Transfer.findAll({
+    where: { transferID: { [Op.in]: transferIDs } }
+  })
+
+  if (rows.length === 0) {
+    return { count: 0 }
+  }
+
+  const nonPending = rows
+    .filter(r => r.status !== TaskStatus.PENDING)
+    .map(r => r.transferID)
+
+  if (nonPending.length > 0) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `Only pending transfers can be deleted. Non-pending: ${nonPending.join(
+        ', '
+      )}`
     )
   }
 
-  const where: WhereOptions = { taskID, status: TaskStatus.PENDING }
-  if (sourceBinID) where.sourceBinID = sourceBinID
+  const count = await Transfer.destroy({
+    where: {
+      transferID: { [Op.in]: transferIDs },
+      status: TaskStatus.PENDING
+    }
+  })
 
-  const count = await Transfer.destroy({ where })
   return { count }
 }
 
@@ -231,11 +256,44 @@ export const updateTransferStatus = async (
             .filter(Boolean) as string[]
         )
       )
+
       for (const binID of binIDs) {
         await clearInventoryByBinID(binID, {
           hardDelete: true,
           transaction: tx
         })
+      }
+
+      const linkedTaskIDs = Array.from(
+        new Set(
+          updated
+            .map(
+              t =>
+                t.taskID ??
+                (t.getDataValue && t.getDataValue('taskID')) ??
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (t as any).relatedTaskID ??
+                (t.getDataValue && t.getDataValue('relatedTaskID')) ??
+                null
+            )
+            .filter(Boolean)
+            .map(String)
+        )
+      )
+
+      for (const taskID of linkedTaskIDs) {
+        try {
+          await updateTaskByTaskID({
+            taskID,
+            status: 'COMPLETED',
+            sourceBinCode: 'Transfer-in'
+          })
+        } catch (e) {
+          skipped.push({
+            transferID: `(task:${taskID})`,
+            reason: `Cancel linked task failed: ${e?.message || 'Unknown'}`
+          })
+        }
       }
     }
 
