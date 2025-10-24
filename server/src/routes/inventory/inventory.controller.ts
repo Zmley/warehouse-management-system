@@ -75,14 +75,45 @@ export const updateInventories = asyncHandler(
   }
 )
 
+// export const addInventories = asyncHandler(
+//   async (req: Request, res: Response) => {
+//     const inventories = req.body
+//     const result = await inventoryService.addInventories(inventories)
+//     res.status(httpStatus.OK).json({
+//       success: true,
+//       insertedCount: result.insertedCount,
+//       updatedCount: result.updatedCount
+//     })
+//   }
+// )
+
 export const addInventories = asyncHandler(
   async (req: Request, res: Response) => {
     const inventories = req.body
-    const result = await inventoryService.addInventories(inventories)
+
+    if (!Array.isArray(inventories) || inventories.length === 0) {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        success: false,
+        message: 'Inventory list is empty or invalid'
+      })
+    }
+
+    const first = inventories[0]
+    const isBinIDMode =
+      typeof first.binID === 'string' && first.binID.trim() !== ''
+
+    const result = isBinIDMode
+      ? await inventoryService.addInventoriesByBinID(inventories)
+      : await inventoryService.addInventories(inventories)
+
+    const insertedCount = result.insertedCount ?? 0
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const updatedCount = (result as any).updatedCount ?? 0
+
     res.status(httpStatus.OK).json({
       success: true,
-      insertedCount: result.insertedCount,
-      updatedCount: result.updatedCount
+      insertedCount,
+      updatedCount
     })
   }
 )

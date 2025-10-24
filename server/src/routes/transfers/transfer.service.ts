@@ -281,13 +281,32 @@ export const updateTransferStatus = async (
         )
       )
 
+      //   for (const taskID of linkedTaskIDs) {
+      //     try {
+      //       await updateTaskByTaskID({
+      //         taskID,
+      //         status: 'COMPLETED',
+      //         sourceBinCode: 'Transfer-in'
+      //       })
+      //     } catch (e) {
+      //       skipped.push({
+      //         transferID: `(task:${taskID})`,
+      //         reason: `Cancel linked task failed: ${e?.message || 'Unknown'}`
+      //       })
+      //     }
+      //   }
+
       for (const taskID of linkedTaskIDs) {
         try {
-          await updateTaskByTaskID({
-            taskID,
-            status: 'COMPLETED',
-            sourceBinCode: 'Transfer-in'
-          })
+          const { updated, skippedReason } = await completeLinkedTaskIfNeeded(
+            taskID
+          )
+          if (!updated && skippedReason) {
+            skipped.push({
+              transferID: `(task:${taskID})`,
+              reason: skippedReason
+            })
+          }
         } catch (e) {
           skipped.push({
             transferID: `(task:${taskID})`,
@@ -305,4 +324,29 @@ export const updateTransferStatus = async (
       skipped
     }
   })
+}
+
+/////////////////
+
+export async function completeLinkedTaskIfNeeded(taskID: string) {
+  if (!taskID) return { updated: false, skippedReason: 'empty_task_id' }
+
+  const task = await Task.findOne({ where: { taskID }, attributes: ['status'] })
+  if (!task) return { updated: false, skippedReason: 'linked_task_not_found' }
+
+  const status = String(task.status || '').toUpperCase()
+
+  if (status === 'IN_PROCESS' || status === 'COMPLETED') {
+    return {
+      updated: false,
+      skippedReason: `task_already_${status.toLowerCase()}`
+    }
+  }
+
+  await updateTaskByTaskID({
+    taskID,
+    status: 'COMPLETED',
+    sourceBinCode: 'Transfer-in'
+  })
+  return { updated: true }
 }

@@ -474,6 +474,45 @@ export const addInventories = async (inventoryList: InventoryUploadType[]) => {
     updatedCount: 0
   }
 }
+///////////////
+
+export interface InventoryByBinIDUpload {
+  binID: string
+  productCode: string
+  quantity: number
+}
+
+// 按 binID 直接创建库存
+export const addInventoriesByBinID = async (
+  inventoryList: InventoryByBinIDUpload[]
+) => {
+  if (!inventoryList.length) {
+    return { success: true, insertedCount: 0 }
+  }
+
+  let insertedCount = 0
+  const BATCH_SIZE = 5
+
+  for (let i = 0; i < inventoryList.length; i += BATCH_SIZE) {
+    const batch = inventoryList.slice(i, i + BATCH_SIZE)
+    await Promise.all(
+      batch.map(async item => {
+        const binID = item.binID?.trim()
+        const productCode = item.productCode?.trim().toUpperCase()
+        const quantity = Number(item.quantity)
+
+        if (!binID || !productCode || quantity <= 0) return
+
+        await Inventory.create({ binID, productCode, quantity })
+        insertedCount++
+      })
+    )
+  }
+
+  return { success: true, insertedCount }
+}
+
+//////////////////////
 
 export const checkInventoryQuantity = async (
   sourceBinID: string,

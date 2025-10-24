@@ -39,6 +39,7 @@ export const UpdateInventoriesSchema = Joi.object({
 export const AddInventoriesSchema = Joi.array()
   .items(
     Joi.object({
+      binID: Joi.string().optional(),
       binCode: Joi.string().required(),
       productCode: Joi.string().required(),
       quantity: Joi.number().integer().min(0).required()

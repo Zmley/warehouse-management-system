@@ -60,7 +60,7 @@ type InventoryItem = {
   inventoryID?: string
   productCode: string
   quantity: number
-  bin?: { binCode?: string }
+  bin?: { binCode?: string; binID?: string }
   updatedAt?: string
 }
 
@@ -192,6 +192,7 @@ const InventoryMobileBinCards: React.FC = () => {
 
   const saveBin = async (binCode: string) => {
     const items = grouped[binCode] || []
+    const targetBinID = items.find(i => i?.bin?.binID)?.bin?.binID || ''
     const empty = isEmptyBin(items)
     const emptyD = emptyDraft[binCode]
 
@@ -248,6 +249,7 @@ const InventoryMobileBinCards: React.FC = () => {
 
       if (empty && emptyD && emptyD.productCode.trim()) {
         await addInventory({
+          binID: targetBinID || undefined,
           binCode,
           productCode: emptyD.productCode.trim(),
           quantity: Number(emptyD.quantity)
@@ -256,6 +258,7 @@ const InventoryMobileBinCards: React.FC = () => {
 
       for (const row of newRows[binCode] || []) {
         await addInventory({
+          binID: targetBinID || undefined,
           binCode,
           productCode: row.productCode.trim(),
           quantity: Number(row.quantity)
