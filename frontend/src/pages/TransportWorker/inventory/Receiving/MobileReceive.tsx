@@ -29,10 +29,15 @@ type TransferRow = {
   taskID?: string | null
   sourceBinID?: string | null
   sourceBinCode?: string | null
+  sourceWarehouseCode?: string | null
   batchID?: string | null
 }
 
-type PalletGroup = { binCode: string | null; rows: TransferRow[] }
+type PalletGroup = {
+  binCode: string | null
+  warehouseCode: string | null
+  rows: TransferRow[]
+}
 
 type PendingLite = { transferID: string; productCode: string; quantity: number }
 type ConfirmItem = { transferID: string; productCode: string; quantity: number }
@@ -111,6 +116,8 @@ export default function MobileReceive({
         taskID: t?.task?.taskID ?? t?.taskID ?? null,
         sourceBinID: t?.sourceBin?.binID ?? t?.sourceBinID ?? null,
         sourceBinCode: t?.sourceBin?.binCode ?? t?.sourceBinCode ?? null,
+        sourceWarehouseCode:
+          t?.sourceWarehouse?.warehouseCode ?? t?.sourceWarehouseCode ?? null,
         batchID: t?.batchID ?? null
       }))
     )
@@ -126,6 +133,8 @@ export default function MobileReceive({
         taskID: t?.task?.taskID ?? t?.taskID ?? null,
         sourceBinID: t?.sourceBin?.binID ?? t?.sourceBinID ?? null,
         sourceBinCode: t?.sourceBin?.binCode ?? t?.sourceBinCode ?? null,
+        sourceWarehouseCode:
+          t?.sourceWarehouse?.warehouseCode ?? t?.sourceWarehouseCode ?? null,
         batchID: t?.batchID ?? null
       }))
     )
@@ -205,6 +214,7 @@ export default function MobileReceive({
       if (!bucket[key]) {
         bucket[key] = {
           binCode: r.sourceBinCode ?? null,
+          warehouseCode: r.sourceWarehouseCode ?? null,
           rows: []
         }
       }
@@ -221,6 +231,17 @@ export default function MobileReceive({
     })
 
     return groups
+  }
+
+  const splitByWarehouse = (groups: PalletGroup[]) => {
+    const m = new Map<string, PalletGroup[]>()
+    for (const g of groups) {
+      const w = g.warehouseCode || 'Unknown'
+      if (!m.has(w)) m.set(w, [])
+      m.get(w)!.push(g)
+    }
+    // 稳定顺序：按仓库名排序
+    return Array.from(m.entries()).sort((a, b) => a[0].localeCompare(b[0]))
   }
 
   const pendingGroups = useMemo(() => groupByPallet(pending), [pending])
@@ -359,29 +380,59 @@ export default function MobileReceive({
                 text={t('mobileReceive.emptyPending', '暂无 Pending 项')}
               />
             ) : (
-              pendingGroups.map((group, gi) => {
-                const items: PendingLite[] = group.rows.map(r => ({
-                  transferID: r.transferID,
-                  productCode: r.productCode,
-                  quantity: r.quantity
-                }))
-                return (
-                  <PalletButton
-                    key={`pg-${gi}`}
-                    binCode={group.binCode}
-                    onClick={() => openConfirmForGroup(items)}
-                    variant='pending'
+              splitByWarehouse(pendingGroups).map(([wh, groups]) => (
+                <Box key={`wh-p-${wh}`} sx={{ mt: 0.5 }}>
+                  {/* 仓库分段标题：虚线 + 居中仓库名 */}
+                  <Box
+                    sx={{
+                      my: 0.6,
+                      position: 'relative',
+                      textAlign: 'center',
+                      borderTop: '1px dashed #93c5fd', // blue-300
+                      lineHeight: 0
+                    }}
                   >
-                    {group.rows.map(row => (
-                      <RowItem
-                        key={row.transferID}
-                        code={row.productCode}
-                        qty={row.quantity}
-                      />
-                    ))}
-                  </PalletButton>
-                )
-              })
+                    <Typography
+                      component='span'
+                      sx={{
+                        position: 'relative',
+                        top: '-0.65em',
+                        background: '#fff',
+                        px: 0.8,
+                        fontSize: 12,
+                        fontWeight: 800,
+                        color: '#1e3a8a' // navy-800
+                      }}
+                    >
+                      {wh}
+                    </Typography>
+                  </Box>
+
+                  {groups.map((group, gi) => {
+                    const items: PendingLite[] = group.rows.map(r => ({
+                      transferID: r.transferID,
+                      productCode: r.productCode,
+                      quantity: r.quantity
+                    }))
+                    return (
+                      <PalletButton
+                        key={`pg-${wh}-${gi}`}
+                        binCode={group.binCode}
+                        onClick={() => openConfirmForGroup(items)}
+                        variant='pending'
+                      >
+                        {group.rows.map(row => (
+                          <RowItem
+                            key={row.transferID}
+                            code={row.productCode}
+                            qty={row.quantity}
+                          />
+                        ))}
+                      </PalletButton>
+                    )
+                  })}
+                </Box>
+              ))
             )}
           </Panel>
 
@@ -400,21 +451,50 @@ export default function MobileReceive({
                 text={t('mobileReceive.emptyInProcess', '暂无 In Process 项')}
               />
             ) : (
-              inProcessGroups.map((group, gi) => (
-                <PalletButton
-                  key={`ig-${gi}`}
-                  binCode={group.binCode}
-                  onClick={() => openUndoForGroup(group.rows)}
-                  variant='inprocess'
-                >
-                  {group.rows.map(row => (
-                    <RowItem
-                      key={row.transferID}
-                      code={row.productCode}
-                      qty={row.quantity}
-                    />
+              splitByWarehouse(inProcessGroups).map(([wh, groups]) => (
+                <Box key={`wh-i-${wh}`} sx={{ mt: 0.5 }}>
+                  <Box
+                    sx={{
+                      my: 0.6,
+                      position: 'relative',
+                      textAlign: 'center',
+                      borderTop: '1px dashed #86efac', // green-300
+                      lineHeight: 0
+                    }}
+                  >
+                    <Typography
+                      component='span'
+                      sx={{
+                        position: 'relative',
+                        top: '-0.65em',
+                        background: '#fff',
+                        px: 0.8,
+                        fontSize: 12,
+                        fontWeight: 800,
+                        color: '#065f46' // green-700
+                      }}
+                    >
+                      {wh}
+                    </Typography>
+                  </Box>
+
+                  {groups.map((group, gi) => (
+                    <PalletButton
+                      key={`ig-${wh}-${gi}`}
+                      binCode={group.binCode}
+                      onClick={() => openUndoForGroup(group.rows)}
+                      variant='inprocess'
+                    >
+                      {group.rows.map(row => (
+                        <RowItem
+                          key={row.transferID}
+                          code={row.productCode}
+                          qty={row.quantity}
+                        />
+                      ))}
+                    </PalletButton>
                   ))}
-                </PalletButton>
+                </Box>
               ))
             )}
           </Panel>
