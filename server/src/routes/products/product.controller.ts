@@ -87,8 +87,6 @@ export const getBoxTypes = asyncHandler(async (req: Request, res: Response) => {
   res.status(200).json({ success: true, boxTypes })
 })
 
-//////////////////////////
-
 import AppError from 'utils/appError'
 
 export const getLowStockWithOthers = async (

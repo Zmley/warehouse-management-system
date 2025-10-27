@@ -1,4 +1,3 @@
-// test base func
 import { agent as request } from 'supertest'
 import httpStatus from 'http-status'
 import app from 'app'

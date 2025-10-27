@@ -188,7 +188,6 @@ export default function CameraPanel() {
         const cameraEnhancer =
           await Dynamsoft.DCE.CameraEnhancer.createInstance(cameraView)
 
-        // 容器：固定纵横比 & 让 UIElement 100% 填充
         const host = document.getElementById('scanner-view')
         const ui = cameraView.getUIElement()
         if (host) {

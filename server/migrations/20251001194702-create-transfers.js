@@ -73,8 +73,6 @@ module.exports = {
       }
     })
 
-    // ==== 外键约束 ====
-
     await queryInterface.addConstraint('transfers', {
       fields: ['taskID'],
       type: 'foreign key',

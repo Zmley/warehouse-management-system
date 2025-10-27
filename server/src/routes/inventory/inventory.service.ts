@@ -474,7 +474,6 @@ export const addInventories = async (inventoryList: InventoryUploadType[]) => {
     updatedCount: 0
   }
 }
-///////////////
 
 export interface InventoryByBinIDUpload {
   binID: string
@@ -482,7 +481,6 @@ export interface InventoryByBinIDUpload {
   quantity: number
 }
 
-// 按 binID 直接创建库存
 export const addInventoriesByBinID = async (
   inventoryList: InventoryByBinIDUpload[]
 ) => {
@@ -511,8 +509,6 @@ export const addInventoriesByBinID = async (
 
   return { success: true, insertedCount }
 }
-
-//////////////////////
 
 export const checkInventoryQuantity = async (
   sourceBinID: string,
@@ -569,19 +565,6 @@ export const getInventoriesByBinID = async (
 
   return inventories
 }
-
-////////////
-
-// export const getProductCodesByInventoryIDs = async (ids: string[]) => {
-//   if (!ids?.length) return new Map<string, string>()
-//   const rows = await Inventory.findAll({
-//     where: { inventoryID: ids },
-//     attributes: ['inventoryID', 'productCode']
-//   })
-//   const map = new Map<string, string>()
-//   rows.forEach(r => map.set(r.inventoryID, r.productCode))
-//   return map
-// }
 
 type UnloadRow = {
   inventoryID: string

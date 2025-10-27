@@ -309,306 +309,6 @@ export const getBoxTypes = async (keyword?: string): Promise<string[]> => {
   return rows.map(r => (r.boxType ?? '').trim()).filter(bt => bt.length > 0)
 }
 
-////////////////////////
-
-// export const getLowStockWithOtherWarehouses = async (
-//   warehouseID: string,
-//   maxQty: number,
-//   keyword?: string,
-//   boxType?: string
-// ) => {
-//   // 1) 产品基础筛选（复用你们的工具）
-//   const where: WhereOptions<Product> = {
-//     ...(buildProductWhereClause(keyword) as WhereOptions<Product>),
-//     ...(boxType?.trim()
-//       ? { boxType: { [Op.iLike]: `%${boxType.trim()}%` } }
-//       : {})
-//   }
-
-//   // 当前仓数量聚合
-//   const wh = sequelize.escape(warehouseID)
-//   const qtyAggSql = `
-//     COALESCE(
-//       SUM(
-//         CASE
-//           WHEN "inventories->bin"."warehouseID" = ${wh}
-//            AND "inventories->bin"."type" = 'INVENTORY'
-//           THEN "inventories"."quantity"
-//           ELSE 0
-//         END
-//       ),
-//       0
-//     )
-//   `
-//   const qtyAgg = literal(qtyAggSql)
-
-//   // 他仓数量（同款）合计（>0）
-//   const otherQtySql = `
-//     COALESCE((
-//       SELECT SUM(i."quantity")
-//       FROM "inventory" i
-//       JOIN "bin" b ON b."binID" = i."binID"
-//       WHERE i."productCode" = "Product"."productCode"
-//         AND i."quantity" > 0
-//         AND b."type" = 'INVENTORY'
-//         AND b."warehouseID" <> ${wh}
-//     ), 0)
-//   `
-//   const otherQty = literal(otherQtySql)
-
-//   const having: any = {
-//     [Op.and]: [
-//       Sequelize.where(otherQty, { [Op.gt]: 0 }),
-//       Number(maxQty) === 0
-//         ? Sequelize.where(literal(qtyAggSql), { [Op.eq]: 0 })
-//         : Sequelize.where(literal(qtyAggSql), { [Op.lte]: Number(maxQty) })
-//     ]
-//   }
-
-//   // 2) 一次性查出满足条件的产品
-//   const rows = await Product.findAll({
-//     attributes: [...PRODUCT_ATTRS, [qtyAgg, 'totalQuantity']],
-//     where,
-//     include: INVENTORY_INCLUDE(warehouseID), // 仅挂当前仓的库存用于聚合
-//     group: PRODUCT_GROUP as unknown as string[],
-//     having,
-//     // 不按时间强排序：如果你们的 buildProductOrderClause 会按时间排序，可去掉或改为产品码排序
-//     // order: [['productCode', 'ASC']],
-//     subQuery: false
-//   })
-
-//   const pageProducts = rows.map(
-//     r => r.get({ plain: true }) as ProductLowRowPlain
-//   )
-//   const productCodes = pageProducts.map(p => p.productCode)
-//   if (productCodes.length === 0) return { products: [] }
-
-//   // 3) 拉取这些产品在“其他仓”的库存（>0），并把该 bin 的整格库存带出来
-//   const otherInvRows = await Inventory.findAll({
-//     attributes: ['inventoryID', 'productCode', 'quantity'],
-//     where: {
-//       productCode: { [Op.in]: productCodes },
-//       quantity: { [Op.gt]: 0 }
-//     },
-//     include: [
-//       {
-//         model: Bin,
-//         as: 'bin',
-//         attributes: ['binID', 'binCode', 'warehouseID', 'type'],
-//         required: true,
-//         where: {
-//           warehouseID: { [Op.ne]: warehouseID },
-//           type: BinType.INVENTORY
-//         },
-//         include: [
-//           {
-//             model: Warehouse,
-//             as: 'warehouse',
-//             attributes: ['warehouseID', 'warehouseCode'],
-//             required: false
-//           },
-//           {
-//             model: Inventory,
-//             as: 'inventories', // ⚠️ 与 Bin->Inventory 的别名保持一致
-//             required: false,
-//             attributes: ['inventoryID', 'productCode', 'quantity', 'binID'],
-//             where: { quantity: { [Op.gt]: 0 } }
-//           }
-//         ]
-//       }
-//     ],
-//     raw: false
-//   })
-
-//   type OtherInv = {
-//     inventoryID: string
-//     productCode?: string
-//     quantity: number
-//     bin?: {
-//       binID?: string
-//       binCode?: string
-//       warehouseID?: string
-//       warehouse?: { warehouseID?: string; warehouseCode?: string }
-//       inventories?: Array<{
-//         inventoryID: string
-//         productCode: string
-//         quantity: number
-//         binID?: string
-//       }>
-//     }
-//   }
-
-//   const otherByProduct = new Map<string, OtherInv[]>()
-
-//   for (const inv of otherInvRows as any[]) {
-//     const pcode = inv.get('productCode') as string
-//     const bin = inv.get('bin') as any
-
-//     const binInventories = (bin?.inventories || []).map((x: any) => ({
-//       inventoryID: x.get?.('inventoryID') ?? x.inventoryID,
-//       productCode: x.get?.('productCode') ?? x.productCode,
-//       quantity: Number(x.get?.('quantity') ?? x.quantity ?? 0),
-//       binID: x.get?.('binID') ?? x.binID
-//     }))
-
-//     const one: OtherInv = {
-//       inventoryID: inv.get('inventoryID'),
-//       productCode: pcode,
-//       quantity: Number(inv.get('quantity') ?? 0),
-//       bin: {
-//         binID: bin?.get?.('binID') ?? bin?.binID,
-//         binCode: bin?.get?.('binCode') ?? bin?.binCode,
-//         warehouseID: bin?.get?.('warehouseID') ?? bin?.warehouseID,
-//         warehouse: bin?.warehouse
-//           ? {
-//               warehouseID:
-//                 bin.warehouse.get?.('warehouseID') ?? bin.warehouse.warehouseID,
-//               warehouseCode:
-//                 bin.warehouse.get?.('warehouseCode') ??
-//                 bin.warehouse.warehouseCode
-//             }
-//           : undefined,
-//         inventories: binInventories
-//       }
-//     }
-
-//     if (!otherByProduct.has(pcode)) otherByProduct.set(pcode, [])
-//     otherByProduct.get(pcode)!.push(one)
-//   }
-
-//   // 4) 汇总 Transfer（按 productCode）
-//   //    只看 destinationWarehouseID = 当前仓 的记录
-//   const transferRows = await Transfer.findAll({
-//     attributes: ['productCode', 'status'],
-//     where: {
-//       destinationWarehouseID: warehouseID,
-//       productCode: { [Op.in]: productCodes },
-//       status: { [Op.in]: ['PENDING', 'IN_PROCESS', 'COMPLETED'] }
-//     },
-//     raw: true
-//   })
-
-//   type TransStat = {
-//     transfersCount: number
-//     hasPendingTransfer: boolean
-//     transferStatus?: 'PENDING' | 'IN_PROCESS' | 'COMPLETED'
-//   }
-
-//   const statusRank: Record<string, number> = {
-//     IN_PROCESS: 3,
-//     PENDING: 2,
-//     COMPLETED: 1
-//   }
-
-//   const transByProduct = new Map<string, TransStat>()
-//   for (const r of transferRows as Array<{
-//     productCode: string
-//     status: 'PENDING' | 'IN_PROCESS' | 'COMPLETED'
-//   }>) {
-//     const key = r.productCode
-//     const cur = transByProduct.get(key) || {
-//       transfersCount: 0,
-//       hasPendingTransfer: false,
-//       transferStatus: undefined as TransStat['transferStatus']
-//     }
-//     cur.transfersCount += 1
-//     if (r.status === 'PENDING') cur.hasPendingTransfer = true
-
-//     if (!cur.transferStatus) {
-//       cur.transferStatus = r.status
-//     } else {
-//       const curRank = statusRank[cur.transferStatus] ?? 0
-//       const nxtRank = statusRank[r.status] ?? 0
-//       if (nxtRank > curRank) cur.transferStatus = r.status
-//     }
-//     transByProduct.set(key, cur)
-//   }
-
-//   // 5) 汇总缺货任务（Out-of-Stock Task），返回 taskID（无则 null）
-//   const hasAttr = (model: any, attr: string) => !!model?.rawAttributes?.[attr]
-
-//   // 基础 where：只看 PENDING
-//   const oosWhere: any = {
-//     productCode: { [Op.in]: productCodes },
-//     status: 'PENDING'
-//     // 如有类型字段：type: 'OUT_OF_STOCK'
-//   }
-//   const oosInclude: any[] = []
-
-//   // 自适应“按仓过滤”的字段
-//   if (hasAttr(Task, 'warehouseID')) {
-//     oosWhere.warehouseID = warehouseID
-//   } else if (hasAttr(Task, 'destinationWarehouseID')) {
-//     oosWhere.destinationWarehouseID = warehouseID
-//   } else if (hasAttr(Task, 'destinationBinID')) {
-//     // 通过 join 目的 bin 的 warehouseID 过滤
-//     oosInclude.push({
-//       model: Bin,
-//       as: 'destinationBin', // ⚠️ 若别名不同请修改
-//       attributes: [],
-//       required: true,
-//       where: { warehouseID }
-//     })
-//   } // 否则无法按仓过滤，就不加（避免报错）
-
-//   const oosTaskRows = await Task.findAll({
-//     attributes: ['productCode', 'taskID'],
-//     where: oosWhere,
-//     include: oosInclude,
-//     raw: true
-//   })
-
-//   // productCode -> 某个 pending 缺货任务的 taskID（取第一条即可）
-//   const pendingOosMap = new Map<string, string | null>()
-//   for (const r of oosTaskRows as Array<{
-//     productCode: string
-//     taskID: string
-//   }>) {
-//     if (r.productCode && !pendingOosMap.has(r.productCode)) {
-//       pendingOosMap.set(r.productCode, r.taskID)
-//     }
-//   }
-
-//   // 6) 组装返回
-//   const products = pageProducts
-//     .map(p => {
-//       const trans = transByProduct.get(p.productCode)
-//       return {
-//         productCode: p.productCode,
-//         totalQuantity: Number(p.totalQuantity ?? 0),
-//         barCode: p.barCode,
-//         boxType: p.boxType,
-//         createdAt: p.createdAt,
-//         otherInventories: otherByProduct.get(p.productCode) ?? [],
-//         // 转运任务聚合
-//         hasPendingTransfer: !!trans?.hasPendingTransfer,
-//         transferStatus: trans?.transferStatus ?? null,
-//         transfersCount: trans?.transfersCount ?? 0,
-//         // ✅ 缺货任务：返回 taskID 或 null（前端据此展示“绿色标注”）
-//         hasPendingOutofstockTask: pendingOosMap.get(p.productCode) ?? null
-//       }
-//     })
-//     // 理论上他仓>0 已保留；这里再过滤一次更稳妥
-//     .filter(p => (p.otherInventories?.length ?? 0) > 0)
-
-//   // 7) 排序：有“缺货任务”的优先，其次按当前仓数量少的优先，再按产品码稳定
-//   products.sort((a, b) => {
-//     const aHas = !!a.hasPendingOutofstockTask
-//     const bHas = !!b.hasPendingOutofstockTask
-//     if (aHas !== bHas) return aHas ? -1 : 1
-//     if ((a.totalQuantity ?? 0) !== (b.totalQuantity ?? 0)) {
-//       return (a.totalQuantity ?? 0) - (b.totalQuantity ?? 0)
-//     }
-//     return String(a.productCode).localeCompare(String(b.productCode))
-//   })
-
-//   return { products }
-// }
-
-/** —— 行类型（用于 raw/nest 聚合返回） —— */
-// 类型：当前产品在“其他仓货位”里 + 该货位的所有库存明细
-
-// —— 类型定义 —— //
 type CurAggRow = {
   productCode: string
   totalQuantity: number | string
@@ -641,11 +341,10 @@ type ProductLowDTO = {
   totalQuantity: number
   otherInventories: Array<{
     productCode: string
-    quantity: number // 该 bin 内“本款”的合计
-    binTotal: number // 与 quantity 同义，语义更清楚
-    bin: OtherInvRow['bin'] // 含 warehouse、以及该 bin 内所有有量的 inventories
+    quantity: number
+    binTotal: number
+    bin: OtherInvRow['bin']
   }>
-  // 转运/任务汇总
   hasPendingTransfer: boolean
   transferStatus: 'PENDING' | 'IN_PROCESS' | 'COMPLETED' | null
   transfersCount: number
@@ -658,7 +357,6 @@ export const getLowStockWithOtherWarehouses = async (
   keyword?: string,
   boxType?: string
 ): Promise<{ products: ProductLowDTO[]; total: number }> => {
-  /** 1) 在当前仓的库存汇总（只算 INVENTORY 货位） */
   const curAgg = await Inventory.findAll({
     attributes: ['productCode', [fn('SUM', col('quantity')), 'totalQuantity']],
     include: [
@@ -672,7 +370,7 @@ export const getLowStockWithOtherWarehouses = async (
     ],
     where: { quantity: { [Op.gt]: 0 } },
     group: ['productCode'],
-    raw: true // ✅ 关键：返回 plain 对象，便于拿到别名字段 totalQuantity
+    raw: true
   })
 
   const curTotalMap = new Map<string, number>()
@@ -680,7 +378,6 @@ export const getLowStockWithOtherWarehouses = async (
     curTotalMap.set(r.productCode, Number(r.totalQuantity ?? 0))
   }
 
-  /** 2) 先拿基础筛选的产品，再用第1步的总数做“低库存”过滤 */
   const productBaseWhere: WhereOptions<Product> = {
     ...(buildProductWhereClause(keyword) as WhereOptions<Product>),
     ...(boxType?.trim()
@@ -702,7 +399,6 @@ export const getLowStockWithOtherWarehouses = async (
   const productCodes = lowStockProducts.map(p => p.productCode)
   if (productCodes.length === 0) return { products: [], total: 0 }
 
-  /** 3) 找“其他仓”的库存（>0），并把该 bin 的“所有有量库存”也带出来 */
   const otherInvRows = await Inventory.findAll({
     attributes: ['inventoryID', 'productCode', 'quantity'],
     where: {
@@ -727,7 +423,6 @@ export const getLowStockWithOtherWarehouses = async (
             required: false
           },
           {
-            // 把该 bin 内“所有有量库存”带出来（任意产品均可）
             model: Inventory,
             as: 'inventories',
             required: false,
@@ -740,7 +435,6 @@ export const getLowStockWithOtherWarehouses = async (
     raw: false
   })
 
-  // 先按【同款+bin】聚合：求出“该 bin 内本款的合计”
   type BinKey = string
   const binSumMap = new Map<
     BinKey,
@@ -758,7 +452,6 @@ export const getLowStockWithOtherWarehouses = async (
     else prev.sum += q
   }
 
-  // productCode -> 其他仓列表（每项是某个 bin）
   const otherByProduct = new Map<
     string,
     Array<{
@@ -779,14 +472,12 @@ export const getLowStockWithOtherWarehouses = async (
     })
   }
 
-  /** 4) 把“其他仓没有货”的产品剔除 */
   const filtered = lowStockProducts.filter(
     p => (otherByProduct.get(p.productCode)?.length ?? 0) > 0
   )
   const filteredCodes = filtered.map(p => p.productCode)
   if (filteredCodes.length === 0) return { products: [], total: 0 }
 
-  /** 5) 转运/任务的轻量汇总 */
   const transferRows = await Transfer.findAll({
     attributes: ['productCode', 'status'],
     where: {
@@ -832,7 +523,6 @@ export const getLowStockWithOtherWarehouses = async (
     transByProduct.set(r.productCode, cur)
   }
 
-  // 仅看 PENDING 的缺货类任务（如你们有 task.type 可在 where 里加 type: 'OUT_OF_STOCK'）
   const oosTaskRows = await Task.findAll({
     attributes: ['productCode', 'taskID'],
     where: {
@@ -851,7 +541,6 @@ export const getLowStockWithOtherWarehouses = async (
       pendingOosMap.set(t.productCode, t.taskID)
   }
 
-  /** 6) 组装返回（totalQuantity 用【当前仓聚合】保证准确） */
   const products: ProductLowDTO[] = filtered.map(p => {
     const qty = curTotalMap.get(p.productCode) ?? 0
     const trans = transByProduct.get(p.productCode)
@@ -870,7 +559,6 @@ export const getLowStockWithOtherWarehouses = async (
     }
   })
 
-  // 排序：有缺货任务优先 → 当前仓更少 → 产品码
   products.sort((a, b) => {
     const aHas = !!a.hasPendingOutofstockTask
     const bHas = !!b.hasPendingOutofstockTask

@@ -1,7 +1,6 @@
 import express from 'express'
 import {
   getProductCodes,
-  // getProducts,
   addProducts,
   getProduct,
   getLowStock,
@@ -14,7 +13,6 @@ import roleAllow from 'middlewares/roleAllow.middleware'
 import { UserRole } from 'constants/index'
 
 import {
-  // validateGetProducts,
   validateAddProducts,
   validateGetProduct,
   validateGetProducts
@@ -43,8 +41,6 @@ router.post(
 router.get('/low-stock', roleAllow([UserRole.ADMIN]), getLowStock)
 
 router.get('/box-types', getBoxTypes)
-
-/////////////
 
 router.get(
   '/low-stock-with-others',

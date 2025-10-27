@@ -75,18 +75,6 @@ export const updateInventories = asyncHandler(
   }
 )
 
-// export const addInventories = asyncHandler(
-//   async (req: Request, res: Response) => {
-//     const inventories = req.body
-//     const result = await inventoryService.addInventories(inventories)
-//     res.status(httpStatus.OK).json({
-//       success: true,
-//       insertedCount: result.insertedCount,
-//       updatedCount: result.updatedCount
-//     })
-//   }
-// )
-
 export const addInventories = asyncHandler(
   async (req: Request, res: Response) => {
     const inventories = req.body

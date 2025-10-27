@@ -297,243 +297,8 @@ export const updateTaskSourceBin = async (taskID: string, binID: string) => {
   await Task.update({ sourceBinID: binID }, { where: { taskID } })
 }
 
-//////////////////////
-
-// const getIncludeClause = (warehouseID: string) => {
-//   return [
-//     {
-//       model: Bin,
-//       as: 'destinationBin',
-//       attributes: ['binID', 'binCode', 'warehouseID'],
-//       required: true,
-//       where: { warehouseID },
-//       include: [
-//         {
-//           model: Warehouse,
-//           as: 'warehouse',
-//           attributes: ['warehouseID', 'warehouseCode'],
-//           required: false
-//         }
-//       ]
-//     },
-//     {
-//       model: Bin,
-//       as: 'sourceBin',
-//       attributes: ['binID', 'binCode', 'warehouseID'],
-//       required: false,
-//       include: [
-//         {
-//           model: Warehouse,
-//           as: 'warehouse',
-//           attributes: ['warehouseID', 'warehouseCode'],
-//           required: false
-//         }
-//       ]
-//     },
-//     {
-//       model: Inventory,
-//       as: 'inventories',
-//       required: false,
-//       where: {
-//         quantity: { [Op.gt]: 0 }
-//       },
-//       include: [
-//         {
-//           model: Bin,
-//           as: 'bin',
-//           attributes: ['binID', 'binCode', 'warehouseID'],
-//           required: true,
-//           where: {
-//             warehouseID,
-//             type: 'INVENTORY'
-//           },
-//           include: [
-//             {
-//               model: Warehouse,
-//               as: 'warehouse',
-//               attributes: ['warehouseID', 'warehouseCode'],
-//               required: false
-//             }
-//           ]
-//         }
-//       ]
-//     },
-//     {
-//       model: Inventory,
-//       as: 'otherInventories',
-//       required: false,
-//       where: {
-//         quantity: { [Op.gt]: 0 }
-//       },
-//       include: [
-//         {
-//           model: Bin,
-//           as: 'bin',
-//           attributes: ['binID', 'binCode', 'warehouseID'],
-//           required: true,
-//           where: {
-//             warehouseID: { [Op.ne]: warehouseID },
-//             type: 'INVENTORY'
-//           },
-//           include: [
-//             {
-//               model: Warehouse,
-//               as: 'warehouse',
-//               attributes: ['warehouseID', 'warehouseCode'],
-//               required: false
-//             }
-//           ]
-//         }
-//       ]
-//     },
-//     {
-//       model: Account,
-//       as: 'accepter',
-//       attributes: ['accountID', 'firstName', 'lastName'],
-//       required: false
-//     },
-//     {
-//       model: Account,
-//       as: 'creator',
-//       attributes: ['accountID', 'firstName', 'lastName'],
-//       required: false
-//     },
-
-//     {
-//       model: Transfer,
-//       as: 'transfers',
-//       required: false,
-//       attributes: ['transferID', 'status', 'taskID'],
-//       where: {
-//         status: { [Op.in]: [TaskStatus.PENDING, TaskStatus.IN_PROCESS] }
-//       }
-//     }
-//   ]
-// }
-
-// const getAdminWhereClause = (status: string, keyword: string) => {
-//   const allowedStatuses = ['PENDING', 'COMPLETED', 'CANCELED', 'IN_PROCESS']
-//   const whereClause: WhereOptions<Task> = {}
-
-//   if (status && allowedStatuses.includes(status)) {
-//     whereClause.status = status
-//   } else {
-//     whereClause.status = { [Op.in]: allowedStatuses }
-//   }
-
-//   if (keyword && typeof keyword === 'string' && keyword.trim() !== '') {
-//     const lowerKeyword = keyword.toLowerCase()
-//     whereClause[Op.or] = [
-//       Sequelize.where(
-//         Sequelize.fn('LOWER', Sequelize.col('Task.productCode')),
-//         { [Op.like]: `%${lowerKeyword}%` }
-//       ),
-//       Sequelize.where(
-//         Sequelize.fn('LOWER', Sequelize.col('destinationBin.binCode')),
-//         { [Op.like]: `%${lowerKeyword}%` }
-//       ),
-//       Sequelize.where(
-//         Sequelize.fn('LOWER', Sequelize.col('sourceBin.binCode')),
-//         { [Op.like]: `%${lowerKeyword}%` }
-//       ),
-//       Sequelize.where(
-//         Sequelize.fn('LOWER', Sequelize.col('inventories->bin.binCode')),
-//         { [Op.like]: `%${lowerKeyword}%` }
-//       )
-//     ]
-//   }
-
-//   return whereClause
-// }
-
-// const mapTasks = (tasks: TaskWithJoin[]) => {
-//   return tasks.map(task => {
-//     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-//     const transfers: any[] = task.transfers ?? []
-//     const hasPendingTransfer =
-//       Array.isArray(transfers) &&
-//       transfers.some(t => String(t.status).toUpperCase() === 'PENDING')
-
-//     let sourceBins: unknown[] = []
-//     if (task.sourceBin) {
-//       sourceBins = [
-//         {
-//           bin: task.sourceBin,
-//           quantity: task.quantity,
-//           productCode: task.productCode
-//         }
-//       ]
-//     } else if (task.inventories?.length > 0) {
-//       sourceBins = task.inventories
-//     }
-
-//     const json = task.toJSON ? task.toJSON() : task
-//     return {
-//       ...json,
-
-//       inventories: undefined,
-//       sourceBin: undefined,
-//       transfers: undefined,
-
-//       sourceBins,
-//       destinationBinCode: task.destinationBin?.binCode || '--',
-//       hasPendingTransfer,
-//       transfersCount: transfers.length
-//     }
-//   })
-// }
-
-// const getWhereClauseForRole = (
-//   role: UserRole,
-//   status?: string,
-//   accountID?: string,
-//   keyword?: string
-// ): WhereOptions<Task> => {
-//   if (role === 'PICKER') {
-//     if (!accountID) {
-//       throw new AppError(400, '❌ Picker must provide accountID')
-//     }
-
-//     return {
-//       creatorID: accountID,
-//       status: status === 'ALL' ? ['PENDING', 'COMPLETED'] : status
-//     }
-//   }
-
-//   return getAdminWhereClause(status, keyword)
-// }
-
-// export const getTasksByWarehouseID = async (
-//   warehouseID: string,
-//   role: UserRole,
-//   accountID?: string,
-//   keyword?: string,
-//   status?: string
-// ) => {
-//   const whereClause = getWhereClauseForRole(role, status, accountID, keyword)
-
-//   const includeClause = getIncludeClause(warehouseID)
-
-//   const tasks = (await Task.findAll({
-//     where: whereClause,
-//     include: includeClause,
-//     order: [['updatedAt', 'DESC']]
-//   })) as unknown as TaskWithJoin[]
-
-//   if (!tasks.length) {
-//     return []
-//   }
-
-//   return mapTasks(tasks)
-// }
-
-///////////////////////////
-
-// 最小改动版：在 otherInventories -> bin 下补一层 inventories（该 bin 下所有产品库存）
-
 const getIncludeClause = (warehouseID: string) => {
   return [
-    // 目标货位（当前仓）
     {
       model: Bin,
       as: 'destinationBin',
@@ -550,7 +315,6 @@ const getIncludeClause = (warehouseID: string) => {
       ]
     },
 
-    // 来源货位（当前仓，若有）
     {
       model: Bin,
       as: 'sourceBin',
@@ -619,10 +383,9 @@ const getIncludeClause = (warehouseID: string) => {
               attributes: ['warehouseID', 'warehouseCode'],
               required: false
             },
-            // ★ 新增：把该 bin 里的所有库存也带出来（数量>0）
             {
               model: Inventory,
-              as: 'inventories', // 如果你的 Bin->Inventory 关联别名不是 inventories，请改成真实别名
+              as: 'inventories',
               required: false,
               attributes: [
                 'inventoryID',
@@ -635,7 +398,6 @@ const getIncludeClause = (warehouseID: string) => {
               where: {
                 quantity: { [Op.gt]: 0 }
               }
-              // 不额外再 include 子层 bin/warehouse，避免响应过大；需要的话也能按需再加
             }
           ]
         }
@@ -712,10 +474,6 @@ const mapTasks = (tasks: TaskWithJoin[]) => {
   return tasks.map(task => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transfers: any[] = task.transfers ?? []
-
-    // const hasPendingTransfer =
-    //   Array.isArray(transfers) &&
-    //   transfers.some(t => String(t.status).toUpperCase() === 'PENDING')
 
     const transferStatus =
       Array.isArray(transfers) && transfers.length > 0
@@ -795,7 +553,6 @@ export const getTasksByWarehouseID = async (
   return mapTasks(tasks)
 }
 
-/////////////////////////////////////////////////////////
 export const checkIfTaskDuplicate = async (
   productCode: string,
   destinationBinCode: string,

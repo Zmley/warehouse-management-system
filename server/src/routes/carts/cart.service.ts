@@ -104,7 +104,6 @@ export const unloadByBinCode = async (
     const bin = await Bin.findOne({ where: { binCode } })
     if (!bin) throw new AppError(404, `❌ ${binCode} not found in system`)
 
-    // save data
     const fulfillItems =
       accountID && unloadProductList.length
         ? await getFulfillItemsByInventories(unloadProductList)
@@ -115,7 +114,6 @@ export const unloadByBinCode = async (
       throw new AppError(404, `❌ No inventory was moved to bin "${binCode}".`)
     }
 
-    // write into log
     if (accountID && fulfillItems.length) {
       await fulfillLogsOnUnload({
         accountID,
@@ -145,26 +143,13 @@ export const loadByBinCode = async (
     const cartBin = await Bin.findOne({ where: { binID: cartID } })
     if (!cartBin) throw new AppError(404, '❌ Cart bin not found')
 
-    // if (accountID && selectedItems.length) {
-    //   const openLogItems = await getFulfillItemsByInventories(selectedItems)
-    //   if (openLogItems.length) {
-    //     await createOpenLogsOnLoad({
-    //       accountID,
-    //       sourceBinCode: binCode,
-    //       items: openLogItems
-    //     })
-    //   }
-    // }
-
-    // 1) save date
     const openLogItems =
       accountID && selectedItems.length
-        ? await getFulfillItemsByInventories(selectedItems) // inventoryID -> productCode
+        ? await getFulfillItemsByInventories(selectedItems)
         : []
 
     await moveInventoriesToBin(selectedItems, cartBin)
 
-    // write into log
     if (accountID && openLogItems.length) {
       await createOpenLogsOnLoad({
         accountID,
@@ -189,12 +174,6 @@ export const loadByProductList = async (
   accountID: string
 ): Promise<{ messages: string[] }> => {
   const messages: string[] = []
-
-  // await createOpenLogsOnLoad({
-  //   accountID,
-  //   sourceBinCode: null,
-  //   items: productList
-  // })
 
   for (const item of productList) {
     await Inventory.create({

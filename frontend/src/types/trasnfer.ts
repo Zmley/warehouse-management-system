@@ -2,17 +2,6 @@ import { TaskCategoryEnum } from 'constants/index'
 
 export type TransferStatus = TaskCategoryEnum
 
-// export type CreateTransferPayload = {
-//   taskID?: string | null
-//   sourceWarehouseID: string
-//   destinationWarehouseID: string
-//   sourceBinID?: string | null
-//   productCode: string
-//   quantity: number
-//   createdBy?: string
-//   status?: 'PENDING' | 'IN_PROCESS' | 'COMPLETED' | 'CANCELED'
-// }
-
 export interface FetchTransfersParams {
   warehouseID: string
   status?: 'PENDING' | 'IN_PROCESS' | 'COMPLETED' | 'CANCELED'

@@ -15,8 +15,6 @@ export interface unloadInventory {
   merge?: boolean
 }
 
-//////////////////////
-
 export interface InventoryUploadType {
   binID?: string | null
   binCode: string

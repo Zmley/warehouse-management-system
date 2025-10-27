@@ -142,8 +142,6 @@ export const useBin = () => {
     }
   }, [])
 
-  ////////////////////////////////////////////////////
-
   const fetchBinColumns = useCallback(async (warehouseID?: string) => {
     try {
       setLoading(true)

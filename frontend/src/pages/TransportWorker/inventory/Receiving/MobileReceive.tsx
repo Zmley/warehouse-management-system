@@ -223,7 +223,6 @@ export default function MobileReceive({
 
     const groups = Object.values(bucket)
 
-    // 让显示更稳定：按货位编码字母序
     groups.sort((a, b) => {
       const A = a.binCode || ''
       const B = b.binCode || ''
@@ -240,7 +239,6 @@ export default function MobileReceive({
       if (!m.has(w)) m.set(w, [])
       m.get(w)!.push(g)
     }
-    // 稳定顺序：按仓库名排序
     return Array.from(m.entries()).sort((a, b) => a[0].localeCompare(b[0]))
   }
 
@@ -275,7 +273,6 @@ export default function MobileReceive({
     setDrawerOpen(true)
   }
 
-  // 提交（根据 mode 分支）
   const handleSubmitDrawer = async () => {
     if (drawerMode === 'CONFIRM') {
       if (confirmItems.length === 0) {

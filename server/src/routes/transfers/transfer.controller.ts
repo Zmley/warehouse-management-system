@@ -32,26 +32,6 @@ export const fetchTransfers = async (req: Request, res: Response) => {
   res.json({ success: true, transfers: rows, total: count, page: pageNum })
 }
 
-// export const createTransfers = async (req: Request, res: Response) => {
-//   const createdBy = res.locals.accountID
-//   const items = Array.isArray(req.body?.items) ? req.body.items : [req.body]
-//   if (!items.length)
-//     return res.status(400).json({ success: false, message: 'No items' })
-
-//   const settled = await Promise.allSettled(
-//     items.map(i => createTransferByTaskID({ ...i, createdBy }))
-//   )
-//   const ok = settled.flatMap(r => (r.status === 'fulfilled' ? [r.value] : []))
-//   const fail = settled.length - ok.length
-
-//   return res.status(ok.length ? 201 : 400).json({
-//     success: fail === 0,
-//     createdCount: ok.length,
-//     failedCount: fail,
-//     transfers: ok
-//   })
-// }
-
 type CreateTransferInput = {
   taskID?: string | null
   sourceWarehouseID: string
@@ -63,11 +43,6 @@ type CreateTransferInput = {
   batchID?: string
 }
 
-/**
- * 批量创建 Transfer：
- * - 同一次请求中，sourceBinID 相同的行用同一个 batchID（randomUUID）
- * - taskID 原样保留（可为 null，用于区分是否从 Task 派生）
- */
 export const createTransfers = async (req: Request, res: Response) => {
   const createdBy = res.locals.accountID
   const itemsRaw = Array.isArray(req.body?.items) ? req.body.items : [req.body]
@@ -77,7 +52,6 @@ export const createTransfers = async (req: Request, res: Response) => {
     return res.status(400).json({ success: false, message: 'No items' })
   }
 
-  // 为同一次请求内 “同一 sourceBinID” 分配同一个 batchID
   const binBatchMap = new Map<string, string>()
   const enrichedItems: CreateTransferInput[] = items.map(i => {
     const binKey = String(i?.sourceBinID ?? 'NULL_BIN')

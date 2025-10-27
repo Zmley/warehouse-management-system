@@ -281,21 +281,6 @@ export const updateTransferStatus = async (
         )
       )
 
-      //   for (const taskID of linkedTaskIDs) {
-      //     try {
-      //       await updateTaskByTaskID({
-      //         taskID,
-      //         status: 'COMPLETED',
-      //         sourceBinCode: 'Transfer-in'
-      //       })
-      //     } catch (e) {
-      //       skipped.push({
-      //         transferID: `(task:${taskID})`,
-      //         reason: `Cancel linked task failed: ${e?.message || 'Unknown'}`
-      //       })
-      //     }
-      //   }
-
       for (const taskID of linkedTaskIDs) {
         try {
           const { updated, skippedReason } = await completeLinkedTaskIfNeeded(
@@ -325,8 +310,6 @@ export const updateTransferStatus = async (
     }
   })
 }
-
-/////////////////
 
 export async function completeLinkedTaskIfNeeded(taskID: string) {
   if (!taskID) return { updated: false, skippedReason: 'empty_task_id' }

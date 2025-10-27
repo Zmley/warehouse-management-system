@@ -244,8 +244,6 @@ export const updateBinController = asyncHandler(
   }
 )
 
-////////////////////////////////////////
-
 export const getBinColumns = asyncHandler(
   async (req: Request, res: Response) => {
     const warehouseID = (req.query.warehouseID as string) || undefined

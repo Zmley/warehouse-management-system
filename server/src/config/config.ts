@@ -3,15 +3,6 @@ import * as dotenv from 'dotenv'
 
 dotenv.config({ path: `.env.local` })
 
-// All env variables used by the app should be defined ing this file.
-
-// To define new env:
-// 1. Add env variable to .env.local file;
-// 2. Provide validation rules for your env in envsSchema;
-// 3. Make it visible outside of this module in export section;
-// 4. Access your env variable only via config file.
-// Do not use process.env object outside of this file.
-
 const envsSchema = Joi.object()
   .keys({
     NODE_ENV: Joi.string().valid('production', 'integration', 'development'),

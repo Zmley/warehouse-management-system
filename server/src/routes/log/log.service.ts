@@ -178,8 +178,6 @@ export async function fulfillLogsOnUnload(params: {
   }
 }
 
-/////////////////////////////////////////////////////////////////////////////
-
 export type SessionFilter = {
   accountID?: string
   workerName?: string

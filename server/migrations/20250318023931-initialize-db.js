@@ -201,7 +201,6 @@ module.exports = {
       onUpdate: 'CASCADE'
     })
 
-    //bin.warehouseID -> warehouse.warehouseID
     await queryInterface.addConstraint('bin', {
       fields: ['warehouseID'],
       type: 'foreign key',
@@ -214,7 +213,6 @@ module.exports = {
       onUpdate: 'CASCADE'
     })
 
-    //inventory.binID -> bin.binID
     await queryInterface.addConstraint('inventory', {
       fields: ['binID'],
       type: 'foreign key',
@@ -226,8 +224,6 @@ module.exports = {
       onDelete: 'CASCADE',
       onUpdate: 'CASCADE'
     })
-
-    // task.sourceBinID & task.destinationBinID -> bin.binID
 
     await queryInterface.addConstraint('task', {
       fields: ['sourceBinID'],
@@ -252,8 +248,6 @@ module.exports = {
       onDelete: 'SET NULL',
       onUpdate: 'CASCADE'
     })
-
-    // task.creatorID & task.accepterID -> account.accountID
 
     await queryInterface.addConstraint('task', {
       fields: ['creatorID'],

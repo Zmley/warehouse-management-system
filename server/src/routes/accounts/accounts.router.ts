@@ -11,7 +11,6 @@ import {
 } from './accounts.controller'
 
 const router = express.Router()
-//public
 router.post('/register', registerUser)
 router.post('/login', loginUser)
 router.post('/refresh-token', refreshAccessToken)

@@ -1,4 +1,3 @@
-// routes/carts/cart.route.ts
 import express from 'express'
 import { celebrate, Segments } from 'celebrate'
 import { load, unload } from './cart.controller'

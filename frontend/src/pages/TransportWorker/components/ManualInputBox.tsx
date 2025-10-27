@@ -189,17 +189,15 @@ const MultiProductInputBox: React.FC<MultiProductInputBoxProps> = ({
               >
                 <Autocomplete<string, false, false, false>
                   options={productOptions}
-                  freeSolo={false} // 只能选列表，不能自填
-                  disableClearable={false} // 显示 X，可一键清空
-                  clearOnBlur // 未选择时失焦自动清空输入框
+                  freeSolo={false}
+                  disableClearable={false}
+                  clearOnBlur
                   forcePopupIcon={false}
                   autoHighlight
                   value={selected}
                   onChange={(_, newValue) => {
-                    // 只有从下拉选择或点击 X 才会触发
                     setInputField(index, 'productCode', newValue ?? '')
                   }}
-                  // 只做前缀匹配的候选过滤
                   filterOptions={(opts, state) =>
                     startsWithFilter(opts, state.inputValue)
                   }

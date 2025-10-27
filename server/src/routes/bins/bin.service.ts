@@ -491,8 +491,6 @@ export async function updateSingleBin(binID: string, payload: UpdateBinDto) {
   })
 }
 
-//////////////////////////////////////////////////////////////////////////
-
 export async function getBinColumnsInWarehouse(
   warehouseID?: string
 ): Promise<string[]> {

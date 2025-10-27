@@ -22,12 +22,6 @@ router.get(
   fetchTransfers
 )
 
-// router.delete(
-//   '/:taskID',
-//   roleAllow([UserRole.ADMIN, UserRole.TRANSPORT_WORKER]),
-//   deleteTransfersByTask
-// )
-
 router.delete(
   '/',
   roleAllow([UserRole.ADMIN, UserRole.TRANSPORT_WORKER]),
