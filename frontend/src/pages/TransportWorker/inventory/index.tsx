@@ -25,17 +25,15 @@ const InventoryIndex: React.FC = () => {
   const { t } = useTranslation()
   const [tab, setTab] = useState<TabKey>('search')
 
-  // i18n labels (fallback provided)
   const labels = useMemo(
     () => ({
-      search: t('inventoryIndex.searchTab', '库存查询'),
-      edit: t('inventoryIndex.editTab', '库存编辑'),
-      receive: t('inventoryIndex.receiveTab', '收货')
+      search: t('inventoryIndex.searchTab'),
+      edit: t('inventoryIndex.editTab'),
+      receive: t('inventoryIndex.receiveTab')
     }),
     [t]
   )
 
-  // Config for tabs to reduce duplication
   const tabs = useMemo(
     () => [
       {
@@ -57,7 +55,6 @@ const InventoryIndex: React.FC = () => {
     [labels]
   )
 
-  // Keyboard shortcuts: 1/2/3, and ArrowLeft/ArrowRight to switch
   const handleKey = useCallback(
     (e: KeyboardEvent) => {
       if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName))
@@ -83,7 +80,6 @@ const InventoryIndex: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKey)
   }, [handleKey])
 
-  // Measure active tab position for animated indicator
   const containerRef = useRef<HTMLDivElement | null>(null)
   const [indicator, setIndicator] = useState<{ left: number; width: number }>({
     left: 0,
@@ -121,7 +117,6 @@ const InventoryIndex: React.FC = () => {
         bgcolor: 'transparent'
       }}
     >
-      {/* Top bar */}
       <Box
         sx={{
           position: 'sticky',
@@ -137,11 +132,10 @@ const InventoryIndex: React.FC = () => {
           borderColor: 'rgba(0,0,0,0.06)'
         }}
       >
-        {/* Segmented control */}
         <Box
           ref={containerRef}
           role='tablist'
-          aria-label={t('inventoryIndex.tablistAria', '库存模块切换')}
+          aria-label={t('inventoryIndex.tablistAria')}
           sx={{
             position: 'relative',
             display: 'grid',
@@ -151,7 +145,6 @@ const InventoryIndex: React.FC = () => {
             py: { xs: 0.5, sm: 0.75 }
           }}
         >
-          {/* Animated background for active tab */}
           <motion.div
             aria-hidden
             initial={false}
@@ -169,7 +162,7 @@ const InventoryIndex: React.FC = () => {
               borderRadius: 14,
               boxShadow: '0 6px 14px rgba(0,0,0,0.10)',
               background:
-                'linear-gradient(180deg, rgba(0,0,0,0.92), rgba(0,0,0,0.88))'
+                'linear-gradient(180deg, rgba(37,99,235,0.92), rgba(29,78,216,0.88))'
             }}
           />
 
@@ -212,7 +205,6 @@ const InventoryIndex: React.FC = () => {
         <Divider sx={{ opacity: 0.35 }} />
       </Box>
 
-      {/* Content area */}
       <Box
         sx={{
           flex: 1,
@@ -252,9 +244,6 @@ const InventoryIndex: React.FC = () => {
   )
 }
 
-/**
- * SectionCard: soft card container to keep consistent spacing & polished look
- */
 const SectionCard: React.FC<React.PropsWithChildren> = ({ children }) => (
   <Box
     sx={{

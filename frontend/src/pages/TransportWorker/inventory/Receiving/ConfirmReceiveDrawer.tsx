@@ -9,13 +9,7 @@ import {
   Chip
 } from '@mui/material'
 import { useTranslation } from 'react-i18next'
-
-export type DrawerLine = {
-  productCode: string
-  qty: number
-}
-
-export type DrawerMode = 'CONFIRM' | 'UNDO'
+import { DrawerLine, DrawerMode } from 'types/inventory'
 
 export default function ConfirmReceiveDrawer({
   open,

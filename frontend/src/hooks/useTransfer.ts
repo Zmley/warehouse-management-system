@@ -15,9 +15,7 @@ const pickErrMsg = (e: any, fallback: string) =>
 
 export const useTransfer = () => {
   const [isLoading, setIsLoading] = useState(false)
-  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
   const [transfers, setTransfers] = useState<any[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
@@ -59,7 +57,7 @@ export const useTransfer = () => {
   )
 
   const handleConfirmReceive = useCallback(async (items: ConfirmItem[]) => {
-    setLoading(true)
+    setIsLoading(true)
     try {
       const res = await confirmReceive(items)
       return res.data
@@ -67,12 +65,12 @@ export const useTransfer = () => {
       const msg = pickErrMsg(err, 'Confirm receive failed')
       return { success: false, message: msg }
     } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
   }, [])
 
   const handleUndoConfirmReceive = useCallback(async (items: ConfirmItem[]) => {
-    setLoading(true)
+    setIsLoading(true)
     try {
       const res = await undoConfirmReceive(items)
       return res.data
@@ -80,7 +78,7 @@ export const useTransfer = () => {
       const msg = pickErrMsg(err, 'Undo confirm failed')
       return { success: false, message: msg }
     } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
   }, [])
 
@@ -90,7 +88,6 @@ export const useTransfer = () => {
     page,
     pageSize,
     isLoading,
-    loading,
     error,
     getTransfers,
     handleConfirmReceive,

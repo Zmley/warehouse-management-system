@@ -11,37 +11,20 @@ import {
   ButtonBase
 } from '@mui/material'
 import RefreshIcon from '@mui/icons-material/Refresh'
-import { TransferStatusUI } from 'constants/index'
 import { useTransfer } from 'hooks/useTransfer'
 import { useParams } from 'react-router-dom'
 import { useAuth } from 'hooks/useAuth'
 import { useTranslation } from 'react-i18next'
-import ConfirmReceiveDrawer, {
+import {
+  ConfirmItem,
+  DrawerLine,
   DrawerMode,
-  DrawerLine
-} from './ConfirmReceiveDrawer'
-
-type TransferRow = {
-  transferID: string
-  productCode: string
-  quantity: number
-  status: TransferStatusUI
-  taskID?: string | null
-  sourceBinID?: string | null
-  sourceBinCode?: string | null
-  sourceWarehouseCode?: string | null
-  batchID?: string | null
-}
-
-type PalletGroup = {
-  binCode: string | null
-  warehouseCode: string | null
-  rows: TransferRow[]
-}
-
-type PendingLite = { transferID: string; productCode: string; quantity: number }
-type ConfirmItem = { transferID: string; productCode: string; quantity: number }
-type UndoItem = { transferID: string; productCode: string }
+  PalletGroup,
+  PendingLite,
+  TransferRow,
+  UndoItem
+} from 'types/inventory'
+import ConfirmReceiveDrawer from './ConfirmReceiveDrawer'
 
 export default function MobileReceive({
   warehouseID: propWarehouseID
@@ -158,10 +141,7 @@ export default function MobileReceive({
     setInProcess(prev => [...moved, ...prev])
     setSnack({
       open: true,
-      msg: t(
-        'mobileReceive.snackConfirmed',
-        '已确认收货，项目进入 In Process。'
-      ),
+      msg: t('mobileReceive.snackConfirmed'),
       sev: 'success'
     })
   }
@@ -178,7 +158,7 @@ export default function MobileReceive({
     setPending(prev => [...moved, ...prev])
     setSnack({
       open: true,
-      msg: t('mobileReceive.snackUndone', '已撤销确认，项目返回 Pending。'),
+      msg: t('mobileReceive.snackUndone'),
       sev: 'success'
     })
   }
@@ -189,12 +169,7 @@ export default function MobileReceive({
   )
   const busy = updating || loadingP || loadingI
 
-  /**
-   * 分组规则：
-   *   优先使用：B:{batchID}|S:{sourceBinID}
-   *   兼容旧数据（无 batchID）：LEGACY:S:{sourceBinID}|X:{taskID or transferID}
-   *   注：如果连 sourceBinID 也无，则退回到 SINGLE（极端兜底）
-   */
+  // Group rows by pallet rules
   const groupByPallet = (rows: TransferRow[]): PalletGroup[] => {
     const bucket: Record<string, PalletGroup> = {}
 
@@ -235,7 +210,7 @@ export default function MobileReceive({
   const splitByWarehouse = (groups: PalletGroup[]) => {
     const m = new Map<string, PalletGroup[]>()
     for (const g of groups) {
-      const w = g.warehouseCode || 'Unknown'
+      const w = g.warehouseCode || t('mobileReceive.unknownWarehouse')
       if (!m.has(w)) m.set(w, [])
       m.get(w)!.push(g)
     }
@@ -283,7 +258,7 @@ export default function MobileReceive({
       if (!res?.success) {
         setSnack({
           open: true,
-          msg: res?.message || t('mobileReceive.confirmFail', '确认收货失败'),
+          msg: res?.message || t('mobileReceive.confirmFail'),
           sev: 'error'
         })
         return
@@ -298,7 +273,7 @@ export default function MobileReceive({
       if (!res?.success) {
         setSnack({
           open: true,
-          msg: res?.message || t('mobileReceive.undoFail', '撤销确认失败'),
+          msg: res?.message || t('mobileReceive.undoFail'),
           sev: 'error'
         })
         return
@@ -342,14 +317,14 @@ export default function MobileReceive({
           }}
         >
           <Typography sx={{ fontWeight: 900, fontSize: 16 }}>
-            {t('mobileReceive.title', '托盘收货')}
+            {t('mobileReceive.title')}
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
             <IconButton
               size='small'
               onClick={onRefresh}
               disabled={!resolvedWarehouseID}
-              aria-label={t('mobileReceive.refresh', '刷新')}
+              aria-label={t('mobileReceive.refresh')}
             >
               {busy ? (
                 <CircularProgress size={16} />
@@ -363,29 +338,26 @@ export default function MobileReceive({
         <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
           {/* Pending */}
           <Panel
-            title={t('mobileReceive.pendingTitle', 'Pending')}
+            title={t('mobileReceive.pendingTitle')}
             count={counts.p}
             headerBg='#f1f5f9'
             headerBorder='#e5e7eb'
             bodyBorder='#e5e7eb'
-            emptyText={t('mobileReceive.emptyPending', '暂无 Pending 项')}
+            emptyText={t('mobileReceive.emptyPending')}
           >
             {busy ? (
               <BusyOverlay />
             ) : pendingGroups.length === 0 ? (
-              <Empty
-                text={t('mobileReceive.emptyPending', '暂无 Pending 项')}
-              />
+              <Empty text={t('mobileReceive.emptyPending')} />
             ) : (
               splitByWarehouse(pendingGroups).map(([wh, groups]) => (
                 <Box key={`wh-p-${wh}`} sx={{ mt: 0.5 }}>
-                  {/* 仓库分段标题：虚线 + 居中仓库名 */}
                   <Box
                     sx={{
                       my: 0.6,
                       position: 'relative',
                       textAlign: 'center',
-                      borderTop: '1px dashed #93c5fd', // blue-300
+                      borderTop: '1px dashed #93c5fd',
                       lineHeight: 0
                     }}
                   >
@@ -398,7 +370,7 @@ export default function MobileReceive({
                         px: 0.8,
                         fontSize: 12,
                         fontWeight: 800,
-                        color: '#1e3a8a' // navy-800
+                        color: '#1e3a8a'
                       }}
                     >
                       {wh}
@@ -435,18 +407,16 @@ export default function MobileReceive({
 
           {/* In Process */}
           <Panel
-            title={t('mobileReceive.inProcessTitle', 'In Process')}
+            title={t('mobileReceive.inProcessTitle')}
             count={counts.i}
             headerBg='#dcfce7'
             headerBorder='#bbf7d0'
             bodyBorder='#bbf7d0'
             titleColor='#14532d'
-            emptyText={t('mobileReceive.emptyInProcess', '暂无 In Process 项')}
+            emptyText={t('mobileReceive.emptyInProcess')}
           >
             {inProcessGroups.length === 0 ? (
-              <Empty
-                text={t('mobileReceive.emptyInProcess', '暂无 In Process 项')}
-              />
+              <Empty text={t('mobileReceive.emptyInProcess')} />
             ) : (
               splitByWarehouse(inProcessGroups).map(([wh, groups]) => (
                 <Box key={`wh-i-${wh}`} sx={{ mt: 0.5 }}>
@@ -455,7 +425,7 @@ export default function MobileReceive({
                       my: 0.6,
                       position: 'relative',
                       textAlign: 'center',
-                      borderTop: '1px dashed #86efac', // green-300
+                      borderTop: '1px dashed #86efac',
                       lineHeight: 0
                     }}
                   >
@@ -468,7 +438,7 @@ export default function MobileReceive({
                         px: 0.8,
                         fontSize: 12,
                         fontWeight: 800,
-                        color: '#065f46' // green-700
+                        color: '#065f46'
                       }}
                     >
                       {wh}
@@ -498,7 +468,6 @@ export default function MobileReceive({
         </Box>
       </Box>
 
-      {/* Drawer */}
       <ConfirmReceiveDrawer
         open={drawerOpen}
         mode={drawerMode}
@@ -507,7 +476,6 @@ export default function MobileReceive({
         onSubmit={handleSubmitDrawer}
       />
 
-      {/* Snackbar */}
       <Snackbar
         open={snack.open}
         autoHideDuration={2200}
@@ -527,7 +495,7 @@ export default function MobileReceive({
   )
 }
 
-/** —— UI 辅助组件 —— */
+/** UI helpers */
 function PalletButton({
   children,
   binCode,

@@ -1,3 +1,5 @@
+import { TransferStatusUI } from 'constants/index'
+
 export interface InventoryItem {
   bin: {
     binCode: string
@@ -38,3 +40,40 @@ export interface GetInventoriesParams {
   sortBy?: 'updatedAt' | 'binCode'
   sort?: 'asc' | 'desc'
 }
+
+export type DrawerLine = {
+  productCode: string
+  qty: number
+}
+
+export type DrawerMode = 'CONFIRM' | 'UNDO'
+
+export type TransferRow = {
+  transferID: string
+  productCode: string
+  quantity: number
+  status: TransferStatusUI
+  taskID?: string | null
+  sourceBinID?: string | null
+  sourceBinCode?: string | null
+  sourceWarehouseCode?: string | null
+  batchID?: string | null
+}
+
+export type PalletGroup = {
+  binCode: string | null
+  warehouseCode: string | null
+  rows: TransferRow[]
+}
+
+export type PendingLite = {
+  transferID: string
+  productCode: string
+  quantity: number
+}
+export type ConfirmItem = {
+  transferID: string
+  productCode: string
+  quantity: number
+}
+export type UndoItem = { transferID: string; productCode: string }
