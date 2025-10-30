@@ -1,15 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Log from 'routes/log/log.model'
-import Bin from 'routes/bins/bin.model'
+import Product from 'routes/products/product.model'
 import { Op, Transaction, WhereOptions } from 'sequelize'
 import { v4 as uuidv4 } from 'uuid'
 import { fn, col, where as sqlWhere } from 'sequelize'
 import Account from 'routes/accounts/accounts.model'
-
-type Item = {
-  productCode: string
-  quantity: number
-  isMerged?: boolean
-}
+import Bin from 'routes/bins/bin.model'
+import { BinType } from 'constants/index'
+import { Group, Item, LogRow, SessionFilter } from 'types/log'
 
 async function toBinIDByCode(binCode?: string | null): Promise<string | null> {
   if (!binCode) return null
@@ -25,6 +23,27 @@ function normalizeItems(items?: Item[]): Item[] {
   return (items || []).filter(
     x => !!x?.productCode && Number.isInteger(x?.quantity) && x.quantity > 0
   )
+}
+
+async function touchProductUpdatedAt(productCode: string, t?: Transaction) {
+  await Product.increment([], {
+    where: { productCode },
+    transaction: t,
+    silent: false
+  })
+  console.log(`[Product.updatedAt] touched: ${productCode}`)
+}
+
+async function getBinTypeCached(
+  binID: string | null,
+  cache: Map<string, BinType>
+): Promise<BinType | null> {
+  if (!binID) return null
+  if (cache.has(binID)) return cache.get(binID)!
+  const row = await Bin.findOne({ attributes: ['type'], where: { binID } })
+  const type = (row?.get('type') as BinType) ?? null
+  if (type) cache.set(binID, type)
+  return type
 }
 
 export async function createOpenLogsOnLoad(params: {
@@ -76,6 +95,21 @@ export async function fulfillLogsOnUnload(params: {
 
     const t: Transaction = await Log.sequelize!.transaction()
     try {
+      const typeCache = new Map<string, BinType>()
+      const destType = await getBinTypeCached(destBinID, typeCache)
+
+      const maybeTouchProduct = async (
+        srcID: string | null,
+        productCode: string
+      ) => {
+        if (!srcID) return
+        if (destType !== BinType.PICK_UP) return
+        const srcType = await getBinTypeCached(srcID, typeCache)
+        if (srcType === BinType.INVENTORY) {
+          await touchProductUpdatedAt(productCode, t)
+        }
+      }
+
       for (const item of wanted) {
         let remaining = item.quantity
         if (remaining <= 0) continue
@@ -100,6 +134,10 @@ export async function fulfillLogsOnUnload(params: {
               { destinationBinID: destBinID, isMerged: !!item.isMerged },
               { transaction: t }
             )
+            await maybeTouchProduct(
+              row.get('sourceBinID') as string | null,
+              item.productCode
+            )
             remaining = 0
             matched = true
             break
@@ -113,12 +151,20 @@ export async function fulfillLogsOnUnload(params: {
             const qj = (openRows[j].get('quantity') as number) ?? 0
             if (qi + qj === remaining) {
               await openRows[i].update(
-                { destinationBinID: destBinID, isMerged: !!item.isMerged },
+                { destinationBinID: destBinID },
                 { transaction: t }
               )
               await openRows[j].update(
-                { destinationBinID: destBinID, isMerged: !!item.isMerged },
+                { destinationBinID: destBinID },
                 { transaction: t }
+              )
+              await maybeTouchProduct(
+                openRows[i].get('sourceBinID') as string | null,
+                item.productCode
+              )
+              await maybeTouchProduct(
+                openRows[j].get('sourceBinID') as string | null,
+                item.productCode
               )
               remaining = 0
               matched = true
@@ -133,20 +179,19 @@ export async function fulfillLogsOnUnload(params: {
           const openQty = (row.get('quantity') as number) ?? 0
           const sourceBinID = (row.get('sourceBinID') as string | null) ?? null
           const sessionID = (row.get('sessionID') as string) ?? uuidv4()
-          const wasMerged = !!row.get('isMerged')
 
           if (openQty <= remaining) {
             await row.update(
-              { destinationBinID: destBinID, isMerged: !!item.isMerged },
+              { destinationBinID: destBinID },
               { transaction: t }
             )
+            await maybeTouchProduct(sourceBinID, item.productCode)
             remaining -= openQty
           } else {
             await row.update(
-              { quantity: openQty - remaining, isMerged: wasMerged },
+              { quantity: openQty - remaining },
               { transaction: t }
             )
-
             await Log.create(
               {
                 productCode: item.productCode,
@@ -154,12 +199,11 @@ export async function fulfillLogsOnUnload(params: {
                 sourceBinID,
                 destinationBinID: destBinID,
                 accountID: params.accountID,
-                sessionID,
-                isMerged: !!item.isMerged
+                sessionID
               },
               { transaction: t }
             )
-
+            await maybeTouchProduct(sourceBinID, item.productCode)
             remaining = 0
           }
         }
@@ -178,36 +222,9 @@ export async function fulfillLogsOnUnload(params: {
   }
 }
 
-export type SessionFilter = {
-  accountID?: string
-  workerName?: string
-  keyword?: string
-  start?: string | Date
-  end?: string | Date
-  productCode?: string
-  sourceBinCode?: string
-  destinationBinCode?: string
-  type?: 'INVENTORY' | 'PICK_UP'
-  limit?: number
-  offset?: number
-}
-
 type SafeWhere = WhereOptions & {
   [Op.and]?: WhereOptions[]
   [Op.or]?: WhereOptions[]
-}
-
-type LogRow = {
-  logID: string
-  productCode: string
-  quantity: number
-  sourceBinID: string | null
-  destinationBinID: string | null
-  accountID: string
-  sessionID: string
-  isMerged: boolean
-  createdAt: Date | string
-  updatedAt: Date | string
 }
 
 function pushAnd(where: SafeWhere, cond: WhereOptions) {
@@ -241,12 +258,8 @@ export async function listSessionsEnriched(filter: SessionFilter = {}) {
       : null
   ])
 
-  if (sourceBinCode && !srcBinModel) {
-    return { totalSessions: 0, data: [] as unknown[] }
-  }
-  if (destinationBinCode && !dstBinModel) {
-    return { totalSessions: 0, data: [] as unknown[] }
-  }
+  if (sourceBinCode && !srcBinModel) return { totalSessions: 0, data: [] }
+  if (destinationBinCode && !dstBinModel) return { totalSessions: 0, data: [] }
 
   let workerAccountIDs: string[] = []
   if (!accountID && workerName && workerName.trim()) {
@@ -274,20 +287,13 @@ export async function listSessionsEnriched(filter: SessionFilter = {}) {
       )
     ]
 
-    const nameWhere: WhereOptions = {
-      [Op.and]: [...andTokenConds, { [Op.or]: compactOrList }]
-    }
-
     const matched = await Account.findAll({
       attributes: ['accountID'],
-      where: nameWhere,
+      where: { [Op.and]: [...andTokenConds, { [Op.or]: compactOrList }] },
       limit: 200
     })
     workerAccountIDs = matched.map(a => String(a.get('accountID')))
-
-    if (workerAccountIDs.length === 0) {
-      return { totalSessions: 0, data: [] as unknown[] }
-    }
+    if (!workerAccountIDs.length) return { totalSessions: 0, data: [] }
   }
 
   let keywordDestBinIDs: string[] = []
@@ -299,158 +305,95 @@ export async function listSessionsEnriched(filter: SessionFilter = {}) {
       limit: 200
     })
     keywordDestBinIDs = matchedBins.map(b => String(b.get('binID')))
-
-    if (keywordDestBinIDs.length === 0) {
-      return { totalSessions: 0, data: [] as unknown[] }
-    }
+    if (!keywordDestBinIDs.length) return { totalSessions: 0, data: [] }
   }
 
   const where: SafeWhere = {}
-
-  if (accountID) {
-    where.accountID = accountID
-  } else if (workerAccountIDs.length) {
+  if (accountID) where.accountID = accountID
+  else if (workerAccountIDs.length)
     pushAnd(where, { accountID: { [Op.in]: workerAccountIDs } })
-  }
-
   if (productCode) where.productCode = productCode
   if (srcBinModel?.binID) where.sourceBinID = srcBinModel.binID
   if (dstBinModel?.binID) where.destinationBinID = dstBinModel.binID
-
   if (start || end) {
-    const range: { [Op.gte]?: Date; [Op.lte]?: Date } = {}
+    const range: any = {}
     if (start) range[Op.gte] = new Date(start)
     if (end) range[Op.lte] = new Date(end)
     where.createdAt = range
   }
-
-  if (keywordDestBinIDs.length) {
+  if (keywordDestBinIDs.length)
     pushAnd(where, { destinationBinID: { [Op.in]: keywordDestBinIDs } })
-  }
 
-  const logs = await Log.findAll({
-    where,
-    order: [['createdAt', 'DESC']]
-  })
+  const logs = await Log.findAll({ where, order: [['createdAt', 'DESC']] })
+  if (!logs.length) return { totalSessions: 0, data: [] }
 
-  if (logs.length === 0) {
-    return { totalSessions: 0, data: [] as unknown[] }
-  }
-
-  const srcIDs = new Set<string>()
-  const dstIDs = new Set<string>()
-  const accIDs = new Set<string>()
-
+  const srcIDs = new Set<string>(),
+    dstIDs = new Set<string>(),
+    accIDs = new Set<string>()
   for (const l of logs) {
-    const s = (l.get('sourceBinID') as string | null) ?? null
-    const d = (l.get('destinationBinID') as string | null) ?? null
-    const a = (l.get('accountID') as string) ?? ''
+    const s = l.get('sourceBinID') as string | null
+    const d = l.get('destinationBinID') as string | null
+    const a = l.get('accountID') as string
     if (s) srcIDs.add(s)
     if (d) dstIDs.add(d)
     if (a) accIDs.add(a)
   }
 
   const [srcBins, dstBins, accounts] = await Promise.all([
-    srcIDs.size
-      ? Bin.findAll({
-          attributes: ['binID', 'binCode', 'type'],
-          where: { binID: Array.from(srcIDs) }
-        })
-      : Promise.resolve([]),
-    dstIDs.size
-      ? Bin.findAll({
-          attributes: ['binID', 'binCode', 'type'],
-          where: { binID: Array.from(dstIDs) }
-        })
-      : Promise.resolve([]),
-    accIDs.size
-      ? Account.findAll({
-          attributes: ['accountID', 'firstName', 'lastName', 'email'],
-          where: { accountID: Array.from(accIDs) }
-        })
-      : Promise.resolve([])
+    Bin.findAll({
+      attributes: ['binID', 'binCode', 'type'],
+      where: { binID: Array.from(srcIDs) }
+    }),
+    Bin.findAll({
+      attributes: ['binID', 'binCode', 'type'],
+      where: { binID: Array.from(dstIDs) }
+    }),
+    Account.findAll({
+      attributes: ['accountID', 'firstName', 'lastName', 'email'],
+      where: { accountID: Array.from(accIDs) }
+    })
   ])
 
-  const srcCodeMap = new Map<string, string>(
-    srcBins.map(
-      b =>
-        [String(b.get('binID')), String(b.get('binCode'))] as [string, string]
-    )
+  const srcCodeMap = new Map(
+    srcBins.map(b => [String(b.get('binID')), String(b.get('binCode'))])
   )
-  const dstCodeMap = new Map<string, string>(
-    dstBins.map(
-      b =>
-        [String(b.get('binID')), String(b.get('binCode'))] as [string, string]
-    )
+  const dstCodeMap = new Map(
+    dstBins.map(b => [String(b.get('binID')), String(b.get('binCode'))])
   )
-  const dstTypeMap = new Map<string, string | null>(
-    dstBins.map(
-      b =>
-        [String(b.get('binID')), (b.get('type') as string) ?? null] as [
-          string,
-          string | null
-        ]
-    )
+  const dstTypeMap = new Map(
+    dstBins.map(b => [
+      String(b.get('binID')),
+      (b.get('type') as string) ?? null
+    ])
   )
-  const accMap = new Map<string, string>(
+  const accMap = new Map(
     accounts.map(a => {
-      const first = (a.get('firstName') as string) ?? ''
-      const last = (a.get('lastName') as string) ?? ''
-      const email = (a.get('email') as string) ?? ''
-      const full = `${first}${last ? ' ' + last : ''}`.trim()
-      return [String(a.get('accountID')), full || email] as [string, string]
+      const first = a.get('firstName') as string
+      const last = a.get('lastName') as string
+      const email = a.get('email') as string
+      return [
+        String(a.get('accountID')),
+        first || last ? `${first} ${last}`.trim() : email
+      ]
     })
   )
 
-  type Group = {
-    sessionID: string
-    accountID: string
-    accountName: string | null
-    startedAt: Date
-    lastUpdatedAt: Date
-    isCompleted: boolean
-    destinations: Array<{
-      destinationBinID: string | null
-      destinationBinCode: string | null
-      totalQuantity: number
-      items: Array<{
-        logID: string
-        productCode: string
-        quantity: number
-        isMerged: boolean
-        sourceBinID: string | null
-        sourceBinCode: string | null
-        destinationBinID: string | null
-        destinationBinCode: string | null
-        createdAt: Date
-        updatedAt: Date
-      }>
-    }>
-  }
-
   const sessions = new Map<string, Group>()
-
   for (const l of logs) {
-    const raw = l.toJSON() as unknown as LogRow
-
+    const raw = l.toJSON() as LogRow
     const sessionID = String(raw.sessionID)
     const accountIDVal = String(raw.accountID)
-    const sourceBinID = (raw.sourceBinID ?? null) as string | null
-    const destBinID = (raw.destinationBinID ?? null) as string | null
-
+    const sourceBinID = raw.sourceBinID
+    const destBinID = raw.destinationBinID
     const srcCode = sourceBinID ? srcCodeMap.get(sourceBinID) ?? null : null
     const dstCode = destBinID ? dstCodeMap.get(destBinID) ?? null : null
     const dstType = destBinID ? dstTypeMap.get(destBinID) ?? null : null
 
-    if (type === 'PICK_UP') {
-      if (dstType !== 'PICK_UP') continue
-    } else if (type === 'INVENTORY') {
-      if (dstType === 'PICK_UP') continue
-    }
+    if (type === 'PICK_UP' && dstType !== 'PICK_UP') continue
+    if (type === 'INVENTORY' && dstType === 'PICK_UP') continue
 
     const createdAt = new Date(raw.createdAt)
     const updatedAt = new Date(raw.updatedAt)
-
     if (!sessions.has(sessionID)) {
       sessions.set(sessionID, {
         sessionID,
@@ -458,18 +401,18 @@ export async function listSessionsEnriched(filter: SessionFilter = {}) {
         accountName: accMap.get(accountIDVal) ?? null,
         startedAt: createdAt,
         lastUpdatedAt: updatedAt,
-        isCompleted: destBinID !== null,
+        isCompleted: !!destBinID,
         destinations: []
       })
     }
 
-    const group = sessions.get(sessionID)!
-    if (createdAt < group.startedAt) group.startedAt = createdAt
-    if (updatedAt > group.lastUpdatedAt) group.lastUpdatedAt = updatedAt
-    if (destBinID === null) group.isCompleted = false
+    const g = sessions.get(sessionID)!
+    if (createdAt < g.startedAt) g.startedAt = createdAt
+    if (updatedAt > g.lastUpdatedAt) g.lastUpdatedAt = updatedAt
+    if (!destBinID) g.isCompleted = false
 
     const key = destBinID ?? '__OPEN__'
-    let dest = group.destinations.find(
+    let dest = g.destinations.find(
       d => (d.destinationBinID ?? '__OPEN__') === key
     )
     if (!dest) {
@@ -479,14 +422,14 @@ export async function listSessionsEnriched(filter: SessionFilter = {}) {
         totalQuantity: 0,
         items: []
       }
-      group.destinations.push(dest)
+      g.destinations.push(dest)
     }
 
     dest.items.push({
-      logID: String(raw.logID),
-      productCode: String(raw.productCode),
-      quantity: Number(raw.quantity) || 0,
-      isMerged: Boolean(raw.isMerged),
+      logID: raw.logID,
+      productCode: raw.productCode,
+      quantity: raw.quantity,
+      isMerged: raw.isMerged,
       sourceBinID,
       sourceBinCode: srcCode,
       destinationBinID: destBinID,
@@ -494,35 +437,22 @@ export async function listSessionsEnriched(filter: SessionFilter = {}) {
       createdAt,
       updatedAt
     })
-    dest.totalQuantity += Number(raw.quantity) || 0
+    dest.totalQuantity += Number(raw.quantity)
   }
 
   const allSessions = Array.from(sessions.values()).map(g => ({
     ...g,
-    destinations: g.destinations
-      .map(d => ({
-        ...d,
-        items: d.items.sort((a, b) => +a.createdAt - +b.createdAt)
-      }))
-      .sort((a, b) => {
-        const ka = a.destinationBinID ? 1 : 0
-        const kb = b.destinationBinID ? 1 : 0
-        if (ka !== kb) return ka - kb
-        return (a.destinationBinCode || '').localeCompare(
-          b.destinationBinCode || ''
-        )
-      })
+    destinations: g.destinations.map(d => ({
+      ...d,
+      items: d.items.sort((a, b) => +a.createdAt - +b.createdAt)
+    }))
   }))
 
-  allSessions.sort((a, b) => +b.lastUpdatedAt - +a.lastUpdatedAt)
-
   const totalSessions = allSessions.length
-  const startIndex = typeof offset === 'number' ? offset : 0
-  const endIndex = typeof limit === 'number' ? startIndex + limit : undefined
-  const sliced =
-    typeof limit === 'number'
-      ? allSessions.slice(startIndex, endIndex)
-      : allSessions
-
-  return { totalSessions, data: sliced }
+  const startIndex = offset ?? 0
+  const endIndex = limit ? startIndex + limit : undefined
+  return {
+    totalSessions,
+    data: limit ? allSessions.slice(startIndex, endIndex) : allSessions
+  }
 }

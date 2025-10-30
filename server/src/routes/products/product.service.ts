@@ -36,7 +36,7 @@ export const getProductsByWarehouseID = async (
   const whereClause = buildProductWhereClause(keyword)
 
   const { rows: prodRows, count } = await Product.findAndCountAll({
-    attributes: ['productCode', 'barCode', 'boxType', 'createdAt'],
+    attributes: ['productCode', 'barCode', 'boxType', 'createdAt', 'updatedAt'],
     where: whereClause,
     order: buildProductOrderClause(),
     offset,
@@ -48,6 +48,7 @@ export const getProductsByWarehouseID = async (
     barCode: string
     boxType: string
     createdAt: Date
+    updatedAt: Date
   }
 
   const prodPlain: ProductPlain[] = prodRows.map(
@@ -95,7 +96,8 @@ export const getProductsByWarehouseID = async (
     totalQuantity: quantityMap[p.productCode] ?? 0,
     barCode: p.barCode,
     boxType: p.boxType,
-    createdAt: p.createdAt
+    createdAt: p.createdAt,
+    updatedAt: p.updatedAt
   }))
 
   return {
@@ -207,7 +209,8 @@ const PRODUCT_ATTRS = [
   'productCode',
   'barCode',
   'boxType',
-  'createdAt'
+  'createdAt',
+  'updatedAt'
 ] as const
 
 const INVENTORY_INCLUDE = (warehouseID: string) => [
@@ -285,7 +288,8 @@ export const getLowStockProductsByWarehouseID = async (
       totalQuantity: Number(p.totalQuantity ?? 0),
       barCode: p.barCode,
       boxType: p.boxType,
-      createdAt: p.createdAt
+      createdAt: p.createdAt,
+      updatedAt: p.updatedAt
     }
   })
 
@@ -338,6 +342,8 @@ type ProductLowDTO = {
   barCode?: string | null
   boxType?: string | null
   createdAt?: Date | string | null
+  updatedAt?: Date | string | null
+
   totalQuantity: number
   otherInventories: Array<{
     productCode: string
@@ -386,7 +392,7 @@ export const getLowStockWithOtherWarehouses = async (
   }
 
   const baseProducts = await Product.findAll({
-    attributes: ['productCode', 'barCode', 'boxType', 'createdAt'],
+    attributes: ['productCode', 'barCode', 'boxType', 'createdAt', 'updatedAt'],
     where: productBaseWhere,
     raw: true
   })
@@ -548,7 +554,10 @@ export const getLowStockWithOtherWarehouses = async (
       productCode: p.productCode,
       barCode: p.barCode || null,
       boxType: p.boxType || null,
+
       createdAt: p.createdAt || null,
+
+      updateAt: p.updatedAt || null,
       totalQuantity: qty,
       otherInventories: otherByProduct.get(p.productCode) ?? [],
       hasPendingTransfer: !!trans?.hasPendingTransfer,

@@ -7,6 +7,7 @@ export class Product extends Model {
   public barCode!: string
   public boxType!: string
   public createdAt!: Date
+  public updatedAt!: Date
 }
 
 Product.init(
