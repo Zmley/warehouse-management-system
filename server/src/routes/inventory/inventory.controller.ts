@@ -1,10 +1,14 @@
 import { Request, Response } from 'express'
 import * as inventoryService from './inventory.service'
 import { getBinByBinCode } from 'routes/bins/bin.service'
-import { getInventoriesByBinID } from './inventory.service'
+import {
+  getInventoriesByBinID,
+  getInventoriesFlatByWarehouseID
+} from './inventory.service'
 import AppError from 'utils/appError'
 import httpStatus from 'constants/httpStatus'
 import { asyncHandler } from 'utils/asyncHandler'
+import Warehouse from 'routes/warehouses/warehouse.model'
 
 export const getInventoriesInCart = asyncHandler(
   async (_req: Request, res: Response) => {
@@ -123,3 +127,25 @@ export const getInventoriesByBinCode = asyncHandler(
     res.status(httpStatus.OK).json({ success: true, inventories })
   }
 )
+
+export const getAllInventoriesForWarehouse = async (
+  req: Request,
+  res: Response
+) => {
+  const warehouseID = req.query.warehouseID as string
+
+  if (!warehouseID) {
+    throw new AppError(400, 'warehouseID is required')
+  }
+  const inventories = await getInventoriesFlatByWarehouseID(warehouseID)
+
+  const warehouseCode = (await Warehouse.findOne({ where: { warehouseID } }))
+    .warehouseCode
+
+  res.json({
+    success: true,
+    warehouseID,
+    warehouseCode,
+    inventories
+  })
+}

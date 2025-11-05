@@ -89,6 +89,10 @@ export default function MobileReceive({
     }
   }, [resolvedWarehouseID, getPending, getInProcess])
 
+  const refreshBoth = useCallback(async () => {
+    await load()
+  }, [load])
+
   useEffect(() => {
     setPending(
       ((transfersP as any[]) || []).map(t => ({
@@ -169,7 +173,6 @@ export default function MobileReceive({
   )
   const busy = updating || loadingP || loadingI
 
-  // Group rows by pallet rules
   const groupByPallet = (rows: TransferRow[]): PalletGroup[] => {
     const bucket: Record<string, PalletGroup> = {}
 
@@ -264,6 +267,7 @@ export default function MobileReceive({
         return
       }
       moveToInProcess(confirmItems.map(i => i.transferID))
+      await refreshBoth()
     } else {
       if (undoItems.length === 0) {
         setDrawerOpen(false)
@@ -279,6 +283,7 @@ export default function MobileReceive({
         return
       }
       moveToPending(undoItems.map(i => i.transferID))
+      await refreshBoth()
     }
     setDrawerOpen(false)
   }
@@ -405,7 +410,6 @@ export default function MobileReceive({
             )}
           </Panel>
 
-          {/* In Process */}
           <Panel
             title={t('mobileReceive.inProcessTitle')}
             count={counts.i}
@@ -495,7 +499,6 @@ export default function MobileReceive({
   )
 }
 
-/** UI helpers */
 function PalletButton({
   children,
   binCode,

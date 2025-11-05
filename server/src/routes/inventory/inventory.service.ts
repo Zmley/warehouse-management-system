@@ -1,8 +1,15 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getBinsByBinCodes } from 'routes/bins/bin.service'
 import { Inventory } from './inventory.model'
 import { Bin } from 'routes/bins/bin.model'
 import { Op, WhereOptions, Order, col } from 'sequelize'
-import { InventoryUploadType } from 'types/inventory'
+import {
+  FlatInventoryRow,
+  InventoryByBinIDUpload,
+  InventoryDTO,
+  InventoryUploadType,
+  UnloadRow
+} from 'types/inventory'
 import AppError from 'utils/appError'
 import { buildBinCodeToIDMap } from 'utils/bin.utils'
 import { sequelize } from 'config/db'
@@ -59,19 +66,6 @@ function normalizeCount(count: unknown): number {
     }
   }
   return 0
-}
-
-export interface InventoryDTO {
-  inventoryID: string | null
-  binID: string
-  productCode: string | null
-  quantity: number | null
-  createdAt: Date | null
-  updatedAt: Date | null
-  bin: {
-    binCode: string
-    binID: string
-  }
 }
 
 export const getInventoriesByWarehouseID = async (
@@ -154,7 +148,6 @@ export const getInventoriesByWarehouseID = async (
       })
 
       const inventories: InventoryDTO[] = invRows.map(inv => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const b = (inv as any).bin as Bin | null
         return {
           inventoryID: inv.getDataValue('inventoryID'),
@@ -475,12 +468,6 @@ export const addInventories = async (inventoryList: InventoryUploadType[]) => {
   }
 }
 
-export interface InventoryByBinIDUpload {
-  binID: string
-  productCode: string
-  quantity: number
-}
-
 export const addInventoriesByBinID = async (
   inventoryList: InventoryByBinIDUpload[]
 ) => {
@@ -566,12 +553,6 @@ export const getInventoriesByBinID = async (
   return inventories
 }
 
-type UnloadRow = {
-  inventoryID: string
-  quantity: number
-  merge?: boolean
-}
-
 export const getFulfillItemsByInventories = async (rows: UnloadRow[]) => {
   if (!rows?.length) return []
 
@@ -589,4 +570,40 @@ export const getFulfillItemsByInventories = async (rows: UnloadRow[]) => {
       ? [{ productCode: code, quantity: r.quantity, isMerged: !!r.merge }]
       : []
   })
+}
+
+export const getInventoriesFlatByWarehouseID = async (
+  warehouseID: string
+): Promise<FlatInventoryRow[]> => {
+  if (!warehouseID) {
+    throw new AppError(400, 'warehouseID is required')
+  }
+
+  const rows = await Inventory.findAll({
+    attributes: ['productCode', 'quantity'],
+    include: [
+      {
+        model: Bin,
+        as: 'bin',
+        required: true,
+        attributes: ['binCode'],
+        where: {
+          warehouseID,
+          type: 'INVENTORY'
+        }
+      }
+    ],
+    order: [
+      [col('bin.binCode'), 'ASC'],
+      ['productCode', 'ASC']
+    ],
+    raw: true,
+    nest: true
+  })
+
+  return rows.map(r => ({
+    binCode: (r as any).bin.binCode as string,
+    productCode: (r as any).productCode as string,
+    quantity: Number((r as any).quantity) || 0
+  }))
 }

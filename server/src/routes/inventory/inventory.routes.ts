@@ -9,7 +9,8 @@ import {
   deleteInventory,
   updateInventories,
   addInventories,
-  getInventoriesByBinCode
+  getInventoriesByBinCode,
+  getAllInventoriesForWarehouse
 } from './inventory.controller'
 
 import {
@@ -21,6 +22,8 @@ import {
 } from './inventory.schema'
 
 const router: Router = Router()
+
+router.get('/all', roleAllow([UserRole.ADMIN]), getAllInventoriesForWarehouse)
 
 router.get(
   '/inventoriesInCart',

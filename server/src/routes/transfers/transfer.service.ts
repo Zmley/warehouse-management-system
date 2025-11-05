@@ -158,23 +158,59 @@ export const deleteTransfersByIDs = async ({
   return { count }
 }
 
+export const isBinInSpecialWarehouseByID = async (
+  binID: string
+): Promise<boolean> => {
+  if (!binID) throw new Error('binID is required')
+
+  const specialWarehouses = await Warehouse.findAll({
+    where: {
+      warehouseCode: {
+        [Op.or]: [
+          { [Op.like]: '%680%' },
+          { [Op.like]: '%1630%' },
+          { [Op.like]: '%1824%' },
+          { [Op.like]: '%1824%' }
+        ]
+      }
+    },
+    attributes: ['warehouseID']
+  })
+
+  if (!specialWarehouses.length) return false
+
+  const specialWarehouseIDs = specialWarehouses.map(w => w.warehouseID)
+
+  const bin = await Bin.findOne({
+    where: { binID },
+    attributes: ['warehouseID']
+  })
+
+  if (!bin) return false
+
+  return specialWarehouseIDs.includes(bin.warehouseID)
+}
+
 export const clearInventoryByBinID = async (
   binID: string,
-  opts?: { hardDelete?: boolean; transaction?: Transaction }
+  opts?: { transaction?: Transaction }
 ) => {
   if (!binID) throw new Error('binID is required')
 
-  const { hardDelete = false, transaction } = opts || {}
-  if (hardDelete) {
-    const cleared = await Inventory.destroy({ where: { binID }, transaction })
-    return { success: true, cleared, mode: 'DELETE' as const }
+  const { transaction } = opts || {}
+
+  const deleted = await Inventory.destroy({
+    where: { binID },
+    transaction
+  })
+
+  const shouldDeleteBin = await isBinInSpecialWarehouseByID(binID)
+
+  if (shouldDeleteBin) {
+    await Bin.destroy({ where: { binID }, transaction })
   }
 
-  const [cleared] = await Inventory.update(
-    { quantity: 0 },
-    { where: { binID }, transaction }
-  )
-  return { success: true, cleared, mode: 'ZERO' as const }
+  return { success: true, deleted, mode: 'DELETE' as const }
 }
 
 export const updateTransferStatus = async (
@@ -258,10 +294,7 @@ export const updateTransferStatus = async (
       )
 
       for (const binID of binIDs) {
-        await clearInventoryByBinID(binID, {
-          hardDelete: true,
-          transaction: tx
-        })
+        await clearInventoryByBinID(binID, { transaction: tx })
       }
 
       const linkedTaskIDs = Array.from(
