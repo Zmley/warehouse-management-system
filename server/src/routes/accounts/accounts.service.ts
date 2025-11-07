@@ -69,3 +69,20 @@ export const listTransportWorkers = async (params: {
     name: `${r.firstName} ${r.lastName}`.trim()
   }))
 }
+
+////////////
+
+export const changeWarehouseByAccountID = async (
+  accountID: string,
+  warehouseID: string
+) => {
+  const account = await Account.findOne({ where: { accountID } })
+  if (!account) {
+    throw new Error(`Account not found for ID: ${accountID}`)
+  }
+
+  account.warehouseID = warehouseID
+  await account.save()
+
+  return account
+}

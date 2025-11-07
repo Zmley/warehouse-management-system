@@ -29,7 +29,7 @@ const TopBarFixed = ({ userName }: { userName: string }) => (
       backgroundColor: '#f9fafb'
     }}
   >
-    <TopBar userName={userName} />
+    <TopBar />
   </Box>
 )
 

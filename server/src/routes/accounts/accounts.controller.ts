@@ -7,6 +7,7 @@ import {
   AdminConfirmSignUpCommand
 } from '@aws-sdk/client-cognito-identity-provider'
 import {
+  changeWarehouseByAccountID,
   getCognitoErrorMessage,
   listTransportWorkers
 } from './accounts.service'
@@ -142,5 +143,42 @@ export async function fetchWorkerNames(req: Request, res: Response) {
     res
       .status(500)
       .json({ success: false, error: 'Failed to fetch worker names' })
+  }
+}
+
+//////////
+
+export const changeWarehouse = async (req: Request, res: Response) => {
+  try {
+    const { warehouseID } = req.body
+
+    if (!warehouseID) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing warehouseID'
+      })
+    }
+
+    const accountID = res.locals.currentAccount.accountID
+
+    const updatedAccount = await changeWarehouseByAccountID(
+      accountID,
+      warehouseID
+    )
+
+    res.json({
+      success: true,
+      message: 'Warehouse changed successfully',
+      account: {
+        accountID: updatedAccount.accountID,
+        warehouseID: updatedAccount.warehouseID
+      }
+    })
+  } catch (err) {
+    console.error('❌ Error changing warehouse:', err)
+    res.status(500).json({
+      success: false,
+      message: err.message || 'Failed to change warehouse'
+    })
   }
 }
