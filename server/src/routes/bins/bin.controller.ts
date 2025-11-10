@@ -3,6 +3,7 @@ import httpStatus from 'constants/httpStatus'
 import { Request, Response } from 'express'
 import * as binService from 'routes/bins/bin.service'
 import {
+  getEmptyBinsInWarehouse,
   getPickBinByProductCode,
   UpdateBinInput,
   updateSingleBin
@@ -253,3 +254,31 @@ export const getBinColumns = asyncHandler(
     res.status(200).json({ success: true, columns })
   }
 )
+
+////////
+
+export const getEmptyBins = async (req: Request, res: Response) => {
+  try {
+    const warehouseID =
+      (req.query.warehouseID as string) ||
+      res.locals?.currentAccount?.warehouseID
+
+    const q = (req.query.q as string) || ''
+    const limit = req.query.limit ? Number(req.query.limit) : 50
+
+    const bins = await getEmptyBinsInWarehouse(warehouseID, { q, limit })
+
+    res.json({
+      success: true,
+      warehouseID,
+      count: bins.length,
+      bins
+    })
+  } catch (err) {
+    console.error('❌ Error fetching empty bins:', err)
+    res.status(err?.statusCode || 500).json({
+      success: false,
+      message: err?.message || 'Internal Server Error'
+    })
+  }
+}

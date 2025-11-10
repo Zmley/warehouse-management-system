@@ -44,7 +44,7 @@
     "loading": "Loading...",
     "outOfStock": "Out of Stock",
     "canceling": "canceling",
-    "creator": "creator",
+    "creator": "Creator",
     "status": {
       "pending": "Pending",
       "outOfStock": "Out of Stock"
@@ -153,7 +153,7 @@
     "total": "Total",
     "offload": "Offload",
     "quantityExceed": "Quantity cannot exceed total ({{quantity}})",
-    "currentCargoInForklift": "current Cargo In Forklift",
+    "currentCargoInForklift": "Cargo In Forklift",
 
     "returnToSource": "Return to Source Bin",
 
@@ -353,6 +353,15 @@
     "empty": "No data"
   }
 
+,
+
+
+
+  "emptyBins": {
+    "title": "Empty Bins",
+    "search": "Search…",
+    "none": "No empty bins at the moment"
+  }
 
 
 

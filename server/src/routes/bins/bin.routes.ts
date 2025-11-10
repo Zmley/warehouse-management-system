@@ -10,7 +10,8 @@ import {
   updateDefaultProductCodes,
   deleteBin,
   updateBinController,
-  getBinColumns
+  getBinColumns,
+  getEmptyBins
 } from './bin.controller'
 import roleAllow from 'middlewares/roleAllow.middleware'
 import { UserRole } from 'constants/index'
@@ -23,6 +24,8 @@ import {
 } from './bin.middleware'
 
 const router = express.Router()
+
+router.get('/empty', getEmptyBins)
 
 router.get('/codes', validateWarehouseIDQuery, getBinCodes)
 

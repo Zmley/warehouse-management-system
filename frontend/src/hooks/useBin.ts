@@ -5,15 +5,20 @@ import {
   getBinCodes,
   getBinCodesByProductCode,
   getBinColumns,
+  getEmptyBins,
   getPickupBinsByProductCode
 } from 'api/bin'
 import { Bin } from 'types/bin'
 import { useAuth } from './useAuth'
 
+type EmptyBin = { binID: string; binCode: string; warehouseID: string }
+
 export const useBin = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [binCodes, setBinCodes] = useState<string[]>([])
+
+  const [emptyBins, setEmptyBins] = useState<EmptyBin[]>([])
 
   const { userProfile } = useAuth()
 
@@ -157,6 +162,36 @@ export const useBin = () => {
     }
   }, [])
 
+  ////////////////
+  const fetchEmptyBins = useCallback(
+    async (opts?: { wid?: string; q?: string; limit?: number }) => {
+      try {
+        setIsLoading(true)
+        setError(null)
+
+        const res = await getEmptyBins({
+          warehouseID: opts?.wid || warehouseID,
+          q: opts?.q,
+          limit: opts?.limit
+        })
+
+        const list: EmptyBin[] = res.data?.bins || []
+        setEmptyBins(list)
+        return list
+      } catch (err: any) {
+        console.error('❌ Failed to fetch empty bins:', err)
+        setEmptyBins([])
+        setError(
+          err?.response?.data?.message || '❌ Failed to fetch empty bins'
+        )
+        return []
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [warehouseID]
+  )
+
   return {
     fetchBinCodesByProductCode,
     fetchBinByCode,
@@ -170,6 +205,8 @@ export const useBin = () => {
     pickupBinCode,
     columns,
     loading,
-    fetchBinColumns
+    fetchBinColumns,
+    emptyBins,
+    fetchEmptyBins
   }
 }

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Bin from './bin.model'
 import Inventory from 'routes/inventory/inventory.model'
 import AppError from 'utils/appError'
@@ -518,4 +519,45 @@ export async function getBinColumnsInWarehouse(
   set.add('WALL')
 
   return Array.from(set).sort()
+}
+
+//////////////////////////////////////
+
+export const getEmptyBinsInWarehouse = async (
+  warehouseID: string,
+  opts?: { q?: string; limit?: number }
+): Promise<Array<Pick<Bin, 'binID' | 'binCode'>>> => {
+  if (!warehouseID) throw new AppError(400, 'warehouseID is required')
+
+  const q = opts?.q?.trim()
+  const limit = Math.min(Math.max(Number(opts?.limit || 50), 1), 100)
+
+  const where: any = {
+    warehouseID,
+    type: 'INVENTORY',
+    '$inventories.inventoryID$': { [Op.is]: null }
+  }
+
+  if (q) {
+    const kw = escapeLike(q)
+    where.binCode = { [Op.iLike]: `%${kw}%` }
+  }
+
+  const bins = await Bin.findAll({
+    where,
+    include: [
+      {
+        model: Inventory,
+        as: 'inventories',
+        required: false,
+        attributes: []
+      }
+    ],
+    attributes: ['binID', 'binCode'],
+    order: [['binCode', 'ASC']],
+    limit,
+    subQuery: false
+  })
+
+  return bins.map(b => ({ binID: b.binID, binCode: b.binCode }))
 }
