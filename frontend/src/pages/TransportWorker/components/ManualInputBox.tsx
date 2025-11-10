@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import {
   Box,
   IconButton,
@@ -8,7 +8,8 @@ import {
   Paper,
   Typography,
   Divider,
-  Tooltip
+  Tooltip,
+  CircularProgress
 } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
@@ -19,9 +20,12 @@ interface ProductInput {
   productCode: string
   quantity: string
 }
+
 interface MultiProductInputBoxProps {
   productOptions: string[]
-  onSubmit: (items: { productCode: string; quantity: number }[]) => void
+  onSubmit: (
+    items: { productCode: string; quantity: number }[]
+  ) => void | Promise<any>
   onCancel?: () => void
   defaultItems?: ProductInput[]
 }
@@ -50,6 +54,11 @@ const MultiProductInputBox: React.FC<MultiProductInputBoxProps> = ({
     defaultItems.length > 0 ? defaultItems : [{ productCode: '', quantity: '' }]
   )
 
+  // 提交中状态：用于禁用按钮/输入，避免重复提交
+  const [submitting, setSubmitting] = useState(false)
+  // 额外的快速连点保护（防极短时间内多次点击触发）
+  const clickLockRef = useRef(false)
+
   useEffect(() => {
     if (defaultItems.length > 0) setInputs(defaultItems)
   }, [defaultItems])
@@ -72,17 +81,43 @@ const MultiProductInputBox: React.FC<MultiProductInputBoxProps> = ({
   const handleRemove = (index: number) =>
     setInputs(prev => prev.filter((_, i) => i !== index))
 
-  const handleSubmit = () => {
-    const parsed = inputs
-      .map(it => ({
-        productCode: (it.productCode || '').trim(),
-        quantity: parseInt(it.quantity)
-      }))
-      .filter(x => x.productCode && !isNaN(x.quantity) && x.quantity > 0)
+  // 解析/校验结果，用 useMemo 避免每次渲染重复计算
+  const parsed = useMemo(
+    () =>
+      inputs
+        .map(it => ({
+          productCode: (it.productCode || '').trim(),
+          quantity: parseInt(it.quantity)
+        }))
+        .filter(x => x.productCode && !isNaN(x.quantity) && x.quantity > 0),
+    [inputs]
+  )
 
-    if (parsed.length > 0) {
+  const canSubmit = parsed.length > 0 && !submitting
+
+  const handleSubmit = async () => {
+    if (submitting || clickLockRef.current) return
+    if (!parsed.length) return
+
+    // 锁定：按钮禁用 + 防连点
+    setSubmitting(true)
+    clickLockRef.current = true
+
+    try {
+      // 这里保持你原有的逻辑
       setSourceBinCode('staging-area')
-      onSubmit(parsed)
+      // 支持 onSubmit 返回 Promise 或普通函数
+      await Promise.resolve(onSubmit(parsed))
+    } catch (e) {
+      // 失败也要解锁，交由上层显示错误
+      console.error('Submit failed:', e)
+    } finally {
+      // 解锁
+      setSubmitting(false)
+      // 轻微延迟再放开 clickLock，避免设备上极快的双击
+      setTimeout(() => {
+        clickLockRef.current = false
+      }, 250)
     }
   }
 
@@ -119,14 +154,17 @@ const MultiProductInputBox: React.FC<MultiProductInputBoxProps> = ({
           {t('scan.addProducts') || '添加产品'}
         </Typography>
         <Tooltip title={t('common.add') || '新增'}>
-          <IconButton
-            color='primary'
-            size='small'
-            onClick={handleAdd}
-            sx={{ mr: -0.25 }}
-          >
-            <AddCircleOutlineIcon fontSize='medium' />
-          </IconButton>
+          <span>
+            <IconButton
+              color='primary'
+              size='small'
+              onClick={handleAdd}
+              disabled={submitting}
+              sx={{ mr: -0.25 }}
+            >
+              <AddCircleOutlineIcon fontSize='medium' />
+            </IconButton>
+          </span>
         </Tooltip>
       </Box>
 
@@ -136,7 +174,8 @@ const MultiProductInputBox: React.FC<MultiProductInputBoxProps> = ({
           borderRadius: 2,
           borderColor: '#E5E7EB',
           overflow: 'hidden',
-          maxWidth: '100%'
+          maxWidth: '100%',
+          opacity: submitting ? 0.85 : 1
         }}
       >
         <Box
@@ -196,6 +235,7 @@ const MultiProductInputBox: React.FC<MultiProductInputBoxProps> = ({
                   autoHighlight
                   value={selected}
                   onChange={(_, newValue) => {
+                    if (submitting) return
                     setInputField(index, 'productCode', newValue ?? '')
                   }}
                   filterOptions={(opts, state) =>
@@ -210,6 +250,7 @@ const MultiProductInputBox: React.FC<MultiProductInputBoxProps> = ({
                       placeholder={t('scan.productCode')}
                       size='small'
                       fullWidth
+                      disabled={submitting}
                       sx={{
                         backgroundColor: '#fff',
                         borderRadius: 1,
@@ -244,10 +285,12 @@ const MultiProductInputBox: React.FC<MultiProductInputBoxProps> = ({
                     }
                   }}
                   value={input.quantity}
-                  onChange={e =>
+                  onChange={e => {
+                    if (submitting) return
                     setInputField(index, 'quantity', e.target.value)
-                  }
+                  }}
                   size='small'
+                  disabled={submitting}
                   sx={{
                     minWidth: 0,
                     '& .MuiOutlinedInput-root': {
@@ -270,6 +313,7 @@ const MultiProductInputBox: React.FC<MultiProductInputBoxProps> = ({
                         color='error'
                         onClick={() => handleRemove(index)}
                         size='small'
+                        disabled={submitting}
                         sx={{ p: 0.75 }}
                       >
                         <DeleteIcon fontSize='small' />
@@ -289,6 +333,10 @@ const MultiProductInputBox: React.FC<MultiProductInputBoxProps> = ({
         <Button
           onClick={handleSubmit}
           variant='contained'
+          disabled={!canSubmit}
+          endIcon={
+            submitting ? <CircularProgress size={16} thickness={5} /> : null
+          }
           sx={{
             borderRadius: 2,
             px: 3,
@@ -297,16 +345,22 @@ const MultiProductInputBox: React.FC<MultiProductInputBoxProps> = ({
             fontSize: 'clamp(14px,3.2vw,16px)',
             background:
               'linear-gradient(135deg, rgba(37,99,235,1) 0%, rgba(59,130,246,1) 100%)',
-            boxShadow: '0 4px 12px rgba(37,99,235,0.25)'
+            boxShadow: '0 4px 12px rgba(37,99,235,0.25)',
+            '&.Mui-disabled': {
+              color: 'rgba(255,255,255,0.7)'
+            }
           }}
         >
-          {t('scan.confirm')}
+          {submitting
+            ? t('common.submitting') || '提交中…'
+            : t('scan.confirm') || '确认'}
         </Button>
 
         {onCancel && (
           <Button
             onClick={onCancel}
             variant='outlined'
+            disabled={submitting}
             sx={{
               borderRadius: 2,
               px: 3,

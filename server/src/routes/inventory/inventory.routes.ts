@@ -52,17 +52,18 @@ router.put(
   updateInventories
 )
 
+router.get(
+  '/:binCode/:binID?',
+  roleAllow([UserRole.ADMIN, UserRole.PICKER, UserRole.TRANSPORT_WORKER]),
+  celebrate({ [Segments.PARAMS]: BinCodeParamSchema }),
+  getInventoriesByBinCode
+)
+
 router.delete(
   '/:inventoryID',
   roleAllow([UserRole.ADMIN, UserRole.TRANSPORT_WORKER]),
   celebrate({ [Segments.PARAMS]: InventoryIDParamSchema }),
   deleteInventory
-)
-
-router.get(
-  '/:binCode',
-  celebrate({ [Segments.PARAMS]: BinCodeParamSchema }),
-  getInventoriesByBinCode
 )
 
 export default router

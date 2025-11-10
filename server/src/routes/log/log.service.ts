@@ -9,16 +9,6 @@ import Bin from 'routes/bins/bin.model'
 import { BinType } from 'constants/index'
 import { Group, Item, LogRow, SessionFilter } from 'types/log'
 
-async function toBinIDByCode(binCode?: string | null): Promise<string | null> {
-  if (!binCode) return null
-  try {
-    const bin = await Bin.findOne({ where: { binCode } })
-    return bin?.binID ?? null
-  } catch {
-    return null
-  }
-}
-
 function normalizeItems(items?: Item[]): Item[] {
   return (items || []).filter(
     x => !!x?.productCode && Number.isInteger(x?.quantity) && x.quantity > 0
@@ -48,11 +38,24 @@ async function getBinTypeCached(
 
 export async function createOpenLogsOnLoad(params: {
   accountID: string
-  sourceBinCode?: string | null
   items: Item[]
+  warehouseID: string
+  binID?: string | null
 }) {
   try {
-    const sourceBinID = await toBinIDByCode(params.sourceBinCode || null)
+    let sourceBinID: string | null = null
+
+    if (params.binID) {
+      const source = (await Bin.findOne({
+        where: {
+          binID: params.binID
+        },
+        attributes: ['binID'],
+        raw: true
+      })) as { binID: string } | null
+
+      sourceBinID = source?.binID ?? null
+    }
 
     const open = await Log.findOne({
       where: {
@@ -68,27 +71,29 @@ export async function createOpenLogsOnLoad(params: {
     const rows = normalizeItems(params.items).map(x => ({
       productCode: x.productCode,
       quantity: x.quantity,
-      sourceBinID: sourceBinID ?? null,
+      sourceBinID,
       destinationBinID: null,
       accountID: params.accountID,
       sessionID,
-      isMerged: !!x.isMerged
+      isMerged: !!x.isMerged,
+      warehouseID: params.warehouseID
     }))
 
-    if (rows.length) await Log.bulkCreate(rows)
-  } catch (e) {
+    if (rows.length) {
+      await Log.bulkCreate(rows)
+    }
+  } catch (e: any) {
     console.warn('[log.silent] createOpenLogsOnLoad skip:', e?.message)
   }
 }
 
 export async function fulfillLogsOnUnload(params: {
   accountID: string
-  destinationBinCode: string
   items: Item[]
+  binID: string
 }) {
   try {
-    const destBinID = await toBinIDByCode(params.destinationBinCode)
-    if (!destBinID) return
+    const destBinID = params.binID
 
     const wanted = normalizeItems(params.items)
     if (!wanted.length) return
@@ -145,6 +150,7 @@ export async function fulfillLogsOnUnload(params: {
         }
         if (matched) continue
 
+        // 2) 再找两条之和刚好等于 remaining 的
         outer: for (let i = 0; i < openRows.length; i++) {
           const qi = (openRows[i].get('quantity') as number) ?? 0
           for (let j = i + 1; j < openRows.length; j++) {
@@ -210,14 +216,14 @@ export async function fulfillLogsOnUnload(params: {
       }
 
       await t.commit()
-    } catch (err) {
+    } catch (err: any) {
       await t.rollback()
       console.warn(
         '[log.silent] fulfillLogsOnUnload tx rollback:',
         err?.message
       )
     }
-  } catch (e) {
+  } catch (e: any) {
     console.warn('[log.silent] fulfillLogsOnUnload skip:', e?.message)
   }
 }
@@ -248,8 +254,13 @@ export async function listSessionsEnriched(filter: SessionFilter = {}) {
     destinationBinCode,
     type,
     limit,
-    offset
+    offset,
+    warehouseID
   } = filter
+
+  if (!warehouseID || !String(warehouseID).trim()) {
+    return { totalSessions: 0, data: [] }
+  }
 
   const [srcBinModel, dstBinModel] = await Promise.all([
     sourceBinCode ? Bin.findOne({ where: { binCode: sourceBinCode } }) : null,
@@ -308,19 +319,23 @@ export async function listSessionsEnriched(filter: SessionFilter = {}) {
     if (!keywordDestBinIDs.length) return { totalSessions: 0, data: [] }
   }
 
-  const where: SafeWhere = {}
+  const where: SafeWhere = { warehouseID }
+
   if (accountID) where.accountID = accountID
   else if (workerAccountIDs.length)
     pushAnd(where, { accountID: { [Op.in]: workerAccountIDs } })
+
   if (productCode) where.productCode = productCode
   if (srcBinModel?.binID) where.sourceBinID = srcBinModel.binID
   if (dstBinModel?.binID) where.destinationBinID = dstBinModel.binID
+
   if (start || end) {
     const range: any = {}
     if (start) range[Op.gte] = new Date(start)
     if (end) range[Op.lte] = new Date(end)
     where.createdAt = range
   }
+
   if (keywordDestBinIDs.length)
     pushAnd(where, { destinationBinID: { [Op.in]: keywordDestBinIDs } })
 

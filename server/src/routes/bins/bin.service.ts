@@ -4,12 +4,11 @@ import AppError from 'utils/appError'
 import { literal, Op, WhereOptions } from 'sequelize'
 import { BinUploadPayload } from 'types/bin'
 
-export const getBinByBinCode = async (binCode: string) => {
+export const getBinByBinCode = async (binCode: string, warehouseID: string) => {
   try {
-    console.log('🔍 Fetching bin with code:', binCode)
-
     const bin = await Bin.findOne({
       where: {
+        warehouseID,
         binCode
       }
     })

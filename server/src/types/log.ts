@@ -10,6 +10,8 @@ export type SessionFilter = {
   type?: 'INVENTORY' | 'PICK_UP'
   limit?: number
   offset?: number
+
+  warehouseID?: string
 }
 
 export type LogRow = {

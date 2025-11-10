@@ -26,8 +26,6 @@ const router = express.Router()
 
 router.get('/codes', validateWarehouseIDQuery, getBinCodes)
 
-router.get('/', validateWarehouseIDQuery, getBins)
-
 router.post('/add', roleAllow([UserRole.ADMIN]), addBins)
 
 router.get('/:binCode', getBin)
@@ -57,5 +55,7 @@ router.delete('/:binID', deleteBin)
 router.patch('/:binID', /* auth, */ updateBinController)
 
 router.get('/columns', getBinColumns)
+
+router.get('/', validateWarehouseIDQuery, getBins)
 
 export default router

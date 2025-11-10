@@ -556,17 +556,21 @@ export const getTasksByWarehouseID = async (
 export const checkIfTaskDuplicate = async (
   productCode: string,
   destinationBinCode: string,
-  sourceBinCode?: string
+  sourceBinCode?: string,
+  warehouseID?: string
 ): Promise<Bin> => {
   try {
-    const destinationBin = await getBinByBinCode(destinationBinCode)
+    const destinationBin = await getBinByBinCode(
+      destinationBinCode,
+      warehouseID
+    )
     if (!destinationBin) {
       throw new AppError(httpStatus.NOT_FOUND, '', 'DEST_BIN_NOT_FOUND')
     }
 
     let sourceBinID: string | undefined
     if (sourceBinCode) {
-      const sourceBin = await getBinByBinCode(sourceBinCode)
+      const sourceBin = await getBinByBinCode(sourceBinCode, warehouseID)
       if (!sourceBin) {
         throw new AppError(httpStatus.NOT_FOUND, '', 'SOURCE_BIN_NOT_FOUND')
       }
@@ -605,7 +609,8 @@ export const updateTaskByTaskID = async ({
   sourceBinCode,
   sourceBinID,
   quantity,
-  accepterID
+  accepterID,
+  warehouseID
 }: {
   taskID: string
   status?: string
@@ -613,6 +618,7 @@ export const updateTaskByTaskID = async ({
   sourceBinID?: string
   quantity?: number
   accepterID?: string
+  warehouseID?: string
 }) => {
   const task = await Task.findByPk(taskID)
   if (!task) throw new Error('Task not found')
@@ -620,7 +626,7 @@ export const updateTaskByTaskID = async ({
   if (status) task.status = status
 
   if (sourceBinCode) {
-    const bin = await getBinByBinCode(sourceBinCode)
+    const bin = await getBinByBinCode(sourceBinCode, warehouseID)
     task.sourceBinID = bin.binID
   }
 
@@ -688,7 +694,8 @@ export const completeTaskByAdmin = async (
 export const cancelByTransportWorker = async (
   taskID: string,
   cartID: string,
-  accountID: string
+  accountID: string,
+  warehouseID?: string
 ) => {
   return sequelize.transaction(async (t: Transaction) => {
     const task = await Task.findByPk(taskID, { transaction: t })
@@ -717,7 +724,12 @@ export const cancelByTransportWorker = async (
 
       const sourceBin = await Bin.findByPk(task.sourceBinID, { transaction: t })
       if (sourceBin?.binCode) {
-        await unloadByBinCode(sourceBin.binCode, unloadProductList, accountID)
+        await unloadByBinCode(
+          sourceBin.binCode,
+          warehouseID,
+          unloadProductList,
+          accountID
+        )
       }
     }
 

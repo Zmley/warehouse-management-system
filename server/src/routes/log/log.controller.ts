@@ -15,7 +15,8 @@ export const listBySession = asyncHandler(
       destinationBinCode,
       type,
       limit,
-      offset
+      offset,
+      warehouseID
     } = req.query as Record<string, string>
 
     const parsedLimit =
@@ -45,7 +46,8 @@ export const listBySession = asyncHandler(
       destinationBinCode: destinationBinCode || undefined,
       type: typeNorm,
       limit: parsedLimit,
-      offset: parsedOffset
+      offset: parsedOffset,
+      warehouseID: warehouseID
     })
 
     res.status(200).json({ success: true, ...result })

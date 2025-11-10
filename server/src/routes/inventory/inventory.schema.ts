@@ -53,5 +53,6 @@ export const InventoryIDParamSchema = Joi.object({
 }).unknown(false)
 
 export const BinCodeParamSchema = Joi.object({
-  binCode: Joi.string().required()
+  binCode: Joi.string().required(),
+  binID: Joi.string().optional()
 }).unknown(false)

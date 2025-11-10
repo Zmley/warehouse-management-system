@@ -1,6 +1,5 @@
 import { Request, Response } from 'express'
 import * as inventoryService from './inventory.service'
-import { getBinByBinCode } from 'routes/bins/bin.service'
 import {
   getInventoriesByBinID,
   getInventoriesFlatByWarehouseID
@@ -9,6 +8,8 @@ import AppError from 'utils/appError'
 import httpStatus from 'constants/httpStatus'
 import { asyncHandler } from 'utils/asyncHandler'
 import Warehouse from 'routes/warehouses/warehouse.model'
+import Bin from 'routes/bins/bin.model'
+import { WhereOptions } from 'sequelize'
 
 export const getInventoriesInCart = asyncHandler(
   async (_req: Request, res: Response) => {
@@ -110,23 +111,43 @@ export const addInventories = asyncHandler(
   }
 )
 
-export const getInventoriesByBinCode = asyncHandler(
-  async (req: Request, res: Response) => {
-    const { binCode } = req.params
-    if (!binCode || typeof binCode !== 'string') {
-      throw new AppError(
-        httpStatus.BAD_REQUEST,
-        '❌ binCode must be provided as a path param',
-        'INVALID_BIN_CODE'
-      )
-    }
+export const getInventoriesByBinCode = asyncHandler(async (req, res) => {
+  const { binCode, binID } = req.params as { binCode?: string; binID?: string }
+  const warehouseID =
+    (res.locals.warehouseID as string | undefined) ||
+    (req.query.warehouseID as string | undefined)
 
-    const bin = await getBinByBinCode(binCode)
-    const inventories = await getInventoriesByBinID(bin.binID)
-
-    res.status(httpStatus.OK).json({ success: true, inventories })
+  if (!binID && !binCode) {
+    throw new AppError(400, 'Either binID or binCode is required.')
   }
-)
+
+  let where: WhereOptions
+  if (binID) {
+    where = { binID }
+  } else if (warehouseID) {
+    where = { binCode, warehouseID }
+  } else {
+    where = { binCode }
+  }
+
+  const bin = await Bin.findOne({
+    where,
+    attributes: ['binID', 'binCode', 'warehouseID']
+  })
+  if (!bin) throw new AppError(404, 'Bin not found.')
+
+  if (binID && binCode && bin.binCode !== binCode) {
+    throw new AppError(400, `binID (${binID}) 与 binCode (${binCode}) 不匹配。`)
+  }
+
+  const inventories = await getInventoriesByBinID(bin.binID)
+
+  return res.status(httpStatus.OK).json({
+    success: true,
+    bin,
+    inventories
+  })
+})
 
 export const getAllInventoriesForWarehouse = async (
   req: Request,

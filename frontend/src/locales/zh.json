@@ -11,7 +11,18 @@
   "topbar": {
     "greeting": "你好，{{name}}",
     "tooltip": "领取任务",
-    "pickButton": "发布任务"
+    "pickButton": "发布任务",
+
+
+       "selectWarehouse": "选择仓库",
+    "switchingWarehouse": "正在切换仓库…",
+    "switchingTo": "正在切换到 {{code}}…",
+    "warehouseUpdated": "仓库已切换",
+    "loading": "加载中…",
+    "noWarehouse": "暂无仓库",
+    "loadingWarehouseList": "正在加载…",
+    "zhLabel": "中文",
+    "enLabel": "English"
   },
   "bottombar": {
     "tasks": "任务列表",

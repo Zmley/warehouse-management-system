@@ -92,6 +92,8 @@ export const moveInventoriesToBin = async (
 
 export const unloadByBinCode = async (
   binCode: string,
+
+  warehouseID: string,
   unloadProductList: {
     inventoryID: string
     quantity: number
@@ -101,7 +103,7 @@ export const unloadByBinCode = async (
   accountID?: string
 ): Promise<{ updatedCount: number }> => {
   try {
-    const bin = await Bin.findOne({ where: { binCode } })
+    const bin = await Bin.findOne({ where: { binCode, warehouseID } })
     if (!bin) throw new AppError(404, `❌ ${binCode} not found in system`)
 
     const fulfillItems =
@@ -117,8 +119,8 @@ export const unloadByBinCode = async (
     if (accountID && fulfillItems.length) {
       await fulfillLogsOnUnload({
         accountID,
-        destinationBinCode: binCode,
-        items: fulfillItems
+        items: fulfillItems,
+        binID: bin.binID
       })
     }
 
@@ -134,10 +136,11 @@ export const loadByBinCode = async (
   binCode: string,
   cartID: string,
   selectedItems?: { inventoryID: string; quantity: number }[],
-  accountID?: string
+  accountID?: string,
+  warehouseID?: string
 ): Promise<{ message: string }> => {
   try {
-    const bin = await Bin.findOne({ where: { binCode } })
+    const bin = await Bin.findOne({ where: { binCode, warehouseID } })
     if (!bin) throw new AppError(404, `❌ Bin ${binCode} not found in system`)
 
     const cartBin = await Bin.findOne({ where: { binID: cartID } })
@@ -153,8 +156,9 @@ export const loadByBinCode = async (
     if (accountID && openLogItems.length) {
       await createOpenLogsOnLoad({
         accountID,
-        sourceBinCode: binCode,
-        items: openLogItems
+        items: openLogItems,
+        warehouseID: warehouseID,
+        binID: bin.binID
       })
     }
 
@@ -168,10 +172,13 @@ export const loadByBinCode = async (
   }
 }
 
+/////////////////////////////////////////
+
 export const loadByProductList = async (
   productList: { productCode: string; quantity: number }[],
   cartID: string,
-  accountID: string
+  accountID: string,
+  warehouseID?: string
 ): Promise<{ messages: string[] }> => {
   const messages: string[] = []
 
@@ -189,8 +196,8 @@ export const loadByProductList = async (
 
   await createOpenLogsOnLoad({
     accountID,
-    sourceBinCode: null,
-    items: productList
+    items: productList,
+    warehouseID
   })
 
   return { messages }

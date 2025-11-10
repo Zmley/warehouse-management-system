@@ -37,7 +37,7 @@ export const getMyTask = asyncHandler(async (req, res) => {
 
 export const cancelTask = asyncHandler(async (req, res) => {
   const { taskID } = req.params
-  const { role, cartID, accountID } = res.locals
+  const { role, cartID, accountID, warehouseID } = res.locals
 
   let task: Task | null = null
 
@@ -47,7 +47,12 @@ export const cancelTask = asyncHandler(async (req, res) => {
       status: TaskStatus.CANCELED
     })
   } else if (role === UserRole.TRANSPORT_WORKER) {
-    task = await taskService.cancelByTransportWorker(taskID, cartID, accountID)
+    task = await taskService.cancelByTransportWorker(
+      taskID,
+      cartID,
+      accountID,
+      warehouseID
+    )
   } else {
     throw new AppError(httpStatus.FORBIDDEN, 'ROLE_FORBIDDEN', 'ROLE_FORBIDDEN')
   }
@@ -100,14 +105,20 @@ export const createTask = asyncHandler(async (req, res) => {
     warehouseID
   } = req.body.payload
 
+  console.log(warehouseID + 'ttttttttttttttttttttttttt')
+
   await taskService.checkIfTaskDuplicate(
     productCode,
     destinationBinCode,
-    sourceBinCode
+    sourceBinCode,
+    warehouseID
   )
 
   if (!sourceBinCode) {
-    const destinationBin = await binService.getBinByBinCode(destinationBinCode)
+    const destinationBin = await binService.getBinByBinCode(
+      destinationBinCode,
+      warehouseID
+    )
     const task = await taskService.binsToPick(
       destinationBin.binCode,
       accountID,
@@ -121,8 +132,11 @@ export const createTask = asyncHandler(async (req, res) => {
     })
   }
 
-  const sourceBin = await binService.getBinByBinCode(sourceBinCode)
-  const destinationBin = await binService.getBinByBinCode(destinationBinCode)
+  const sourceBin = await binService.getBinByBinCode(sourceBinCode, warehouseID)
+  const destinationBin = await binService.getBinByBinCode(
+    destinationBinCode,
+    warehouseID
+  )
 
   const task = await taskService.binToBin(
     sourceBin.binID,

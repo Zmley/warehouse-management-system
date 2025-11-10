@@ -11,7 +11,9 @@ import { asyncHandler } from 'utils/asyncHandler'
 
 export const getBin = asyncHandler(async (req: Request, res: Response) => {
   const { binCode } = req.params
-  const bin = await binService.getBinByBinCode(binCode)
+
+  const warehouseID = res.locals.warehouseID
+  const bin = await binService.getBinByBinCode(binCode, warehouseID)
   res.status(200).json({
     success: true,
     bin

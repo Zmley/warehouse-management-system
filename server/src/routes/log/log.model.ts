@@ -15,6 +15,7 @@ export class Log extends Model {
   public isMerged!: boolean
   public createdAt!: Date
   public updatedAt!: Date
+  public warehouseID!: string | null
 }
 
 Log.init(
@@ -62,6 +63,11 @@ Log.init(
     updatedAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
+    },
+
+    warehouseID: {
+      type: DataTypes.UUID,
+      allowNull: true
     }
   },
   {

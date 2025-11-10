@@ -7,14 +7,15 @@ import * as taskService from 'routes/tasks/task.service'
 import { asyncHandler } from 'utils/asyncHandler'
 
 export const load = asyncHandler(async (req: Request, res: Response) => {
-  const { cartID, accountID } = res.locals
+  const { cartID, accountID, warehouseID } = res.locals
   const { binCode, selectedItems, productList } = req.body
 
   if (productList) {
     const result = await cartService.loadByProductList(
       productList,
       cartID,
-      accountID
+      accountID,
+      warehouseID
     )
     res.status(200).json({
       success: true,
@@ -24,11 +25,17 @@ export const load = asyncHandler(async (req: Request, res: Response) => {
   }
 
   if (binCode) {
-    await cartService.loadByBinCode(binCode, cartID, selectedItems, accountID)
+    await cartService.loadByBinCode(
+      binCode,
+      cartID,
+      selectedItems,
+      accountID,
+      warehouseID
+    )
 
     const activeTask = await taskService.hasActiveTask(accountID)
     if (activeTask?.status === TaskStatus.IN_PROCESS) {
-      const bin = await getBinByBinCode(binCode)
+      const bin = await getBinByBinCode(binCode, warehouseID)
       if (bin?.binID) {
         await taskService.updateTaskSourceBin(activeTask.taskID, bin.binID)
       }
@@ -50,8 +57,12 @@ export const unload = asyncHandler(async (req: Request, res: Response) => {
   if (task) {
     const result = await cartService.unloadByBinCode(
       binCode,
+      warehouseID,
       unloadProductList,
       accountID
+      ////
+
+      // warehouseID
     )
 
     let matchedQuantity: number | undefined
@@ -61,7 +72,8 @@ export const unload = asyncHandler(async (req: Request, res: Response) => {
     await updateTaskByTaskID({
       taskID: task.taskID,
       quantity: matchedQuantity,
-      status: TaskStatus.COMPLETED
+      status: TaskStatus.COMPLETED,
+      warehouseID
     })
 
     res.status(200).json({
@@ -71,6 +83,7 @@ export const unload = asyncHandler(async (req: Request, res: Response) => {
   } else {
     const result = await cartService.unloadByBinCode(
       binCode,
+      warehouseID,
       unloadProductList,
       accountID
     )

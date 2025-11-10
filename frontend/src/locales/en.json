@@ -11,7 +11,17 @@
   "topbar": {
     "greeting": "Hello, {{name}}",
     "tooltip": "Pick up Task",
-    "pickButton": "Pick"
+    "pickButton": "Pick", 
+
+        "selectWarehouse": "Select warehouse",
+    "switchingWarehouse": "Switching warehouse…",
+    "switchingTo": "Switching to {{code}}…",
+    "warehouseUpdated": "Warehouse updated",
+    "loading": "Loading…",
+    "noWarehouse": "No warehouses",
+    "loadingWarehouseList": "Loading warehouses…",
+    "zhLabel": "中文",
+    "enLabel": "English"
   },
   "bottombar": {
     "tasks": "Tasks",
