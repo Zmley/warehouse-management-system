@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useContext, useEffect, useMemo, useState } from 'react'
 import {
   Box,
   IconButton,
@@ -26,11 +26,9 @@ import { TOPBAR_HEIGHT } from 'pages/Dashboard'
 import useWarehouses from 'hooks/useWarehouse'
 import { useAuth } from 'hooks/useAuth'
 import { AuthContext } from 'contexts/auth'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 
 const RELOAD_BANNER_KEY = 'wms_reload_banner_once'
-const LAST_WID_KEY = 'wms_last_warehouse_id'
-const LAST_WCODE_KEY = 'wms_last_warehouse_code'
 const SWITCHING_KEY = 'wms_switching_overlay'
 const SWITCHING_MSG_KEY = 'wms_switching_overlay_msg'
 const TARGET_WID_KEY = 'wms_switching_target_wid'
@@ -67,15 +65,11 @@ const TopBar: React.FC = () => {
     sessionStorage.getItem(SWITCHING_MSG_KEY) || t('topbar.switchingWarehouse')
   )
 
-  const initialCachedCode =
-    localStorage.getItem(LAST_WCODE_KEY) || t('topbar.loading')
-  const cachedCodeRef = useRef<string>(initialCachedCode)
-
-  const currentWarehouseID = useMemo(() => {
-    return String(
-      userProfile?.warehouseID || localStorage.getItem(LAST_WID_KEY) || ''
-    )
-  }, [userProfile?.warehouseID])
+  const currentWarehouseID = useMemo(
+    () => String(userProfile?.warehouseID || ''),
+    [userProfile?.warehouseID]
+  )
+  const currentCode = userProfile?.warehouseCode || t('topbar.loading')
 
   useEffect(() => {
     let mounted = true
@@ -93,18 +87,6 @@ const TopBar: React.FC = () => {
   }, [fetchWarehouses])
 
   useEffect(() => {
-    if (!currentWarehouseID) return
-    const found = warehouses.find(
-      w => String(w.warehouseID) === String(currentWarehouseID)
-    )
-    if (found?.warehouseCode?.trim()) {
-      cachedCodeRef.current = found.warehouseCode
-      localStorage.setItem(LAST_WCODE_KEY, found.warehouseCode)
-      localStorage.setItem(LAST_WID_KEY, String(currentWarehouseID))
-    }
-  }, [warehouses, currentWarehouseID])
-
-  useEffect(() => {
     if (sessionStorage.getItem(RELOAD_BANNER_KEY) === '1') {
       sessionStorage.removeItem(RELOAD_BANNER_KEY)
       setShowReloadToast(true)
@@ -115,13 +97,7 @@ const TopBar: React.FC = () => {
     if (!showOverlay) return
     const targetWid = sessionStorage.getItem(TARGET_WID_KEY)
     if (!targetWid) return
-
-    const matchedNow =
-      targetWid === currentWarehouseID ||
-      targetWid === localStorage.getItem(LAST_WID_KEY)
-
-    if (matchedNow) {
-      // 等浏览器绘制首帧就立刻关闭，体感最自然
+    if (targetWid === currentWarehouseID) {
       requestAnimationFrame(() => {
         sessionStorage.removeItem(SWITCHING_KEY)
         sessionStorage.removeItem(SWITCHING_MSG_KEY)
@@ -131,7 +107,6 @@ const TopBar: React.FC = () => {
     }
   }, [showOverlay, currentWarehouseID])
 
-  // 可选：页面触发数据就绪事件时立即关层（你已有）
   useEffect(() => {
     const handler = () => {
       sessionStorage.removeItem(SWITCHING_KEY)
@@ -143,7 +118,6 @@ const TopBar: React.FC = () => {
     return () => window.removeEventListener('wms:initial-data-ready', handler)
   }, [])
 
-  // 额外兜底：pageshow/load 到达即关（避免某些情况下等待）
   useEffect(() => {
     if (!showOverlay) return
     const close = () => {
@@ -167,7 +141,7 @@ const TopBar: React.FC = () => {
       sessionStorage.removeItem(SWITCHING_MSG_KEY)
       sessionStorage.removeItem(TARGET_WID_KEY)
       setShowOverlay(false)
-    }, 600)
+    }, 100)
     return () => clearTimeout(t)
   }, [showOverlay])
 
@@ -175,8 +149,6 @@ const TopBar: React.FC = () => {
     () => Array.isArray(warehouses) && warehouses.length > 0,
     [warehouses]
   )
-
-  const currentCode = cachedCodeRef.current || (isZh ? '加载中…' : 'Loading…')
 
   const buildTargetUrl = (wid: string) => {
     const parts = location.pathname.split('/')
@@ -191,36 +163,36 @@ const TopBar: React.FC = () => {
     return location.pathname + location.search
   }
 
-  // —— 只用整页刷新（更快的覆盖层收起） —— //
   const onSelectWarehouse = async (wid: string) => {
     if (!wid || wid === currentWarehouseID) {
       closeMenu()
       return
     }
 
-    // 立即把按钮标题改成新仓库名，避免闪烁
-    const picked =
+    const pickedCode =
       warehouses.find(w => String(w.warehouseID) === String(wid))
         ?.warehouseCode || t('topbar.loading')
-    cachedCodeRef.current = picked
-    localStorage.setItem(LAST_WCODE_KEY, picked)
-    localStorage.setItem(LAST_WID_KEY, String(wid))
+
     closeMenu()
 
     try {
       setChanging(true)
 
-      const msg = t('topbar.switchingTo', { code: picked })
+      const msg = t('topbar.switchingTo', { code: pickedCode })
       sessionStorage.setItem(SWITCHING_KEY, '1')
       sessionStorage.setItem(SWITCHING_MSG_KEY, msg)
-      sessionStorage.setItem(TARGET_WID_KEY, String(wid)) // 记录目标仓库ID
+      sessionStorage.setItem(TARGET_WID_KEY, String(wid))
       setOverlayText(msg)
       setShowOverlay(true)
 
       await changeUserWarehouse(wid)
 
       if (setUserProfile && userProfile) {
-        setUserProfile({ ...userProfile, warehouseID: wid })
+        setUserProfile({
+          ...userProfile,
+          warehouseID: wid,
+          warehouseCode: pickedCode
+        })
       }
 
       sessionStorage.setItem(RELOAD_BANNER_KEY, '1')
@@ -331,7 +303,7 @@ const TopBar: React.FC = () => {
             {hasWarehouses ? (
               warehouses.map(w => {
                 const wid = String(w.warehouseID)
-                const selected = wid === String(currentWarehouseID)
+                const selected = wid === currentWarehouseID
                 return (
                   <MenuItem
                     key={wid}
@@ -387,10 +359,6 @@ const TopBar: React.FC = () => {
               onChange={() => {
                 const newLang = isZh ? 'en' : 'zh'
                 i18n.changeLanguage(newLang)
-                localStorage.setItem('i18nextLng', newLang)
-                if (!cachedCodeRef.current) {
-                  cachedCodeRef.current = t('topbar.loading')
-                }
               }}
               color='primary'
             />

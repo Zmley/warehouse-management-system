@@ -15,6 +15,7 @@ import env from 'config/config'
 import Task from 'routes/tasks/task.model'
 import Account from 'routes/accounts/accounts.model'
 import { cognitoClient } from 'utils/aws'
+import Warehouse from 'routes/warehouses/warehouse.model'
 
 export const loginUser = async (req: Request, res: Response) => {
   const { email, password } = req.body
@@ -94,7 +95,17 @@ export const getUserInfo = async (
         status: 'IN_PROCESS'
       }
     })
-    res.json({ ...account, currentTask })
+
+    ////
+
+    const warehouseCode = (
+      await Warehouse.findOne({
+        where: { warehouseID: account.warehouseID },
+        attributes: ['warehouseCode']
+      })
+    )?.warehouseCode
+
+    res.json({ ...account, currentTask, warehouseCode })
   } catch (error) {
     console.error('❌ Error fetching user info:', error)
     res.status(500).json({ message: '❌ Internal Server Error' })
