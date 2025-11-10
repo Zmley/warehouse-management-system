@@ -293,7 +293,15 @@
     "refreshing": "正在刷新…",
     "confirm": "确认",
     "add": "新增",
-    "remove": "移除"
+    "remove": "移除",
+
+    "submitting"  : "提交中…",
+    "loading": "加载中…",
+    "save": "保存",
+    "edit": "编辑",
+    "delete": "删除",
+    "close": "关闭",
+    "search": "搜索"
   },
 
   "queryProduct": {

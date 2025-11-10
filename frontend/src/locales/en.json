@@ -282,10 +282,8 @@
   },
   "common": {
     "qty": "Qty {{qty}}",
-        "cancel": "Cancel",
-
-
-          "saved": "Saved",
+    "cancel": "Cancel",
+    "saved": "Saved",
     "deleted": "Deleted",
     "added": "Added",
     "updated": "Updated",
@@ -293,7 +291,8 @@
     "refreshing": "Refreshing…",
     "confirm": "Confirm",
     "add": "Add",
-    "remove": "Remove"
+    "remove": "Remove",
+    "submitting"  : "Submitting…"
 
   },
 
