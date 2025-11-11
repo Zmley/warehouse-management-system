@@ -1,7 +1,7 @@
 import Joi from 'joi'
 import * as dotenv from 'dotenv'
 
-dotenv.config({ path: `.env` })
+dotenv.config({ path: `.env.local` })
 
 const envsSchema = Joi.object()
   .keys({
