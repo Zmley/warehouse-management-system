@@ -155,7 +155,7 @@ export const createTask = asyncHandler(async (req, res) => {
 export const updateTask = asyncHandler(async (req, res) => {
   const { taskID } = req.params
   const { status, sourceBinCode } = req.body
-  const { accountID } = res.locals
+  const { accountID, warehouseID } = res.locals
 
   const existingTask = await Task.findByPk(taskID)
   if (!existingTask) {
@@ -181,7 +181,8 @@ export const updateTask = asyncHandler(async (req, res) => {
     updatedTask = await taskService.updateTaskByTaskID({
       taskID,
       status,
-      sourceBinCode
+      sourceBinCode,
+      warehouseID
     })
   }
 
