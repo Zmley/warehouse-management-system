@@ -17,12 +17,14 @@ export const UpdateInventoriesSchema = Joi.object({
         inventoryID: Joi.string().required(),
         quantity: Joi.number().integer().min(0).optional(),
         productCode: Joi.string().trim().optional(),
-        binID: Joi.string().trim().optional()
+        binID: Joi.string().trim().optional(),
+        note: Joi.string().trim().allow('').optional()
       }).custom((v, h) => {
         if (
           v.quantity === undefined &&
           v.productCode === undefined &&
-          v.binID === undefined
+          v.binID === undefined &&
+          v.note === undefined
         ) {
           return h.error('any.custom', {
             message:

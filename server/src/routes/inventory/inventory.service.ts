@@ -125,6 +125,7 @@ export const getInventoriesByWarehouseID = async (
           'binID',
           'productCode',
           'quantity',
+          'note',
           'createdAt',
           'updatedAt'
         ],
@@ -154,6 +155,7 @@ export const getInventoriesByWarehouseID = async (
           binID: inv.getDataValue('binID'),
           productCode: inv.getDataValue('productCode'),
           quantity: inv.getDataValue('quantity'),
+          note: inv.getDataValue('note') ?? null,
           createdAt: inv.getDataValue('createdAt'),
           updatedAt: inv.getDataValue('updatedAt'),
           bin: {
@@ -224,6 +226,7 @@ export const getInventoriesByWarehouseID = async (
             binID: b.getDataValue('binID'),
             productCode: null,
             quantity: null,
+            note: null,
             createdAt: null,
             updatedAt: null,
             bin: {
@@ -279,6 +282,7 @@ export const getInventoriesByWarehouseID = async (
             'binID',
             'productCode',
             'quantity',
+            'note',
             'createdAt',
             'updatedAt'
           ],
@@ -320,6 +324,7 @@ export const getInventoriesByWarehouseID = async (
               'binID',
               'productCode',
               'quantity',
+              'note',
               'createdAt',
               'updatedAt'
             ],
@@ -350,6 +355,7 @@ export const getInventoriesByWarehouseID = async (
             binID: binIDVal,
             productCode: null,
             quantity: null,
+            note: null,
             createdAt: null,
             updatedAt: null,
             bin: { binCode: binCodeVal, binID: binIDVal }
@@ -362,6 +368,7 @@ export const getInventoriesByWarehouseID = async (
         binID: inv.getDataValue('binID'),
         productCode: inv.getDataValue('productCode'),
         quantity: inv.getDataValue('quantity'),
+        note: inv.getDataValue('note') ?? null,
         createdAt: inv.getDataValue('createdAt'),
         updatedAt: inv.getDataValue('updatedAt'),
         bin: { binCode: binCodeVal, binID: binIDVal }
@@ -401,12 +408,13 @@ export const updateByInventoryIDs = async (
     inventoryID: string
     quantity?: number
     productCode?: string
+    note?: string
   }[]
 ) => {
   try {
     const results = await Promise.all(
       updates.map(async update => {
-        const { inventoryID, quantity, productCode } = update
+        const { inventoryID, quantity, productCode, note } = update
         const inventoryItem = await Inventory.findByPk(inventoryID)
 
         if (!inventoryItem) {
@@ -417,7 +425,7 @@ export const updateByInventoryIDs = async (
           }
         }
 
-        await inventoryItem.update({ quantity, productCode })
+        await inventoryItem.update({ quantity, productCode, note })
         return { inventoryID, success: true, updatedItem: inventoryItem }
       })
     )

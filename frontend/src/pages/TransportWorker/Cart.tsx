@@ -147,7 +147,7 @@ const Cart = () => {
       overflow='hidden'
       bgcolor='#f5f5f5'
     >
-      <Box flex={1} overflow='auto' px={2} pt={0}>
+      <Box flex={1} overflow='auto' px={2} pt={1.5}>
         {!myTask && <EmptyBinPanel />}
 
         {myTask && (

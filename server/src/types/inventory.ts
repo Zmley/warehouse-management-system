@@ -3,6 +3,7 @@ export interface InventoryUploadType {
   binCode: string
   productCode: string
   quantity: number
+  note?: string | null
 }
 
 export type FlatInventoryRow = {
@@ -28,6 +29,7 @@ export interface InventoryDTO {
   binID: string
   productCode: string | null
   quantity: number | null
+  note: string | null
   createdAt: Date | null
   updatedAt: Date | null
   bin: {

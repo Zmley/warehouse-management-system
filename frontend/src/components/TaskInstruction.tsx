@@ -76,7 +76,17 @@ const TaskInstruction: React.FC = () => {
                       fontWeight={600}
                       textAlign='center'
                     >
-                      {inv.bin?.binCode ?? '--'}: {inv.quantity ?? '--'}
+                      {inv.bin?.binCode ?? '--'}
+                      {inv.note ? (
+                        <Typography
+                          component='span'
+                          fontSize={12}
+                          sx={{ ml: 0.5, color: '#d32f2f' }}
+                        >
+                          ({inv.note})
+                        </Typography>
+                      ) : null}
+                      : {inv.quantity ?? '--'}
                     </Typography>
                   ))}
                 </Box>

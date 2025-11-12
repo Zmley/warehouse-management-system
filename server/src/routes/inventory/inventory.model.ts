@@ -9,6 +9,7 @@ export class Inventory extends Model {
   public quantity!: number
   public createdAt!: Date
   public updatedAt!: Date
+  public note!: string
 }
 
 Inventory.init(
@@ -39,6 +40,11 @@ Inventory.init(
     updatedAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
+    },
+
+    note: {
+      type: DataTypes.STRING,
+      allowNull: true
     }
   },
   {

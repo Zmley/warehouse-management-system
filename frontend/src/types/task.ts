@@ -10,6 +10,7 @@ export interface Inventory {
   quantity: number
   createdAt: string
   updatedAt: string
+  note?: string | null
   bin: {
     binID: string
     binCode: string
@@ -37,6 +38,7 @@ export interface Task {
   productCode: string
   inventories?: Inventory[]
   quantity: number
+  note: string | null
 }
 
 export interface CreateTaskPayload {

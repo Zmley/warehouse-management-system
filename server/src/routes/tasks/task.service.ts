@@ -200,12 +200,13 @@ export const getTaskByAccountID = async (
     productCode: string
     quantity: number
     bin: { binID?: string; binCode?: string }
+    note?: string | null
   }> = []
 
   if (myCurrentTask.sourceBinID) {
     const sourceBin = await Bin.findOne({
       where: { binID: myCurrentTask.sourceBinID },
-      attributes: ['binID', 'binCode']
+      attributes: ['binID', 'binCode', 'warehouseID']
     })
 
     if (sourceBin) {
@@ -219,8 +220,24 @@ export const getTaskByAccountID = async (
         ],
         raw: true
       })
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const totalQuantity = Number((row as any)?.totalQuantity ?? 0)
+
+      let note: string | null = null
+      if (sourceBin.warehouseID === warehouseID) {
+        const latestNoteRow = await Inventory.findOne({
+          where: {
+            binID: myCurrentTask.sourceBinID,
+            productCode,
+            note: { [Op.ne]: '' }
+          },
+          attributes: ['note'],
+          order: [['updatedAt', 'DESC']],
+          raw: true
+        })
+        note = (latestNoteRow && latestNoteRow.note?.trim()) || null
+      }
 
       sourceBins = [
         {
@@ -230,12 +247,19 @@ export const getTaskByAccountID = async (
           bin: {
             binID: sourceBin.binID,
             binCode: sourceBin.binCode
-          }
+          },
+          note
         }
       ]
     } else {
       sourceBins = [
-        { inventoryID: null, productCode, quantity: 0, bin: { binCode: '--' } }
+        {
+          inventoryID: null,
+          productCode,
+          quantity: 0,
+          bin: { binCode: '--' },
+          note: null
+        }
       ]
     }
   } else {
@@ -265,18 +289,58 @@ export const getTaskByAccountID = async (
       raw: true
     })
 
-    sourceBins = rows.map(r => ({
-      inventoryID: null,
-      productCode,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      quantity: Number((r as any).totalQuantity ?? 0),
-      bin: {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        binID: (r as any).binID,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        binCode: (r as any).binCode
+    const noteRows = await Inventory.findAll({
+      where: {
+        productCode,
+        note: { [Op.ne]: '' }
+      },
+      attributes: [
+        [Sequelize.col('bin.binID'), 'binID'],
+        ['note', 'note']
+      ],
+      include: [
+        {
+          model: Bin,
+          as: 'bin',
+          attributes: [],
+          required: true,
+          where: {
+            warehouseID,
+            type: 'INVENTORY'
+          }
+        }
+      ],
+      order: [['updatedAt', 'DESC']],
+      raw: true
+    })
+
+    const noteByBinID = new Map<string, string>()
+    for (const r of noteRows as Array<{ binID: string; note: string }>) {
+      if (!noteByBinID.has(r.binID)) {
+        const n = (r.note || '').trim()
+        if (n) noteByBinID.set(r.binID, n)
       }
-    }))
+    }
+
+    sourceBins = rows.map(r => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const binID = (r as any).binID as string
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const binCode = (r as any).binCode as string
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const qty = Number((r as any).totalQuantity ?? 0)
+
+      return {
+        inventoryID: null,
+        productCode,
+        quantity: qty,
+        bin: {
+          binID,
+          binCode
+        },
+        note: noteByBinID.get(binID) ?? null
+      }
+    })
   }
 
   const destinationBin = await Bin.findOne({
@@ -393,7 +457,8 @@ const getIncludeClause = (warehouseID: string) => {
                 'quantity',
                 'binID',
                 'createdAt',
-                'updatedAt'
+                'updatedAt',
+                'note'
               ],
               where: {
                 quantity: { [Op.gt]: 0 }

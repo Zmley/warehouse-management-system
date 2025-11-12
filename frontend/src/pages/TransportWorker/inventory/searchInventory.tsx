@@ -151,6 +151,9 @@ const Inventory: React.FC = () => {
                 <TableCell sx={{ fontWeight: 'bold' }}>
                   {t('inventorySearch.quantity')}
                 </TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>
+                  {t('inventorySearch.note', 'Note')}
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -159,6 +162,9 @@ const Inventory: React.FC = () => {
                   <TableCell>{item.bin?.binCode || '--'}</TableCell>
                   <TableCell>{item.productCode}</TableCell>
                   <TableCell>{item.quantity}</TableCell>
+                  <TableCell>
+                    {(((item as any)?.note ?? '') as string).trim() || '--'}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

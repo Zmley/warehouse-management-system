@@ -18,7 +18,8 @@ const corsOrigins = [
   process.env.CORS_ORIGIN_WORKER_LOCAL,
   process.env.CORS_ORIGIN_WORKER_PROD,
   process.env.CORS_ORIGIN_WORKER_PROD_ZMLEY,
-  process.env.CORS_ORIGIN_WORKER_LOCAL_ZMLEY
+  process.env.CORS_ORIGIN_WORKER_LOCAL_ZMLEY,
+  process.env.CORS_ORIGIN_WORKER_LOCAL_P
 ].filter(Boolean)
 
 const corsOptions = {

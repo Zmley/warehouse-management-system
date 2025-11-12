@@ -28,6 +28,7 @@ interface TaskListProps {
 type SourceBinView = {
   bin?: { binCode?: string }
   quantity?: number
+  note?: string | null
 }
 
 const dtf = new Intl.DateTimeFormat(undefined, {
@@ -100,18 +101,19 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
     [tasks, showOutOfStock]
   )
 
-  const formatSourceBinsUnique = (sourceBins?: SourceBinView[]) => {
-    if (!sourceBins || sourceBins.length === 0) return ''
-    const seen = new Set<string>()
-    const uniqueCodes: string[] = []
+  const buildSourceBinsParts = (sourceBins?: SourceBinView[]) => {
+    if (!sourceBins || sourceBins.length === 0) return []
+    const seen = new Map<string, string | undefined>() // binCode -> note
     for (const it of sourceBins) {
       const code = it.bin?.binCode ?? '--'
+      const rawNote = (it.note ?? '').trim()
       if (!seen.has(code)) {
-        seen.add(code)
-        uniqueCodes.push(code)
+        seen.set(code, rawNote.length > 0 ? rawNote : undefined)
+      } else if (!seen.get(code) && rawNote.length > 0) {
+        seen.set(code, rawNote)
       }
     }
-    return uniqueCodes.join(' / ')
+    return Array.from(seen.entries()).map(([code, note]) => ({ code, note }))
   }
 
   return (
@@ -216,10 +218,13 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
               {filteredTasks.map((task: Task) => {
                 const isOutOfStock =
                   !task.sourceBins || task.sourceBins.length === 0
-                const sourceBinsLabel = formatSourceBinsUnique(
+                const parts = buildSourceBinsParts(
                   task.sourceBins as unknown as SourceBinView[]
                 )
-                const firstBinCode = sourceBinsLabel.split(' / ')[0] ?? ''
+                const sourceBinsTitle = parts
+                  .map(p => (p.note ? `${p.code} (${p.note})` : p.code))
+                  .join(' / ')
+                const firstBinCode = parts[0]?.code ?? ''
                 const isAisleTask = firstBinCode.startsWith('AISLE-')
 
                 const cardBorderColor = isAisleTask ? '#059669' : '#2563eb'
@@ -272,9 +277,29 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
                                 fontSize: 13,
                                 fontWeight: 'bold'
                               }}
-                              title={sourceBinsLabel}
+                              title={sourceBinsTitle}
                             >
-                              {sourceBinsLabel}
+                              {parts.map((p, idx) => (
+                                <React.Fragment key={`${p.code}-${idx}`}>
+                                  <span>{p.code}</span>
+                                  {p.note && (
+                                    <Typography
+                                      component='span'
+                                      fontSize={11}
+                                      sx={{
+                                        color: '#d32f2f',
+                                        fontStyle: 'italic',
+                                        ml: 0.3
+                                      }}
+                                    >
+                                      ({p.note})
+                                    </Typography>
+                                  )}
+                                  {idx < parts.length - 1 && (
+                                    <span>{' / '}</span>
+                                  )}
+                                </React.Fragment>
+                              ))}
                             </Box>
                           )}
                         </Grid>
