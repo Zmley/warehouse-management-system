@@ -8,7 +8,9 @@ import {
   getUserInfo,
   refreshAccessToken,
   fetchWorkerNames,
-  changeWarehouse
+  changeWarehouse,
+  getAllAccountsController,
+  deleteAccount
 } from './accounts.controller'
 import { UserRole } from 'constants/index'
 import roleAllow from 'middlewares/roleAllow.middleware'
@@ -20,7 +22,11 @@ router.post('/refresh-token', refreshAccessToken)
 
 router.get('/me', authenticateToken, currentAccount, getUserInfo)
 
+router.get('/all', getAllAccountsController)
+
 router.get('/names', fetchWorkerNames)
+
+router.delete('/:accountID', deleteAccount)
 
 router.post(
   '/changeWarehouse',

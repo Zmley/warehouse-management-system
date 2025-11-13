@@ -3,6 +3,8 @@ import Bin from 'routes/bins/bin.model'
 import Inventory from 'routes/inventory/inventory.model'
 import Task from 'routes/tasks/task.model'
 import Transfer from 'routes/transfers/transfer.model'
+import Warehouse from 'routes/warehouses/warehouse.model'
+import Account from 'routes/accounts/accounts.model'
 
 export const setupAssociations = () => {
   Bin.hasMany(Inventory, {
@@ -24,6 +26,21 @@ export const setupAssociations = () => {
   })
 
   Task.hasMany(Transfer, { foreignKey: 'taskID', as: 'transfers' })
+
+  Account.belongsTo(Warehouse, {
+    foreignKey: 'warehouseID',
+    as: 'currentWarehouse'
+  })
+
+  Warehouse.hasMany(Bin, {
+    foreignKey: 'warehouseID',
+    as: 'bins'
+  })
+
+  Account.belongsTo(Bin, {
+    foreignKey: 'cartID',
+    as: 'cart'
+  })
 }
 
 Transfer.belongsTo(Product, {

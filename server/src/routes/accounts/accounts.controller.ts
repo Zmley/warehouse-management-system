@@ -1,19 +1,18 @@
 import { Request, Response } from 'express'
 import {
   InitiateAuthCommand,
-  AuthFlowType,
-  CognitoIdentityProviderClient,
-  SignUpCommand,
-  AdminConfirmSignUpCommand
+  AuthFlowType
 } from '@aws-sdk/client-cognito-identity-provider'
 import {
   changeWarehouseByAccountID,
+  deleteAccountByAccountID,
+  getAllAccountsService,
   getCognitoErrorMessage,
-  listTransportWorkers
+  listTransportWorkers,
+  registerUserService
 } from './accounts.service'
 import env from 'config/config'
 import Task from 'routes/tasks/task.model'
-import Account from 'routes/accounts/accounts.model'
 import { cognitoClient } from 'utils/aws'
 import Warehouse from 'routes/warehouses/warehouse.model'
 
@@ -41,45 +40,35 @@ export const loginUser = async (req: Request, res: Response) => {
 }
 
 export const registerUser = async (req: Request, res: Response) => {
-  const { email, password } = req.body
+  try {
+    const result = await registerUserService(req.body)
 
-  const client = new CognitoIdentityProviderClient({ region: 'us-east-2' })
-
-  const command = new SignUpCommand({
-    ClientId: env.cognitoClientId,
-    Username: email,
-    Password: password,
-    UserAttributes: [
-      {
-        Name: 'email',
-        Value: email
-      }
-    ]
-  })
-
-  const { UserSub: accountID } = await client.send(command)
-
-  await client.send(
-    new AdminConfirmSignUpCommand({
-      UserPoolId: env.cognitoUserPoolId,
-      Username: email
+    res.json({
+      message: 'User registered successfully',
+      accountID: result.accountID,
+      email: result.email
     })
-  )
-  await Account.create({
-    accountID: accountID as string,
-    email,
-    role: 'ADMIN',
-    firstName: 'TBD',
-    lastName: 'TBD',
-    createdAt: new Date(),
-    updatedAt: new Date()
-  })
+  } catch (error) {
+    console.error('❌ registerUser error:', error)
 
-  console.log('✅ User information saved to database:', {
-    accountID,
-    email
-  })
-  res.json({ message: '✅ User registered successfully', accountID, email })
+    if (error.name === 'UsernameExistsException') {
+      return res
+        .status(400)
+        .json({ message: 'User already exists', code: 'USERNAME_EXISTS' })
+    }
+
+    if (error.$metadata) {
+      return res.status(400).json({
+        message: getCognitoErrorMessage(error),
+        code: error.name
+      })
+    }
+
+    return res.status(500).json({
+      message: 'Failed to register user',
+      code: 'INTERNAL_ERROR'
+    })
+  }
 }
 
 export const getUserInfo = async (
@@ -95,8 +84,6 @@ export const getUserInfo = async (
         status: 'IN_PROCESS'
       }
     })
-
-    ////
 
     const warehouseCode = (
       await Warehouse.findOne({
@@ -157,8 +144,6 @@ export async function fetchWorkerNames(req: Request, res: Response) {
   }
 }
 
-//////////
-
 export const changeWarehouse = async (req: Request, res: Response) => {
   try {
     const { warehouseID } = req.body
@@ -190,6 +175,50 @@ export const changeWarehouse = async (req: Request, res: Response) => {
     res.status(500).json({
       success: false,
       message: err.message || 'Failed to change warehouse'
+    })
+  }
+}
+
+export const getAllAccountsController = async (req: Request, res: Response) => {
+  try {
+    const accounts = await getAllAccountsService()
+
+    return res.json({
+      success: true,
+      accounts
+    })
+  } catch (error) {
+    console.error('❌ getAllAccounts error:', error)
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to load accounts'
+    })
+  }
+}
+
+export const deleteAccount = async (req: Request, res: Response) => {
+  const { accountID } = req.params
+
+  if (!accountID) {
+    return res.status(400).json({ message: 'accountID is required' })
+  }
+
+  try {
+    const deleted = await deleteAccountByAccountID(accountID)
+
+    if (!deleted) {
+      return res.status(404).json({ message: 'Account not found' })
+    }
+
+    return res.json({
+      message: 'Account deleted successfully',
+      accountID
+    })
+  } catch (err) {
+    console.error('❌ deleteAccountByAccountID error:', err)
+    return res.status(500).json({
+      message: 'Failed to delete account',
+      error: err.message
     })
   }
 }

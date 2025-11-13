@@ -1,3 +1,6 @@
+import dotenv from 'dotenv'
+dotenv.config()
+
 import { CognitoIdentityProviderClient } from '@aws-sdk/client-cognito-identity-provider'
 
 export const getCognitoPublicKeysUrl = (userPoolId: string, region: string) => {

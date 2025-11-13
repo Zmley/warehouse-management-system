@@ -521,8 +521,6 @@ export async function getBinColumnsInWarehouse(
   return Array.from(set).sort()
 }
 
-//////////////////////////////////////
-
 export const getEmptyBinsInWarehouse = async (
   warehouseID: string,
   opts?: { q?: string; limit?: number }
@@ -560,4 +558,27 @@ export const getEmptyBinsInWarehouse = async (
   })
 
   return bins.map(b => ({ binID: b.binID, binCode: b.binCode }))
+}
+
+export const createCart = async (
+  firstName: string,
+  lastName: string,
+  warehouseID: string
+) => {
+  if (!firstName || !lastName) {
+    throw new Error('firstName and lastName are required to create cart.')
+  }
+  if (!warehouseID) {
+    throw new Error('warehouseID is required to create cart.')
+  }
+
+  const binCode = `${firstName}${lastName}Cart`.replace(/\s+/g, '').trim()
+
+  const cart = await Bin.create({
+    binCode,
+    type: BinType.CART,
+    warehouseID
+  })
+
+  return cart.binID
 }

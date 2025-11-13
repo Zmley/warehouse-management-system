@@ -2,6 +2,15 @@ import Account from './accounts.model'
 import { Op, WhereOptions } from 'sequelize'
 import { UserRole } from 'constants/index'
 import { WorkerRow } from 'types/account'
+import Warehouse from 'routes/warehouses/warehouse.model'
+import Bin from 'routes/bins/bin.model'
+import {
+  AdminConfirmSignUpCommand,
+  AdminDeleteUserCommand,
+  SignUpCommand
+} from '@aws-sdk/client-cognito-identity-provider'
+import { awsConfig, cognitoClient } from 'utils/aws'
+import { createCart } from 'routes/bins/bin.service'
 
 export const getAccountById = async (accountID: string) => {
   return await Account.findOne({
@@ -29,6 +38,8 @@ export const getCognitoErrorMessage = (error): string => {
       return '❌ User is not confirmed. Please check your email.'
     case 'PasswordResetRequiredException':
       return '❌ Password reset is required.'
+    case 'InvalidPasswordException':
+      return '❌ Password does not meet the required criteria.'
     default:
       return '❌ Login failed'
   }
@@ -85,4 +96,111 @@ export const changeWarehouseByAccountID = async (
   await account.save()
 
   return account
+}
+
+///////////
+
+export const getAllAccountsService = async () => {
+  const accounts = await Account.findAll({
+    include: [
+      {
+        model: Warehouse,
+        as: 'currentWarehouse',
+        attributes: ['warehouseID', 'warehouseCode']
+      },
+
+      {
+        model: Bin,
+        as: 'cart',
+        attributes: ['binID', 'binCode']
+      }
+    ],
+    order: [['createdAt', 'DESC']]
+  })
+
+  return accounts
+}
+
+export const deleteAccountByAccountID = async (accountID: string) => {
+  const account = await Account.findOne({ where: { accountID } })
+  if (!account) return false
+
+  const email = account.email
+  const cartID = account.cartID
+
+  try {
+    const deleteCmd = new AdminDeleteUserCommand({
+      UserPoolId: awsConfig.userPoolId,
+      Username: email
+    })
+    await cognitoClient.send(deleteCmd)
+  } catch (err) {
+    console.error('❌ Failed to delete Cognito user:', err)
+  }
+
+  if (cartID) {
+    try {
+      await Bin.destroy({
+        where: { binID: cartID }
+      })
+      console.log(`🗑️ Deleted Cart Bin: ${cartID}`)
+    } catch (err) {
+      console.error('❌ Failed to delete Cart Bin:', err)
+    }
+  }
+
+  const deleted = await Account.destroy({
+    where: { accountID }
+  })
+
+  return deleted > 0
+}
+
+export const registerUserService = async (payload: {
+  email: string
+  password: string
+  role: UserRole
+  firstName: string
+  lastName: string
+  warehouseID: string
+}) => {
+  const { email, password, role, firstName, lastName, warehouseID } = payload
+
+  const signUpCommand = new SignUpCommand({
+    ClientId: awsConfig.clientId,
+    Username: email,
+    Password: password,
+    UserAttributes: [{ Name: 'email', Value: email }]
+  })
+
+  const signUpResponse = await cognitoClient.send(signUpCommand)
+  const accountID = signUpResponse.UserSub
+
+  const confirmCommand = new AdminConfirmSignUpCommand({
+    UserPoolId: awsConfig.userPoolId,
+    Username: email
+  })
+
+  await cognitoClient.send(confirmCommand)
+
+  let cartID: string | null = null
+
+  if (role === UserRole.TRANSPORT_WORKER) {
+    cartID = await createCart(firstName, lastName, warehouseID)
+  }
+
+  await Account.create({
+    accountID,
+    email,
+    role,
+    firstName,
+    lastName,
+    warehouseID,
+    cartID
+  })
+
+  return {
+    accountID,
+    email
+  }
 }
