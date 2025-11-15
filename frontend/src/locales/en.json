@@ -2,18 +2,17 @@
   "profile": {
     "title": "Profile",
     "signOut": "Sign Out",
-        "role": "Role",
-          "language": "Language",
+    "role": "Role",
+    "language": "Language",
     "lang": { "zh": "中文", "en": "English" },
     "defaultScanMode": "Default Scan Mode"
-
   },
   "topbar": {
     "greeting": "Hello, {{name}}",
     "tooltip": "Pick up Task",
-    "pickButton": "Pick", 
+    "pickButton": "Pick",
 
-        "selectWarehouse": "Select warehouse",
+    "selectWarehouse": "Select warehouse",
     "switchingWarehouse": "Switching warehouse…",
     "switchingTo": "Switching to {{code}}…",
     "warehouseUpdated": "Warehouse updated",
@@ -121,33 +120,26 @@
     "onlyLoadFromAssigned": "You can only load from assigned bins: {{allowed}} (received: {{received}}).",
     "onlyUnloadToAssigned": "You can only unload to assigned bins: {{allowed}} (received: {{received}}).",
 
-     "modes": {
+    "modes": {
       "gun": "Scanner",
       "camera": "Phone",
       "manual": "Manual"
-    } ,
+    },
 
+    "unload": {
+      "onlyBinCodeGun": "In unload mode with a handheld scanner, only bin codes are allowed (no product barcodes or multi-product input)."
+    },
 
+    "camera": "Phone",
+    "scanner": "Scanner",
 
+    "phone": "Phone",
 
-
-   "unload": {
-    "onlyBinCodeGun": "In unload mode with a handheld scanner, only bin codes are allowed (no product barcodes or multi-product input)."
-  },
-
-    "camera":"Phone", 
-  "scanner": "Scanner",
-
-          "phone": "Phone",
-
-
-  "gun": {
-"placeholder": "Press the button on scanner gun",
-
+    "gun": {
+      "placeholder": "Press the button on scanner gun",
 
       "addProducts": "Add Products Manually"
-}
-    
+    }
   },
   "inventory": {
     "total": "Total",
@@ -247,7 +239,7 @@
     "productCode": "Product Code",
     "quantity": "Quantity",
 
-     "binSearchPlaceholder":"search bincode"
+    "binSearchPlaceholder": "search bincode"
   },
 
   "picker": {
@@ -277,8 +269,7 @@
     "unloading": "Unloading…",
     "error": "Failed to unload items.",
 
-            "autoUnloading": "AutoUnloading..."
-
+    "autoUnloading": "AutoUnloading..."
   },
   "common": {
     "qty": "Qty {{qty}}",
@@ -292,8 +283,7 @@
     "confirm": "Confirm",
     "add": "Add",
     "remove": "Remove",
-    "submitting"  : "Submitting…"
-
+    "submitting": "Submitting…"
   },
 
   "queryProduct": {
@@ -318,7 +308,7 @@
     "help": "Help"
   },
 
- "inventoryIndex": { 
+  "inventoryIndex": {
     "searchTab": "Search",
     "editTab": "Edit",
     "receiveTab": "Receive",
@@ -326,9 +316,7 @@
     "loading": "loading..."
   },
 
-
-
-    "mobileReceive": {
+  "mobileReceive": {
     "title": "Pallet Receiving",
     "refresh": "Refresh",
     "pendingTitle": "Pending",
@@ -339,11 +327,8 @@
     "snackUndone": "Undo successful. Items moved back to Pending.",
     "confirmFail": "Receiving confirmation failed",
     "undoFail": "Undo confirmation failed"
-  }
-  ,
-
-
-    "confirmDrawer": {
+  },
+  "confirmDrawer": {
     "titleConfirm": "Confirm Receiving",
     "titleUndo": "Undo Confirmation",
     "subConfirm": "Total {{count}} lines",
@@ -351,22 +336,11 @@
     "btnConfirm": "Confirm",
     "btnUndo": "Undo",
     "empty": "No data"
-  }
-
-,
-
-
+  },
 
   "emptyBins": {
     "title": "Empty Bins",
     "search": "Search…",
     "none": "No empty bins at the moment"
   }
-
-
-
-
-
-
-
 }

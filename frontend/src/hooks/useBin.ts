@@ -162,7 +162,6 @@ export const useBin = () => {
     }
   }, [])
 
-  ////////////////
   const fetchEmptyBins = useCallback(
     async (opts?: { wid?: string; q?: string; limit?: number }) => {
       try {

@@ -36,8 +36,6 @@ export const useAuth = () => {
     setIsAuthenticated(false)
   }
 
-  ////////
-
   const changeUserWarehouse = async (warehouseID: string) => {
     if (!warehouseID) return
     setError(null)

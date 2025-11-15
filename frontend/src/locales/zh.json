@@ -2,19 +2,17 @@
   "profile": {
     "title": "个人资料",
     "signOut": "退出登录",
-        "role": "工作类型",
-         "language": "语言",
+    "role": "工作类型",
+    "language": "语言",
     "lang": { "zh": "中文", "en": "English" },
-        "defaultScanMode": "默认扫描模式"
-
+    "defaultScanMode": "默认扫描模式"
   },
   "topbar": {
     "greeting": "你好，{{name}}",
     "tooltip": "领取任务",
     "pickButton": "发布任务",
 
-
-       "selectWarehouse": "选择仓库",
+    "selectWarehouse": "选择仓库",
     "switchingWarehouse": "正在切换仓库…",
     "switchingTo": "正在切换到 {{code}}…",
     "warehouseUpdated": "仓库已切换",
@@ -122,34 +120,25 @@
     "manualInputButton": "手动录入产品和数量",
     "onlyLoadFromAssigned": "仅允许从分配的来源库位加载：{{allowed}}（当前：{{received}}）",
     "onlyUnloadToAssigned": "仅允许卸到分配的库位：{{allowed}}（当前：{{received}}）",
-      "modes": {
+    "modes": {
       "gun": "扫描枪",
       "camera": "手机",
       "manual": "手动输入"
     },
-     "unload": {
-    "onlyBinCodeGun": "卸货时仅允许扫描货位编码（不支持商品条码或多产品输入）"
+    "unload": {
+      "onlyBinCodeGun": "卸货时仅允许扫描货位编码（不支持商品条码或多产品输入）"
+    },
 
+    "addProducts": "手动添加产品",
 
-  },
+    "camera": "手机",
+    "scanner": "扫描枪",
 
-      "addProducts": "手动添加产品",
+    "phone": "手机",
 
-  "camera":"手机",
-  "scanner": "扫描枪",
-
-
-            "phone": "手机",
-
-
-
-
-"gun": {
-
-"placeholder": "请直接按扫描按钮"
-
-}
-
+    "gun": {
+      "placeholder": "请直接按扫描按钮"
+    }
   },
   "inventory": {
     "total": "叉车上总数",
@@ -245,9 +234,8 @@
     "noResult": "未找到相关库存,或此产品缺货",
     "binCode": "货位编号",
     "productCode": "商品编号",
-    "quantity": "数量" ,
-        "binSearchPlaceholder":"输入binCode或者bincode列， 列如LA 或者 LA-01"
-
+    "quantity": "数量",
+    "binSearchPlaceholder": "输入binCode或者bincode列， 列如LA 或者 LA-01"
   },
   "picker": {
     "title": "创建任务",
@@ -277,15 +265,13 @@
     "unloading": "正在卸下…",
     "error": "卸货失败。",
 
-        "autoUnloading": "空货位，自动卸货中…"
-
+    "autoUnloading": "空货位，自动卸货中…"
   },
   "common": {
     "qty": "数量 {{qty}}",
-        "cancel": "取消",
+    "cancel": "取消",
 
-
-            "saved": "已保存",
+    "saved": "已保存",
     "deleted": "已删除",
     "added": "已新增",
     "updated": "已更新",
@@ -295,7 +281,7 @@
     "add": "新增",
     "remove": "移除",
 
-    "submitting"  : "提交中…",
+    "submitting": "提交中…",
     "loading": "加载中…",
     "save": "保存",
     "edit": "编辑",
@@ -324,9 +310,7 @@
     "fromSuggest": "来自联想",
     "fromManual": "手动输入",
     "help": "帮助"
-  }
-
-  ,
+  },
 
   "inventoryIndex": {
     "searchTab": "库存查询",
@@ -334,12 +318,9 @@
     "receiveTab": "收货",
     "tablistAria": "库存模块切换",
     "loading": "加载中..."
-  }
+  },
 
-  ,
-
-
-    "mobileReceive": {
+  "mobileReceive": {
     "title": "托盘收货",
     "refresh": "刷新",
     "pendingTitle": "待确认收货",
@@ -352,7 +333,7 @@
     "undoFail": "撤销确认失败"
   },
 
-    "confirmDrawer": {
+  "confirmDrawer": {
     "titleConfirm": "确认收货",
     "titleUndo": "撤销确认",
     "subConfirm": "共 {{count}} 行",
@@ -360,15 +341,11 @@
     "btnConfirm": "确认收货",
     "btnUndo": "撤销确认",
     "empty": "暂无数据"
-  }
+  },
 
-
-  ,
   "emptyBins": {
     "title": "空货位",
     "search": "搜索…",
     "none": "当前无空货位"
   }
-
-
 }

@@ -172,8 +172,6 @@ export const loadByBinCode = async (
   }
 }
 
-/////////////////////////////////////////
-
 export const loadByProductList = async (
   productList: { productCode: string; quantity: number }[],
   cartID: string,
