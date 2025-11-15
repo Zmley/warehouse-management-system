@@ -24,7 +24,10 @@ export const fetchTransfers = async (req: Request, res: Response) => {
 
   const { rows, count } = await getTransfersByWarehouseID({
     warehouseID,
-    status: typeof status === 'string' ? (status as TaskStatus) : undefined,
+    status:
+      typeof status === 'string'
+        ? (status.toUpperCase() as keyof typeof TaskStatus as TaskStatus)
+        : undefined,
     page: pageNum,
     limit: limitNum
   })

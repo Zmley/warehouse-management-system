@@ -269,7 +269,7 @@ export const getFinishedTasksController = async (
 
     const result = await getAdminFinishedTasksByWarehouseIDPaginated(
       warehouseID,
-      statusRaw as 'COMPLETED' | 'CANCELED',
+      statusRaw as TaskStatus.COMPLETED | TaskStatus.CANCELED,
       page,
       pageSize,
       keyword

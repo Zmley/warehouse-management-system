@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getBinsByBinCodes } from 'routes/bins/bin.service'
+import { BinType } from 'constants/index'
 import { Inventory } from './inventory.model'
 import { Bin } from 'routes/bins/bin.model'
 import { Op, WhereOptions, Order, col } from 'sequelize'
@@ -82,7 +83,10 @@ export const getInventoriesByWarehouseID = async (
     const sortOrderSql = sortOrder === 'ASC' ? 'ASC' : 'DESC'
 
     if (sortBy === 'updatedAt') {
-      const includeBinWhere: WhereOptions = { warehouseID, type: 'INVENTORY' }
+      const includeBinWhere: WhereOptions = {
+        warehouseID,
+        type: BinType.INVENTORY
+      }
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const invWhereAnd: any[] = []
@@ -169,7 +173,10 @@ export const getInventoriesByWarehouseID = async (
       let placeholders: InventoryDTO[] = []
 
       if (hasKeyword || binID || inventories.length < limit) {
-        const binOnlyWhere: WhereOptions = { warehouseID, type: 'INVENTORY' }
+        const binOnlyWhere: WhereOptions = {
+          warehouseID,
+          type: BinType.INVENTORY
+        }
         if (binID) Object.assign(binOnlyWhere, { binID })
         if (hasKeyword)
           Object.assign(binOnlyWhere, { binCode: { [Op.iLike]: `${k}%` } })
@@ -241,7 +248,7 @@ export const getInventoriesByWarehouseID = async (
       return { inventories: [...inventories, ...placeholders], totalCount }
     }
 
-    const binWhere: WhereOptions = { warehouseID, type: 'INVENTORY' }
+    const binWhere: WhereOptions = { warehouseID, type: BinType.INVENTORY }
     if (binID) Object.assign(binWhere, { binID })
 
     let filteredByBinCode = false
@@ -305,7 +312,7 @@ export const getInventoriesByWarehouseID = async (
     ) {
       const whereByProduct: WhereOptions = {
         warehouseID,
-        type: 'INVENTORY',
+        type: BinType.INVENTORY,
         binID: { [Op.in]: extraBinIDsByProduct }
       }
 
@@ -597,7 +604,7 @@ export const getInventoriesFlatByWarehouseID = async (
         attributes: ['binCode'],
         where: {
           warehouseID,
-          type: 'INVENTORY'
+          type: BinType.INVENTORY
         }
       }
     ],

@@ -10,8 +10,14 @@ import {
   PRODUCT_GROUP,
   ProductLowRowPlain
 } from 'utils/product.utils'
-import { ProductUploadInput } from 'types/product'
-import { BinType } from 'constants/index'
+import {
+  CurAggRow,
+  OtherInvRow,
+  ProductLowDTO,
+  ProductPlain,
+  ProductUploadInput
+} from 'types/product'
+import { BinType, transferTaskStatus } from 'constants/index'
 import AppError from 'utils/appError'
 import { sequelize } from 'config/db'
 import Warehouse from 'routes/warehouses/warehouse.model'
@@ -42,14 +48,6 @@ export const getProductsByWarehouseID = async (
     offset,
     limit
   })
-
-  type ProductPlain = {
-    productCode: string
-    barCode: string
-    boxType: string
-    createdAt: Date
-    updatedAt: Date
-  }
 
   const prodPlain: ProductPlain[] = prodRows.map(
     r => r.get({ plain: true }) as ProductPlain
@@ -104,12 +102,6 @@ export const getProductsByWarehouseID = async (
     products,
     total: count
   }
-}
-
-export interface BoxUploadInput {
-  productCode: string
-  barCode: string
-  boxType: string
 }
 
 export const addProducts = async (products: ProductUploadInput[]) => {
@@ -313,49 +305,49 @@ export const getBoxTypes = async (keyword?: string): Promise<string[]> => {
   return rows.map(r => (r.boxType ?? '').trim()).filter(bt => bt.length > 0)
 }
 
-type CurAggRow = {
-  productCode: string
-  totalQuantity: number | string
-}
+// type CurAggRow = {
+//   productCode: string
+//   totalQuantity: number | string
+// }
 
-type OtherInvRow = {
-  inventoryID: string
-  productCode: string
-  quantity: number
-  bin: {
-    binID: string
-    binCode: string
-    warehouseID: string
-    type: string
-    warehouse?: { warehouseID: string; warehouseCode: string }
-    inventories?: Array<{
-      inventoryID: string
-      productCode: string
-      quantity: number
-      binID: string
-    }>
-  }
-}
+// type OtherInvRow = {
+//   inventoryID: string
+//   productCode: string
+//   quantity: number
+//   bin: {
+//     binID: string
+//     binCode: string
+//     warehouseID: string
+//     type: string
+//     warehouse?: { warehouseID: string; warehouseCode: string }
+//     inventories?: Array<{
+//       inventoryID: string
+//       productCode: string
+//       quantity: number
+//       binID: string
+//     }>
+//   }
+// }
 
-type ProductLowDTO = {
-  productCode: string
-  barCode?: string | null
-  boxType?: string | null
-  createdAt?: Date | string | null
-  updatedAt?: Date | string | null
+// type ProductLowDTO = {
+//   productCode: string
+//   barCode?: string | null
+//   boxType?: string | null
+//   createdAt?: Date | string | null
+//   updatedAt?: Date | string | null
 
-  totalQuantity: number
-  otherInventories: Array<{
-    productCode: string
-    quantity: number
-    binTotal: number
-    bin: OtherInvRow['bin']
-  }>
-  hasPendingTransfer: boolean
-  transferStatus: 'PENDING' | 'IN_PROCESS' | 'COMPLETED' | null
-  transfersCount: number
-  hasPendingOutofstockTask: string | null
-}
+//   totalQuantity: number
+//   otherInventories: Array<{
+//     productCode: string
+//     quantity: number
+//     binTotal: number
+//     bin: OtherInvRow['bin']
+//   }>
+//   hasPendingTransfer: boolean
+//   transferStatus: transferTaskStatus | null
+//   transfersCount: number
+//   hasPendingOutofstockTask: string | null
+// }
 
 export const getLowStockWithOtherWarehouses = async (
   warehouseID: string,
@@ -505,13 +497,13 @@ export const getLowStockWithOtherWarehouses = async (
     {
       transfersCount: number
       hasPendingTransfer: boolean
-      transferStatus?: 'PENDING' | 'IN_PROCESS' | 'COMPLETED'
+      transferStatus?: transferTaskStatus
     }
   >()
 
   for (const r of transferRows as Array<{
     productCode: string
-    status: 'PENDING' | 'IN_PROCESS' | 'COMPLETED'
+    status: transferTaskStatus
   }>) {
     const cur = transByProduct.get(r.productCode) || {
       transfersCount: 0,

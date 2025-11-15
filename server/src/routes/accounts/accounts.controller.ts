@@ -9,12 +9,13 @@ import {
   getAllAccountsService,
   getCognitoErrorMessage,
   listTransportWorkers,
-  registerUserService
+  registerAccount
 } from './accounts.service'
 import env from 'config/config'
 import Task from 'routes/tasks/task.model'
-import { cognitoClient } from 'utils/aws'
+import { awsConfig, cognitoClient } from 'utils/aws'
 import Warehouse from 'routes/warehouses/warehouse.model'
+import { TaskStatus } from 'constants/index'
 
 export const loginUser = async (req: Request, res: Response) => {
   const { email, password } = req.body
@@ -22,7 +23,7 @@ export const loginUser = async (req: Request, res: Response) => {
   try {
     const params = {
       AuthFlow: AuthFlowType.USER_PASSWORD_AUTH,
-      ClientId: env.cognitoClientId,
+      ClientId: awsConfig.clientId,
       AuthParameters: { USERNAME: email, PASSWORD: password }
     }
 
@@ -41,7 +42,7 @@ export const loginUser = async (req: Request, res: Response) => {
 
 export const registerUser = async (req: Request, res: Response) => {
   try {
-    const result = await registerUserService(req.body)
+    const result = await registerAccount(req.body)
 
     res.json({
       message: 'User registered successfully',
@@ -81,7 +82,7 @@ export const getUserInfo = async (
     const currentTask = await Task.findOne({
       where: {
         accepterID: account.accountID,
-        status: 'IN_PROCESS'
+        status: TaskStatus.IN_PROCESS
       }
     })
 
@@ -179,7 +180,7 @@ export const changeWarehouse = async (req: Request, res: Response) => {
   }
 }
 
-export const getAllAccountsController = async (req: Request, res: Response) => {
+export const getAllAccounts = async (req: Request, res: Response) => {
   try {
     const accounts = await getAllAccountsService()
 

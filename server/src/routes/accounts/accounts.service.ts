@@ -98,8 +98,6 @@ export const changeWarehouseByAccountID = async (
   return account
 }
 
-///////////
-
 export const getAllAccountsService = async () => {
   const accounts = await Account.findAll({
     include: [
@@ -156,7 +154,7 @@ export const deleteAccountByAccountID = async (accountID: string) => {
   return deleted > 0
 }
 
-export const registerUserService = async (payload: {
+export const registerAccount = async (payload: {
   email: string
   password: string
   role: UserRole

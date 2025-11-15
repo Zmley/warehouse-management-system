@@ -835,7 +835,7 @@ const LIKE_OP = sequelize.getDialect() === 'postgres' ? Op.iLike : Op.like
 
 export const getAdminFinishedTasksByWarehouseIDPaginated = async (
   warehouseID: string,
-  status: 'COMPLETED' | 'CANCELED',
+  status: TaskStatus.COMPLETED | TaskStatus.CANCELED,
   page = 1,
   pageSize = 20,
   keyword?: string

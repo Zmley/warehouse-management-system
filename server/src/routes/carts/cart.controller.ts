@@ -60,9 +60,6 @@ export const unload = asyncHandler(async (req: Request, res: Response) => {
       warehouseID,
       unloadProductList,
       accountID
-      ////
-
-      // warehouseID
     )
 
     let matchedQuantity: number | undefined

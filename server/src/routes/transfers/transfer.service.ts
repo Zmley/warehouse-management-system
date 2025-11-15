@@ -352,7 +352,7 @@ export async function completeLinkedTaskIfNeeded(taskID: string) {
 
   const status = String(task.status || '').toUpperCase()
 
-  if (status === 'IN_PROCESS' || status === 'COMPLETED') {
+  if (status === TaskStatus.IN_PROCESS || status === TaskStatus.COMPLETED) {
     return {
       updated: false,
       skippedReason: `task_already_${status.toLowerCase()}`
@@ -361,7 +361,7 @@ export async function completeLinkedTaskIfNeeded(taskID: string) {
 
   await updateTaskByTaskID({
     taskID,
-    status: 'COMPLETED',
+    status: TaskStatus.COMPLETED,
     sourceBinCode: 'Transfer-in'
   })
   return { updated: true }

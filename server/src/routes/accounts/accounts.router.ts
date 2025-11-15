@@ -9,7 +9,7 @@ import {
   refreshAccessToken,
   fetchWorkerNames,
   changeWarehouse,
-  getAllAccountsController,
+  getAllAccounts,
   deleteAccount
 } from './accounts.controller'
 import { UserRole } from 'constants/index'
@@ -22,7 +22,7 @@ router.post('/refresh-token', refreshAccessToken)
 
 router.get('/me', authenticateToken, currentAccount, getUserInfo)
 
-router.get('/all', getAllAccountsController)
+router.get('/all', getAllAccounts)
 
 router.get('/names', fetchWorkerNames)
 
@@ -32,7 +32,7 @@ router.post(
   '/changeWarehouse',
   authenticateToken,
   currentAccount,
-  roleAllow([UserRole.TRANSPORT_WORKER]),
+  roleAllow([UserRole.TRANSPORT_WORKER, UserRole.PICKER]),
   changeWarehouse
 )
 

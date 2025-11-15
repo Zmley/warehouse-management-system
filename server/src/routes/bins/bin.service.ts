@@ -3,7 +3,15 @@ import Bin from './bin.model'
 import Inventory from 'routes/inventory/inventory.model'
 import AppError from 'utils/appError'
 import { literal, Op, WhereOptions } from 'sequelize'
-import { BinUploadPayload } from 'types/bin'
+import {
+  BinUploadPayload,
+  UpdateBinDto,
+  UpdateBinInput,
+  UpdateBinsResult
+} from 'types/bin'
+import { Transaction, UniqueConstraintError } from 'sequelize'
+import { sequelize } from 'config/db'
+import { BinType } from 'constants/index'
 
 export const getBinByBinCode = async (binCode: string, warehouseID: string) => {
   try {
@@ -34,7 +42,7 @@ export const getBinCodesByProductCode = async (
     const bins = await Bin.findAll({
       where: {
         warehouseID,
-        type: 'INVENTORY'
+        type: BinType.INVENTORY
       },
       include: [
         {
@@ -72,7 +80,7 @@ export const getBinCodesInWarehouse = async (
       where: {
         warehouseID,
         type: {
-          [Op.in]: ['INVENTORY', 'PICK_UP']
+          [Op.in]: [BinType.INVENTORY, BinType.PICK_UP]
         }
       },
       attributes: ['binID', 'binCode']
@@ -172,7 +180,7 @@ export const getPickBinByProductCode = async (
 ) => {
   const bin = await Bin.findOne({
     where: {
-      type: 'PICK_UP',
+      type: BinType.PICK_UP,
       warehouseID,
       [Op.and]: literal(
         `'${productCode}' = ANY(string_to_array("defaultProductCodes", ','))`
@@ -185,7 +193,7 @@ export const getPickBinByProductCode = async (
 
 export const isPickUpBin = async (binCode: string): Promise<boolean> => {
   const bin = await Bin.findOne({ where: { binCode } })
-  return bin?.type === 'PICK_UP'
+  return bin?.type === BinType.PICK_UP
 }
 
 export const getWarehouseIDByBinCode = async (
@@ -270,26 +278,22 @@ export const deleteBinByBInID = async (binID: string): Promise<boolean> => {
   return result > 0
 }
 
-import { Transaction, UniqueConstraintError } from 'sequelize'
-import { sequelize } from 'config/db'
-import { BinType } from 'constants/index'
+// export type UpdateBinInput = {
+//   binID: string
+//   binCode?: string
+//   type?: BinType
+//   defaultProductCodes?: string | null
+// }
 
-export type UpdateBinInput = {
-  binID: string
-  binCode?: string
-  type?: BinType
-  defaultProductCodes?: string | null
-}
-
-export type UpdateBinsResult = {
-  success: boolean
-  updatedCount: number
-  failedCount: number
-  results: Array<
-    | { binID: string; success: true; bin: Bin }
-    | { binID: string; success: false; errorCode: string; message: string }
-  >
-}
+// export type UpdateBinsResult = {
+//   success: boolean
+//   updatedCount: number
+//   failedCount: number
+//   results: Array<
+//     | { binID: string; success: true; bin: Bin }
+//     | { binID: string; success: false; errorCode: string; message: string }
+//   >
+// }
 
 async function updateBinByEntity(
   bin: Bin,
@@ -419,12 +423,6 @@ export async function updateBinByID(input: UpdateBinInput): Promise<Bin> {
   )
 }
 
-export type UpdateBinDto = {
-  binCode?: string
-  type?: BinType
-  defaultProductCodes?: string | null
-}
-
 function normalizeCodes(codes?: string | null): string | null {
   if (codes == null) return null
   const arr = String(codes)
@@ -532,7 +530,7 @@ export const getEmptyBinsInWarehouse = async (
 
   const where: any = {
     warehouseID,
-    type: 'INVENTORY',
+    type: BinType.INVENTORY,
     '$inventories.inventoryID$': { [Op.is]: null }
   }
 

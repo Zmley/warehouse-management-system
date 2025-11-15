@@ -55,7 +55,7 @@ router.patch(
 
 router.delete('/:binID', deleteBin)
 
-router.patch('/:binID', /* auth, */ updateBinController)
+router.patch('/:binID', updateBinController)
 
 router.get('/columns', getBinColumns)
 

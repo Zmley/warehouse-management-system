@@ -5,10 +5,10 @@ import * as binService from 'routes/bins/bin.service'
 import {
   getEmptyBinsInWarehouse,
   getPickBinByProductCode,
-  UpdateBinInput,
   updateSingleBin
 } from 'routes/bins/bin.service'
 import { asyncHandler } from 'utils/asyncHandler'
+import { UpdateBinDto, UpdateBinInput } from 'types/bin'
 
 export const getBin = asyncHandler(async (req: Request, res: Response) => {
   const { binCode } = req.params
@@ -211,12 +211,6 @@ export const updateBinsController = asyncHandler(
   }
 )
 
-export type UpdateBinDto = {
-  binCode?: string
-  type?: BinType
-  defaultProductCodes?: string | null
-}
-
 export const updateBinController = asyncHandler(
   async (req: Request, res: Response) => {
     const { binID } = req.params as { binID: string }
@@ -254,8 +248,6 @@ export const getBinColumns = asyncHandler(
     res.status(200).json({ success: true, columns })
   }
 )
-
-////////
 
 export const getEmptyBins = async (req: Request, res: Response) => {
   try {
