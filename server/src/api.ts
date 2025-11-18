@@ -14,7 +14,7 @@ import trasnfer from 'routes/transfers/transfer.routes'
 
 const router: Router = Router()
 router.use(healthCheck)
-router.use(accountRoutes)
+router.use('/account', accountRoutes)
 router.use(authenticateToken, currentAccount)
 router.use('/cart', cart)
 router.use('/tasks', task)
