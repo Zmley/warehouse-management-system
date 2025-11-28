@@ -20,6 +20,7 @@ export class Transfer extends Model {
   public createdAt!: Date
   public updatedAt!: Date | null
   public batchID: string
+  public sourceBinCode: string | null
 }
 
 Transfer.init(
@@ -97,6 +98,10 @@ Transfer.init(
     batchID: {
       type: DataTypes.UUID,
       allowNull: false
+    },
+    sourceBinCode: {
+      type: DataTypes.STRING,
+      allowNull: true
     }
   },
   {

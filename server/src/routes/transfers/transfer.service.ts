@@ -21,7 +21,7 @@ export const createTransferByTaskID = async ({
   taskID = null,
   sourceWarehouseID,
   destinationWarehouseID,
-  sourceBinID = null,
+  sourceBinID,
   productCode,
   quantity,
   createdBy,
@@ -31,6 +31,10 @@ export const createTransferByTaskID = async ({
     where: { warehouseID: destinationWarehouseID, binCode: 'Unloading_Zone' }
   })
   if (!destBin) throw new Error('Unloading zone not found')
+
+  const sourceBin = await Bin.findOne({
+    where: { binID: sourceBinID }
+  })
 
   return Transfer.create({
     taskID,
@@ -42,7 +46,8 @@ export const createTransferByTaskID = async ({
     quantity,
     status: TaskStatus.PENDING,
     createdBy,
-    batchID
+    batchID,
+    sourceBinCode: sourceBin.binCode
   })
 }
 
