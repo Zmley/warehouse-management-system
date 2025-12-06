@@ -10,6 +10,7 @@ export class Inventory extends Model {
   public createdAt!: Date
   public updatedAt!: Date
   public note!: string
+  totalQuantity: number
 }
 
 Inventory.init(

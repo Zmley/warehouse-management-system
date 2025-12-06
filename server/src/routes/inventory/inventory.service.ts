@@ -3,7 +3,7 @@ import { getBinsByBinCodes } from 'routes/bins/bin.service'
 import { BinType } from 'constants/index'
 import { Inventory } from './inventory.model'
 import { Bin } from 'routes/bins/bin.model'
-import { Op, WhereOptions, Order, col } from 'sequelize'
+import { Op, WhereOptions, Order, col, fn } from 'sequelize'
 import {
   FlatInventoryRow,
   InventoryByBinIDUpload,
@@ -621,4 +621,27 @@ export const getInventoriesFlatByWarehouseID = async (
     productCode: (r as any).productCode as string,
     quantity: Number((r as any).quantity) || 0
   }))
+}
+
+////////////
+
+export const getTotalInventoryByWarehouseID = async (warehouseID: string) => {
+  if (!warehouseID) {
+    throw new AppError(400, 'warehouseID is required')
+  }
+
+  const result = await Inventory.findOne({
+    attributes: [[fn('SUM', col('quantity')), 'totalQuantity']],
+    include: [
+      {
+        model: Bin,
+        as: 'bin',
+        attributes: [],
+        where: { warehouseID }
+      }
+    ],
+    raw: true
+  })
+
+  return Number(result?.totalQuantity ?? 0)
 }

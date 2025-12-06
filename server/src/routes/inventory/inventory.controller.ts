@@ -2,7 +2,8 @@ import { Request, Response } from 'express'
 import * as inventoryService from './inventory.service'
 import {
   getInventoriesByBinID,
-  getInventoriesFlatByWarehouseID
+  getInventoriesFlatByWarehouseID,
+  getTotalInventoryByWarehouseID
 } from './inventory.service'
 import AppError from 'utils/appError'
 import httpStatus from 'constants/httpStatus'
@@ -168,5 +169,26 @@ export const getAllInventoriesForWarehouse = async (
     warehouseID,
     warehouseCode,
     inventories
+  })
+}
+
+///////////
+
+export const getInventoryTotalForWarehouse = async (
+  req: Request,
+  res: Response
+) => {
+  const warehouseID = req.query.warehouseID as string
+
+  if (!warehouseID) {
+    throw new AppError(400, 'warehouseID is required')
+  }
+
+  const totalQuantity = await getTotalInventoryByWarehouseID(warehouseID)
+
+  res.json({
+    success: true,
+    warehouseID,
+    totalQuantity
   })
 }
