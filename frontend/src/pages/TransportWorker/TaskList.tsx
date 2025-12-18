@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useCallback } from 'react'
+import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react'
 import {
   Box,
   Typography,
@@ -47,6 +47,11 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
   const [loadingTasks, setLoadingTasks] = useState<Record<string, boolean>>({})
   const [open, setOpen] = useState(false)
   const [showOutOfStock, setShowOutOfStock] = useState(false)
+
+  const sourceDragRef = useRef<HTMLDivElement | null>(null)
+  const isDraggingRef = useRef(false)
+  const startXRef = useRef(0)
+  const scrollLeftRef = useRef(0)
 
   useEffect(() => {
     if (error) setOpen(true)
@@ -270,14 +275,55 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
                             </Typography>
                           ) : (
                             <Box
+                              ref={sourceDragRef}
+                              onMouseDown={e => {
+                                isDraggingRef.current = true
+                                startXRef.current = e.pageX
+                                scrollLeftRef.current =
+                                  e.currentTarget.scrollLeft
+                              }}
+                              onMouseMove={e => {
+                                if (!isDraggingRef.current) return
+                                const x = e.pageX - startXRef.current
+                                e.currentTarget.scrollLeft =
+                                  scrollLeftRef.current - x
+                              }}
+                              onMouseUp={() => {
+                                isDraggingRef.current = false
+                              }}
+                              onMouseLeave={() => {
+                                isDraggingRef.current = false
+                              }}
+                              onTouchStart={e => {
+                                isDraggingRef.current = true
+                                startXRef.current = e.touches[0].pageX
+                                scrollLeftRef.current =
+                                  e.currentTarget.scrollLeft
+                              }}
+                              onTouchMove={e => {
+                                if (!isDraggingRef.current) return
+                                const x = e.touches[0].pageX - startXRef.current
+                                e.currentTarget.scrollLeft =
+                                  scrollLeftRef.current - x
+                              }}
+                              onTouchEnd={() => {
+                                isDraggingRef.current = false
+                              }}
                               sx={{
                                 whiteSpace: 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
+                                overflowX: 'auto',
+                                overflowY: 'hidden',
                                 fontSize: 13,
-                                fontWeight: 'bold'
+                                fontWeight: 'bold',
+                                WebkitOverflowScrolling: 'touch',
+                                userSelect: 'none',
+
+                                scrollbarWidth: 'none',
+                                msOverflowStyle: 'none',
+                                '&::-webkit-scrollbar': {
+                                  display: 'none'
+                                }
                               }}
-                              title={sourceBinsTitle}
                             >
                               {parts.map((p, idx) => (
                                 <React.Fragment key={`${p.code}-${idx}`}>
