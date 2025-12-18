@@ -226,9 +226,7 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
                 const parts = buildSourceBinsParts(
                   task.sourceBins as unknown as SourceBinView[]
                 )
-                const sourceBinsTitle = parts
-                  .map(p => (p.note ? `${p.code} (${p.note})` : p.code))
-                  .join(' / ')
+
                 const firstBinCode = parts[0]?.code ?? ''
                 const isAisleTask = firstBinCode.startsWith('AISLE-')
 
