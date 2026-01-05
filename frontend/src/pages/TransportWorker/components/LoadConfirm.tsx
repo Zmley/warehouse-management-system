@@ -15,7 +15,7 @@ import { InventoryItem } from 'types/inventory'
 import { useNavigate } from 'react-router-dom'
 import { useTaskContext } from 'contexts/task'
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
-import { setSourceBinCode } from 'utils/Storages'
+import { getScanMode, setSourceBinCode } from 'utils/Storages'
 
 interface LoadConfirmProps {
   binCode: string
@@ -42,9 +42,7 @@ const LoadConfirm: React.FC<LoadConfirmProps> = ({ binCode, inventories }) => {
 
   const taskProductCode = myTask?.productCode
 
-  const scanMode = (localStorage.getItem('scanMode') || 'gun') as
-    | 'camera'
-    | 'gun'
+  const scanMode = getScanMode()
   const cardBodyMaxH = scanMode === 'camera' ? '68vh' : '58vh'
 
   useEffect(() => {

@@ -27,11 +27,7 @@ import useWarehouses from 'hooks/useWarehouse'
 import { useAuth } from 'hooks/useAuth'
 import { AuthContext } from 'contexts/auth'
 import { useLocation } from 'react-router-dom'
-
-const RELOAD_BANNER_KEY = 'wms_reload_banner_once'
-const SWITCHING_KEY = 'wms_switching_overlay'
-const SWITCHING_MSG_KEY = 'wms_switching_overlay_msg'
-const TARGET_WID_KEY = 'wms_switching_target_wid'
+import { useWarehouseSwitching } from 'hooks/useWarehouseSwitching'
 
 const TopBar: React.FC = () => {
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -48,22 +44,11 @@ const TopBar: React.FC = () => {
   const userProfile = auth?.userProfile
   const setUserProfile = auth?.setUserProfile
 
-  const [changing, setChanging] = useState(false)
-
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const openMenu = (e: React.MouseEvent<HTMLElement>) =>
     setAnchorEl(e.currentTarget)
   const closeMenu = () => setAnchorEl(null)
   const menuOpen = Boolean(anchorEl)
-
-  const [showReloadToast, setShowReloadToast] = useState(false)
-
-  const [showOverlay, setShowOverlay] = useState(
-    () => sessionStorage.getItem(SWITCHING_KEY) === '1'
-  )
-  const [overlayText, setOverlayText] = useState(
-    sessionStorage.getItem(SWITCHING_MSG_KEY) || t('topbar.switchingWarehouse')
-  )
 
   const currentWarehouseID = useMemo(
     () => String(userProfile?.warehouseID || ''),
@@ -86,129 +71,23 @@ const TopBar: React.FC = () => {
     }
   }, [fetchWarehouses])
 
-  useEffect(() => {
-    if (sessionStorage.getItem(RELOAD_BANNER_KEY) === '1') {
-      sessionStorage.removeItem(RELOAD_BANNER_KEY)
-      setShowReloadToast(true)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!showOverlay) return
-    const targetWid = sessionStorage.getItem(TARGET_WID_KEY)
-    if (!targetWid) return
-    if (targetWid === currentWarehouseID) {
-      requestAnimationFrame(() => {
-        sessionStorage.removeItem(SWITCHING_KEY)
-        sessionStorage.removeItem(SWITCHING_MSG_KEY)
-        sessionStorage.removeItem(TARGET_WID_KEY)
-        setShowOverlay(false)
-      })
-    }
-  }, [showOverlay, currentWarehouseID])
-
-  useEffect(() => {
-    const handler = () => {
-      sessionStorage.removeItem(SWITCHING_KEY)
-      sessionStorage.removeItem(SWITCHING_MSG_KEY)
-      sessionStorage.removeItem(TARGET_WID_KEY)
-      setShowOverlay(false)
-    }
-    window.addEventListener('wms:initial-data-ready', handler)
-    return () => window.removeEventListener('wms:initial-data-ready', handler)
-  }, [])
-
-  useEffect(() => {
-    if (!showOverlay) return
-    const close = () => {
-      sessionStorage.removeItem(SWITCHING_KEY)
-      sessionStorage.removeItem(SWITCHING_MSG_KEY)
-      sessionStorage.removeItem(TARGET_WID_KEY)
-      setShowOverlay(false)
-    }
-    window.addEventListener('pageshow', close, { once: true })
-    window.addEventListener('load', close, { once: true })
-    return () => {
-      window.removeEventListener('pageshow', close as any)
-      window.removeEventListener('load', close as any)
-    }
-  }, [showOverlay])
-
-  useEffect(() => {
-    if (!showOverlay) return
-    const t = setTimeout(() => {
-      sessionStorage.removeItem(SWITCHING_KEY)
-      sessionStorage.removeItem(SWITCHING_MSG_KEY)
-      sessionStorage.removeItem(TARGET_WID_KEY)
-      setShowOverlay(false)
-    }, 100)
-    return () => clearTimeout(t)
-  }, [showOverlay])
-
-  const hasWarehouses = useMemo(
-    () => Array.isArray(warehouses) && warehouses.length > 0,
-    [warehouses]
-  )
-
-  const buildTargetUrl = (wid: string) => {
-    const parts = location.pathname.split('/')
-    const idx = parts.findIndex(
-      p => p === 'admin-management' || p === 'tasks' || p === 'inventory'
-    )
-    if (idx >= 0) {
-      if (parts[idx + 1]) parts[idx + 1] = wid
-      else parts.splice(idx + 1, 0, wid)
-      return parts.join('/') + location.search
-    }
-    return location.pathname + location.search
-  }
-
-  const onSelectWarehouse = async (wid: string) => {
-    if (!wid || wid === currentWarehouseID) {
-      closeMenu()
-      return
-    }
-
-    const pickedCode =
-      warehouses.find(w => String(w.warehouseID) === String(wid))
-        ?.warehouseCode || t('topbar.loading')
-
-    closeMenu()
-
-    try {
-      setChanging(true)
-
-      const msg = t('topbar.switchingTo', { code: pickedCode })
-      sessionStorage.setItem(SWITCHING_KEY, '1')
-      sessionStorage.setItem(SWITCHING_MSG_KEY, msg)
-      sessionStorage.setItem(TARGET_WID_KEY, String(wid))
-      setOverlayText(msg)
-      setShowOverlay(true)
-
-      await changeUserWarehouse(wid)
-
-      if (setUserProfile && userProfile) {
-        setUserProfile({
-          ...userProfile,
-          warehouseID: wid,
-          warehouseCode: pickedCode
-        })
-      }
-
-      sessionStorage.setItem(RELOAD_BANNER_KEY, '1')
-
-      const targetUrl = buildTargetUrl(wid)
-      window.location.replace(targetUrl)
-    } catch (e) {
-      console.error('Failed to change warehouse', e)
-      sessionStorage.removeItem(SWITCHING_KEY)
-      sessionStorage.removeItem(SWITCHING_MSG_KEY)
-      sessionStorage.removeItem(TARGET_WID_KEY)
-      setShowOverlay(false)
-    } finally {
-      setChanging(false)
-    }
-  }
+  const {
+    changing,
+    showReloadToast,
+    setShowReloadToast,
+    showOverlay,
+    overlayText,
+    hasWarehouses,
+    onSelectWarehouse
+  } = useWarehouseSwitching({
+    t,
+    location,
+    currentWarehouseID,
+    warehouses,
+    changeUserWarehouse,
+    userProfile,
+    setUserProfile
+  })
 
   return (
     <>
@@ -307,7 +186,7 @@ const TopBar: React.FC = () => {
                 return (
                   <MenuItem
                     key={wid}
-                    onClick={() => onSelectWarehouse(wid)}
+                    onClick={() => onSelectWarehouse(wid, closeMenu)}
                     disabled={changing}
                     selected={selected}
                     sx={{

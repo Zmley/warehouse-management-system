@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo } from 'react'
 import {
   Box,
   Card,
@@ -13,59 +13,18 @@ import RefreshRoundedIcon from '@mui/icons-material/RefreshRounded'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import { useBin } from 'hooks/useBin'
 import { useTranslation } from 'react-i18next'
+import { useEmptyBinSearch } from 'hooks/useEmptyBinSearch'
 
 type EmptyBin = { binID: string; binCode: string }
-
-let _emptyBinCache: EmptyBin[] = []
-let _emptyBinCacheAt = 0
-const CACHE_TTL_MS = 60_000
 
 const EmptyBinPanel: React.FC = () => {
   const { t } = useTranslation()
   const { emptyBins, isLoading, fetchEmptyBins } = useBin()
-
-  const [q, setQ] = useState('')
-  const debounceRef = useRef<number | undefined>(undefined)
-  const spinnerRef = useRef<number | undefined>(undefined)
-  const [showSpinner, setShowSpinner] = useState(false)
-
-  const displayBins: EmptyBin[] =
-    emptyBins && emptyBins.length ? (emptyBins as EmptyBin[]) : _emptyBinCache
-
-  useEffect(() => {
-    const now = Date.now()
-    const hasFreshCache =
-      _emptyBinCache.length > 0 && now - _emptyBinCacheAt < CACHE_TTL_MS
-
-    window.clearTimeout(debounceRef.current)
-    debounceRef.current = window.setTimeout(() => {
-      if (hasFreshCache && q.trim() === '') {
-        fetchEmptyBins({ q, limit: 50 })
-      } else {
-        fetchEmptyBins({ q, limit: 50 })
-      }
-    }, 300)
-
-    return () => window.clearTimeout(debounceRef.current)
-  }, [q, fetchEmptyBins])
-
-  useEffect(() => {
-    if (emptyBins && emptyBins.length) {
-      _emptyBinCache = emptyBins as EmptyBin[]
-      _emptyBinCacheAt = Date.now()
-    }
-  }, [emptyBins])
-
-  useEffect(() => {
-    if (displayBins.length > 0 || !isLoading) {
-      window.clearTimeout(spinnerRef.current)
-      setShowSpinner(false)
-      return
-    }
-    window.clearTimeout(spinnerRef.current)
-    spinnerRef.current = window.setTimeout(() => setShowSpinner(true), 200)
-    return () => window.clearTimeout(spinnerRef.current)
-  }, [isLoading, displayBins.length])
+  const { q, setQ, displayBins, showSpinner, refresh } = useEmptyBinSearch({
+    emptyBins: emptyBins as EmptyBin[],
+    isLoading,
+    fetchEmptyBins
+  })
 
   const title = useMemo(() => t('emptyBins.title'), [t])
 
@@ -137,7 +96,7 @@ const EmptyBinPanel: React.FC = () => {
 
           <IconButton
             size='small'
-            onClick={() => fetchEmptyBins({ q, limit: 50 })}
+            onClick={refresh}
             disabled={isLoading}
             aria-label='refresh-empty-bins'
             sx={{

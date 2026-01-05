@@ -20,6 +20,8 @@ import { useAuth } from 'hooks/useAuth'
 import { useTranslation } from 'react-i18next'
 import { useMemo, useState } from 'react'
 import { DeviceType } from 'constants/index'
+import { getDeviceOrDefault } from 'utils/device'
+import { setDevicePreference } from 'utils/Storages'
 
 interface ProfileDrawerProps {
   open: boolean
@@ -50,26 +52,17 @@ const TOGGLE_GROUP_SX = {
   }
 } as const
 
-const STORAGE_KEY_DEVICE = 'device'
-
 const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ open, onClose }) => {
   const { userProfile, handleLogout } = useAuth()
   const { t, i18n } = useTranslation()
 
-  const getInitialDevice = (): DeviceType => {
-    const raw = localStorage.getItem(STORAGE_KEY_DEVICE) as DeviceType | null
-    if (raw === DeviceType.PHONE || raw === DeviceType.SCANNER) return raw
-    localStorage.setItem(STORAGE_KEY_DEVICE, DeviceType.PHONE)
-    return DeviceType.PHONE
-  }
-
-  const initialDevice = useMemo<DeviceType>(getInitialDevice, [])
+  const initialDevice = useMemo<DeviceType>(getDeviceOrDefault, [])
   const [device, setDevice] = useState<DeviceType>(initialDevice)
 
   const handleDeviceChange = (_: unknown, next: DeviceType | null) => {
     if (!next) return
     setDevice(next)
-    localStorage.setItem(STORAGE_KEY_DEVICE, next)
+    setDevicePreference(next)
   }
 
   const langValue: 'zh' | 'en' = i18n.language === 'zh' ? 'zh' : 'en'

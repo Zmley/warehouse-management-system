@@ -15,21 +15,13 @@ import { useTranslation } from 'react-i18next'
 import { useBin } from 'hooks/useBin'
 import { useProduct } from 'hooks/useProduct'
 import { ProductType } from 'types/product'
-import { Mode, DeviceType } from 'constants/index'
+import { Mode } from 'constants/index'
+import { getDefaultModeFromDevice } from 'utils/device'
 
 import CameraPanel, { CameraHandle } from './CameraPanel'
 import GunPanel from './GunPanel'
 import ProductCard from '../ProductCard'
 import CreateManual from './CreateManual'
-
-function getDefaultModeFromDevice(): Mode {
-  const raw = (localStorage.getItem('device') as DeviceType | null) || null
-  const device =
-    raw === DeviceType.PHONE || raw === DeviceType.SCANNER
-      ? raw
-      : DeviceType.PHONE
-  return device === DeviceType.SCANNER ? Mode.GUN : Mode.CAMERA
-}
 
 export default function PickerScan() {
   const { t } = useTranslation()

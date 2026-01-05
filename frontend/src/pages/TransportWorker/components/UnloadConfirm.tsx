@@ -17,6 +17,7 @@ import { useCart } from 'hooks/useCart'
 import { useInventory } from 'hooks/useInventory'
 import { useCartContext } from 'contexts/cart'
 import { InventoryItem } from 'types/inventory'
+import { getScanMode } from 'utils/Storages'
 
 type CartItem = { inventoryID: string; productCode?: string; quantity: number }
 
@@ -147,9 +148,7 @@ const UnloadConfirm: React.FC<UnloadConfirmProps> = ({
     {}
   )
 
-  const scanMode = (localStorage.getItem('scanMode') || 'gun') as
-    | 'camera'
-    | 'gun'
+  const scanMode = getScanMode()
   const cardBodyMaxH = scanMode === 'camera' ? '68vh' : '80vh'
 
   useEffect(() => {

@@ -9,21 +9,13 @@ import { useTranslation } from 'react-i18next'
 import HandheldScanerPanel from './HandheldScanerPanel'
 import ManualInputPanel from './ManualInputPanel'
 import CameraPanel from './CameraPanel'
-import { DeviceType, Mode } from 'constants/index'
+import { Mode } from 'constants/index'
+import { getDefaultModeFromDevice } from 'utils/device'
 
 type ModeItem = {
   key: Mode
   label: string
   Icon: typeof QrCodeScannerIcon
-}
-
-function getDefaultModeFromDevice(): Mode {
-  const raw = (localStorage.getItem('device') as DeviceType | null) || null
-  const device: DeviceType =
-    raw === DeviceType.SCANNER || raw === DeviceType.PHONE
-      ? raw
-      : DeviceType.PHONE
-  return device === DeviceType.SCANNER ? Mode.GUN : Mode.CAMERA
 }
 
 export default function Scan() {

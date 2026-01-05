@@ -15,6 +15,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
 import { useTranslation } from 'react-i18next'
 import { setSourceBinCode } from 'utils/Storages'
+import { startsWithFilter } from 'utils/inputHelpers'
 
 interface ProductInput {
   productCode: string
@@ -34,14 +35,6 @@ const ROW_H = 40
 const QTY_MIN_W = 60
 const DEL_W = 32
 const GRID_COLS = `minmax(0,1.5fr) minmax(${QTY_MIN_W}px,0.5fr) ${DEL_W}px`
-
-const startsWithFilter = (options: string[], q: string) => {
-  const key = (q || '').trim().toLowerCase()
-  if (!key) return []
-  const list = options.filter(o => o.toLowerCase().startsWith(key))
-  list.sort((a, b) => a.length - b.length || a.localeCompare(b))
-  return list.slice(0, 50)
-}
 
 const MultiProductInputBox: React.FC<MultiProductInputBoxProps> = ({
   productOptions,
