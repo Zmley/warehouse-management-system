@@ -9,6 +9,11 @@ import {
   FormControlLabel
 } from '@mui/material'
 import { useAuth } from 'hooks/useAuth'
+import {
+  clearRememberedLogin,
+  getRememberedLogin,
+  setRememberedLogin
+} from 'utils/Storages'
 
 const Login: React.FC = () => {
   const { handleLogin, error } = useAuth()
@@ -18,13 +23,12 @@ const Login: React.FC = () => {
   const [domain, setDomain] = useState('@outlook.com')
 
   useEffect(() => {
-    const savedEmail = localStorage.getItem('savedEmail')
-    const savedPassword = localStorage.getItem('savedPassword')
-    if (savedEmail && savedPassword) {
-      const parts = savedEmail.split('@')
+    const remembered = getRememberedLogin()
+    if (remembered) {
+      const parts = remembered.email.split('@')
       setUsername(parts[0])
       setDomain(`@${parts[1]}`)
-      setPassword(savedPassword)
+      setPassword(remembered.password)
       setRememberMe(true)
     }
   }, [])
@@ -33,11 +37,9 @@ const Login: React.FC = () => {
     const email = `${username}${domain}`
 
     if (rememberMe) {
-      localStorage.setItem('savedEmail', email)
-      localStorage.setItem('savedPassword', password)
+      setRememberedLogin(email, password)
     } else {
-      localStorage.removeItem('savedEmail')
-      localStorage.removeItem('savedPassword')
+      clearRememberedLogin()
     }
 
     handleLogin(email, password)

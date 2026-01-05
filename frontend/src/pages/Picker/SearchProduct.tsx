@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
   Box,
   Button,
@@ -25,6 +25,7 @@ import { useProduct } from 'hooks/useProduct'
 import { ProductType } from 'types/product'
 import ProductCard from './ProductCard'
 import { useTranslation } from 'react-i18next'
+import { useDynamsoftScanner } from 'hooks/useDynamsoftScanner'
 
 const license = process.env.REACT_APP_DYNAMSOFT_LICENSE || ''
 
@@ -44,8 +45,6 @@ const SearchProduct: React.FC = () => {
   const theme = useTheme()
   const isXs = useMediaQuery(theme.breakpoints.down('sm'))
 
-  const scannerRef = useRef<any>(null)
-  const scannedRef = useRef(false)
   const inputRef = useRef<HTMLInputElement | null>(null)
 
   const [showScanner, setShowScanner] = useState(false)
@@ -63,69 +62,6 @@ const SearchProduct: React.FC = () => {
   }, [])
 
   useEffect(() => {
-    if (!showScanner) return
-    let router: any
-    let cameraEnhancer: any
-
-    const init = async () => {
-      try {
-        const { Dynamsoft } = window
-        await Dynamsoft.License.LicenseManager.initLicense(license)
-        await Dynamsoft.Core.CoreModule.loadWasm(['DBR'])
-
-        const cameraView = await Dynamsoft.DCE.CameraView.createInstance()
-        cameraEnhancer =
-          await Dynamsoft.DCE.CameraEnhancer.createInstance(cameraView)
-        document
-          .querySelector('.query-product-inline-scanner')
-          ?.append(cameraView.getUIElement())
-
-        router = await Dynamsoft.CVR.CaptureVisionRouter.createInstance()
-        await router.setInput(cameraEnhancer)
-
-        const receiver = new Dynamsoft.CVR.CapturedResultReceiver()
-        receiver.onCapturedResultReceived = async (result: any) => {
-          if (scannedRef.current) return
-          for (const item of result.items) {
-            const text = item.text?.trim()
-            if (text) {
-              scannedRef.current = true
-              setBarcode(text)
-              await router.stopCapturing()
-              await cameraEnhancer.close()
-              setShowScanner(false)
-              setAutoOpen(false)
-              handleSearch(text)
-              break
-            }
-          }
-        }
-
-        router.addResultReceiver(receiver)
-        await cameraEnhancer.open()
-        await router.startCapturing('ReadBarcodes_SpeedFirst')
-
-        scannerRef.current = { router, cameraEnhancer }
-      } catch (err) {
-        console.error('Scanner init failed:', err)
-        setError(t('queryProduct.errorInit'))
-        setSnackOpen(true)
-        setShowScanner(false)
-      }
-    }
-
-    init()
-    return () => {
-      try {
-        router?.stopCapturing()
-        cameraEnhancer?.close()
-      } catch {}
-      scannerRef.current = null
-      scannedRef.current = false
-    }
-  }, [showScanner, t])
-
-  useEffect(() => {
     const h = (e: KeyboardEvent) => {
       const isCmdK = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k'
       if (isCmdK) {
@@ -139,10 +75,11 @@ const SearchProduct: React.FC = () => {
     return () => window.removeEventListener('keydown', h)
   }, [barcode, showScanner])
 
-  const handleSearch = async (code?: string) => {
-    setError(null)
-    setLoading(true)
-    setProduct(null)
+  const handleSearch = useCallback(
+    async (code?: string) => {
+      setError(null)
+      setLoading(true)
+      setProduct(null)
     try {
       const target = (code ?? barcode).trim()
       if (!target) {
@@ -165,23 +102,50 @@ const SearchProduct: React.FC = () => {
     } finally {
       setLoading(false)
     }
-  }
+    },
+    [barcode, fetchProduct, t]
+  )
+
+  const handleDetected = useCallback(
+    (text: string) => {
+      setBarcode(text)
+      setShowScanner(false)
+      setAutoOpen(false)
+      handleSearch(text)
+    },
+    [handleSearch]
+  )
+
+  const handleScannerError = useCallback(
+    (err: unknown) => {
+      console.error('Scanner init failed:', err)
+      setError(t('queryProduct.errorInit'))
+      setSnackOpen(true)
+      setShowScanner(false)
+    },
+    [t]
+  )
+
+  const { stop: stopScanner, reset: resetScanner } = useDynamsoftScanner({
+    enabled: showScanner,
+    license,
+    containerSelector: '.query-product-inline-scanner',
+    onDetected: handleDetected,
+    onError: handleScannerError
+  })
 
   const handleOpenScanner = () => {
     setProduct(null)
     setError(null)
     setShowScanner(true)
     setAutoOpen(false)
-    scannedRef.current = false
+    resetScanner()
   }
 
   const handleCloseScanner = () => {
-    try {
-      scannerRef.current?.router?.stopCapturing()
-      scannerRef.current?.cameraEnhancer?.close()
-    } catch {}
+    stopScanner()
     setShowScanner(false)
-    scannedRef.current = false
+    resetScanner()
   }
 
   const clearInput = () => {

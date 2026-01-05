@@ -5,6 +5,7 @@ import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined'
 import AddIcon from '@mui/icons-material/Add'
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined'
 import { useTranslation } from 'react-i18next'
+import { BOTTOMBAR_HEIGHT } from 'pages/Dashboard'
 
 interface BottomBarProps {
   onCartClick: () => void
@@ -15,7 +16,7 @@ interface BottomBarProps {
   activeTab: 'tasks' | 'publish' | 'cart' | 'inventory' | 'query'
 }
 
-const WokerBottomBar: React.FC<BottomBarProps> = ({
+const WokerBottomBarComponent: React.FC<BottomBarProps> = ({
   onCartClick,
   onTaskListClick,
   onPublishClick,
@@ -24,12 +25,11 @@ const WokerBottomBar: React.FC<BottomBarProps> = ({
   activeTab
 }) => {
   const { t } = useTranslation()
-
-  const getColor = (tab: string) => (activeTab === tab ? '#2563eb' : '#9ca3af')
-  const getFilter = (tab: string) =>
-    activeTab === tab
-      ? 'invert(34%) sepia(93%) saturate(1939%) hue-rotate(210deg) brightness(93%) contrast(92%)'
-      : 'invert(60%) sepia(6%) saturate(220%) hue-rotate(174deg) brightness(90%) contrast(85%)'
+  const isActive = React.useCallback(
+    (tab: string) => activeTab === tab,
+    [activeTab]
+  )
+  const colorFor = (tab: string) => (isActive(tab) ? '#2563eb' : '#6b7280')
 
   return (
     <Box
@@ -38,40 +38,41 @@ const WokerBottomBar: React.FC<BottomBarProps> = ({
         bottom: 0,
         left: 0,
         right: 0,
-        height: 68,
+        height: BOTTOMBAR_HEIGHT,
         backgroundColor: '#fff',
         boxShadow: '0 -1px 6px rgba(0, 0, 0, 0.06)',
         display: 'flex',
         justifyContent: 'space-around',
-        zIndex: 1200
+        zIndex: 1200,
+        pb: 'env(safe-area-inset-bottom, 0px)'
       }}
     >
       <BottomBarItem
         icon={
           <AssignmentOutlinedIcon
-            sx={{ fontSize: 22, color: getColor('tasks') }}
+            sx={{ fontSize: 22, color: colorFor('tasks') }}
           />
         }
         label={t('bottombar.tasks')}
         onClick={onTaskListClick}
-        isActive={activeTab === 'tasks'}
+        isActive={isActive('tasks')}
       />
 
       <BottomBarItem
         icon={
-          <SearchOutlinedIcon sx={{ fontSize: 22, color: getColor('query') }} />
+          <SearchOutlinedIcon sx={{ fontSize: 22, color: colorFor('query') }} />
         }
         label={t('bottombar.query')}
         onClick={onQueryClick}
-        isActive={activeTab === 'query'}
+        isActive={isActive('query')}
       />
 
       <BottomBarItem
         icon={
           <Box
             sx={{
-              width: 22,
-              height: 22,
+              width: 28,
+              height: 28,
               borderRadius: '50%',
               background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
               display: 'flex',
@@ -80,12 +81,12 @@ const WokerBottomBar: React.FC<BottomBarProps> = ({
               color: '#fff'
             }}
           >
-            <AddIcon sx={{ fontSize: 16 }} />
+            <AddIcon sx={{ fontSize: 18 }} />
           </Box>
         }
         label={t('bottombar.publish')}
         onClick={onPublishClick}
-        isActive={activeTab === 'publish'}
+        isActive={isActive('publish')}
       />
 
       <BottomBarItem
@@ -97,25 +98,24 @@ const WokerBottomBar: React.FC<BottomBarProps> = ({
             sx={{
               width: 22,
               height: 22,
-              filter: getFilter('cart'),
-              transition: 'filter 0.3s ease'
+              filter: isActive('cart') ? 'none' : 'grayscale(1) brightness(.9)'
             }}
           />
         }
         label={t('bottombar.cart')}
         onClick={onCartClick}
-        isActive={activeTab === 'cart'}
+        isActive={isActive('cart')}
       />
 
       <BottomBarItem
         icon={
           <Inventory2OutlinedIcon
-            sx={{ fontSize: 22, color: getColor('inventory') }}
+            sx={{ fontSize: 22, color: colorFor('inventory') }}
           />
         }
         label={t('bottombar.inventory')}
         onClick={onInventoryClick}
-        isActive={activeTab === 'inventory'}
+        isActive={isActive('inventory')}
       />
     </Box>
   )
@@ -132,39 +132,46 @@ const BottomBarItem: React.FC<{
     sx={{
       flex: 1,
       display: 'flex',
-      flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
       cursor: 'pointer',
       height: '100%',
       backgroundColor: isActive ? '#f0f9ff' : 'transparent',
-      transition: 'background-color 0.3s ease-in-out',
-      '&:hover': { backgroundColor: '#f3f4f6' }
+      transition: 'background-color 0.2s ease'
     }}
   >
     <Box
       sx={{
-        width: 22,
-        height: 22,
         display: 'flex',
+        flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center'
+        transform:
+          'translateY(calc(-6px - (env(safe-area-inset-bottom, 0px) / 2)))'
       }}
     >
-      {icon}
+      <Box
+        sx={{
+          width: 24,
+          height: 24,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
+      >
+        {icon}
+      </Box>
+      <Typography
+        sx={{
+          fontWeight: 500,
+          fontSize: 12,
+          mt: 0.2,
+          color: isActive ? '#2563eb' : '#6b7280',
+          transition: 'color 0.2s ease'
+        }}
+      >
+        {label}
+      </Typography>
     </Box>
-    <Typography
-      sx={{
-        fontWeight: 500,
-        fontSize: 11,
-        mt: 0.4,
-        color: isActive ? '#2563eb' : '#9ca3af',
-        transition: 'color 0.3s ease'
-      }}
-    >
-      {label}
-    </Typography>
   </Box>
 )
-
-export default WokerBottomBar
+export default React.memo(WokerBottomBarComponent)

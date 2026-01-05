@@ -4,21 +4,31 @@ import {
   getBinByBinCode,
   getBinCodes,
   getBinCodesByProductCode,
+  getBinColumns,
+  getEmptyBins,
   getPickupBinsByProductCode
 } from 'api/bin'
 import { Bin } from 'types/bin'
 import { useAuth } from './useAuth'
+
+type EmptyBin = { binID: string; binCode: string; warehouseID: string }
 
 export const useBin = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [binCodes, setBinCodes] = useState<string[]>([])
 
+  const [emptyBins, setEmptyBins] = useState<EmptyBin[]>([])
+
   const { userProfile } = useAuth()
 
   const warehouseID = userProfile?.warehouseID
 
   const [pickupBinCode, setPickupBinCode] = useState<string | null>(null)
+
+  const [columns, setColumns] = useState<string[]>([])
+
+  const [loading, setLoading] = useState(false)
 
   const fetchBinCodesByProductCode = useCallback(
     async (
@@ -137,6 +147,50 @@ export const useBin = () => {
     }
   }, [])
 
+  const fetchBinColumns = useCallback(async (warehouseID?: string) => {
+    try {
+      setLoading(true)
+      setError(null)
+      const res = await getBinColumns(warehouseID)
+      setColumns(res.data?.columns || [])
+    } catch (err: any) {
+      console.error('❌ Failed to fetch bin columns:', err)
+      setError(err?.message || 'Failed to fetch bin columns')
+      setColumns([])
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  const fetchEmptyBins = useCallback(
+    async (opts?: { wid?: string; q?: string; limit?: number }) => {
+      try {
+        setIsLoading(true)
+        setError(null)
+
+        const res = await getEmptyBins({
+          warehouseID: opts?.wid || warehouseID,
+          q: opts?.q,
+          limit: opts?.limit
+        })
+
+        const list: EmptyBin[] = res.data?.bins || []
+        setEmptyBins(list)
+        return list
+      } catch (err: any) {
+        console.error('❌ Failed to fetch empty bins:', err)
+        setEmptyBins([])
+        setError(
+          err?.response?.data?.message || '❌ Failed to fetch empty bins'
+        )
+        return []
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [warehouseID]
+  )
+
   return {
     fetchBinCodesByProductCode,
     fetchBinByCode,
@@ -147,6 +201,11 @@ export const useBin = () => {
     checkBinType,
     fetchAvailableBinCodes,
     getPickUpBinByProductCode,
-    pickupBinCode
+    pickupBinCode,
+    columns,
+    loading,
+    fetchBinColumns,
+    emptyBins,
+    fetchEmptyBins
   }
 }

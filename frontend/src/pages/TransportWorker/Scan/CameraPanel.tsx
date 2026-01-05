@@ -1,23 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import {
-  Box,
-  Button,
-  Typography,
-  Drawer,
-  Autocomplete,
-  TextField,
-  Paper
-} from '@mui/material'
+import { Box, Typography, Drawer, Paper, GlobalStyles } from '@mui/material'
 import { useTranslation } from 'react-i18next'
+
 import { useCart } from 'hooks/useCart'
-import { useBin } from 'hooks/useBin'
 import { useInventory } from 'hooks/useInventory'
 import { useProduct } from 'hooks/useProduct'
 import { useTaskContext } from 'contexts/task'
-import LoadConfirm from './components/LoadConfirm'
-import UnloadConfirm from './components/UnloadConfirm'
-import MultiProductInputBox from './components/ManualInputBox'
+import LoadConfirm from '../components/LoadConfirm'
+import UnloadConfirm from '../components/UnloadConfirm'
+import MultiProductInputBox from '../components/ManualInputBox'
 import { ScanMode } from 'constants/index'
 
 declare global {
@@ -28,7 +20,7 @@ declare global {
 
 const license = process.env.REACT_APP_DYNAMSOFT_LICENSE || ''
 
-const Scan = () => {
+export default function CameraPanel() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
@@ -36,60 +28,36 @@ const Scan = () => {
   const scannedRef = useRef(false)
 
   const { loadCart } = useCart()
-  const { fetchBinCodes, binCodes } = useBin()
   const { fetchInventoriesByBinCode } = useInventory()
   const { fetchProduct, loadProducts, productCodes } = useProduct()
   const { myTask } = useTaskContext()
 
   const scanMode: ScanMode = location.state?.mode ?? ScanMode.LOAD
-
   const unloadProductList =
     (location.state?.unloadProductList as
       | { inventoryID: string; productCode: string; quantity: number }[]
       | undefined) ?? []
 
-  const [manualInput, setManualInput] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [scannedBinCode, setScannedBinCode] = useState<string | null>(null)
   const [inventoryList, setInventoryList] = useState<any[]>([])
-  const [showDrawer, setShowDrawer] = useState(false)
   const [defaultManualItems, setDefaultManualItems] = useState<
     { productCode: string; quantity: string }[]
   >([])
-
   const [unloadCartItems, setUnloadCartItems] = useState<
     { inventoryID: string; productCode: string; quantity: number }[]
   >([])
+  const [showDrawer, setShowDrawer] = useState(false)
 
   useEffect(() => {
-    fetchBinCodes()
     loadProducts()
-  }, [])
-
-  const stopScanner = () => {
-    scannerRef.current?.router?.stopCapturing()
-    scannerRef.current?.cameraEnhancer?.close()
-  }
-
-  const parseProductList = (text: string) => {
-    return text
-      .split(',')
-      .map(pair => {
-        const [code, qty] = pair.split(':').map(s => s.trim())
-        if (code && qty && /^\d+$/.test(qty)) {
-          return { productCode: code, quantity: qty }
-        }
-        return null
-      })
-      .filter(Boolean) as { productCode: string; quantity: string }[]
-  }
+  }, [loadProducts])
 
   const getAllowedLoadBins = (): string[] => {
     const bins =
       myTask?.sourceBins?.map((x: any) => x?.bin?.binCode).filter(Boolean) ?? []
     return [...new Set(bins)]
   }
-
   const getAllowedUnloadBins = (): string[] => {
     const candidates = [
       myTask?.destinationBinCode,
@@ -97,7 +65,6 @@ const Scan = () => {
     ].filter(Boolean) as string[]
     return [...new Set(candidates)]
   }
-
   const isBinAllowedForMode = (
     mode: ScanMode,
     binCode: string
@@ -112,89 +79,100 @@ const Scan = () => {
     }
   }
 
-  const handleScanOrManualSubmit = async (code: string) => {
-    const trimmed = code.trim()
-    if (!trimmed) {
-      setError(t('scan.enterPrompt'))
-      return
-    }
+  const stopScanner = () => {
+    try {
+      scannerRef.current?.router?.stopCapturing()
+      scannerRef.current?.cameraEnhancer?.close()
+    } catch {}
+  }
 
-    if (myTask) {
-      const isSingleBarcode = /^\d{8,}$/.test(trimmed)
-      const isMultiProduct = trimmed.includes(':') || trimmed.includes(',')
-      if (isSingleBarcode || isMultiProduct) {
-        stopScanner()
-        setError(t('scan.taskActiveOnlyBinCode'))
-        return
-      }
-    }
+  const handleScan = async (code: string) => {
+    const trimmed = code.trim()
+    if (!trimmed) return
 
     try {
+      if (myTask) {
+        const isSingleBarcode = /^\d{8,}$/.test(trimmed)
+        const isMultiProduct = trimmed.includes(':') || trimmed.includes(',')
+        if (isSingleBarcode || isMultiProduct) {
+          setError(t('scan.taskActiveOnlyBinCode'))
+          stopScanner()
+          return
+        }
+      }
+
       if (scanMode === ScanMode.UNLOAD) {
         const { ok, allowed } = isBinAllowedForMode(ScanMode.UNLOAD, trimmed)
         if (!ok) {
-          stopScanner()
           setError(
             t('scan.onlyUnloadToAssigned', {
               allowed: allowed.join(', '),
               received: trimmed
             })
           )
+          stopScanner()
           return
         }
-
-        stopScanner()
         setScannedBinCode(trimmed)
         setUnloadCartItems(unloadProductList)
         setShowDrawer(true)
+        stopScanner()
         return
       }
 
-      if (trimmed.includes(':') || trimmed.includes(',')) {
-        const parsed = parseProductList(trimmed)
-        if (parsed.length > 0) {
-          stopScanner()
-          setDefaultManualItems(parsed)
+      if (!myTask && (trimmed.includes(':') || trimmed.includes(','))) {
+        const pairs = trimmed
+          .split(',')
+          .map(pair => {
+            const [c, q] = pair.split(':').map(s => s.trim())
+            return c && q && /^\d+$/.test(q)
+              ? { productCode: c, quantity: q }
+              : null
+          })
+          .filter(Boolean) as { productCode: string; quantity: string }[]
+        if (pairs.length > 0) {
+          setDefaultManualItems(pairs)
           setShowDrawer(true)
+          stopScanner()
           return
         }
       }
 
-      if (/^\d{8,}$/.test(trimmed)) {
+      if (!myTask && /^\d{8,}$/.test(trimmed)) {
         const product = await fetchProduct(trimmed)
         if (product) {
-          stopScanner()
           setDefaultManualItems([
-            { productCode: product.productCode, quantity: '1' }
+            { productCode: product.productCode, quantity: '' }
           ])
           setShowDrawer(true)
+          stopScanner()
           return
         }
       }
 
       const { ok, allowed } = isBinAllowedForMode(ScanMode.LOAD, trimmed)
       if (!ok) {
-        stopScanner()
         setError(
           t('scan.onlyLoadFromAssigned', {
             allowed: allowed.join(', '),
             received: trimmed
           })
         )
+        stopScanner()
         return
       }
 
       const result = await fetchInventoriesByBinCode(trimmed)
       if (result?.inventories?.length) {
-        stopScanner()
         setScannedBinCode(trimmed)
         setInventoryList(result.inventories)
         setShowDrawer(true)
+        stopScanner()
       } else {
-        throw new Error(t('scan.noInventoryFound'))
+        setError(t('scan.noInventoryFound'))
       }
-    } catch (err) {
-      console.error(err)
+    } catch (e) {
+      console.error(e)
       setError(t('scan.operationError'))
     }
   }
@@ -210,9 +188,21 @@ const Scan = () => {
         const cameraEnhancer =
           await Dynamsoft.DCE.CameraEnhancer.createInstance(cameraView)
 
-        document
-          .getElementById('scanner-view')
-          ?.append(cameraView.getUIElement())
+        const host = document.getElementById('scanner-view')
+        const ui = cameraView.getUIElement()
+        if (host) {
+          host.innerHTML = ''
+          host.append(ui)
+          Object.assign(ui.style, {
+            width: '100%',
+            height: '100%',
+            border: '0'
+          } as CSSStyleDeclaration)
+
+          try {
+            cameraView.setVideoFit?.('cover')
+          } catch {}
+        }
 
         const router = await Dynamsoft.CVR.CaptureVisionRouter.createInstance()
         await router.setInput(cameraEnhancer)
@@ -224,8 +214,8 @@ const Scan = () => {
             const text = item.text?.trim()
             if (text) {
               scannedRef.current = true
-              stopScanner()
-              await handleScanOrManualSubmit(text)
+              await handleScan(text)
+              scannedRef.current = false
               break
             }
           }
@@ -243,141 +233,47 @@ const Scan = () => {
     }
 
     initScanner()
-    return () => {
-      stopScanner()
-    }
+    return () => stopScanner()
   }, [])
 
-  const handleCancel = () => {
-    stopScanner()
-    navigate('/')
-  }
-
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        backgroundColor: '#f9f9f9',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        px: 2,
-        py: 4
-      }}
-    >
-      <Paper elevation={3} sx={{ p: 3, width: '100%', maxWidth: 600 }}>
-        <Typography variant='h6' fontWeight='bold' gutterBottom>
-          {t('scan.scanBinCode')}
-        </Typography>
+    <Box>
+      <GlobalStyles
+        styles={{
+          '#scanner-view, #scanner-view > *': {
+            width: '100%',
+            height: '100%'
+          },
+          '#scanner-view video': {
+            width: '100% !important',
+            height: '100% !important',
+            objectFit: 'cover !important'
+          },
+          '#scanner-view .dce-ui-badge, #scanner-view .dce-msg-label': {
+            display: 'none !important'
+          }
+        }}
+      />
 
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mt: 1 }}>
-          <Autocomplete
-            options={binCodes}
-            value={manualInput}
-            onInputChange={(e, val) => setManualInput(val)}
-            onChange={(e, newVal) => setManualInput(newVal || '')}
-            filterOptions={(options, state) =>
-              state.inputValue.length === 0
-                ? []
-                : options.filter(option =>
-                    option
-                      .toLowerCase()
-                      .includes(state.inputValue.toLowerCase())
-                  )
-            }
-            openOnFocus={false}
-            sx={{ flex: 1 }}
-            renderInput={params => (
-              <TextField
-                {...params}
-                label={t('scan.inputBinCode')}
-                variant='outlined'
-                size='small'
-              />
-            )}
-          />
-          <Button
-            onClick={() => {
-              stopScanner()
-              handleScanOrManualSubmit(manualInput)
-            }}
-            variant='contained'
-            sx={{
-              height: '40px',
-              fontWeight: 'bold',
-              background: 'linear-gradient(to right, #1976d2, #42a5f5)'
-            }}
-          >
-            {t('scan.confirm')}
-          </Button>
-        </Box>
-
+      <Paper
+        elevation={2}
+        sx={{ p: 2, mb: 2, borderRadius: 2, textAlign: 'center' }}
+      >
         <Box
           id='scanner-view'
           sx={{
-            height: 300,
-            mt: 2,
-            borderRadius: 3,
+            width: '100%',
+            maxWidth: 520,
+            mx: 'auto',
+            borderRadius: 2,
             overflow: 'hidden',
             border: '2px solid #ccc',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center'
+            aspectRatio: '3 / 4',
+            height: { xs: 'auto', sm: 360 }
           }}
         />
-
-        <Button
-          fullWidth
-          disabled={!!myTask || scanMode === ScanMode.UNLOAD}
-          onClick={() => {
-            stopScanner()
-            setScannedBinCode(null)
-            setInventoryList([])
-            setDefaultManualItems([])
-            setShowDrawer(true)
-          }}
-          sx={{
-            mt: 2,
-            background:
-              !!myTask || scanMode === ScanMode.UNLOAD
-                ? 'linear-gradient(to right, #d3d3d3, #e0e0e0)'
-                : 'linear-gradient(to right, #1976d2, #42a5f5)',
-            color:
-              !!myTask || scanMode === ScanMode.UNLOAD ? '#7a7a7a' : 'white',
-            py: 1.5,
-            borderRadius: 3,
-            fontWeight: 'bold',
-            fontSize: '1rem',
-            boxShadow:
-              !!myTask || scanMode === ScanMode.UNLOAD
-                ? 'none'
-                : '0 4px 12px rgba(66, 165, 245, 0.4)',
-            cursor:
-              !!myTask || scanMode === ScanMode.UNLOAD
-                ? 'not-allowed'
-                : 'pointer'
-          }}
-        >
-          {t('scan.manualInputButton')}
-        </Button>
-
-        <Button
-          fullWidth
-          onClick={handleCancel}
-          sx={{
-            mt: 2,
-            backgroundColor: '#e53935',
-            color: '#fff',
-            '&:hover': {
-              backgroundColor: '#c62828'
-            }
-          }}
-        >
-          {t('scan.cancel')}
-        </Button>
-
         {error && (
-          <Typography color='error' mt={2} fontWeight='bold' textAlign='center'>
+          <Typography color='error' mt={1.5} fontWeight='bold'>
             {error}
           </Typography>
         )}
@@ -386,7 +282,7 @@ const Scan = () => {
       <Drawer
         anchor='top'
         open={showDrawer}
-        onClose={handleCancel}
+        onClose={() => setShowDrawer(false)}
         PaperProps={{
           sx: {
             maxHeight: '90vh',
@@ -442,7 +338,7 @@ const Scan = () => {
                 }
                 navigate('/success')
               }}
-              onCancel={handleCancel}
+              onCancel={() => setShowDrawer(false)}
               defaultItems={defaultManualItems}
             />
           </Box>
@@ -451,5 +347,3 @@ const Scan = () => {
     </Box>
   )
 }
-
-export default Scan

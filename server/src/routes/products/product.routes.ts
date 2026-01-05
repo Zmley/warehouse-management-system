@@ -1,20 +1,21 @@
 import express from 'express'
 import {
   getProductCodes,
-  getProducts,
   addProducts,
   getProduct,
   getLowStock,
-  getBoxTypes
+  getBoxTypes,
+  getProducts,
+  getLowStockWithOthers
 } from './product.controller'
 
 import roleAllow from 'middlewares/roleAllow.middleware'
 import { UserRole } from 'constants/index'
 
 import {
-  validateGetProducts,
   validateAddProducts,
-  validateGetProduct
+  validateGetProduct,
+  validateGetProducts
 } from './product.middleware'
 
 const router = express.Router()
@@ -40,5 +41,11 @@ router.post(
 router.get('/low-stock', roleAllow([UserRole.ADMIN]), getLowStock)
 
 router.get('/box-types', getBoxTypes)
+
+router.get(
+  '/low-stock-with-others',
+  roleAllow([UserRole.ADMIN]),
+  getLowStockWithOthers
+)
 
 export default router

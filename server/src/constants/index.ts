@@ -18,3 +18,9 @@ export enum UserRole {
   TRANSPORT_WORKER = 'TRANSPORT_WORKER',
   SUPER_ADMIN = 'SUPER_ADMIN'
 }
+
+export enum transferTaskStatus {
+  PENDING = 'PENDING',
+  IN_PROCESS = 'IN_PROCESS',
+  COMPLETED = 'COMPLETED'
+}

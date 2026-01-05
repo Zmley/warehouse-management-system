@@ -9,7 +9,9 @@ import {
   deleteInventory,
   updateInventories,
   addInventories,
-  getInventoriesByBinCode
+  getInventoriesByBinCode,
+  getAllInventoriesForWarehouse,
+  getInventoryTotalForWarehouse
 } from './inventory.controller'
 
 import {
@@ -21,6 +23,10 @@ import {
 } from './inventory.schema'
 
 const router: Router = Router()
+
+router.get('/all', roleAllow([UserRole.ADMIN]), getAllInventoriesForWarehouse)
+
+router.get('/total', getInventoryTotalForWarehouse)
 
 router.get(
   '/inventoriesInCart',
@@ -37,29 +43,30 @@ router.get(
 
 router.post(
   '/',
-  roleAllow([UserRole.ADMIN]),
+  roleAllow([UserRole.ADMIN, UserRole.TRANSPORT_WORKER]),
   celebrate({ [Segments.BODY]: AddInventoriesSchema }),
   addInventories
 )
 
 router.put(
   '/',
-  roleAllow([UserRole.ADMIN]),
+  roleAllow([UserRole.ADMIN, UserRole.TRANSPORT_WORKER]),
   celebrate({ [Segments.BODY]: UpdateInventoriesSchema }),
   updateInventories
 )
 
-router.delete(
-  '/:inventoryID',
-  roleAllow([UserRole.ADMIN]),
-  celebrate({ [Segments.PARAMS]: InventoryIDParamSchema }),
-  deleteInventory
-)
-
 router.get(
-  '/:binCode',
+  '/:binCode/:binID?',
+  roleAllow([UserRole.ADMIN, UserRole.PICKER, UserRole.TRANSPORT_WORKER]),
   celebrate({ [Segments.PARAMS]: BinCodeParamSchema }),
   getInventoriesByBinCode
+)
+
+router.delete(
+  '/:inventoryID',
+  roleAllow([UserRole.ADMIN, UserRole.TRANSPORT_WORKER]),
+  celebrate({ [Segments.PARAMS]: InventoryIDParamSchema }),
+  deleteInventory
 )
 
 export default router

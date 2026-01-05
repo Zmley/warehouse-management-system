@@ -1,7 +1,7 @@
 import { useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AuthContext } from 'contexts/auth'
-import { loginUser } from 'api/auth'
+import { changeWarehouse, loginUser } from 'api/auth'
 import { saveTokens, clearTokens } from 'utils/Storages'
 
 export const useAuth = () => {
@@ -36,5 +36,23 @@ export const useAuth = () => {
     setIsAuthenticated(false)
   }
 
-  return { handleLogin, handleLogout, isAuthenticated, error, userProfile }
+  const changeUserWarehouse = async (warehouseID: string) => {
+    if (!warehouseID) return
+    setError(null)
+    try {
+      await changeWarehouse(warehouseID)
+    } catch (err: any) {
+      setError(err?.response?.data?.message || 'Failed to change warehouse')
+    } finally {
+    }
+  }
+
+  return {
+    handleLogin,
+    handleLogout,
+    isAuthenticated,
+    error,
+    userProfile,
+    changeUserWarehouse
+  }
 }

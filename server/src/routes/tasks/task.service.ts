@@ -4,7 +4,6 @@ import Bin from 'routes/bins/bin.model'
 import AppError from 'utils/appError'
 import { Op, Sequelize, Transaction, WhereOptions } from 'sequelize'
 import { UserRole, TaskStatus } from 'constants/index'
-import { TaskWithJoin } from 'types/task'
 import {
   checkInventoryQuantity,
   getCartInventories
@@ -17,6 +16,9 @@ import {
 } from 'routes/carts/cart.service'
 import httpStatus from 'constants/httpStatus'
 import { sequelize } from 'config/db'
+import Warehouse from 'routes/warehouses/warehouse.model'
+import Transfer from 'routes/transfers/transfer.model'
+import { PageResult, TaskWithJoin } from 'types/transfer'
 
 export const hasActiveTask = async (
   accountID: string
@@ -198,12 +200,13 @@ export const getTaskByAccountID = async (
     productCode: string
     quantity: number
     bin: { binID?: string; binCode?: string }
+    note?: string | null
   }> = []
 
   if (myCurrentTask.sourceBinID) {
     const sourceBin = await Bin.findOne({
       where: { binID: myCurrentTask.sourceBinID },
-      attributes: ['binID', 'binCode']
+      attributes: ['binID', 'binCode', 'warehouseID']
     })
 
     if (sourceBin) {
@@ -217,8 +220,24 @@ export const getTaskByAccountID = async (
         ],
         raw: true
       })
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const totalQuantity = Number((row as any)?.totalQuantity ?? 0)
+
+      let note: string | null = null
+      if (sourceBin.warehouseID === warehouseID) {
+        const latestNoteRow = await Inventory.findOne({
+          where: {
+            binID: myCurrentTask.sourceBinID,
+            productCode,
+            note: { [Op.ne]: '' }
+          },
+          attributes: ['note'],
+          order: [['updatedAt', 'DESC']],
+          raw: true
+        })
+        note = (latestNoteRow && latestNoteRow.note?.trim()) || null
+      }
 
       sourceBins = [
         {
@@ -228,12 +247,19 @@ export const getTaskByAccountID = async (
           bin: {
             binID: sourceBin.binID,
             binCode: sourceBin.binCode
-          }
+          },
+          note
         }
       ]
     } else {
       sourceBins = [
-        { inventoryID: null, productCode, quantity: 0, bin: { binCode: '--' } }
+        {
+          inventoryID: null,
+          productCode,
+          quantity: 0,
+          bin: { binCode: '--' },
+          note: null
+        }
       ]
     }
   } else {
@@ -263,18 +289,58 @@ export const getTaskByAccountID = async (
       raw: true
     })
 
-    sourceBins = rows.map(r => ({
-      inventoryID: null,
-      productCode,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      quantity: Number((r as any).totalQuantity ?? 0),
-      bin: {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        binID: (r as any).binID,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        binCode: (r as any).binCode
+    const noteRows = await Inventory.findAll({
+      where: {
+        productCode,
+        note: { [Op.ne]: '' }
+      },
+      attributes: [
+        [Sequelize.col('bin.binID'), 'binID'],
+        ['note', 'note']
+      ],
+      include: [
+        {
+          model: Bin,
+          as: 'bin',
+          attributes: [],
+          required: true,
+          where: {
+            warehouseID,
+            type: 'INVENTORY'
+          }
+        }
+      ],
+      order: [['updatedAt', 'DESC']],
+      raw: true
+    })
+
+    const noteByBinID = new Map<string, string>()
+    for (const r of noteRows as Array<{ binID: string; note: string }>) {
+      if (!noteByBinID.has(r.binID)) {
+        const n = (r.note || '').trim()
+        if (n) noteByBinID.set(r.binID, n)
       }
-    }))
+    }
+
+    sourceBins = rows.map(r => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const binID = (r as any).binID as string
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const binCode = (r as any).binCode as string
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const qty = Number((r as any).totalQuantity ?? 0)
+
+      return {
+        inventoryID: null,
+        productCode,
+        quantity: qty,
+        bin: {
+          binID,
+          binCode
+        },
+        note: noteByBinID.get(binID) ?? null
+      }
+    })
   }
 
   const destinationBin = await Bin.findOne({
@@ -302,18 +368,39 @@ const getIncludeClause = (warehouseID: string) => {
       as: 'destinationBin',
       attributes: ['binID', 'binCode', 'warehouseID'],
       required: true,
-      where: { warehouseID }
+      where: { warehouseID },
+      include: [
+        {
+          model: Warehouse,
+          as: 'warehouse',
+          attributes: ['warehouseID', 'warehouseCode'],
+          required: false
+        }
+      ]
     },
+
     {
       model: Bin,
       as: 'sourceBin',
       attributes: ['binID', 'binCode', 'warehouseID'],
-      required: false
+      required: false,
+      include: [
+        {
+          model: Warehouse,
+          as: 'warehouse',
+          attributes: ['warehouseID', 'warehouseCode'],
+          required: false
+        }
+      ]
     },
+
     {
       model: Inventory,
       as: 'inventories',
       required: false,
+      where: {
+        quantity: { [Op.gt]: 0 }
+      },
       include: [
         {
           model: Bin,
@@ -323,10 +410,65 @@ const getIncludeClause = (warehouseID: string) => {
           where: {
             warehouseID,
             type: 'INVENTORY'
-          }
+          },
+          include: [
+            {
+              model: Warehouse,
+              as: 'warehouse',
+              attributes: ['warehouseID', 'warehouseCode'],
+              required: false
+            }
+          ]
         }
       ]
     },
+
+    {
+      model: Inventory,
+      as: 'otherInventories',
+      required: false,
+      where: {
+        quantity: { [Op.gt]: 0 }
+      },
+      include: [
+        {
+          model: Bin,
+          as: 'bin',
+          attributes: ['binID', 'binCode', 'warehouseID'],
+          required: true,
+          where: {
+            warehouseID: { [Op.ne]: warehouseID },
+            type: 'INVENTORY'
+          },
+          include: [
+            {
+              model: Warehouse,
+              as: 'warehouse',
+              attributes: ['warehouseID', 'warehouseCode'],
+              required: false
+            },
+            {
+              model: Inventory,
+              as: 'inventories',
+              required: false,
+              attributes: [
+                'inventoryID',
+                'productCode',
+                'quantity',
+                'binID',
+                'createdAt',
+                'updatedAt',
+                'note'
+              ],
+              where: {
+                quantity: { [Op.gt]: 0 }
+              }
+            }
+          ]
+        }
+      ]
+    },
+
     {
       model: Account,
       as: 'accepter',
@@ -338,6 +480,22 @@ const getIncludeClause = (warehouseID: string) => {
       as: 'creator',
       attributes: ['accountID', 'firstName', 'lastName'],
       required: false
+    },
+
+    {
+      model: Transfer,
+      as: 'transfers',
+      required: false,
+      attributes: ['transferID', 'status', 'taskID'],
+      where: {
+        status: {
+          [Op.in]: [
+            TaskStatus.PENDING,
+            TaskStatus.IN_PROCESS,
+            TaskStatus.COMPLETED
+          ]
+        }
+      }
     }
   ]
 }
@@ -379,8 +537,15 @@ const getAdminWhereClause = (status: string, keyword: string) => {
 
 const mapTasks = (tasks: TaskWithJoin[]) => {
   return tasks.map(task => {
-    let sourceBins: unknown[] = []
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const transfers: any[] = task.transfers ?? []
 
+    const transferStatus =
+      Array.isArray(transfers) && transfers.length > 0
+        ? String(transfers[0].status).toUpperCase()
+        : null
+
+    let sourceBins: unknown[] = []
     if (task.sourceBin) {
       sourceBins = [
         {
@@ -393,14 +558,19 @@ const mapTasks = (tasks: TaskWithJoin[]) => {
       sourceBins = task.inventories
     }
 
+    const json = task.toJSON ? task.toJSON() : task
+
     return {
-      ...task.toJSON(),
+      ...json,
 
       inventories: undefined,
       sourceBin: undefined,
+      transfers: undefined,
 
       sourceBins,
-      destinationBinCode: task.destinationBin?.binCode || '--'
+      destinationBinCode: task.destinationBin?.binCode || '--',
+      transferStatus,
+      transfersCount: transfers.length
     }
   })
 }
@@ -433,7 +603,6 @@ export const getTasksByWarehouseID = async (
   status?: string
 ) => {
   const whereClause = getWhereClauseForRole(role, status, accountID, keyword)
-
   const includeClause = getIncludeClause(warehouseID)
 
   const tasks = (await Task.findAll({
@@ -452,17 +621,21 @@ export const getTasksByWarehouseID = async (
 export const checkIfTaskDuplicate = async (
   productCode: string,
   destinationBinCode: string,
-  sourceBinCode?: string
+  sourceBinCode?: string,
+  warehouseID?: string
 ): Promise<Bin> => {
   try {
-    const destinationBin = await getBinByBinCode(destinationBinCode)
+    const destinationBin = await getBinByBinCode(
+      destinationBinCode,
+      warehouseID
+    )
     if (!destinationBin) {
       throw new AppError(httpStatus.NOT_FOUND, '', 'DEST_BIN_NOT_FOUND')
     }
 
     let sourceBinID: string | undefined
     if (sourceBinCode) {
-      const sourceBin = await getBinByBinCode(sourceBinCode)
+      const sourceBin = await getBinByBinCode(sourceBinCode, warehouseID)
       if (!sourceBin) {
         throw new AppError(httpStatus.NOT_FOUND, '', 'SOURCE_BIN_NOT_FOUND')
       }
@@ -501,7 +674,8 @@ export const updateTaskByTaskID = async ({
   sourceBinCode,
   sourceBinID,
   quantity,
-  accepterID
+  accepterID,
+  warehouseID
 }: {
   taskID: string
   status?: string
@@ -509,6 +683,7 @@ export const updateTaskByTaskID = async ({
   sourceBinID?: string
   quantity?: number
   accepterID?: string
+  warehouseID?: string
 }) => {
   const task = await Task.findByPk(taskID)
   if (!task) throw new Error('Task not found')
@@ -516,7 +691,7 @@ export const updateTaskByTaskID = async ({
   if (status) task.status = status
 
   if (sourceBinCode) {
-    const bin = await getBinByBinCode(sourceBinCode)
+    const bin = await getBinByBinCode(sourceBinCode, warehouseID)
     task.sourceBinID = bin.binID
   }
 
@@ -583,7 +758,9 @@ export const completeTaskByAdmin = async (
 
 export const cancelByTransportWorker = async (
   taskID: string,
-  cartID: string
+  cartID: string,
+  accountID: string,
+  warehouseID?: string
 ) => {
   return sequelize.transaction(async (t: Transaction) => {
     const task = await Task.findByPk(taskID, { transaction: t })
@@ -612,13 +789,23 @@ export const cancelByTransportWorker = async (
 
       const sourceBin = await Bin.findByPk(task.sourceBinID, { transaction: t })
       if (sourceBin?.binCode) {
-        await unloadByBinCode(sourceBin.binCode, unloadProductList)
+        await unloadByBinCode(
+          sourceBin.binCode,
+          warehouseID,
+          unloadProductList,
+          accountID
+        )
       }
     }
 
-    task.status = TaskStatus.PENDING
-    task.accepterID = null
-    await task.save({ transaction: t })
+    await task.update(
+      {
+        status: TaskStatus.PENDING,
+        accepterID: null,
+        sourceBinID: null
+      },
+      { transaction: t }
+    )
 
     return task
   })
@@ -642,4 +829,172 @@ export const getAdminTasksByWarehouseID = async (
   })) as unknown as TaskWithJoin[]
 
   return tasks.length ? mapTasks(tasks) : []
+}
+
+const LIKE_OP = sequelize.getDialect() === 'postgres' ? Op.iLike : Op.like
+
+export const getAdminFinishedTasksByWarehouseIDPaginated = async (
+  warehouseID: string,
+  status: TaskStatus.COMPLETED | TaskStatus.CANCELED,
+  page = 1,
+  pageSize = 20,
+  keyword?: string
+): Promise<PageResult<TaskWithJoin>> => {
+  const offset = Math.max(0, (page - 1) * pageSize)
+  const limit = Math.max(1, pageSize)
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const taskWhere: WhereOptions<any> = { status }
+  if (keyword && keyword.trim()) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(taskWhere as any)[Op.or] = [
+      { productCode: { [LIKE_OP]: `%${keyword}%` } }
+    ]
+  }
+
+  const isCompleted = status === 'COMPLETED'
+
+  const mainBinIncludeForFilter = isCompleted
+    ? ({
+        model: Bin,
+        as: 'destinationBin',
+        attributes: [],
+        required: true,
+        where: { warehouseID }
+      } as const)
+    : ({
+        model: Bin,
+        as: 'sourceBin',
+        attributes: [],
+        required: true,
+        where: { warehouseID }
+      } as const)
+
+  const extraBinIncludeForKeyword =
+    keyword && keyword.trim()
+      ? ([
+          isCompleted
+            ? {
+                model: Bin,
+                as: 'destinationBin',
+                attributes: [],
+                required: false,
+                where: { binCode: { [LIKE_OP]: `%${keyword}%` } }
+              }
+            : {
+                model: Bin,
+                as: 'sourceBin',
+                attributes: [],
+                required: false,
+                where: { binCode: { [LIKE_OP]: `%${keyword}%` } }
+              }
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ] as any[])
+      : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ([] as any[])
+
+  const total: number = await Task.count({
+    where: taskWhere,
+    include: [mainBinIncludeForFilter, ...extraBinIncludeForKeyword],
+    distinct: true,
+    col: 'taskID'
+  })
+
+  if (total === 0) {
+    return { items: [], page, pageSize: limit, total: 0, totalPages: 1 }
+  }
+
+  const idRows = await Task.findAll({
+    attributes: ['taskID', 'updatedAt'],
+    where: taskWhere,
+    include: [mainBinIncludeForFilter, ...extraBinIncludeForKeyword],
+    order: [['updatedAt', 'DESC']],
+    offset,
+    limit,
+    subQuery: false
+  })
+
+  const ids = idRows.map(r => r.get('taskID')) as string[]
+  if (ids.length === 0) {
+    return {
+      items: [],
+      page,
+      pageSize: limit,
+      total,
+      totalPages: Math.max(1, Math.ceil(total / limit))
+    }
+  }
+
+  const rows = await Task.findAll({
+    where: { taskID: { [Op.in]: ids } },
+    attributes: [
+      'taskID',
+      'productCode',
+      'quantity',
+      'status',
+      'createdAt',
+      'updatedAt',
+      'destinationBinID',
+      'sourceBinID',
+      'creatorID',
+      'accepterID'
+    ],
+    include: [
+      {
+        model: Bin,
+        as: 'destinationBin',
+        attributes: ['binID', 'binCode', 'warehouseID'],
+        required: false
+      },
+      {
+        model: Bin,
+        as: 'sourceBin',
+        attributes: ['binID', 'binCode', 'warehouseID'],
+        required: false
+      },
+      {
+        model: Account,
+        as: 'accepter',
+        attributes: ['accountID', 'firstName', 'lastName'],
+        required: false
+      },
+      {
+        model: Account,
+        as: 'creator',
+        attributes: ['accountID', 'firstName', 'lastName'],
+        required: false
+      },
+      {
+        model: Inventory,
+        as: 'inventories',
+        required: false,
+        separate: true,
+        attributes: ['inventoryID', 'quantity', 'binID', 'productCode'],
+        include: [
+          {
+            model: Bin,
+            as: 'bin',
+            attributes: ['binID', 'binCode', 'warehouseID'],
+            required: true,
+            where: { warehouseID }
+          }
+        ],
+        order: [['inventoryID', 'ASC']]
+      }
+    ],
+    subQuery: false
+  })
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mapById = new Map<string, any>()
+  rows.forEach(r => mapById.set(r.get('taskID') as string, r))
+  const ordered = ids.map(id => mapById.get(id)).filter(Boolean)
+
+  return {
+    items: ordered,
+    page,
+    pageSize: limit,
+    total,
+    totalPages: Math.max(1, Math.ceil(total / limit))
+  }
 }

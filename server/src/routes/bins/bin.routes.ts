@@ -9,7 +9,9 @@ import {
   checkIfPickUpBin,
   updateDefaultProductCodes,
   deleteBin,
-  updateBinController
+  updateBinController,
+  getBinColumns,
+  getEmptyBins
 } from './bin.controller'
 import roleAllow from 'middlewares/roleAllow.middleware'
 import { UserRole } from 'constants/index'
@@ -23,9 +25,9 @@ import {
 
 const router = express.Router()
 
-router.get('/codes', validateWarehouseIDQuery, getBinCodes)
+router.get('/empty', getEmptyBins)
 
-router.get('/', validateWarehouseIDQuery, getBins)
+router.get('/codes', validateWarehouseIDQuery, getBinCodes)
 
 router.post('/add', roleAllow([UserRole.ADMIN]), addBins)
 
@@ -53,6 +55,10 @@ router.patch(
 
 router.delete('/:binID', deleteBin)
 
-router.patch('/:binID', /* auth, */ updateBinController)
+router.patch('/:binID', updateBinController)
+
+router.get('/columns', getBinColumns)
+
+router.get('/', validateWarehouseIDQuery, getBins)
 
 export default router

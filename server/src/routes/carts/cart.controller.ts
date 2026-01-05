@@ -7,11 +7,16 @@ import * as taskService from 'routes/tasks/task.service'
 import { asyncHandler } from 'utils/asyncHandler'
 
 export const load = asyncHandler(async (req: Request, res: Response) => {
-  const { cartID, accountID } = res.locals
+  const { cartID, accountID, warehouseID } = res.locals
   const { binCode, selectedItems, productList } = req.body
 
   if (productList) {
-    const result = await cartService.loadByProductList(productList, cartID)
+    const result = await cartService.loadByProductList(
+      productList,
+      cartID,
+      accountID,
+      warehouseID
+    )
     res.status(200).json({
       success: true,
       message: result.messages.join('\n')
@@ -20,11 +25,17 @@ export const load = asyncHandler(async (req: Request, res: Response) => {
   }
 
   if (binCode) {
-    await cartService.loadByBinCode(binCode, cartID, selectedItems)
+    await cartService.loadByBinCode(
+      binCode,
+      cartID,
+      selectedItems,
+      accountID,
+      warehouseID
+    )
 
     const activeTask = await taskService.hasActiveTask(accountID)
     if (activeTask?.status === TaskStatus.IN_PROCESS) {
-      const bin = await getBinByBinCode(binCode)
+      const bin = await getBinByBinCode(binCode, warehouseID)
       if (bin?.binID) {
         await taskService.updateTaskSourceBin(activeTask.taskID, bin.binID)
       }
@@ -44,7 +55,12 @@ export const unload = asyncHandler(async (req: Request, res: Response) => {
   const task = await taskService.getTaskByAccountID(accountID, warehouseID)
 
   if (task) {
-    const result = await cartService.unloadByBinCode(binCode, unloadProductList)
+    const result = await cartService.unloadByBinCode(
+      binCode,
+      warehouseID,
+      unloadProductList,
+      accountID
+    )
 
     let matchedQuantity: number | undefined
     if (unloadProductList.length === 1)
@@ -53,7 +69,8 @@ export const unload = asyncHandler(async (req: Request, res: Response) => {
     await updateTaskByTaskID({
       taskID: task.taskID,
       quantity: matchedQuantity,
-      status: TaskStatus.COMPLETED
+      status: TaskStatus.COMPLETED,
+      warehouseID
     })
 
     res.status(200).json({
@@ -61,7 +78,12 @@ export const unload = asyncHandler(async (req: Request, res: Response) => {
       updatedProducts: result.updatedCount
     })
   } else {
-    const result = await cartService.unloadByBinCode(binCode, unloadProductList)
+    const result = await cartService.unloadByBinCode(
+      binCode,
+      warehouseID,
+      unloadProductList,
+      accountID
+    )
     res.status(200).json({
       success: true,
       updatedProducts: result.updatedCount

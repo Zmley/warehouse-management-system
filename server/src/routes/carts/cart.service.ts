@@ -3,6 +3,11 @@ import Bin from 'routes/bins/bin.model'
 import AppError from 'utils/appError'
 import { BinType } from 'constants/index'
 import { Transaction } from 'sequelize'
+import {
+  createOpenLogsOnLoad,
+  fulfillLogsOnUnload
+} from 'routes/log/log.service'
+import { getFulfillItemsByInventories } from 'routes/inventory/inventory.service'
 
 export const moveInventoriesToBin = async (
   inventories: {
@@ -87,20 +92,36 @@ export const moveInventoriesToBin = async (
 
 export const unloadByBinCode = async (
   binCode: string,
+
+  warehouseID: string,
   unloadProductList: {
     inventoryID: string
     quantity: number
     merge?: boolean
     targetInventoryID?: string
-  }[]
+  }[],
+  accountID?: string
 ): Promise<{ updatedCount: number }> => {
   try {
-    const bin = await Bin.findOne({ where: { binCode } })
+    const bin = await Bin.findOne({ where: { binCode, warehouseID } })
     if (!bin) throw new AppError(404, `❌ ${binCode} not found in system`)
+
+    const fulfillItems =
+      accountID && unloadProductList.length
+        ? await getFulfillItemsByInventories(unloadProductList)
+        : []
 
     const updatedCount = await moveInventoriesToBin(unloadProductList, bin)
     if (updatedCount === 0) {
       throw new AppError(404, `❌ No inventory was moved to bin "${binCode}".`)
+    }
+
+    if (accountID && fulfillItems.length) {
+      await fulfillLogsOnUnload({
+        accountID,
+        items: fulfillItems,
+        binID: bin.binID
+      })
     }
 
     return { updatedCount }
@@ -114,16 +135,32 @@ export const unloadByBinCode = async (
 export const loadByBinCode = async (
   binCode: string,
   cartID: string,
-  selectedItems?: { inventoryID: string; quantity: number }[]
+  selectedItems?: { inventoryID: string; quantity: number }[],
+  accountID?: string,
+  warehouseID?: string
 ): Promise<{ message: string }> => {
   try {
-    const bin = await Bin.findOne({ where: { binCode } })
+    const bin = await Bin.findOne({ where: { binCode, warehouseID } })
     if (!bin) throw new AppError(404, `❌ Bin ${binCode} not found in system`)
 
     const cartBin = await Bin.findOne({ where: { binID: cartID } })
     if (!cartBin) throw new AppError(404, '❌ Cart bin not found')
 
+    const openLogItems =
+      accountID && selectedItems.length
+        ? await getFulfillItemsByInventories(selectedItems)
+        : []
+
     await moveInventoriesToBin(selectedItems, cartBin)
+
+    if (accountID && openLogItems.length) {
+      await createOpenLogsOnLoad({
+        accountID,
+        items: openLogItems,
+        warehouseID: warehouseID,
+        binID: bin.binID
+      })
+    }
 
     return {
       message: `✅ Selected products loaded from bin ${binCode}.`
@@ -137,7 +174,9 @@ export const loadByBinCode = async (
 
 export const loadByProductList = async (
   productList: { productCode: string; quantity: number }[],
-  cartID: string
+  cartID: string,
+  accountID: string,
+  warehouseID?: string
 ): Promise<{ messages: string[] }> => {
   const messages: string[] = []
 
@@ -152,6 +191,12 @@ export const loadByProductList = async (
       `✅ ${item.quantity} units of ${item.productCode} loaded to cart.`
     )
   }
+
+  await createOpenLogsOnLoad({
+    accountID,
+    items: productList,
+    warehouseID
+  })
 
   return { messages }
 }

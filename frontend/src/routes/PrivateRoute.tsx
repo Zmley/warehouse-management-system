@@ -1,5 +1,5 @@
 import { Routes, Route } from 'react-router-dom'
-import Scan from 'pages/TransportWorker/Scan'
+import Scan from 'pages/TransportWorker/Scan/index'
 import UnloadSuccess from 'pages/Success'
 import { useContext, useEffect } from 'react'
 import { AuthContext } from 'contexts/auth'
@@ -17,6 +17,7 @@ const PrivateRoutes: React.FC = () => {
   return (
     <Routes>
       <Route path='/' element={<Dashboard />} />
+
       <Route
         path='/my-task/scan-QRCode'
         element={

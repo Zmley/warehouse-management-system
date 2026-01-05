@@ -2,6 +2,7 @@ import { DataTypes, Model } from 'sequelize'
 import { sequelize } from 'config/db'
 import { BinType } from 'constants/index'
 import Inventory from 'routes/inventory/inventory.model'
+import Warehouse from 'routes/warehouses/warehouse.model'
 
 export class Bin extends Model {
   public binID!: string
@@ -57,5 +58,7 @@ Bin.init(
     timestamps: true
   }
 )
+
+Bin.belongsTo(Warehouse, { as: 'warehouse', foreignKey: 'warehouseID' })
 
 export default Bin

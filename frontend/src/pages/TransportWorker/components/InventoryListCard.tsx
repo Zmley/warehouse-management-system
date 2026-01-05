@@ -42,7 +42,8 @@ const InventoryListCard: React.FC<Props> = ({
   const { myTask } = useTaskContext()
 
   const handleInputChange = (inventoryID: string, value: string) => {
-    const numericValue = sanitizeQuantityInput(value)
+    let numericValue = sanitizeQuantityInput(value)
+    if (Number.isNaN(numericValue) || value === '') numericValue = 0
 
     const inventory = inventories.find(i => i.inventoryID === inventoryID)
     if (inventory && numericValue > inventory.quantity) {
@@ -107,6 +108,12 @@ const InventoryListCard: React.FC<Props> = ({
       >
         {selectedList.map(item => {
           const inv = inventories.find(i => i.inventoryID === item.inventoryID)
+          const displayQty =
+            item.quantity === '' ||
+            item.quantity === null ||
+            item.quantity === undefined
+              ? 0
+              : item.quantity
 
           return (
             <Box
@@ -127,6 +134,7 @@ const InventoryListCard: React.FC<Props> = ({
               <Checkbox
                 size='small'
                 checked={item.selected}
+                disabled={Number(displayQty) <= 0 || shouldLookDisabled}
                 onChange={() => onSelectionChange(item.inventoryID)}
                 sx={{ p: 0.5, mr: 1 }}
               />
@@ -145,23 +153,33 @@ const InventoryListCard: React.FC<Props> = ({
                 <Typography fontSize={12} color='text.secondary'>
                   {t('inventory.offload')}
                 </Typography>
+
                 <TextField
                   size='small'
                   type='number'
-                  value={item.quantity}
+                  value={displayQty}
                   disabled={item.selected}
                   onChange={e =>
                     handleInputChange(item.inventoryID, e.target.value)
                   }
                   sx={{
-                    width: 50,
-                    '& .MuiInputBase-input': {
+                    width: 66,
+                    '& .MuiOutlinedInput-root': { boxSizing: 'border-box' },
+                    '& .MuiOutlinedInput-input': {
                       fontSize: 12,
-                      py: 0.4,
-                      textAlign: 'center'
+                      padding: '4px 6px',
+                      textAlign: 'center',
+                      fontVariantNumeric: 'tabular-nums',
+                      appearance: 'textfield',
+                      MozAppearance: 'textfield',
+                      '&::-webkit-outer-spin-button, &::-webkit-inner-spin-button':
+                        {
+                          WebkitAppearance: 'none',
+                          margin: 0
+                        }
                     }
                   }}
-                  inputProps={{ min: 0 }}
+                  inputProps={{ min: 0, step: 1, inputMode: 'numeric' }}
                 />
               </Box>
             </Box>

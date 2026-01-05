@@ -1,4 +1,3 @@
-// src/utils/appError.ts
 import HttpStatusCodes from 'constants/httpStatus'
 
 export default class AppError extends Error {

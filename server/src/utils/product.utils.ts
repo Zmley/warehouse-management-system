@@ -101,7 +101,8 @@ export const PRODUCT_GROUP = [
   'Product.productCode',
   'Product.barCode',
   'Product.boxType',
-  'Product.createdAt'
+  'Product.createdAt',
+  'Product.updatedAt'
 ] as const
 
 export type ProductLowRowPlain = {
@@ -110,5 +111,7 @@ export type ProductLowRowPlain = {
   barCode: string | null
   boxType: string | null
   createdAt: Date
+  updatedAt: Date
+
   totalQuantity: number | string | null
 }

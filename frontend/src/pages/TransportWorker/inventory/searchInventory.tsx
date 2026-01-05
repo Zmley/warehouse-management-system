@@ -27,18 +27,24 @@ const Inventory: React.FC = () => {
 
   useEffect(() => {
     fetchProductCodes()
-  }, [])
+  }, [fetchProductCodes])
 
   const handleSearch = async (code: string) => {
-    if (!code.trim()) return
+    const kw = code.trim()
+    if (!kw) return
     setIsFetching(true)
-    await fetchInventories(code.trim())
-    setIsFetching(false)
+    try {
+      await fetchInventories({ keyword: kw, limit: 100 })
+    } finally {
+      setIsFetching(false)
+    }
   }
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') handleSearch(productCode)
   }
+
+  const norm = (s: string) => (s || '').trim().toLowerCase()
 
   return (
     <Box p={2} sx={{ mx: 'auto' }}>
@@ -50,28 +56,27 @@ const Inventory: React.FC = () => {
         display='flex'
         justifyContent='center'
         mb={3}
-        sx={{
-          maxWidth: 400,
-          mx: 'auto'
-        }}
+        sx={{ maxWidth: 400, mx: 'auto' }}
       >
         <Autocomplete
           fullWidth
+          freeSolo
           options={productCodes}
-          value={productCode}
-          onChange={(_, newValue) => {
-            const newCode = newValue || ''
-            setProductCode(newCode)
-            handleSearch(newCode)
+          filterOptions={(options, { inputValue }) => {
+            const q = norm(inputValue)
+            if (!q) return []
+            return options.filter(opt => norm(opt).startsWith(q)).slice(0, 5)
           }}
-          onInputChange={(_, newInput) => setProductCode(newInput)}
-          filterOptions={(options, { inputValue }) =>
-            inputValue.trim()
-              ? options.filter(opt =>
-                  opt.toLowerCase().includes(inputValue.toLowerCase())
-                )
-              : []
-          }
+          value={null}
+          inputValue={productCode}
+          onInputChange={(_, v) => setProductCode(v || '')}
+          onChange={(_, v) => {
+            if (typeof v === 'string') {
+              setProductCode(v)
+              handleSearch(v)
+            }
+          }}
+          autoHighlight
           renderInput={params => (
             <TextField
               {...params}
@@ -87,24 +92,12 @@ const Inventory: React.FC = () => {
                   backgroundColor: '#fff',
                   borderRadius: '999px',
                   boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
-                  '& fieldset': {
-                    border: '1px solid #ccc'
-                  },
-                  '&:hover fieldset': {
-                    borderColor: '#888'
-                  }
+                  '& fieldset': { border: '1px solid #ccc' },
+                  '&:hover fieldset': { borderColor: '#888' }
                 },
                 endAdornment: (
                   <InputAdornment position='end'>
-                    <SearchIcon
-                      sx={{
-                        color: '#888',
-                        fontSize: 20,
-                        cursor: 'default',
-                        mr: 1,
-                        '&:hover': { color: '#333' }
-                      }}
-                    />
+                    <SearchIcon sx={{ color: '#888', fontSize: 20, mr: 1 }} />
                   </InputAdornment>
                 )
               }}
@@ -158,6 +151,9 @@ const Inventory: React.FC = () => {
                 <TableCell sx={{ fontWeight: 'bold' }}>
                   {t('inventorySearch.quantity')}
                 </TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>
+                  {t('inventorySearch.note', 'Note')}
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -166,6 +162,9 @@ const Inventory: React.FC = () => {
                   <TableCell>{item.bin?.binCode || '--'}</TableCell>
                   <TableCell>{item.productCode}</TableCell>
                   <TableCell>{item.quantity}</TableCell>
+                  <TableCell>
+                    {(((item as any)?.note ?? '') as string).trim() || '--'}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

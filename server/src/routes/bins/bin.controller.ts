@@ -3,15 +3,18 @@ import httpStatus from 'constants/httpStatus'
 import { Request, Response } from 'express'
 import * as binService from 'routes/bins/bin.service'
 import {
+  getEmptyBinsInWarehouse,
   getPickBinByProductCode,
-  UpdateBinInput,
   updateSingleBin
 } from 'routes/bins/bin.service'
 import { asyncHandler } from 'utils/asyncHandler'
+import { UpdateBinDto, UpdateBinInput } from 'types/bin'
 
 export const getBin = asyncHandler(async (req: Request, res: Response) => {
   const { binCode } = req.params
-  const bin = await binService.getBinByBinCode(binCode)
+
+  const warehouseID = res.locals.warehouseID
+  const bin = await binService.getBinByBinCode(binCode, warehouseID)
   res.status(200).json({
     success: true,
     bin
@@ -208,12 +211,6 @@ export const updateBinsController = asyncHandler(
   }
 )
 
-export type UpdateBinDto = {
-  binCode?: string
-  type?: BinType
-  defaultProductCodes?: string | null
-}
-
 export const updateBinController = asyncHandler(
   async (req: Request, res: Response) => {
     const { binID } = req.params as { binID: string }
@@ -243,3 +240,37 @@ export const updateBinController = asyncHandler(
     })
   }
 )
+
+export const getBinColumns = asyncHandler(
+  async (req: Request, res: Response) => {
+    const warehouseID = (req.query.warehouseID as string) || undefined
+    const columns = await binService.getBinColumnsInWarehouse(warehouseID)
+    res.status(200).json({ success: true, columns })
+  }
+)
+
+export const getEmptyBins = async (req: Request, res: Response) => {
+  try {
+    const warehouseID =
+      (req.query.warehouseID as string) ||
+      res.locals?.currentAccount?.warehouseID
+
+    const q = (req.query.q as string) || ''
+    const limit = req.query.limit ? Number(req.query.limit) : 50
+
+    const bins = await getEmptyBinsInWarehouse(warehouseID, { q, limit })
+
+    res.json({
+      success: true,
+      warehouseID,
+      count: bins.length,
+      bins
+    })
+  } catch (err) {
+    console.error('❌ Error fetching empty bins:', err)
+    res.status(err?.statusCode || 500).json({
+      success: false,
+      message: err?.message || 'Internal Server Error'
+    })
+  }
+}

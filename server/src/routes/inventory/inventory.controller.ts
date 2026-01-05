@@ -1,10 +1,16 @@
 import { Request, Response } from 'express'
 import * as inventoryService from './inventory.service'
-import { getBinByBinCode } from 'routes/bins/bin.service'
-import { getInventoriesByBinID } from './inventory.service'
+import {
+  getInventoriesByBinID,
+  getInventoriesFlatByWarehouseID,
+  getTotalInventoryByWarehouseID
+} from './inventory.service'
 import AppError from 'utils/appError'
 import httpStatus from 'constants/httpStatus'
 import { asyncHandler } from 'utils/asyncHandler'
+import Warehouse from 'routes/warehouses/warehouse.model'
+import Bin from 'routes/bins/bin.model'
+import { WhereOptions } from 'sequelize'
 
 export const getInventoriesInCart = asyncHandler(
   async (_req: Request, res: Response) => {
@@ -34,16 +40,17 @@ export const getInventories = asyncHandler(
     const sortField: 'binCode' | 'updatedAt' =
       sortBy === 'binCode' ? 'binCode' : 'updatedAt'
 
-    const { rows, count } = await inventoryService.getInventoriesByWarehouseID(
-      warehouseID as string,
-      typeof binID === 'string' ? binID : undefined,
-      parsedPage,
-      parsedLimit,
-      typeof keyword === 'string' ? keyword : undefined,
-      { sortBy: sortField, sortOrder }
-    )
+    const { inventories, totalCount } =
+      await inventoryService.getInventoriesByWarehouseID(
+        warehouseID as string,
+        typeof binID === 'string' ? binID : undefined,
+        parsedPage,
+        parsedLimit,
+        typeof keyword === 'string' ? keyword : undefined,
+        { sortBy: sortField, sortOrder }
+      )
 
-    res.status(httpStatus.OK).json({ inventories: rows, totalCount: count })
+    res.status(httpStatus.OK).json({ inventories, totalCount })
   }
 )
 
@@ -77,29 +84,111 @@ export const updateInventories = asyncHandler(
 export const addInventories = asyncHandler(
   async (req: Request, res: Response) => {
     const inventories = req.body
-    const result = await inventoryService.addInventories(inventories)
+
+    if (!Array.isArray(inventories) || inventories.length === 0) {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        success: false,
+        message: 'Inventory list is empty or invalid'
+      })
+    }
+
+    const first = inventories[0]
+    const isBinIDMode =
+      typeof first.binID === 'string' && first.binID.trim() !== ''
+
+    const result = isBinIDMode
+      ? await inventoryService.addInventoriesByBinID(inventories)
+      : await inventoryService.addInventories(inventories)
+
+    const insertedCount = result.insertedCount ?? 0
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const updatedCount = (result as any).updatedCount ?? 0
+
     res.status(httpStatus.OK).json({
       success: true,
-      insertedCount: result.insertedCount,
-      updatedCount: result.updatedCount
+      insertedCount,
+      updatedCount
     })
   }
 )
 
-export const getInventoriesByBinCode = asyncHandler(
-  async (req: Request, res: Response) => {
-    const { binCode } = req.params
-    if (!binCode || typeof binCode !== 'string') {
-      throw new AppError(
-        httpStatus.BAD_REQUEST,
-        '❌ binCode must be provided as a path param',
-        'INVALID_BIN_CODE'
-      )
-    }
+export const getInventoriesByBinCode = asyncHandler(async (req, res) => {
+  const { binCode, binID } = req.params as { binCode?: string; binID?: string }
+  const warehouseID =
+    (res.locals.warehouseID as string | undefined) ||
+    (req.query.warehouseID as string | undefined)
 
-    const bin = await getBinByBinCode(binCode)
-    const inventories = await getInventoriesByBinID(bin.binID)
-
-    res.status(httpStatus.OK).json({ success: true, inventories })
+  if (!binID && !binCode) {
+    throw new AppError(400, 'Either binID or binCode is required.')
   }
-)
+
+  let where: WhereOptions
+  if (binID) {
+    where = { binID }
+  } else if (warehouseID) {
+    where = { binCode, warehouseID }
+  } else {
+    where = { binCode }
+  }
+
+  const bin = await Bin.findOne({
+    where,
+    attributes: ['binID', 'binCode', 'warehouseID']
+  })
+  if (!bin) throw new AppError(404, 'Bin not found.')
+
+  if (binID && binCode && bin.binCode !== binCode) {
+    throw new AppError(400, `binID (${binID}) 与 binCode (${binCode}) 不匹配。`)
+  }
+
+  const inventories = await getInventoriesByBinID(bin.binID)
+
+  return res.status(httpStatus.OK).json({
+    success: true,
+    bin,
+    inventories
+  })
+})
+
+export const getAllInventoriesForWarehouse = async (
+  req: Request,
+  res: Response
+) => {
+  const warehouseID = req.query.warehouseID as string
+
+  if (!warehouseID) {
+    throw new AppError(400, 'warehouseID is required')
+  }
+  const inventories = await getInventoriesFlatByWarehouseID(warehouseID)
+
+  const warehouseCode = (await Warehouse.findOne({ where: { warehouseID } }))
+    .warehouseCode
+
+  res.json({
+    success: true,
+    warehouseID,
+    warehouseCode,
+    inventories
+  })
+}
+
+///////////
+
+export const getInventoryTotalForWarehouse = async (
+  req: Request,
+  res: Response
+) => {
+  const warehouseID = req.query.warehouseID as string
+
+  if (!warehouseID) {
+    throw new AppError(400, 'warehouseID is required')
+  }
+
+  const totalQuantity = await getTotalInventoryByWarehouseID(warehouseID)
+
+  res.json({
+    success: true,
+    warehouseID,
+    totalQuantity
+  })
+}

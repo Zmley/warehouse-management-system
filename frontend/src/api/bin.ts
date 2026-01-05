@@ -14,3 +14,12 @@ export const checkIfPickUpBin = (binCode: string) =>
 
 export const getPickupBinsByProductCode = async (productCode: string) =>
   apiClient.get(`/bins/pickup/${productCode}`)
+
+export const getBinColumns = (warehouseID?: string) =>
+  apiClient.get(`/bins/columns?warehouseID=${warehouseID}`)
+
+export const getEmptyBins = (params?: {
+  warehouseID?: string
+  q?: string
+  limit?: number
+}) => apiClient.get('/bins/empty', { params })

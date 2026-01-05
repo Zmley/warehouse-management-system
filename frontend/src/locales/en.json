@@ -1,12 +1,26 @@
 {
   "profile": {
     "title": "Profile",
-    "signOut": "Sign Out"
+    "signOut": "Sign Out",
+    "role": "Role",
+    "language": "Language",
+    "lang": { "zh": "中文", "en": "English" },
+    "defaultScanMode": "Default Scan Mode"
   },
   "topbar": {
     "greeting": "Hello, {{name}}",
     "tooltip": "Pick up Task",
-    "pickButton": "Pick"
+    "pickButton": "Pick",
+
+    "selectWarehouse": "Select warehouse",
+    "switchingWarehouse": "Switching warehouse…",
+    "switchingTo": "Switching to {{code}}…",
+    "warehouseUpdated": "Warehouse updated",
+    "loading": "Loading…",
+    "noWarehouse": "No warehouses",
+    "loadingWarehouseList": "Loading warehouses…",
+    "zhLabel": "中文",
+    "enLabel": "English"
   },
   "bottombar": {
     "tasks": "Tasks",
@@ -29,7 +43,7 @@
     "loading": "Loading...",
     "outOfStock": "Out of Stock",
     "canceling": "canceling",
-    "creator": "creator",
+    "creator": "Creator",
     "status": {
       "pending": "Pending",
       "outOfStock": "Out of Stock"
@@ -104,13 +118,34 @@
     "manualInputButton": "Manual Input Product and Quantity",
 
     "onlyLoadFromAssigned": "You can only load from assigned bins: {{allowed}} (received: {{received}}).",
-    "onlyUnloadToAssigned": "You can only unload to assigned bins: {{allowed}} (received: {{received}})."
+    "onlyUnloadToAssigned": "You can only unload to assigned bins: {{allowed}} (received: {{received}}).",
+
+    "modes": {
+      "gun": "Scanner",
+      "camera": "Phone",
+      "manual": "Manual"
+    },
+
+    "unload": {
+      "onlyBinCodeGun": "In unload mode with a handheld scanner, only bin codes are allowed (no product barcodes or multi-product input)."
+    },
+
+    "camera": "Phone",
+    "scanner": "Scanner",
+
+    "phone": "Phone",
+
+    "gun": {
+      "placeholder": "Press the button on scanner gun",
+
+      "addProducts": "Add Products Manually"
+    }
   },
   "inventory": {
     "total": "Total",
     "offload": "Offload",
     "quantityExceed": "Quantity cannot exceed total ({{quantity}})",
-    "currentCargoInForklift": "current Cargo In Forklift",
+    "currentCargoInForklift": "Cargo In Forklift",
 
     "returnToSource": "Return to Source Bin",
 
@@ -202,7 +237,9 @@
     "noResult": "No inventory found.",
     "binCode": "Bin Code",
     "productCode": "Product Code",
-    "quantity": "Quantity"
+    "quantity": "Quantity",
+
+    "binSearchPlaceholder": "search bincode"
   },
 
   "picker": {
@@ -230,10 +267,23 @@
     "back": "Back",
     "unload": "Unload",
     "unloading": "Unloading…",
-    "error": "Failed to unload items."
+    "error": "Failed to unload items.",
+
+    "autoUnloading": "AutoUnloading..."
   },
   "common": {
-    "qty": "Qty {{qty}}"
+    "qty": "Qty {{qty}}",
+    "cancel": "Cancel",
+    "saved": "Saved",
+    "deleted": "Deleted",
+    "added": "Added",
+    "updated": "Updated",
+    "removed": "Removed",
+    "refreshing": "Refreshing…",
+    "confirm": "Confirm",
+    "add": "Add",
+    "remove": "Remove",
+    "submitting": "Submitting…"
   },
 
   "queryProduct": {
@@ -256,5 +306,41 @@
     "fromSuggest": "From Suggestion",
     "fromManual": "From Manual Input",
     "help": "Help"
+  },
+
+  "inventoryIndex": {
+    "searchTab": "Search",
+    "editTab": "Edit",
+    "receiveTab": "Receive",
+    "tablistAria": "tablistAria",
+    "loading": "loading..."
+  },
+
+  "mobileReceive": {
+    "title": "Pallet Receiving",
+    "refresh": "Refresh",
+    "pendingTitle": "Pending",
+    "inProcessTitle": "In Process",
+    "emptyPending": "No pending items",
+    "emptyInProcess": "No in-process items",
+    "snackConfirmed": "Confirmed. Items moved to In Process.",
+    "snackUndone": "Undo successful. Items moved back to Pending.",
+    "confirmFail": "Receiving confirmation failed",
+    "undoFail": "Undo confirmation failed"
+  },
+  "confirmDrawer": {
+    "titleConfirm": "Confirm Receiving",
+    "titleUndo": "Undo Confirmation",
+    "subConfirm": "Total {{count}} lines",
+    "subUndo": "Total {{count}} lines, will move back to Pending",
+    "btnConfirm": "Confirm",
+    "btnUndo": "Undo",
+    "empty": "No data"
+  },
+
+  "emptyBins": {
+    "title": "Empty Bins",
+    "search": "Search…",
+    "none": "No empty bins at the moment"
   }
 }

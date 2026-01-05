@@ -109,4 +109,10 @@ Task.belongsTo(Account, {
 
 Task.belongsTo(Account, { as: 'creator', foreignKey: 'creatorID' })
 
+Task.hasMany(Inventory, {
+  foreignKey: 'productCode',
+  sourceKey: 'productCode',
+  as: 'otherInventories'
+})
+
 export default Task

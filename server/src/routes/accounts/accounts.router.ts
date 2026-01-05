@@ -6,15 +6,34 @@ import {
   registerUser,
   loginUser,
   getUserInfo,
-  refreshAccessToken
+  refreshAccessToken,
+  fetchWorkerNames,
+  changeWarehouse,
+  getAllAccounts,
+  deleteAccount
 } from './accounts.controller'
+import { UserRole } from 'constants/index'
+import roleAllow from 'middlewares/roleAllow.middleware'
 
 const router = express.Router()
-//public
 router.post('/register', registerUser)
 router.post('/login', loginUser)
 router.post('/refresh-token', refreshAccessToken)
 
 router.get('/me', authenticateToken, currentAccount, getUserInfo)
+
+router.get('/all', getAllAccounts)
+
+router.get('/names', fetchWorkerNames)
+
+router.delete('/:accountID', deleteAccount)
+
+router.post(
+  '/changeWarehouse',
+  authenticateToken,
+  currentAccount,
+  roleAllow([UserRole.TRANSPORT_WORKER, UserRole.PICKER]),
+  changeWarehouse
+)
 
 export default router

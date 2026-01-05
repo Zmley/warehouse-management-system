@@ -38,3 +38,11 @@ export const UpdateTaskBodySchema = Joi.object({
     .required(),
   sourceBinCode: Joi.string().trim().allow('').optional()
 }).unknown(false)
+
+export const GetFinishedTasksQuerySchema = Joi.object({
+  warehouseID: Joi.string().required(),
+  status: Joi.string().valid('COMPLETED', 'CANCELED').required(),
+  keyword: Joi.string().allow('').optional(),
+  page: Joi.number().integer().min(1).default(1),
+  pageSize: Joi.number().integer().min(1).max(200).default(20)
+})
