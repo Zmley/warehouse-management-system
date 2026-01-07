@@ -36,7 +36,8 @@ const errorHandling = (
   if (err instanceof AppError) {
     return res.status(err.httpCode ?? HttpStatusCodes.BAD_REQUEST).json({
       success: false,
-      errorCode: err.errorCode ?? 'APP_ERROR'
+      errorCode: err.errorCode ?? 'APP_ERROR',
+      message: err.message
     })
   }
 

@@ -1,15 +1,19 @@
 import Joi from 'joi'
 import * as dotenv from 'dotenv'
 
-dotenv.config({ path: `.env` })
+const nodeEnv = process.env.NODE_ENV || 'development'
+dotenv.config({ path: `.env.${nodeEnv}` })
 
 const envsSchema = Joi.object()
   .keys({
-    NODE_ENV: Joi.string().valid('production', 'integration', 'development'),
+    NODE_ENV: Joi.string()
+      .valid('production', 'development')
+      .default('development'),
     PORT: Joi.number().default(3000),
     API_KEY_TOKEN: Joi.string(),
     DB_HOST: Joi.string().required(),
     DB_HOSTING: Joi.string(),
+    DB_NAME: Joi.string(),
     DB_USER: Joi.string(),
     DB_PASSWORD: Joi.string(),
     AWS_REGION: Joi.string(),
