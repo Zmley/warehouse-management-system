@@ -7,6 +7,8 @@ import errorHandler from 'utils/errorHandler'
 const { port } = config
 
 const server: Server = app.listen(port, (): void => {
+  const envLabel = config.env || 'development'
+  logger.info(`Application starts in ${envLabel} mode`)
   logger.info(`Application listens on PORT: ${port}`)
 })
 

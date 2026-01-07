@@ -1,4 +1,4 @@
-name: Deploy Backend to EC2
+name: Deploy Backend (Build + Upload)
 
 on:
   release:
@@ -7,40 +7,57 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
 
     steps:
-      - name: SSH and deploy to EC2
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Build server
+        run: yarn build
+
+      - name: Upload dist to EC2
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "server/dist"
+          strip_components: 2
+          target: "/home/ubuntu/fcs-server"
+
+      - name: Upload package.json (for prod deps)
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "server/package.json"
+          strip_components: 1
+          target: "/home/ubuntu/fcs-server"
+
+      - name: Upload yarn.lock
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "server/yarn.lock"
+          strip_components: 1
+          target: "/home/ubuntu/fcs-server"
+
+      - name: Restart server
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd /home/ubuntu
-
-            if [ -d "warehouse-management-system" ]; then
-              echo "Deleting old project files"
-              rm -rf warehouse-management-system
-            fi
-
-
-            echo "Cloning the repository"
-            git clone --filter=blob:none --no-checkout https://github.com/Zmley/warehouse-management-system.git
-            cd warehouse-management-system
-            git checkout transfer-productions-to-main-warehouse
-
-            git sparse-checkout init --cone
-            git sparse-checkout set server
-
-            cd server
-
-            curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-            sudo apt-get install -y nodejs
-            sudo npm install -g yarn pm2
-
-            yarn install
-
-            yarn build
-
-
-            NODE_ENV=production pm2 restart server || NODE_ENV=production pm2 start dist/server.js --name server
+            cd /home/ubuntu/fcs-server
+            yarn install --production
+            NODE_ENV=production pm2 restart server --update-env || NODE_ENV=production pm2 start dist/server.js --name server
