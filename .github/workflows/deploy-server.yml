@@ -1,8 +1,9 @@
 name: Deploy Backend (Build + Upload)
 
 on:
-  release:
-    types: [published]
+  push:
+    branches:
+      - main
 
 jobs:
   deploy:
