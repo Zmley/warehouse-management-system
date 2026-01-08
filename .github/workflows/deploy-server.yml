@@ -1,4 +1,4 @@
-name: Deploy Backend (Build + Upload)
+name: Deploy Backend (Build + Upload) - Zero Downtime
 
 on:
   push:
@@ -22,25 +22,25 @@ jobs:
       - name: Build server
         run: yarn build
 
-      - name: Upload dist to EC2
+      - name: Upload build output to EC2
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "server/dist"
+          source: 'server/dist'
           strip_components: 2
-          target: "/home/ubuntu/fcs-server"
+          target: '/home/ubuntu/fcs-server'
 
-      - name: Upload package.json (for prod deps)
+      - name: Upload package.json
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "server/package.json"
+          source: 'server/package.json'
           strip_components: 1
-          target: "/home/ubuntu/fcs-server"
+          target: '/home/ubuntu/fcs-server'
 
       - name: Upload yarn.lock
         uses: appleboy/scp-action@master
@@ -48,11 +48,11 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "server/yarn.lock"
+          source: 'server/yarn.lock'
           strip_components: 1
-          target: "/home/ubuntu/fcs-server"
+          target: '/home/ubuntu/fcs-server'
 
-      - name: Restart server
+      - name: Zero-downtime restart with PM2 (production)
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -60,5 +60,15 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd /home/ubuntu/fcs-server
+
+            # Install production dependencies
             yarn install --production
-            NODE_ENV=production pm2 restart server --update-env || NODE_ENV=production pm2 start dist/server.js --name server
+
+            # Zero-downtime deploy:
+            # - reload if process exists (no service interruption)
+            # - start if first deployment
+            NODE_ENV=production pm2 reload fcs-server --update-env \
+              || NODE_ENV=production pm2 start server.js --name fcs-server
+
+            # Persist PM2 state
+            pm2 save
