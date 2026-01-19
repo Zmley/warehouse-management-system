@@ -160,12 +160,16 @@ export const updateBinController = asyncHandler(
   async (req: Request, res: Response) => {
     const { binID } = req.params as { binID: string }
 
-    const { binCode, type, defaultProductCodes } = req.body ?? {}
+    const { binCode, type, defaultProductCodes, warehouseID } = req.body ?? {}
 
     const payload: UpdateBinDto = {}
 
     if (binCode !== undefined) {
       payload.binCode = String(binCode).trim()
+    }
+
+    if (warehouseID !== undefined) {
+      payload.warehouseID = String(warehouseID).trim()
     }
 
     if (type !== undefined) {

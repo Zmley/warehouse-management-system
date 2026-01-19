@@ -40,6 +40,7 @@ export type UpdateBinsResult = {
 }
 
 export type UpdateBinDto = {
+  warehouseID?: string
   binCode?: string
   type?: BinType
   defaultProductCodes?: string | null
