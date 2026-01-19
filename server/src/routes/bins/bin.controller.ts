@@ -1,5 +1,4 @@
 import { BinType } from 'constants/index'
-import httpStatus from 'constants/httpStatus'
 import { Request, Response } from 'express'
 import * as binService from 'routes/bins/bin.service'
 import {
@@ -8,7 +7,7 @@ import {
   updateSingleBin
 } from 'routes/bins/bin.service'
 import { asyncHandler } from 'utils/asyncHandler'
-import { UpdateBinDto, UpdateBinInput } from 'types/bin'
+import { UpdateBinDto } from 'types/bin'
 
 export const getBin = asyncHandler(async (req: Request, res: Response) => {
   const { binCode } = req.params
@@ -156,60 +155,6 @@ export const deleteBin = asyncHandler(async (req: Request, res: Response) => {
 
   res.json({ success: true })
 })
-
-export const updateBinsController = asyncHandler(
-  async (req: Request, res: Response) => {
-    const { updates } = req.body as { updates: UpdateBinInput[] }
-
-    if (!Array.isArray(updates) || updates.length === 0) {
-      return res.status(httpStatus.BAD_REQUEST).json({
-        success: false,
-        errorCode: 'INVALID_PAYLOAD',
-        message: 'updates must be a non-empty array'
-      })
-    }
-
-    const invalid = updates.find(
-      u => !u || typeof u.binID !== 'string' || !u.binID
-    )
-    if (invalid) {
-      return res.status(httpStatus.BAD_REQUEST).json({
-        success: false,
-        errorCode: 'BIN_ID_REQUIRED',
-        message: 'Each update item must include a valid binID'
-      })
-    }
-
-    const result = await binService.updateBins(updates)
-
-    if (result.failedCount === 0) {
-      return res.status(httpStatus.OK).json({
-        success: true,
-        updatedCount: result.updatedCount,
-        failedCount: result.failedCount,
-        results: result.results
-      })
-    }
-
-    if (result.updatedCount > 0 && result.failedCount > 0) {
-      return res.status(httpStatus.MULTI_STATUS).json({
-        success: false,
-        errorCode: 'PARTIAL_FAILURE',
-        updatedCount: result.updatedCount,
-        failedCount: result.failedCount,
-        results: result.results
-      })
-    }
-
-    return res.status(httpStatus.BAD_REQUEST).json({
-      success: false,
-      errorCode: 'UPDATE_FAILED',
-      updatedCount: result.updatedCount,
-      failedCount: result.failedCount,
-      results: result.results
-    })
-  }
-)
 
 export const updateBinController = asyncHandler(
   async (req: Request, res: Response) => {
