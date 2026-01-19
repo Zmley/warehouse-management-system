@@ -33,8 +33,8 @@ export const fetchTransfers = async (req: Request, res: Response) => {
     typeof productCode === 'string'
       ? productCode
       : typeof keyword === 'string'
-        ? keyword
-        : undefined
+      ? keyword
+      : undefined
 
   const { rows, count } = await getTransfersByWarehouseID({
     warehouseID,
