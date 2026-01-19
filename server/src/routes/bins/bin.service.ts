@@ -440,6 +440,13 @@ export async function updateSingleBin(binID: string, payload: UpdateBinDto) {
 
     const updates: Partial<Bin> = {}
 
+    if ('warehouseID' in payload) {
+      const newWarehouseID = payload.warehouseID?.trim()
+      if (newWarehouseID && newWarehouseID !== bin.warehouseID) {
+        updates.warehouseID = newWarehouseID
+      }
+    }
+
     if ('binCode' in payload) {
       const newCode = payload.binCode?.trim()
       if (newCode && newCode !== bin.binCode) {

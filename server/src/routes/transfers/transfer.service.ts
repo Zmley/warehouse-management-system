@@ -55,14 +55,17 @@ export const getTransfersByWarehouseID = async ({
   warehouseID,
   status,
   page = 1,
-  limit = 10
+  limit = 10,
+  keyword
 }: TransferListParams) => {
   const safeLimit = Math.max(1, Math.min(200, Number(limit) || 10))
   const offset = Math.max(0, (page - 1) * safeLimit)
+  const search = typeof keyword === 'string' ? keyword.trim() : ''
 
   const where: WhereOptions = {
     destinationWarehouseID: warehouseID,
-    ...(status ? { status } : {})
+    ...(status ? { status } : {}),
+    ...(search ? { productCode: { [Op.iLike]: `%${search}%` } } : {})
   }
 
   const { rows, count } = await Transfer.findAndCountAll({

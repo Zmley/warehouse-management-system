@@ -11,7 +11,14 @@ import { TaskStatus } from 'constants/index'
 import { randomUUID } from 'crypto'
 
 export const fetchTransfers = async (req: Request, res: Response) => {
-  const { warehouseID, status, page = '1', limit } = req.query
+  const {
+    warehouseID,
+    status,
+    page = '1',
+    limit,
+    keyword,
+    productCode
+  } = req.query
 
   if (typeof warehouseID !== 'string') {
     return res
@@ -22,6 +29,13 @@ export const fetchTransfers = async (req: Request, res: Response) => {
   const limitNum = Math.min(200, Math.max(1, Number(limit) || 10))
   const pageNum = Math.max(1, Number(page) || 1)
 
+  const search =
+    typeof productCode === 'string'
+      ? productCode
+      : typeof keyword === 'string'
+      ? keyword
+      : undefined
+
   const { rows, count } = await getTransfersByWarehouseID({
     warehouseID,
     status:
@@ -29,7 +43,8 @@ export const fetchTransfers = async (req: Request, res: Response) => {
         ? (status.toUpperCase() as keyof typeof TaskStatus as TaskStatus)
         : undefined,
     page: pageNum,
-    limit: limitNum
+    limit: limitNum,
+    keyword: search
   })
 
   res.json({ success: true, transfers: rows, total: count, page: pageNum })

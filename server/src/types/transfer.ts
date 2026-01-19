@@ -43,4 +43,5 @@ export type TransferListParams = {
   status?: TaskStatus
   page?: number
   limit?: number
+  keyword?: string
 }
