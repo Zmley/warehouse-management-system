@@ -92,6 +92,13 @@ const CameraPanel = forwardRef<CameraHandle, Props>(
           const router =
             await Dynamsoft.CVR.CaptureVisionRouter.createInstance()
           await router.setInput(cameraEnhancer)
+          const settings = await router.getSimplifiedSettings(
+            'ReadBarcodes_SpeedFirst'
+          )
+          settings.barcodeSettings.barcodeFormatIds =
+            Dynamsoft.DBR.EnumBarcodeFormat.BF_ONED |
+            Dynamsoft.DBR.EnumBarcodeFormat.BF_QR_CODE
+          await router.updateSettings('ReadBarcodes_SpeedFirst', settings)
 
           const receiver = new Dynamsoft.CVR.CapturedResultReceiver()
           receiver.onCapturedResultReceived = async (result: any) => {
