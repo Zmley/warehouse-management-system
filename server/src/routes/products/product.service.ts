@@ -33,7 +33,7 @@ export const getProductCodes = async (): Promise<string[]> => {
 }
 
 export const getProductsByWarehouseID = async (
-  warehouseID: string,
+  warehouseID: string | undefined,
   page: number,
   limit: number,
   keyword?: string
@@ -42,7 +42,14 @@ export const getProductsByWarehouseID = async (
   const whereClause = buildProductWhereClause(keyword)
 
   const { rows: prodRows, count } = await Product.findAndCountAll({
-    attributes: ['productCode', 'barCode', 'boxType', 'createdAt', 'updatedAt'],
+    attributes: [
+      'productID',
+      'productCode',
+      'barCode',
+      'boxType',
+      'createdAt',
+      'updatedAt'
+    ],
     where: whereClause,
     order: buildProductOrderClause(),
     offset,
@@ -59,6 +66,13 @@ export const getProductsByWarehouseID = async (
   let quantityMap: Record<string, number> = Object.create(null)
 
   if (productCodes.length > 0) {
+    const binWhere: WhereOptions = {
+      type: { [Op.in]: [BinType.INVENTORY] }
+    }
+    if (warehouseID) {
+      binWhere.warehouseID = warehouseID
+    }
+
     const invRows = (await Inventory.findAll({
       attributes: [
         'productCode',
@@ -73,10 +87,7 @@ export const getProductsByWarehouseID = async (
           as: 'bin',
           attributes: [],
           required: true,
-          where: {
-            warehouseID,
-            type: { [Op.in]: [BinType.INVENTORY] }
-          }
+          where: binWhere
         }
       ],
       group: ['Inventory.productCode'],
@@ -90,6 +101,7 @@ export const getProductsByWarehouseID = async (
   }
 
   const products = prodPlain.map(p => ({
+    productID: p.productID,
     productCode: p.productCode,
     totalQuantity: quantityMap[p.productCode] ?? 0,
     barCode: p.barCode,
@@ -127,6 +139,11 @@ export const addProducts = async (products: ProductUploadInput[]) => {
     insertedCount,
     updatedCount
   }
+}
+
+export const deleteProductByID = async (productID: string) => {
+  const deleted = await Product.destroy({ where: { productID } })
+  return deleted > 0
 }
 
 export const getProductByBarCode = async (barCode: string) => {

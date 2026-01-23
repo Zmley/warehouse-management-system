@@ -6,7 +6,8 @@ import {
   getLowStock,
   getBoxTypes,
   getProducts,
-  getLowStockWithOthers
+  getLowStockWithOthers,
+  deleteProduct
 } from './product.controller'
 
 import roleAllow from 'middlewares/roleAllow.middleware'
@@ -37,6 +38,8 @@ router.post(
   validateAddProducts,
   addProducts
 )
+
+router.delete('/:productID', roleAllow([UserRole.ADMIN]), deleteProduct)
 
 router.get('/low-stock', roleAllow([UserRole.ADMIN]), getLowStock)
 

@@ -7,6 +7,7 @@ export interface ProductUploadInput {
 }
 
 export type ProductPlain = {
+  productID: string
   productCode: string
   barCode: string
   boxType: string
