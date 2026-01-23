@@ -6,11 +6,7 @@ export const validateGetProducts = (
   res: Response,
   next: NextFunction
 ) => {
-  const { warehouseID, page, limit } = req.query
-
-  if (!warehouseID || typeof warehouseID !== 'string') {
-    return next(new AppError(400, 'Missing or invalid warehouseID'))
-  }
+  const { page, limit } = req.query
 
   if (page && isNaN(Number(page))) {
     return next(new AppError(400, 'Invalid page number'))

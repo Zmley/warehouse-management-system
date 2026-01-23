@@ -12,7 +12,10 @@ export const getProductCodes = asyncHandler(
 )
 
 export const getProducts = asyncHandler(async (req: Request, res: Response) => {
-  const warehouseID = req.query.warehouseID as string
+  const warehouseID =
+    typeof req.query.warehouseID === 'string'
+      ? req.query.warehouseID
+      : undefined
   const keyword = req.query.keyword?.toString()
   const page = parseInt(req.query.page as string) || 1
   const limit = parseInt(req.query.limit as string) || 10
@@ -76,6 +79,24 @@ export const getLowStock = asyncHandler(async (req: Request, res: Response) => {
   )
 
   res.status(200).json({ success: true, products, total })
+})
+
+export const deleteProduct = asyncHandler(async (req: Request, res: Response) => {
+  const { productID } = req.params as { productID: string }
+  if (!productID) {
+    return res
+      .status(400)
+      .json({ success: false, message: 'productID is required' })
+  }
+
+  const deleted = await productService.deleteProductByID(productID)
+  if (!deleted) {
+    return res
+      .status(404)
+      .json({ success: false, message: 'Product not found' })
+  }
+
+  return res.status(200).json({ success: true })
 })
 
 export const getBoxTypes = asyncHandler(async (req: Request, res: Response) => {
