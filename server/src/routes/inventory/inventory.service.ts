@@ -625,13 +625,18 @@ export const getInventoriesFlatByWarehouseID = async (
 
 ////////////
 
-export const getTotalInventoryByWarehouseID = async (warehouseID: string) => {
+export const getTotalInventoryByWarehouseID = async (
+  warehouseID: string
+): Promise<{ totalQuantity: number; totalBinCount: number }> => {
   if (!warehouseID) {
     throw new AppError(400, 'warehouseID is required')
   }
 
-  const result = await Inventory.findOne({
-    attributes: [[fn('SUM', col('quantity')), 'totalQuantity']],
+  const result = (await Inventory.findOne({
+    attributes: [
+      [fn('SUM', col('quantity')), 'totalQuantity'],
+      [fn('COUNT', fn('DISTINCT', col('Inventory.binID'))), 'totalBinCount']
+    ],
     include: [
       {
         model: Bin,
@@ -640,8 +645,12 @@ export const getTotalInventoryByWarehouseID = async (warehouseID: string) => {
         where: { warehouseID }
       }
     ],
+    where: { quantity: { [Op.gt]: 0 } },
     raw: true
-  })
+  })) as { totalQuantity?: string | number; totalBinCount?: string | number } | null
 
-  return Number(result?.totalQuantity ?? 0)
+  return {
+    totalQuantity: Number(result?.totalQuantity ?? 0),
+    totalBinCount: Number(result?.totalBinCount ?? 0)
+  }
 }

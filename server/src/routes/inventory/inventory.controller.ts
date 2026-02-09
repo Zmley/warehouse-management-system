@@ -184,11 +184,13 @@ export const getInventoryTotalForWarehouse = async (
     throw new AppError(400, 'warehouseID is required')
   }
 
-  const totalQuantity = await getTotalInventoryByWarehouseID(warehouseID)
+  const { totalQuantity, totalBinCount } =
+    await getTotalInventoryByWarehouseID(warehouseID)
 
   res.json({
     success: true,
     warehouseID,
-    totalQuantity
+    totalQuantity,
+    totalBinCount
   })
 }
