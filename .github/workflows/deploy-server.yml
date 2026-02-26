@@ -3,7 +3,7 @@ name: Deploy Backend (Build + Upload) - Zero Downtime
 on:
   push:
     branches:
-      - manage-warehosue
+      - main
 
 jobs:
   deploy:
