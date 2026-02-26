@@ -633,22 +633,17 @@ export const checkIfTaskDuplicate = async (
       throw new AppError(httpStatus.NOT_FOUND, '', 'DEST_BIN_NOT_FOUND')
     }
 
-    let sourceBinID: string | undefined
     if (sourceBinCode) {
       const sourceBin = await getBinByBinCode(sourceBinCode, warehouseID)
       if (!sourceBin) {
         throw new AppError(httpStatus.NOT_FOUND, '', 'SOURCE_BIN_NOT_FOUND')
       }
-      sourceBinID = sourceBin.binID
     }
 
     const where: WhereOptions = {
       productCode,
       destinationBinID: destinationBin.binID,
       status: { [Op.in]: [TaskStatus.PENDING, TaskStatus.IN_PROCESS] }
-    }
-    if (sourceBinID) {
-      Object.assign(where, { sourceBinID })
     }
 
     const existing = await Task.findOne({ where })
