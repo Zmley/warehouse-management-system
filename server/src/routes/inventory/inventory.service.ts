@@ -647,7 +647,10 @@ export const getTotalInventoryByWarehouseID = async (
     ],
     where: { quantity: { [Op.gt]: 0 } },
     raw: true
-  })) as { totalQuantity?: string | number; totalBinCount?: string | number } | null
+  })) as {
+    totalQuantity?: string | number
+    totalBinCount?: string | number
+  } | null
 
   return {
     totalQuantity: Number(result?.totalQuantity ?? 0),

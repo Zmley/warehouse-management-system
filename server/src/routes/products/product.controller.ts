@@ -81,23 +81,25 @@ export const getLowStock = asyncHandler(async (req: Request, res: Response) => {
   res.status(200).json({ success: true, products, total })
 })
 
-export const deleteProduct = asyncHandler(async (req: Request, res: Response) => {
-  const { productID } = req.params as { productID: string }
-  if (!productID) {
-    return res
-      .status(400)
-      .json({ success: false, message: 'productID is required' })
-  }
+export const deleteProduct = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { productID } = req.params as { productID: string }
+    if (!productID) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'productID is required' })
+    }
 
-  const deleted = await productService.deleteProductByID(productID)
-  if (!deleted) {
-    return res
-      .status(404)
-      .json({ success: false, message: 'Product not found' })
-  }
+    const deleted = await productService.deleteProductByID(productID)
+    if (!deleted) {
+      return res
+        .status(404)
+        .json({ success: false, message: 'Product not found' })
+    }
 
-  return res.status(200).json({ success: true })
-})
+    return res.status(200).json({ success: true })
+  }
+)
 
 export const getBoxTypes = asyncHandler(async (req: Request, res: Response) => {
   const keyword =

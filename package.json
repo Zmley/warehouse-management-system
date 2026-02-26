@@ -4,6 +4,7 @@
     "prettier": "^3.6.2"
   },
   "scripts": {
-    "start": "concurrently \"cd frontend && yarn dev\" \"cd server && yarn start\""
+    "start": "concurrently \"cd frontend && yarn dev\" \"cd server && yarn start\"",
+    "format": "yarn --cwd server format"
   }
 }
