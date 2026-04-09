@@ -8,7 +8,9 @@ import {
   Snackbar,
   Alert,
   Chip,
-  ButtonBase
+  ButtonBase,
+  Select,
+  MenuItem
 } from '@mui/material'
 import RefreshIcon from '@mui/icons-material/Refresh'
 import { useTransfer } from 'hooks/useTransfer'
@@ -59,6 +61,8 @@ export default function MobileReceive({
 
   const [pending, setPending] = useState<TransferRow[]>([])
   const [inProcess, setInProcess] = useState<TransferRow[]>([])
+  const [pendingWarehouseFilter, setPendingWarehouseFilter] =
+    useState<string>('ALL')
 
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [drawerMode, setDrawerMode] = useState<DrawerMode>('CONFIRM')
@@ -222,6 +226,28 @@ export default function MobileReceive({
 
   const pendingGroups = useMemo(() => groupByPallet(pending), [pending])
   const inProcessGroups = useMemo(() => groupByPallet(inProcess), [inProcess])
+  const pendingWarehouseOptions = useMemo(() => {
+    const options = splitByWarehouse(pendingGroups).map(([wh]) => wh)
+    return options
+  }, [pendingGroups, t])
+
+  useEffect(() => {
+    if (
+      pendingWarehouseFilter !== 'ALL' &&
+      !pendingWarehouseOptions.includes(pendingWarehouseFilter)
+    ) {
+      setPendingWarehouseFilter('ALL')
+    }
+  }, [pendingWarehouseFilter, pendingWarehouseOptions])
+
+  const filteredPendingGroups = useMemo(() => {
+    if (pendingWarehouseFilter === 'ALL') return pendingGroups
+    const label = pendingWarehouseFilter
+    return pendingGroups.filter(
+      g =>
+        (g.warehouseCode || t('mobileReceive.unknownWarehouse')) === label
+    )
+  }, [pendingGroups, pendingWarehouseFilter, t])
 
   const openConfirmForGroup = (items: PendingLite[]) => {
     setDrawerMode('CONFIRM')
@@ -349,13 +375,49 @@ export default function MobileReceive({
             headerBorder='#e5e7eb'
             bodyBorder='#e5e7eb'
             emptyText={t('mobileReceive.emptyPending')}
+            headerExtra={
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <Typography
+                  sx={{ fontSize: 12, fontWeight: 700, color: '#475569' }}
+                >
+                  {t('mobileReceive.warehouseLabel')}
+                </Typography>
+                <Select
+                  size='small'
+                  value={pendingWarehouseFilter}
+                  onChange={e =>
+                    setPendingWarehouseFilter(String(e.target.value))
+                  }
+                  sx={{
+                    height: 26,
+                    fontSize: 12,
+                    fontWeight: 700,
+                    minWidth: 120,
+                    background: '#fff',
+                    '& .MuiSelect-select': {
+                      py: 0.2,
+                      pr: '28px'
+                    }
+                  }}
+                >
+                  <MenuItem value='ALL'>
+                    {t('mobileReceive.warehouseAll')}
+                  </MenuItem>
+                  {pendingWarehouseOptions.map(wh => (
+                    <MenuItem key={wh} value={wh}>
+                      {wh}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </Box>
+            }
           >
             {busy ? (
               <BusyOverlay />
-            ) : pendingGroups.length === 0 ? (
+            ) : filteredPendingGroups.length === 0 ? (
               <Empty text={t('mobileReceive.emptyPending')} />
             ) : (
-              splitByWarehouse(pendingGroups).map(([wh, groups]) => (
+              splitByWarehouse(filteredPendingGroups).map(([wh, groups]) => (
                 <Box key={`wh-p-${wh}`} sx={{ mt: 0.5 }}>
                   <Box
                     sx={{
@@ -573,6 +635,7 @@ function Panel({
   bodyBorder,
   titleColor,
   emptyText,
+  headerExtra,
   children
 }: {
   title: string
@@ -582,6 +645,7 @@ function Panel({
   bodyBorder: string
   titleColor?: string
   emptyText: string
+  headerExtra?: React.ReactNode
   children: React.ReactNode
 }) {
   return (
@@ -611,12 +675,15 @@ function Panel({
         >
           {title}
         </Typography>
-        <Chip
-          size='small'
-          label={count}
-          sx={{ fontSize: 12, height: 20, fontWeight: 700 }}
-          variant='outlined'
-        />
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
+          {headerExtra}
+          <Chip
+            size='small'
+            label={count}
+            sx={{ fontSize: 12, height: 20, fontWeight: 700 }}
+            variant='outlined'
+          />
+        </Box>
       </Box>
       <Box sx={{ p: 1 }}>{children}</Box>
     </Paper>
