@@ -31,7 +31,7 @@
     "query": "查询产品"
   },
   "taskList": {
-    "pullToRefresh": "↓ 下拉刷新任务",
+    "pullToRefresh": "↓ 下拉刷新",
     "empty": "没有待处理的任务",
     "sourceBin": "来源货位",
     "product": "产品号码",
