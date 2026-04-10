@@ -366,7 +366,13 @@ export default function MobileReceive({
           </Box>
         </Paper>
 
-        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+            gap: 1
+          }}
+        >
           {/* Pending */}
           <Panel
             title={t('mobileReceive.pendingTitle')}
@@ -375,13 +381,9 @@ export default function MobileReceive({
             headerBorder='#e5e7eb'
             bodyBorder='#e5e7eb'
             emptyText={t('mobileReceive.emptyPending')}
+            headerLayout='stacked'
             headerExtra={
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <Typography
-                  sx={{ fontSize: 12, fontWeight: 700, color: '#475569' }}
-                >
-                  {t('mobileReceive.warehouseLabel')}
-                </Typography>
                 <Select
                   size='small'
                   value={pendingWarehouseFilter}
@@ -389,7 +391,7 @@ export default function MobileReceive({
                     setPendingWarehouseFilter(String(e.target.value))
                   }
                   sx={{
-                    height: 26,
+                    height: 24,
                     fontSize: 12,
                     fontWeight: 700,
                     minWidth: 120,
@@ -636,6 +638,7 @@ function Panel({
   titleColor,
   emptyText,
   headerExtra,
+  headerLayout = 'row',
   children
 }: {
   title: string
@@ -646,6 +649,7 @@ function Panel({
   titleColor?: string
   emptyText: string
   headerExtra?: React.ReactNode
+  headerLayout?: 'row' | 'stacked'
   children: React.ReactNode
 }) {
   return (
@@ -666,24 +670,66 @@ function Panel({
           borderBottom: `1px solid ${headerBorder}`,
           background: headerBg,
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between'
+          flexDirection: headerLayout === 'stacked' ? 'column' : 'row',
+          alignItems: headerLayout === 'stacked' ? 'stretch' : 'center',
+          justifyContent: 'space-between',
+          gap: headerLayout === 'stacked' ? 0.6 : 0
         }}
       >
-        <Typography
-          sx={{ fontWeight: 900, fontSize: 14, color: titleColor || '#0f172a' }}
-        >
-          {title}
-        </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
-          {headerExtra}
-          <Chip
-            size='small'
-            label={count}
-            sx={{ fontSize: 12, height: 20, fontWeight: 700 }}
-            variant='outlined'
-          />
-        </Box>
+        {headerLayout === 'stacked' ? (
+          <>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 0.6
+              }}
+            >
+              <Typography
+                sx={{
+                  fontWeight: 900,
+                  fontSize: 14,
+                  color: titleColor || '#0f172a',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0
+                }}
+              >
+                {title}
+              </Typography>
+              <Chip
+                size='small'
+                label={count}
+                sx={{ fontSize: 12, height: 20, fontWeight: 700 }}
+                variant='outlined'
+              />
+            </Box>
+            {headerExtra ? <Box>{headerExtra}</Box> : null}
+          </>
+        ) : (
+          <>
+            <Typography
+              sx={{
+                fontWeight: 900,
+                fontSize: 14,
+                color: titleColor || '#0f172a',
+                whiteSpace: 'nowrap',
+                flexShrink: 0
+              }}
+            >
+              {title}
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
+              {headerExtra}
+              <Chip
+                size='small'
+                label={count}
+                sx={{ fontSize: 12, height: 20, fontWeight: 700 }}
+                variant='outlined'
+              />
+            </Box>
+          </>
+        )}
       </Box>
       <Box sx={{ p: 1 }}>{children}</Box>
     </Paper>
