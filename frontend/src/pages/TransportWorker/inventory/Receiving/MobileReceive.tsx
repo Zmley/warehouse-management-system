@@ -335,37 +335,6 @@ export default function MobileReceive({
           gap: 1
         }}
       >
-        <Paper
-          elevation={0}
-          sx={{
-            p: 1,
-            borderRadius: 2,
-            border: '1px solid #e6ebf2',
-            bgcolor: '#fff',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center'
-          }}
-        >
-          <Typography sx={{ fontWeight: 900, fontSize: 16 }}>
-            {t('mobileReceive.title')}
-          </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-            <IconButton
-              size='small'
-              onClick={onRefresh}
-              disabled={!resolvedWarehouseID}
-              aria-label={t('mobileReceive.refresh')}
-            >
-              {busy ? (
-                <CircularProgress size={16} />
-              ) : (
-                <RefreshIcon fontSize='small' />
-              )}
-            </IconButton>
-          </Box>
-        </Paper>
-
         <Box
           sx={{
             display: 'grid',
@@ -382,6 +351,34 @@ export default function MobileReceive({
             bodyBorder='#e5e7eb'
             emptyText={t('mobileReceive.emptyPending')}
             headerLayout='stacked'
+            headerRight={
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <IconButton
+                  size='small'
+                  onClick={onRefresh}
+                  disabled={!resolvedWarehouseID}
+                  aria-label={t('mobileReceive.refresh')}
+                  sx={{
+                    width: 24,
+                    height: 24,
+                    border: '1px solid #e2e8f0',
+                    bgcolor: '#fff'
+                  }}
+                >
+                  {busy ? (
+                    <CircularProgress size={14} />
+                  ) : (
+                    <RefreshIcon fontSize='small' />
+                  )}
+                </IconButton>
+                <Chip
+                  size='small'
+                  label={counts.p}
+                  sx={{ fontSize: 12, height: 20, fontWeight: 700 }}
+                  variant='outlined'
+                />
+              </Box>
+            }
             headerExtra={
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                 <Select
@@ -595,9 +592,9 @@ function PalletButton({
             height: 20,
             lineHeight: '20px',
             borderRadius: 10,
-            fontSize: 12,
-            fontWeight: 800,
-            color: '#334155',
+            fontSize: 11,
+            fontWeight: 700,
+            color: '#64748b',
             border: '1px solid #cbd5e1',
             zIndex: 1,
             whiteSpace: 'nowrap',
@@ -638,6 +635,7 @@ function Panel({
   titleColor,
   emptyText,
   headerExtra,
+  headerRight,
   headerLayout = 'row',
   children
 }: {
@@ -649,6 +647,7 @@ function Panel({
   titleColor?: string
   emptyText: string
   headerExtra?: React.ReactNode
+  headerRight?: React.ReactNode
   headerLayout?: 'row' | 'stacked'
   children: React.ReactNode
 }) {
@@ -697,12 +696,14 @@ function Panel({
               >
                 {title}
               </Typography>
-              <Chip
-                size='small'
-                label={count}
-                sx={{ fontSize: 12, height: 20, fontWeight: 700 }}
-                variant='outlined'
-              />
+              {headerRight || (
+                <Chip
+                  size='small'
+                  label={count}
+                  sx={{ fontSize: 12, height: 20, fontWeight: 700 }}
+                  variant='outlined'
+                />
+              )}
             </Box>
             {headerExtra ? <Box>{headerExtra}</Box> : null}
           </>
@@ -749,7 +750,7 @@ function RowItem({ code, qty }: { code: string; qty: number }) {
     >
       <Typography
         sx={{
-          fontSize: 13,
+          fontSize: 14,
           fontWeight: 900,
           color: '#0f172a',
           lineHeight: 1.15,

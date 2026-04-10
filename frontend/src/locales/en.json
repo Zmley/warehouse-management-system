@@ -44,6 +44,10 @@
     "outOfStock": "Out of Stock",
     "canceling": "canceling",
     "creator": "Creator",
+    "category": {
+      "assembly": "Assembly",
+      "other": "Other Products"
+    },
     "status": {
       "pending": "Pending",
       "outOfStock": "Out of Stock"

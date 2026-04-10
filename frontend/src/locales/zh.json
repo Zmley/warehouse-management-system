@@ -45,6 +45,10 @@
     "canceling": "取消中",
 
     "creator": "创建人员",
+    "category": {
+      "assembly": "总成",
+      "other": "其他产品"
+    },
 
     "status": {
       "pending": "待处理",
