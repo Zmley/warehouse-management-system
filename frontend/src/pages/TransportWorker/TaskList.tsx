@@ -153,7 +153,7 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
         }
       >
         <Box
-          p={2}
+          p={1}
           pt={0.5}
           sx={{
             position: 'relative',
