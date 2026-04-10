@@ -185,8 +185,8 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
               <Box
                 sx={{
                   display: 'flex',
-                  gap: 0.75,
-                  p: 0.4,
+                  gap: 0,
+                  p: 0.2,
                   borderRadius: 999,
                   background: '#eef2f7'
                 }}
@@ -195,13 +195,13 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
                   variant={category === 'assembly' ? 'contained' : 'text'}
                   onClick={() => setCategory('assembly')}
                   sx={{
-                    minWidth: 86,
+                    minWidth: 72,
                     height: 28,
                     borderRadius: 999,
                     textTransform: 'none',
                     fontSize: 12,
                     fontWeight: 800,
-                    px: 1.5
+                    px: 1
                   }}
                 >
                   {t('taskList.category.assembly')}
@@ -210,13 +210,13 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
                   variant={category === 'other' ? 'contained' : 'text'}
                   onClick={() => setCategory('other')}
                   sx={{
-                    minWidth: 86,
+                    minWidth: 72,
                     height: 28,
                     borderRadius: 999,
                     textTransform: 'none',
                     fontSize: 12,
                     fontWeight: 800,
-                    px: 1.5
+                    px: 1
                   }}
                 >
                   {t('taskList.category.other')}
