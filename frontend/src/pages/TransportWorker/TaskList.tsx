@@ -47,6 +47,7 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
   const [loadingTasks, setLoadingTasks] = useState<Record<string, boolean>>({})
   const [open, setOpen] = useState(false)
   const [showOutOfStock, setShowOutOfStock] = useState(false)
+  const [category, setCategory] = useState<'assembly' | 'other'>('assembly')
 
   const sourceDragRef = useRef<HTMLDivElement | null>(null)
   const isDraggingRef = useRef(false)
@@ -121,6 +122,19 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
     return Array.from(seen.entries()).map(([code, note]) => ({ code, note }))
   }
 
+  const isAssemblyTask = (task: Task) => {
+    const pickupCode =
+      task.destinationBinCode || task.destinationBin?.binCode || ''
+    return pickupCode.includes('_')
+  }
+
+  const visibleTasks = useMemo(() => {
+    if (category === 'assembly') {
+      return filteredTasks.filter(task => isAssemblyTask(task))
+    }
+    return filteredTasks.filter(task => !isAssemblyTask(task))
+  }, [filteredTasks, category])
+
   return (
     <Box sx={{ backgroundColor: '#F7F9FC' }}>
       <PullToRefresh
@@ -150,22 +164,66 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
           <Box
             sx={{
               display: 'grid',
-              gridTemplateColumns: '1fr auto 1fr',
+              gridTemplateColumns: 'auto 1fr auto',
               alignItems: 'center',
-              mb: 0.25
+              gap: 1,
+              mb: 1
             }}
           >
-            <Box />
             <Typography
               sx={{
-                justifySelf: 'center',
                 color: 'text.secondary',
-                fontSize: 12,
-                fontStyle: 'italic'
+                fontSize: 11,
+                fontStyle: 'italic',
+                whiteSpace: 'nowrap'
               }}
             >
               {t('taskList.pullToRefresh')}
             </Typography>
+
+            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  gap: 0.75,
+                  p: 0.4,
+                  borderRadius: 999,
+                  background: '#eef2f7'
+                }}
+              >
+                <Button
+                  variant={category === 'assembly' ? 'contained' : 'text'}
+                  onClick={() => setCategory('assembly')}
+                  sx={{
+                    minWidth: 86,
+                    height: 28,
+                    borderRadius: 999,
+                    textTransform: 'none',
+                    fontSize: 12,
+                    fontWeight: 800,
+                    px: 1.5
+                  }}
+                >
+                  {t('taskList.category.assembly')}
+                </Button>
+                <Button
+                  variant={category === 'other' ? 'contained' : 'text'}
+                  onClick={() => setCategory('other')}
+                  sx={{
+                    minWidth: 86,
+                    height: 28,
+                    borderRadius: 999,
+                    textTransform: 'none',
+                    fontSize: 12,
+                    fontWeight: 800,
+                    px: 1.5
+                  }}
+                >
+                  {t('taskList.category.other')}
+                </Button>
+              </Box>
+            </Box>
+
             <Box
               sx={{
                 justifySelf: 'end',
@@ -214,13 +272,13 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
             <Box display='flex' justifyContent='center' mt={4}>
               <CircularProgress size={30} thickness={5} />
             </Box>
-          ) : filteredTasks.length === 0 ? (
+          ) : visibleTasks.length === 0 ? (
             <Typography color='text.secondary' textAlign='center'>
               {t('taskList.empty')}
             </Typography>
           ) : (
             <Box>
-              {filteredTasks.map((task: Task) => {
+              {visibleTasks.map((task: Task) => {
                 const isOutOfStock =
                   !task.sourceBins || task.sourceBins.length === 0
                 const parts = buildSourceBinsParts(
