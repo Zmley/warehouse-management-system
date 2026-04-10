@@ -211,7 +211,7 @@ const InventoryIndex: React.FC = () => {
           minHeight: 0,
           overflow: 'auto',
           m: 0,
-          p: { xs: 1, sm: 2 },
+          p: tab === 'receive' ? { xs: 0.5, sm: 1 } : { xs: 1, sm: 2 },
           backgroundColor: theme =>
             theme.palette.mode === 'dark' ? '#0b0b0c' : '#F7F9FC'
         }}
@@ -233,11 +233,7 @@ const InventoryIndex: React.FC = () => {
               <InventoryEdit />
             </SectionCard>
           )}
-          {tab === 'receive' && (
-            <SectionCard>
-              <MobileReceive />
-            </SectionCard>
-          )}
+          {tab === 'receive' && <MobileReceive />}
         </Suspense>
       </Box>
     </Box>

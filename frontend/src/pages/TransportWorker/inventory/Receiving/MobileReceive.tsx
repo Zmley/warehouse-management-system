@@ -322,7 +322,7 @@ export default function MobileReceive({
         display: 'flex',
         justifyContent: 'center',
         boxSizing: 'border-box',
-        px: 1,
+        px: 0,
         py: 1
       }}
     >
@@ -338,8 +338,8 @@ export default function MobileReceive({
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-            gap: 1
+            gridTemplateColumns: '1fr 1fr',
+            gap: 0.6
           }}
         >
           {/* Pending */}
@@ -589,11 +589,11 @@ function PalletButton({
             transform: 'translate(-50%, -50%)',
             bgcolor: '#fff',
             px: 1,
-            height: 20,
-            lineHeight: '20px',
+            height: 14,
+            lineHeight: '14px',
             borderRadius: 10,
-            fontSize: 11,
-            fontWeight: 700,
+            fontSize: 10,
+            fontWeight: 600,
             color: '#64748b',
             border: '1px solid #cbd5e1',
             zIndex: 1,
@@ -613,8 +613,8 @@ function PalletButton({
           border: `1px dashed ${borderColor}`,
           bgcolor: bgColor,
           borderRadius: 2,
-          p: 0.75,
-          mb: 0.75,
+          p: 0.55,
+          mb: 0.6,
           boxShadow: insetShadow,
           transition: 'transform .06s ease',
           '&:active': { transform: 'scale(0.998)' }
@@ -664,8 +664,8 @@ function Panel({
     >
       <Box
         sx={{
-          px: 1,
-          py: 0.6,
+          px: 0.7,
+          py: 0.5,
           borderBottom: `1px solid ${headerBorder}`,
           background: headerBg,
           display: 'flex',
@@ -732,7 +732,7 @@ function Panel({
           </>
         )}
       </Box>
-      <Box sx={{ p: 1 }}>{children}</Box>
+      <Box sx={{ p: 0.7 }}>{children}</Box>
     </Paper>
   )
 }
