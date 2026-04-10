@@ -31,7 +31,7 @@
     "query": "Search"
   },
   "taskList": {
-    "pullToRefresh": "↓ Pull down to refresh tasks",
+    "pullToRefresh": "↓ Pull down to refresh",
     "empty": "No pending tasks found.",
     "sourceBin": "Source Bin",
     "product": "Product",
