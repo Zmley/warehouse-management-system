@@ -42,6 +42,8 @@
     "takeOver": "Take Over",
     "loading": "Loading...",
     "outOfStock": "Out of Stock",
+    "sourceBinHidden": "Not shown",
+    "urgent": "Rush Task",
     "canceling": "canceling",
     "creator": "Creator",
     "category": {
@@ -254,11 +256,21 @@
     "qty": "Qty",
     "createTask": "Create Task",
     "createOutOfStockTask": "Create Out-of-stock Task",
+    "duplicateRush": {
+      "title": "This task already exists. Mark as rush?",
+      "description": "Choose Yes to mark the existing task as Rush Task and move it to the top.",
+      "cancelTitle": "This task already exists and is already rush. Remove rush?",
+      "cancelDescription": "Choose Confirm Remove to clear the rush mark for this task.",
+      "yes": "Yes",
+      "no": "No",
+      "confirmCancel": "Confirm Remove"
+    },
     "error": {
       "noProductCode": "❌ Please select a product code.",
-      "noPickupBin": "❌ Pickup bin not found.",
+      "noPickupBin": "❌ This product is out of stock.",
       "fetchFailed": "❌ Failed to fetch bin info.",
-      "taskDuplicate": "This task already exists"
+      "taskDuplicate": "This task already exists",
+      "duplicateRushFailed": "❌ Failed to mark as rush. Please try again."
     }
   },
 

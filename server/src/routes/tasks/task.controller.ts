@@ -154,7 +154,7 @@ export const createTask = asyncHandler(async (req, res) => {
 
 export const updateTask = asyncHandler(async (req, res) => {
   const { taskID } = req.params
-  const { status, sourceBinCode } = req.body
+  const { status, sourceBinCode, note } = req.body
   const { accountID, warehouseID } = res.locals
 
   const existingTask = await Task.findByPk(taskID)
@@ -168,6 +168,7 @@ export const updateTask = asyncHandler(async (req, res) => {
 
   let updatedTask
   if (
+    status &&
     originalStatus === TaskStatus.PENDING &&
     status === TaskStatus.COMPLETED &&
     !isVirtualBin
@@ -182,6 +183,7 @@ export const updateTask = asyncHandler(async (req, res) => {
       taskID,
       status,
       sourceBinCode,
+      note,
       warehouseID
     })
   }

@@ -582,12 +582,7 @@ const getWhereClauseForRole = (
   keyword?: string
 ): WhereOptions<Task> => {
   if (role === 'PICKER') {
-    if (!accountID) {
-      throw new AppError(400, '❌ Picker must provide accountID')
-    }
-
     return {
-      creatorID: accountID,
       status: status === 'ALL' ? ['PENDING', 'COMPLETED'] : status
     }
   }
@@ -604,11 +599,23 @@ export const getTasksByWarehouseID = async (
 ) => {
   const whereClause = getWhereClauseForRole(role, status, accountID, keyword)
   const includeClause = getIncludeClause(warehouseID)
+  const orderClause: Array<[unknown, string]> =
+    role === UserRole.TRANSPORT_WORKER || role === UserRole.PICKER
+      ? ([
+          [
+            Sequelize.literal(
+              `CASE WHEN "Task"."note" IN ('RUSH_TASK','URGENT','加急') THEN 0 ELSE 1 END`
+            ),
+            'ASC'
+          ],
+          ['updatedAt', 'DESC']
+        ] as const)
+      : ([['updatedAt', 'DESC']] as const)
 
   const tasks = (await Task.findAll({
     where: whereClause,
     include: includeClause,
-    order: [['updatedAt', 'DESC']]
+    order: orderClause as unknown as [string, string][]
   })) as unknown as TaskWithJoin[]
 
   if (!tasks.length) {
@@ -670,6 +677,7 @@ export const updateTaskByTaskID = async ({
   sourceBinID,
   quantity,
   accepterID,
+  note,
   warehouseID
 }: {
   taskID: string
@@ -678,6 +686,7 @@ export const updateTaskByTaskID = async ({
   sourceBinID?: string
   quantity?: number
   accepterID?: string
+  note?: string | null
   warehouseID?: string
 }) => {
   const task = await Task.findByPk(taskID)
@@ -698,6 +707,12 @@ export const updateTaskByTaskID = async ({
 
   if (typeof accepterID !== 'undefined') {
     task.accepterID = accepterID
+  }
+
+  if (typeof note !== 'undefined') {
+    task.note = note
+    // Ensure list resorting reflects "most recently toggled" behavior for rush flags.
+    task.set('updatedAt', new Date())
   }
   await task.save()
   return task
