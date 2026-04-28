@@ -20,6 +20,8 @@
     "format:fix": "prettier --write \"{*.js,!(node*)**/*.ts}\"",
     "loglevel:change": "runtime-node-refresh",
     "dev": "NODE_ENV=development npx nodemon -r tsconfig-paths/register ./src/server.ts",
+    "migrate:production": "npx sequelize-cli db:migrate --env production",
+    "migrate:status:production": "npx sequelize-cli db:migrate:status --env production",
     "prod": "yarn build && NODE_ENV=production node dist/server.js",
     "prod:only": "NODE_ENV=production node dist/server.js"
   },
