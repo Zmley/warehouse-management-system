@@ -13,6 +13,7 @@ export class Task extends Model {
   public creatorID!: string
   public productCode!: string
   public quantity!: number
+  public note!: string | null
   public status!: TaskStatus | string
   public createdAt!: Date
   public updatedAt!: Date | null
@@ -53,6 +54,10 @@ Task.init(
       type: DataTypes.INTEGER,
       allowNull: false,
       defaultValue: 0
+    },
+    note: {
+      type: DataTypes.STRING,
+      allowNull: true
     },
     status: {
       type: DataTypes.ENUM(

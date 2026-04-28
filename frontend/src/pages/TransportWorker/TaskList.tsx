@@ -39,6 +39,9 @@ const dtf = new Intl.DateTimeFormat(undefined, {
   minute: '2-digit'
 })
 
+const isRushTaskNote = (note: string | null | undefined) =>
+  note === 'RUSH_TASK' || note === 'URGENT' || note === '加急'
+
 const TaskList: React.FC<TaskListProps> = ({ setView }) => {
   const { t } = useTranslation()
   const { tasks, fetchTasks, acceptTask, isLoading, error } = useTask()
@@ -135,6 +138,14 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
     return filteredTasks.filter(task => !isAssemblyTask(task))
   }, [filteredTasks, category])
 
+  const taskCounts = useMemo(() => {
+    const assembly = filteredTasks.filter(task => isAssemblyTask(task)).length
+    return {
+      assembly,
+      other: filteredTasks.length - assembly
+    }
+  }, [filteredTasks])
+
   return (
     <Box sx={{ backgroundColor: '#F7F9FC' }}>
       <PullToRefresh
@@ -204,7 +215,7 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
                     px: 1
                   }}
                 >
-                  {t('taskList.category.assembly')}
+                  {`${t('taskList.category.assembly')} (${taskCounts.assembly})`}
                 </Button>
                 <Button
                   variant={category === 'other' ? 'contained' : 'text'}
@@ -219,7 +230,7 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
                     px: 1
                   }}
                 >
-                  {t('taskList.category.other')}
+                  {`${t('taskList.category.other')} (${taskCounts.other})`}
                 </Button>
               </Box>
             </Box>
@@ -287,9 +298,18 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
 
                 const firstBinCode = parts[0]?.code ?? ''
                 const isAisleTask = firstBinCode.startsWith('AISLE-')
+                const isRush = isRushTaskNote(task.note)
 
-                const cardBorderColor = isAisleTask ? '#059669' : '#2563eb'
-                const cardBgColor = isAisleTask ? '#ecfdf5' : '#eff6ff'
+                const cardBorderColor = isRush
+                  ? '#d32f2f'
+                  : isAisleTask
+                    ? '#059669'
+                    : '#2563eb'
+                const cardBgColor = isRush
+                  ? '#fff7f7'
+                  : isAisleTask
+                    ? '#ecfdf5'
+                    : '#eff6ff'
 
                 return (
                   <Card
@@ -464,28 +484,51 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
                           )}: ${task.creator?.firstName || '--'} ${task.creator?.lastName || ''}`}
                         </Typography>
 
-                        <Button
-                          variant='contained'
-                          onClick={() => handleAccept(task.taskID)}
-                          disabled={isOutOfStock || loadingTasks[task.taskID]}
-                          color={isAisleTask ? 'success' : 'primary'}
+                        <Box
                           sx={{
-                            fontSize: 11,
-                            px: 2,
-                            py: 0.5,
-                            borderRadius: 2,
-                            textTransform: 'uppercase',
-                            fontWeight: 600,
-                            minHeight: 30,
-                            opacity: isOutOfStock ? 0.5 : 1
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                            flexShrink: 0
                           }}
                         >
-                          {loadingTasks[task.taskID]
-                            ? t('taskList.loading')
-                            : isAisleTask
-                              ? t('taskList.takeOver')
-                              : t('taskList.accept')}
-                        </Button>
+                          {isRush && (
+                            <Typography
+                              variant='caption'
+                              sx={{
+                                color: '#d32f2f',
+                                fontWeight: 600,
+                                fontSize: 11,
+                                lineHeight: 1,
+                                whiteSpace: 'nowrap'
+                              }}
+                            >
+                              {t('taskList.urgent')}
+                            </Typography>
+                          )}
+                          <Button
+                            variant='contained'
+                            onClick={() => handleAccept(task.taskID)}
+                            disabled={isOutOfStock || loadingTasks[task.taskID]}
+                            color={isAisleTask ? 'success' : 'primary'}
+                            sx={{
+                              fontSize: 11,
+                              px: 2,
+                              py: 0.5,
+                              borderRadius: 2,
+                              textTransform: 'uppercase',
+                              fontWeight: 600,
+                              minHeight: 30,
+                              opacity: isOutOfStock ? 0.5 : 1
+                            }}
+                          >
+                            {loadingTasks[task.taskID]
+                              ? t('taskList.loading')
+                              : isAisleTask
+                                ? t('taskList.takeOver')
+                                : t('taskList.accept')}
+                          </Button>
+                        </Box>
                       </Box>
                     </CardContent>
                   </Card>

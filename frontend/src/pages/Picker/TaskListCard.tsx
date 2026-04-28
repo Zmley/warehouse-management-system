@@ -9,7 +9,8 @@ import {
   CircularProgress,
   Snackbar,
   Alert,
-  Chip
+  Switch,
+  FormControlLabel
 } from '@mui/material'
 import PullToRefresh from 'react-simple-pull-to-refresh'
 import { usePickerTasks } from 'hooks/usePickerTask'
@@ -22,7 +23,6 @@ interface Props {
 
 type SourceBinView = {
   bin?: { binCode?: string }
-  quantity?: number
 }
 
 const PullingIndicator = ({ text }: { text: string }) => (
@@ -45,11 +45,12 @@ const PullingIndicator = ({ text }: { text: string }) => (
 
 const TaskListCard: React.FC<Props> = ({ status }) => {
   const { t } = useTranslation()
-  const { tasks, fetchTasks } = usePickerTasks()
+  const { tasks, fetchTasks, setRush } = usePickerTasks()
 
   const [hasFetched, setHasFetched] = useState(false)
   const [open, setOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [updatingUrgent, setUpdatingUrgent] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
     const fetchData = async () => {
@@ -138,23 +139,17 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
           ) : (
             <Box>
               {filteredTasks.map(task => {
-                const bins =
-                  (task.sourceBins as unknown as SourceBinView[]) || []
+                const bins = (task.sourceBins as unknown as SourceBinView[]) || []
                 const uniqueCodes = Array.from(
-                  new Set(bins.map(b => b?.bin?.binCode ?? '--'))
-                )
-                const display = uniqueCodes.slice(0, 3)
-                const rest = uniqueCodes.length - display.length
-
-                const firstBin = uniqueCodes[0] ?? ''
-                const isAisleTask = firstBin.startsWith('AISLE-')
-
-                const cardBorderColor = isAisleTask ? '#059669' : '#2563eb'
-                const cardBg = isAisleTask
-                  ? 'linear-gradient(180deg,#ecfdf5 0%, #f6fffb 100%)'
-                  : 'linear-gradient(180deg,#eff6ff 0%, #f7faff 100%)'
-
+                  new Set(bins.map(b => b?.bin?.binCode).filter(Boolean))
+                ) as string[]
                 const outOfStock = uniqueCodes.length === 0
+                const cardBorderColor = '#2563eb'
+                const cardBg = 'linear-gradient(180deg,#eff6ff 0%, #f7faff 100%)'
+                const isUrgent =
+                  task.note === 'RUSH_TASK' ||
+                  task.note === 'URGENT' ||
+                  task.note === '加急'
 
                 return (
                   <Card
@@ -183,7 +178,6 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
                           >
                             {t('taskList.sourceBin')}
                           </Typography>
-
                           {outOfStock ? (
                             <Typography
                               sx={{
@@ -196,49 +190,16 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
                               {t('taskList.outOfStock')}
                             </Typography>
                           ) : (
-                            <Box
+                            <Typography
                               sx={{
                                 mt: 0.5,
-                                display: 'flex',
-                                justifyContent: 'center',
-                                gap: 0.5,
-                                flexWrap: 'nowrap',
-                                overflowX: 'auto',
-                                px: 0.5,
-                                '&::-webkit-scrollbar': { display: 'none' }
+                                fontSize: 12,
+                                fontWeight: 500,
+                                color: 'text.secondary'
                               }}
                             >
-                              {display.map(code => (
-                                <Chip
-                                  key={code}
-                                  label={code}
-                                  size='small'
-                                  sx={{
-                                    height: 22,
-                                    borderRadius: '999px',
-                                    fontSize: 11,
-                                    fontWeight: 600,
-                                    bgcolor: isAisleTask
-                                      ? '#dcfce7'
-                                      : '#dbeafe',
-                                    border: `1px solid ${isAisleTask ? '#86efac' : '#93c5fd'}`
-                                  }}
-                                />
-                              ))}
-                              {rest > 0 && (
-                                <Chip
-                                  label={`+${rest}`}
-                                  size='small'
-                                  sx={{
-                                    height: 22,
-                                    borderRadius: '999px',
-                                    fontSize: 11,
-                                    bgcolor: '#f3f4f6',
-                                    border: '1px solid #e5e7eb'
-                                  }}
-                                />
-                              )}
-                            </Box>
+                              {t('taskList.sourceBinHidden')}
+                            </Typography>
                           )}
                         </Grid>
 
@@ -327,17 +288,73 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
                           ).toLocaleString()}`}
                         </Typography>
 
-                        {status === TaskCategoryEnum.COMPLETED && (
-                          <Typography
-                            sx={{
-                              fontWeight: 800,
-                              fontSize: 11,
-                              color: 'success.main'
-                            }}
-                          >
-                            {t('taskListCard.completed')}
-                          </Typography>
-                        )}
+                        <Box display='flex' alignItems='center' gap={0.5}>
+                          {isUrgent && status !== TaskCategoryEnum.PENDING && (
+                            <Typography
+                              sx={{
+                                fontWeight: 800,
+                                fontSize: 11,
+                                color: '#d32f2f'
+                              }}
+                            >
+                              {t('taskList.urgent')}
+                            </Typography>
+                          )}
+                          {status === TaskCategoryEnum.PENDING && (
+                            <FormControlLabel
+                              sx={{
+                                mr: 0,
+                                '& .MuiFormControlLabel-label': { marginLeft: 0.25 }
+                              }}
+                              control={
+                                <Switch
+                                  size='small'
+                                  checked={isUrgent}
+                                  disabled={updatingUrgent[task.taskID]}
+                                  color={isUrgent ? 'error' : 'primary'}
+                                  onChange={async (_, checked) => {
+                                    setUpdatingUrgent(prev => ({
+                                      ...prev,
+                                      [task.taskID]: true
+                                    }))
+                                    try {
+                                      await setRush(task.taskID, checked)
+                                    } finally {
+                                      setUpdatingUrgent(prev => ({
+                                        ...prev,
+                                        [task.taskID]: false
+                                      }))
+                                    }
+                                  }}
+                                />
+                              }
+                              label={
+                                <Typography
+                                  component='span'
+                                  variant='caption'
+                                  fontSize={11}
+                                  sx={{
+                                    color: isUrgent ? '#d32f2f' : 'text.secondary',
+                                    fontWeight: isUrgent ? 600 : 400
+                                  }}
+                                >
+                                  {t('taskList.urgent')}
+                                </Typography>
+                              }
+                            />
+                          )}
+                          {status === TaskCategoryEnum.COMPLETED && (
+                            <Typography
+                              sx={{
+                                fontWeight: 800,
+                                fontSize: 11,
+                                color: 'success.main'
+                              }}
+                            >
+                              {t('taskListCard.completed')}
+                            </Typography>
+                          )}
+                        </Box>
                       </Box>
                     </CardContent>
                   </Card>

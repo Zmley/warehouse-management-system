@@ -7,7 +7,11 @@ import {
   Autocomplete,
   Box,
   CircularProgress,
-  Divider
+  Divider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions
 } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -33,8 +37,11 @@ const CreateManual: React.FC<Props> = ({ onSuccess }) => {
   >([])
   const [loading, setLoading] = useState(false)
   const [localError, setLocalError] = useState<string | null>(null)
+  const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false)
+  const [duplicateTaskID, setDuplicateTaskID] = useState<string | null>(null)
+  const [duplicateTaskIsRush, setDuplicateTaskIsRush] = useState(false)
 
-  const { createPickTask, error, setError } = usePickerTasks()
+  const { createPickTask, error, setError, fetchTasks, setRush } = usePickerTasks()
   const { fetchAvailableBinCodes, getPickUpBinByProductCode } = useBin()
   const { productCodes, fetchProductCodes } = useProduct()
 
@@ -93,7 +100,7 @@ const CreateManual: React.FC<Props> = ({ onSuccess }) => {
 
     const result = await createPickTask(productCode, pickupBinCode)
 
-    if (result) {
+    if (result.task) {
       onSuccess?.()
       setProductCode('')
       setInputValue('')
@@ -102,6 +109,28 @@ const CreateManual: React.FC<Props> = ({ onSuccess }) => {
 
       navigate('/success')
     } else {
+      if (result.errorCode === 'TASK_DUPLICATE') {
+        const latestTasks = await fetchTasks()
+        const duplicateTask = latestTasks.find(
+          t =>
+            t.productCode === productCode &&
+            t.destinationBinCode === pickupBinCode &&
+            t.status === 'PENDING'
+        )
+
+        if (duplicateTask) {
+          setDuplicateTaskID(duplicateTask.taskID)
+          setDuplicateTaskIsRush(
+            duplicateTask.note === 'RUSH_TASK' ||
+              duplicateTask.note === 'URGENT' ||
+              duplicateTask.note === '加急'
+          )
+          setDuplicateDialogOpen(true)
+        } else {
+          setLocalError(t('picker.error.taskDuplicate'))
+        }
+      }
+
       try {
         setLoading(true)
         const [sourceBins, pickupRes] = await Promise.all([
@@ -120,6 +149,22 @@ const CreateManual: React.FC<Props> = ({ onSuccess }) => {
         setLoading(false)
       }
     }
+  }
+
+  const handleMarkDuplicateTaskRush = async () => {
+    if (!duplicateTaskID) {
+      setDuplicateDialogOpen(false)
+      return
+    }
+
+    const ok = await setRush(duplicateTaskID, !duplicateTaskIsRush)
+    if (!ok) {
+      setLocalError(t('picker.error.duplicateRushFailed'))
+    }
+
+    setDuplicateDialogOpen(false)
+    setDuplicateTaskID(null)
+    setDuplicateTaskIsRush(false)
   }
 
   return (
@@ -244,6 +289,53 @@ const CreateManual: React.FC<Props> = ({ onSuccess }) => {
               )}
         </Typography>
       )}
+
+      <Dialog
+        open={duplicateDialogOpen}
+        onClose={() => {
+          setDuplicateDialogOpen(false)
+          setDuplicateTaskID(null)
+          setDuplicateTaskIsRush(false)
+        }}
+        fullWidth
+        maxWidth='xs'
+      >
+        <DialogTitle sx={{ pb: 0.5, fontWeight: 800, fontSize: 20 }}>
+          {duplicateTaskIsRush
+            ? t('picker.duplicateRush.cancelTitle')
+            : t('picker.duplicateRush.title')}
+        </DialogTitle>
+        <DialogContent sx={{ pt: 1.25 }}>
+          <Typography variant='body2' color='text.secondary'>
+            {duplicateTaskIsRush
+              ? t('picker.duplicateRush.cancelDescription')
+              : t('picker.duplicateRush.description')}
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
+          <Button
+            variant='outlined'
+            onClick={() => {
+              setDuplicateDialogOpen(false)
+              setDuplicateTaskID(null)
+              setDuplicateTaskIsRush(false)
+            }}
+            sx={{ textTransform: 'none', fontWeight: 700, minWidth: 88 }}
+          >
+            {t('picker.duplicateRush.no')}
+          </Button>
+          <Button
+            variant='contained'
+            color='error'
+            onClick={handleMarkDuplicateTaskRush}
+            sx={{ textTransform: 'none', fontWeight: 700, minWidth: 112 }}
+          >
+            {duplicateTaskIsRush
+              ? t('picker.duplicateRush.confirmCancel')
+              : t('picker.duplicateRush.yes')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Card>
   )
 }

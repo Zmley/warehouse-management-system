@@ -35,9 +35,12 @@ export const UpdateTaskParamsSchema = TaskIDParamsSchema
 export const UpdateTaskBodySchema = Joi.object({
   status: Joi.string()
     .valid(...Object.values(TaskStatus))
-    .required(),
-  sourceBinCode: Joi.string().trim().allow('').optional()
-}).unknown(false)
+    .optional(),
+  sourceBinCode: Joi.string().trim().allow('').optional(),
+  note: Joi.string().trim().allow('', null).optional()
+})
+  .or('status', 'sourceBinCode', 'note')
+  .unknown(false)
 
 export const GetFinishedTasksQuerySchema = Joi.object({
   warehouseID: Joi.string().required(),

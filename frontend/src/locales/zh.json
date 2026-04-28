@@ -42,6 +42,8 @@
     "takeOver": "接手",
     "loading": "加载中...",
     "outOfStock": "缺货",
+    "sourceBinHidden": "不显示",
+    "urgent": "加急",
     "canceling": "取消中",
 
     "creator": "创建人员",
@@ -249,11 +251,21 @@
     "qty": "数量",
     "createTask": "创建任务",
     "createOutOfStockTask": "发布缺货任务",
+    "duplicateRush": {
+      "title": "该任务已存在，是否加急？",
+      "description": "选择“是”后将该任务标记为加急并置顶。",
+      "cancelTitle": "该任务已存在且已加急，是否取消加急？",
+      "cancelDescription": "选择“确认取消”后将移除该任务的加急标记。",
+      "yes": "是",
+      "no": "否",
+      "confirmCancel": "确认取消"
+    },
     "error": {
       "noProductCode": "❌ 请选择产品编码。",
-      "noPickupBin": "❌ 未找到取货货位。",
+      "noPickupBin": "❌ 该型号已缺货。",
       "fetchFailed": "❌ 获取货位信息失败。",
       "taskDuplicate": "该任务已存在",
+      "duplicateRushFailed": "❌ 加急失败，请稍后重试。",
       "unknown": "未知错误"
     }
   },

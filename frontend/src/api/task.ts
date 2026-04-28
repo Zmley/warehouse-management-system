@@ -18,3 +18,6 @@ export const getPickerTasks = () => apiClient.get('/tasks')
 
 export const cancelPickerTask = (taskID: string) =>
   apiClient.post(`/tasks/${taskID}/cancel`)
+
+export const setTaskRush = (taskID: string, isRush: boolean) =>
+  apiClient.patch(`/tasks/${taskID}`, { note: isRush ? 'RUSH_TASK' : null })
