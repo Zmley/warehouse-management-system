@@ -183,14 +183,34 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
         onRefresh={handleManualRefresh}
         pullingContent={
           <Box
-            sx={{ py: 1, textAlign: 'center', color: '#6b7280', fontSize: 12 }}
+            sx={{
+              py: 0.5,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'text.secondary'
+            }}
           >
-            {t('taskList.pullToRefresh')}
+            <Typography variant='caption' sx={{ fontSize: 12, fontStyle: 'italic' }}>
+              {t('taskList.pullToRefresh')}
+            </Typography>
           </Box>
         }
         refreshingContent={
-          <Box sx={{ py: 1, textAlign: 'center' }}>
-            <CircularProgress size={18} thickness={5} />
+          <Box
+            sx={{
+              py: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 1,
+              color: 'text.secondary'
+            }}
+          >
+            <CircularProgress size={16} thickness={5} />
+            <Typography variant='caption' sx={{ fontSize: 12 }}>
+              {t('taskList.refreshing', 'Refreshing…')}
+            </Typography>
           </Box>
         }
       >
@@ -205,80 +225,95 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
         >
           <Box
             sx={{
-              display: 'grid',
-              gridTemplateColumns: 'auto 1fr auto',
-              alignItems: 'center',
-              gap: 1,
+              display: 'flex',
+              justifyContent: 'center',
               mb: 1
             }}
           >
-            <Typography
-              sx={{
-                color: 'text.secondary',
-                fontSize: 11,
-                fontStyle: 'italic',
-                whiteSpace: 'nowrap'
-              }}
-            >
-              {t('taskList.pullToRefresh')}
-            </Typography>
-
-            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  gap: 0,
-                  p: 0.2,
-                  borderRadius: 999,
-                  background: '#eef2f7'
-                }}
-              >
-                <Button
-                  variant={category === 'assembly' ? 'contained' : 'text'}
-                  onClick={() => setCategory('assembly')}
-                  sx={{
-                    minWidth: 72,
-                    height: 28,
-                    borderRadius: 999,
-                    textTransform: 'none',
-                    fontSize: 12,
-                    fontWeight: 800,
-                    px: 1
-                  }}
-                >
-                  {`${t('taskList.category.assembly')} (${taskCounts.assembly})`}
-                </Button>
-                <Button
-                  variant={category === 'other' ? 'contained' : 'text'}
-                  onClick={() => setCategory('other')}
-                  sx={{
-                    minWidth: 72,
-                    height: 28,
-                    borderRadius: 999,
-                    textTransform: 'none',
-                    fontSize: 12,
-                    fontWeight: 800,
-                    px: 1
-                  }}
-                >
-                  {`${t('taskList.category.other')} (${taskCounts.other})`}
-                </Button>
-              </Box>
-            </Box>
-
             <Box
               sx={{
-                justifySelf: 'end',
+                display: 'flex',
+                gap: 0,
+                p: 0.2,
+                borderRadius: 999,
+                background: '#eef2f7'
+              }}
+            >
+              <Button
+                variant={category === 'assembly' ? 'contained' : 'text'}
+                onClick={() => setCategory('assembly')}
+                sx={{
+                  minWidth: 72,
+                  height: 28,
+                  borderRadius: 999,
+                  textTransform: 'none',
+                  fontSize: 12,
+                  fontWeight: 800,
+                  px: 1
+                }}
+              >
+                {`${t('taskList.category.assembly')} (${taskCounts.assembly})`}
+              </Button>
+              <Button
+                variant={category === 'other' ? 'contained' : 'text'}
+                onClick={() => setCategory('other')}
+                sx={{
+                  minWidth: 72,
+                  height: 28,
+                  borderRadius: 999,
+                  textTransform: 'none',
+                  fontSize: 12,
+                  fontWeight: 800,
+                  px: 1
+                }}
+              >
+                {`${t('taskList.category.other')} (${taskCounts.other})`}
+              </Button>
+            </Box>
+          </Box>
+
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.75,
+              mb: 1.25,
+              minWidth: 0
+            }}
+          >
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <MobileTaskSearchBar
+                compact
+                value={searchDraft}
+                onChange={setSearchDraft}
+                onSubmit={q => {
+                  setSearchDraft(q)
+                  void commitSearchKeyword(q)
+                }}
+                onClear={() => {
+                  setSearchDraft('')
+                  void clearSearchKeyword()
+                }}
+                options={suggestionProductCodes}
+                placeholder={t('taskList.searchPlaceholder')}
+                noResultsText={t('taskList.searchNoMatch')}
+                disabled={isLoading && tasks.length === 0}
+              />
+            </Box>
+            <Box
+              sx={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 1
+                gap: 0.5,
+                flexShrink: 0
               }}
             >
               <Typography
                 sx={{
                   fontSize: 12,
                   fontWeight: 'bold',
-                  color: showOutOfStock ? '#d32f2f' : '#2563eb'
+                  color: showOutOfStock ? '#d32f2f' : '#2563eb',
+                  whiteSpace: 'nowrap'
                 }}
               >
                 {showOutOfStock
@@ -309,23 +344,6 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
               </IconButton>
             </Box>
           </Box>
-
-          <MobileTaskSearchBar
-            value={searchDraft}
-            onChange={setSearchDraft}
-            onSubmit={q => {
-              setSearchDraft(q)
-              void commitSearchKeyword(q)
-            }}
-            onClear={() => {
-              setSearchDraft('')
-              void clearSearchKeyword()
-            }}
-            options={suggestionProductCodes}
-            placeholder={t('taskList.searchPlaceholder')}
-            noResultsText={t('taskList.searchNoMatch')}
-            disabled={isLoading && tasks.length === 0}
-          />
 
           {isLoading ? (
             <Box display='flex' justifyContent='center' mt={4}>

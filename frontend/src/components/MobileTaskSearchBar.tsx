@@ -25,6 +25,8 @@ type Props = {
   /** Max suggestion rows */
   maxSuggestions?: number
   noResultsText?: string
+  /** Narrow field for toolbar row (e.g. beside Pending); suggestions use a wider min width */
+  compact?: boolean
 }
 
 /**
@@ -40,7 +42,8 @@ const MobileTaskSearchBar: React.FC<Props> = ({
   placeholder,
   disabled,
   maxSuggestions = 8,
-  noResultsText
+  noResultsText,
+  compact = false
 }) => {
   const [open, setOpen] = useState(false)
   const wrapRef = useRef<HTMLDivElement>(null)
@@ -86,14 +89,23 @@ const MobileTaskSearchBar: React.FC<Props> = ({
   }, [onChange, onClear])
 
   return (
-    <Box ref={wrapRef} sx={{ position: 'relative', mb: 1.25, px: 0.25 }}>
+    <Box
+      ref={wrapRef}
+      sx={{
+        position: 'relative',
+        mb: compact ? 0 : 1.25,
+        px: compact ? 0 : 0.25,
+        width: '100%',
+        minWidth: 0
+      }}
+    >
       <Box
         sx={{
           display: 'flex',
           alignItems: 'center',
-          minHeight: 44,
-          px: 1.25,
-          borderRadius: '12px',
+          minHeight: compact ? 40 : 44,
+          px: compact ? 0.75 : 1.25,
+          borderRadius: compact ? '10px' : '12px',
           backgroundColor: 'rgba(120, 120, 128, 0.12)',
           border: '1px solid rgba(0,0,0,0.06)',
           transition: 'background-color 0.15s ease',
@@ -102,8 +114,14 @@ const MobileTaskSearchBar: React.FC<Props> = ({
           }
         }}
       >
-        <InputAdornment position='start' sx={{ mr: 0.5 }}>
-          <SearchIcon sx={{ fontSize: 22, color: 'text.secondary', opacity: 0.65 }} />
+        <InputAdornment position='start' sx={{ mr: compact ? 0.25 : 0.5 }}>
+          <SearchIcon
+            sx={{
+              fontSize: compact ? 18 : 22,
+              color: 'text.secondary',
+              opacity: 0.65
+            }}
+          />
         </InputAdornment>
         <InputBase
           fullWidth
@@ -133,16 +151,17 @@ const MobileTaskSearchBar: React.FC<Props> = ({
             style: {
               fontSize: 16,
               lineHeight: 1.35,
-              paddingTop: 10,
-              paddingBottom: 10
+              paddingTop: compact ? 8 : 10,
+              paddingBottom: compact ? 8 : 10
             }
           }}
           sx={{
             flex: 1,
+            minWidth: 0,
             '& input::placeholder': {
               color: 'text.secondary',
               opacity: 0.75,
-              fontSize: 16
+              fontSize: compact ? 14 : 16
             }
           }}
         />
@@ -168,7 +187,13 @@ const MobileTaskSearchBar: React.FC<Props> = ({
           sx={{
             position: 'absolute',
             left: 0,
-            right: 0,
+            ...(compact
+              ? {
+                  right: 'auto',
+                  minWidth: 'min(92vw, 320px)',
+                  maxWidth: 'calc(100vw - 16px)'
+                }
+              : { right: 0 }),
             top: 'calc(100% + 6px)',
             zIndex: 10,
             borderRadius: 2,
@@ -204,7 +229,13 @@ const MobileTaskSearchBar: React.FC<Props> = ({
           sx={{
             position: 'absolute',
             left: 0,
-            right: 0,
+            ...(compact
+              ? {
+                  right: 'auto',
+                  minWidth: 'min(92vw, 320px)',
+                  maxWidth: 'calc(100vw - 16px)'
+                }
+              : { right: 0 }),
             top: 'calc(100% + 6px)',
             zIndex: 10,
             borderRadius: 2,
