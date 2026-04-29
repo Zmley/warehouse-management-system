@@ -41,6 +41,8 @@
     "accept": "Accept",
     "takeOver": "Take Over",
     "loading": "Loading...",
+    "openSearch": "Search",
+    "closeSearch": "Close search",
     "searchPlaceholder": "Product or bin",
     "searchNoMatch": "Hints from loaded tasks — Enter searches all tasks",
     "emptyTitle": "No tasks",

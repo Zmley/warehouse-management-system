@@ -9,14 +9,11 @@ import {
   Divider,
   CircularProgress,
   Snackbar,
-  Alert,
-  IconButton
+  Alert
 } from '@mui/material'
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
-import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
 import { useTask } from 'hooks/useTask'
 import { useIntersectLoadMore } from 'hooks/useIntersectLoadMore'
-import MobileTaskSearchBar from 'components/MobileTaskSearchBar'
+import TaskListSearchToolbar from 'components/TaskListSearchToolbar'
 import { Task } from 'types/task'
 import { productCodesFromTasks } from 'utils/taskSearchSuggestions'
 import PullToRefresh from 'react-simple-pull-to-refresh'
@@ -66,6 +63,7 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
   const [showOutOfStock, setShowOutOfStock] = useState(false)
   const [category, setCategory] = useState<'assembly' | 'other'>('assembly')
   const [searchDraft, setSearchDraft] = useState('')
+  const [searchToolbarExpanded, setSearchToolbarExpanded] = useState(false)
 
   const sourceDragRef = useRef<HTMLDivElement | null>(null)
   const isDraggingRef = useRef(false)
@@ -80,6 +78,10 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
     fetchTasks()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  useEffect(() => {
+    setSearchToolbarExpanded(false)
+  }, [category])
 
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -223,127 +225,73 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
             pb: 'calc(env(safe-area-inset-bottom, 0px) + 8px)'
           }}
         >
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              mb: 1
+          <TaskListSearchToolbar
+            expanded={searchToolbarExpanded}
+            onExpandedChange={setSearchToolbarExpanded}
+            value={searchDraft}
+            onChange={setSearchDraft}
+            onSubmit={q => {
+              setSearchDraft(q)
+              void commitSearchKeyword(q)
             }}
-          >
-            <Box
-              sx={{
-                display: 'flex',
-                gap: 0,
-                p: 0.2,
-                borderRadius: 999,
-                background: '#eef2f7'
-              }}
-            >
-              <Button
-                variant={category === 'assembly' ? 'contained' : 'text'}
-                onClick={() => setCategory('assembly')}
-                sx={{
-                  minWidth: 72,
-                  height: 28,
-                  borderRadius: 999,
-                  textTransform: 'none',
-                  fontSize: 12,
-                  fontWeight: 800,
-                  px: 1
-                }}
-              >
-                {`${t('taskList.category.assembly')} (${taskCounts.assembly})`}
-              </Button>
-              <Button
-                variant={category === 'other' ? 'contained' : 'text'}
-                onClick={() => setCategory('other')}
-                sx={{
-                  minWidth: 72,
-                  height: 28,
-                  borderRadius: 999,
-                  textTransform: 'none',
-                  fontSize: 12,
-                  fontWeight: 800,
-                  px: 1
-                }}
-              >
-                {`${t('taskList.category.other')} (${taskCounts.other})`}
-              </Button>
-            </Box>
-          </Box>
-
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 0.75,
-              mb: 1.25,
-              minWidth: 0
+            onClear={() => {
+              setSearchDraft('')
+              void clearSearchKeyword()
             }}
-          >
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-              <MobileTaskSearchBar
-                compact
-                value={searchDraft}
-                onChange={setSearchDraft}
-                onSubmit={q => {
-                  setSearchDraft(q)
-                  void commitSearchKeyword(q)
-                }}
-                onClear={() => {
-                  setSearchDraft('')
-                  void clearSearchKeyword()
-                }}
-                options={suggestionProductCodes}
-                placeholder={t('taskList.searchPlaceholder')}
-                noResultsText={t('taskList.searchNoMatch')}
-                disabled={isLoading && tasks.length === 0}
-              />
-            </Box>
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 0.5,
-                flexShrink: 0
-              }}
-            >
-              <Typography
+            options={suggestionProductCodes}
+            disabled={isLoading && tasks.length === 0}
+            showOutOfStock={showOutOfStock}
+            onToggleOutOfStock={() => setShowOutOfStock(v => !v)}
+            centerSlot={
+              <Box
                 sx={{
-                  fontSize: 12,
-                  fontWeight: 'bold',
-                  color: showOutOfStock ? '#d32f2f' : '#2563eb',
-                  whiteSpace: 'nowrap'
+                  display: 'flex',
+                  gap: 0,
+                  p: 0.2,
+                  borderRadius: 999,
+                  background: '#eef2f7',
+                  flexShrink: 1,
+                  minWidth: 0,
+                  maxWidth: '100%'
                 }}
               >
-                {showOutOfStock
-                  ? t('taskList.status.outOfStock')
-                  : t('taskList.status.pending')}
-              </Typography>
-
-              <IconButton
-                size='small'
-                onClick={() => setShowOutOfStock(v => !v)}
-                sx={{
-                  backgroundColor: '#f0f0f0',
-                  borderRadius: '50%',
-                  width: 24,
-                  height: 24
-                }}
-                aria-label={
-                  showOutOfStock
-                    ? t('taskList.status.pending')
-                    : t('taskList.status.outOfStock')
-                }
-              >
-                {showOutOfStock ? (
-                  <ArrowBackIosNewIcon fontSize='small' />
-                ) : (
-                  <ArrowForwardIosIcon fontSize='small' />
-                )}
-              </IconButton>
-            </Box>
-          </Box>
+                <Button
+                  variant={category === 'assembly' ? 'contained' : 'text'}
+                  onClick={() => setCategory('assembly')}
+                  sx={{
+                    minWidth: 0,
+                    flex: '1 1 50%',
+                    height: 28,
+                    borderRadius: 999,
+                    textTransform: 'none',
+                    fontSize: 11,
+                    fontWeight: 800,
+                    px: 0.75,
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  {`${t('taskList.category.assembly')} (${taskCounts.assembly})`}
+                </Button>
+                <Button
+                  variant={category === 'other' ? 'contained' : 'text'}
+                  onClick={() => setCategory('other')}
+                  sx={{
+                    minWidth: 0,
+                    flex: '1 1 50%',
+                    height: 28,
+                    borderRadius: 999,
+                    textTransform: 'none',
+                    fontSize: 11,
+                    fontWeight: 800,
+                    px: 0.75,
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  {`${t('taskList.category.other')} (${taskCounts.other})`}
+                </Button>
+              </Box>
+            }
+          />
 
           {isLoading ? (
             <Box display='flex' justifyContent='center' mt={4}>
