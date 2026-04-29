@@ -4,6 +4,7 @@ import {
   InputBase,
   InputAdornment,
   Paper,
+  Popper,
   List,
   ListItemButton,
   ListItemText,
@@ -50,6 +51,7 @@ const MobileTaskSearchBar: React.FC<Props> = ({
 }) => {
   const [open, setOpen] = useState(false)
   const wrapRef = useRef<HTMLDivElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
   const suggestions = useMemo(() => {
     const q = value.trim().toLowerCase()
@@ -61,7 +63,10 @@ const MobileTaskSearchBar: React.FC<Props> = ({
 
   useEffect(() => {
     const onDoc = (e: MouseEvent | TouchEvent) => {
-      if (!wrapRef.current?.contains(e.target as Node)) setOpen(false)
+      const target = e.target as Node
+      if (wrapRef.current?.contains(target)) return
+      if (dropdownRef.current?.contains(target)) return
+      setOpen(false)
     }
     document.addEventListener('touchstart', onDoc, { passive: true })
     document.addEventListener('mousedown', onDoc)
@@ -90,6 +95,11 @@ const MobileTaskSearchBar: React.FC<Props> = ({
     setOpen(false)
     onClear()
   }, [onChange, onClear])
+
+  const showSuggestions = open && suggestions.length > 0
+  const showNoResults = open && value.trim().length >= 1 && suggestions.length === 0
+  const showDropdown = showSuggestions || showNoResults
+  const anchorWidth = wrapRef.current?.getBoundingClientRect().width
 
   return (
     <Box
@@ -186,73 +196,65 @@ const MobileTaskSearchBar: React.FC<Props> = ({
         )}
       </Box>
 
-      {open && suggestions.length > 0 && (
+      <Popper
+        open={showDropdown}
+        anchorEl={wrapRef.current}
+        placement='bottom-start'
+        modifiers={[
+          { name: 'offset', options: { offset: [0, 6] } },
+          {
+            name: 'preventOverflow',
+            options: { padding: 8, altAxis: true }
+          }
+        ]}
+        sx={{ zIndex: 2500 }}
+      >
         <Paper
-          elevation={8}
+          ref={dropdownRef}
+          elevation={showSuggestions ? 8 : 4}
           sx={{
-            position: 'absolute',
-            left: 0,
-            ...(compact
-              ? {
-                  right: 'auto',
-                  minWidth: 'min(92vw, 320px)',
-                  maxWidth: 'calc(100vw - 16px)'
-                }
-              : { right: 0 }),
-            top: 'calc(100% + 6px)',
-            zIndex: 1302,
+            width: compact
+              ? 'min(92vw, 320px)'
+              : anchorWidth
+                ? `${Math.round(anchorWidth)}px`
+                : 'min(92vw, 420px)',
+            maxWidth: 'calc(100vw - 16px)',
             borderRadius: 2,
-            maxHeight: Math.min(44 * maxSuggestions, 280),
-            overflow: 'auto',
-            overscrollBehavior: 'contain',
-            WebkitOverflowScrolling: 'touch'
+            ...(showSuggestions
+              ? {
+                  maxHeight: Math.min(44 * maxSuggestions, 280),
+                  overflow: 'auto',
+                  overscrollBehavior: 'contain',
+                  WebkitOverflowScrolling: 'touch'
+                }
+              : { px: 1.5, py: 1.25 })
           }}
         >
-          <List dense disablePadding>
-            {suggestions.map(code => (
-              <ListItemButton
-                key={code}
-                onClick={() => pick(code)}
-                sx={{ minHeight: 48, py: 1.25, px: 1.5 }}
-              >
-                <ListItemText
-                  primary={code}
-                  primaryTypographyProps={{
-                    fontSize: 16,
-                    fontWeight: 500
-                  }}
-                />
-              </ListItemButton>
-            ))}
-          </List>
+          {showSuggestions ? (
+            <List dense disablePadding>
+              {suggestions.map(code => (
+                <ListItemButton
+                  key={code}
+                  onClick={() => pick(code)}
+                  sx={{ minHeight: 48, py: 1.25, px: 1.5 }}
+                >
+                  <ListItemText
+                    primary={code}
+                    primaryTypographyProps={{
+                      fontSize: 16,
+                      fontWeight: 500
+                    }}
+                  />
+                </ListItemButton>
+              ))}
+            </List>
+          ) : (
+            <Typography variant='body2' color='text.secondary' sx={{ fontSize: 15 }}>
+              {noResultsText ?? placeholder}
+            </Typography>
+          )}
         </Paper>
-      )}
-
-      {open && value.trim().length >= 1 && suggestions.length === 0 && (
-        <Paper
-          elevation={4}
-          sx={{
-            position: 'absolute',
-            left: 0,
-            ...(compact
-              ? {
-                  right: 'auto',
-                  minWidth: 'min(92vw, 320px)',
-                  maxWidth: 'calc(100vw - 16px)'
-                }
-              : { right: 0 }),
-            top: 'calc(100% + 6px)',
-            zIndex: 1302,
-            borderRadius: 2,
-            px: 1.5,
-            py: 1.25
-          }}
-        >
-          <Typography variant='body2' color='text.secondary' sx={{ fontSize: 15 }}>
-            {noResultsText ?? placeholder}
-          </Typography>
-        </Paper>
-      )}
+      </Popper>
     </Box>
   )
 }

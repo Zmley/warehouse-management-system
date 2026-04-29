@@ -5,6 +5,7 @@ import {
   Card,
   CardContent,
   Button,
+  Chip,
   Grid,
   Divider,
   CircularProgress,
@@ -332,6 +333,7 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
                     key={task.taskID}
                     variant='outlined'
                     sx={{
+                      position: 'relative',
                       mb: 2,
                       minHeight: 155,
                       borderRadius: 3,
@@ -340,10 +342,28 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
                       boxShadow: '0 2px 6px #0000000D'
                     }}
                   >
+                    {isRush && (
+                      <Chip
+                        label={t('taskList.urgent')}
+                        variant='outlined'
+                        color='error'
+                        size='small'
+                        sx={{
+                          position: 'absolute',
+                          top: 10,
+                          right: 12,
+                          zIndex: 1,
+                          fontWeight: 700,
+                          height: 22,
+                          '& .MuiChip-label': { px: 0.9 }
+                        }}
+                      />
+                    )}
                     <CardContent
                       sx={{
                         py: 1,
                         px: 1.5,
+                        pt: 1,
                         '&:last-child': { pb: 1 }
                       }}
                     >
@@ -504,24 +524,9 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
                           sx={{
                             display: 'flex',
                             alignItems: 'center',
-                            gap: 1,
                             flexShrink: 0
                           }}
                         >
-                          {isRush && (
-                            <Typography
-                              variant='caption'
-                              sx={{
-                                color: '#d32f2f',
-                                fontWeight: 600,
-                                fontSize: 11,
-                                lineHeight: 1,
-                                whiteSpace: 'nowrap'
-                              }}
-                            >
-                              {t('taskList.urgent')}
-                            </Typography>
-                          )}
                           <Button
                             variant='contained'
                             onClick={() => handleAccept(task.taskID)}
