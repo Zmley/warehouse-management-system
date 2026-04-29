@@ -6,8 +6,9 @@ import {
   getTasks
 } from 'api/task'
 import { Task } from 'types/task'
+import { TASK_LIST_PAGE_SIZE } from 'constants/index'
 
-const PAGE_SIZE = 30
+const PAGE_SIZE = TASK_LIST_PAGE_SIZE
 
 export const useTask = () => {
   const [isLoading, setIsLoading] = useState(false)
@@ -69,10 +70,14 @@ export const useTask = () => {
         keyword: kw || undefined
       })
       const batch = result.data.tasks || []
+      if (batch.length === 0) {
+        setHasMore(false)
+        return
+      }
       setTasks(prev => [...prev, ...batch])
       setPage(next)
       setHasMore(
-        Boolean(result.data.hasMore) && batch.length > 0 && batch.length >= PAGE_SIZE
+        Boolean(result.data.hasMore) && batch.length >= PAGE_SIZE
       )
     } catch (err) {
       console.error('❌ Error loading more tasks', err)

@@ -21,6 +21,7 @@ import PullToRefresh from 'react-simple-pull-to-refresh'
 import { useTaskContext } from 'contexts/task'
 import { useTranslation } from 'react-i18next'
 import { ERROR_CODE } from 'utils/errorCodes'
+import { TASK_LIST_PAGE_SIZE } from 'constants/index'
 
 interface TaskListProps {
   setView: (view: 'tasks' | 'cart') => void
@@ -65,6 +66,7 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
   const [category, setCategory] = useState<'assembly' | 'other'>('assembly')
   const [searchDraft, setSearchDraft] = useState('')
   const [searchToolbarExpanded, setSearchToolbarExpanded] = useState(false)
+  const [showLoadMoreSpinner, setShowLoadMoreSpinner] = useState(false)
 
   const sourceDragRef = useRef<HTMLDivElement | null>(null)
   const isDraggingRef = useRef(false)
@@ -83,6 +85,15 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
   useEffect(() => {
     setSearchToolbarExpanded(false)
   }, [category])
+
+  useEffect(() => {
+    if (!isLoadingMore) {
+      setShowLoadMoreSpinner(false)
+      return
+    }
+    const id = window.setTimeout(() => setShowLoadMoreSpinner(true), 450)
+    return () => window.clearTimeout(id)
+  }, [isLoadingMore])
 
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -171,13 +182,19 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
   )
 
   const loadMoreEnabled =
-    hasMore && !isLoading && !isLoadingMore && tasks.length > 0
+    hasMore &&
+    !isLoading &&
+    !isLoadingMore &&
+    tasks.length > 0 &&
+    tasks.length >= TASK_LIST_PAGE_SIZE
 
   const sentinelRef = useIntersectLoadMore(
     () => {
       void loadMoreTasks()
     },
-    loadMoreEnabled
+    loadMoreEnabled,
+    '0px',
+    1200
   )
 
   return (
@@ -564,7 +581,7 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
                   aria-hidden
                 />
               )}
-              {isLoadingMore && (
+              {showLoadMoreSpinner && (
                 <Box display='flex' justifyContent='center' py={2}>
                   <CircularProgress size={22} thickness={5} />
                 </Box>
