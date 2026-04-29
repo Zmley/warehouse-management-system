@@ -27,6 +27,8 @@ type Props = {
   noResultsText?: string
   /** Narrow field for toolbar row (e.g. beside Pending); suggestions use a wider min width */
   compact?: boolean
+  /** Focus programmatically when expanding toolbar (parent should call .focus() on expand) */
+  inputRef?: React.Ref<HTMLInputElement>
 }
 
 /**
@@ -43,7 +45,8 @@ const MobileTaskSearchBar: React.FC<Props> = ({
   disabled,
   maxSuggestions = 8,
   noResultsText,
-  compact = false
+  compact = false,
+  inputRef
 }) => {
   const [open, setOpen] = useState(false)
   const wrapRef = useRef<HTMLDivElement>(null)
@@ -125,6 +128,7 @@ const MobileTaskSearchBar: React.FC<Props> = ({
         </InputAdornment>
         <InputBase
           fullWidth
+          inputRef={inputRef}
           value={value}
           disabled={disabled}
           placeholder={placeholder}

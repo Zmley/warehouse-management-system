@@ -41,6 +41,8 @@
     "accept": "接受",
     "takeOver": "接手",
     "loading": "加载中...",
+    "openSearch": "搜索",
+    "closeSearch": "收起搜索",
     "searchPlaceholder": "产品编码或货位",
     "searchNoMatch": "联想仅含已加载任务的产品；回车搜索全库",
     "emptyTitle": "暂无任务",
