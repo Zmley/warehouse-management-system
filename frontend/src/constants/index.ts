@@ -1,3 +1,6 @@
+/** GET /tasks & picker task list page size; infinite-scroll sentinel only when loaded count reaches this */
+export const TASK_LIST_PAGE_SIZE = 30
+
 export enum ScanMode {
   LOAD = 'load',
   UNLOAD = 'unload'

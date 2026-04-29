@@ -4,12 +4,14 @@ import { useEffect, useRef } from 'react'
 export function useIntersectLoadMore(
   load: () => void | Promise<void>,
   enabled: boolean,
-  rootMargin = '320px'
+  rootMargin = '0px',
+  cooldownMs = 1000
 ) {
   const sentinelRef = useRef<HTMLDivElement | null>(null)
   const loadRef = useRef(load)
   const loadingRef = useRef(false)
   const wasIntersectingRef = useRef(false)
+  const lastFireAtRef = useRef(0)
   loadRef.current = load
 
   useEffect(() => {
@@ -30,6 +32,11 @@ export function useIntersectLoadMore(
         }
 
         if (wasIntersectingRef.current || loadingRef.current) return
+
+        const now = Date.now()
+        if (now - lastFireAtRef.current < cooldownMs) return
+        lastFireAtRef.current = now
+
         wasIntersectingRef.current = true
         loadingRef.current = true
         Promise.resolve(loadRef.current()).finally(() => {
@@ -44,7 +51,7 @@ export function useIntersectLoadMore(
       loadingRef.current = false
       wasIntersectingRef.current = false
     }
-  }, [enabled, rootMargin])
+  }, [enabled, rootMargin, cooldownMs])
 
   return sentinelRef
 }

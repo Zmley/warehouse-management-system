@@ -7,7 +7,7 @@ import {
 } from 'api/task'
 import { CreateTaskPayload, Task } from 'types/task'
 import { useAuth } from 'hooks/useAuth'
-import { TaskCategoryEnum } from 'constants/index'
+import { TaskCategoryEnum, TASK_LIST_PAGE_SIZE } from 'constants/index'
 
 const isRushNote = (note: string | null | undefined) =>
   note === 'RUSH_TASK' || note === 'URGENT' || note === '加急'
@@ -24,7 +24,7 @@ const sortPickerTasks = (items: Task[]) => {
   })
 }
 
-const DEFAULT_PAGE_SIZE = 30
+const DEFAULT_PAGE_SIZE = TASK_LIST_PAGE_SIZE
 
 export const usePickerTasks = () => {
   const [tasks, setTasks] = useState<Task[]>([])
@@ -134,12 +134,14 @@ export const usePickerTasks = () => {
         keyword: kw || undefined
       })
       const batch = res.data.tasks || []
+      if (batch.length === 0) {
+        setHasMore(false)
+        return
+      }
       setTasks(prev => sortPickerTasks([...prev, ...batch]))
       setPage(next)
       setHasMore(
-        Boolean(res.data.hasMore) &&
-          batch.length > 0 &&
-          batch.length >= DEFAULT_PAGE_SIZE
+        Boolean(res.data.hasMore) && batch.length >= DEFAULT_PAGE_SIZE
       )
     } catch (err) {
       setError('Failed to fetch tasks')

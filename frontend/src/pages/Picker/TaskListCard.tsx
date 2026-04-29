@@ -20,7 +20,7 @@ import { usePickerTasks } from 'hooks/usePickerTask'
 import { useIntersectLoadMore } from 'hooks/useIntersectLoadMore'
 import { productCodesFromTasks } from 'utils/taskSearchSuggestions'
 import MobileTaskSearchBar from 'components/MobileTaskSearchBar'
-import { TaskCategoryEnum } from 'constants/index'
+import { TaskCategoryEnum, TASK_LIST_PAGE_SIZE } from 'constants/index'
 import { useTranslation } from 'react-i18next'
 
 interface Props {
@@ -69,6 +69,7 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
   const [updatingUrgent, setUpdatingUrgent] = useState<Record<string, boolean>>({})
   const [showOutOfStock, setShowOutOfStock] = useState(false)
   const [searchDraft, setSearchDraft] = useState('')
+  const [showLoadMoreSpinner, setShowLoadMoreSpinner] = useState(false)
 
   useEffect(() => {
     setHasFetched(false)
@@ -84,6 +85,15 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
     }
     void fetchData()
   }, [status, fetchTasks])
+
+  useEffect(() => {
+    if (!isLoadingMore) {
+      setShowLoadMoreSpinner(false)
+      return
+    }
+    const id = window.setTimeout(() => setShowLoadMoreSpinner(true), 450)
+    return () => window.clearTimeout(id)
+  }, [isLoadingMore])
 
   const handleManualRefresh = async () => {
     try {
@@ -114,9 +124,18 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
   }, [loadMoreTasks])
 
   const loadMoreEnabled =
-    hasMore && !isLoading && !isLoadingMore && tasks.length > 0
+    hasMore &&
+    !isLoading &&
+    !isLoadingMore &&
+    tasks.length > 0 &&
+    tasks.length >= TASK_LIST_PAGE_SIZE
 
-  const sentinelRef = useIntersectLoadMore(onLoadMore, loadMoreEnabled)
+  const sentinelRef = useIntersectLoadMore(
+    onLoadMore,
+    loadMoreEnabled,
+    '0px',
+    1200
+  )
 
   return (
     <Box sx={{ touchAction: 'pan-y' }}>
@@ -474,7 +493,7 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
                   aria-hidden
                 />
               )}
-              {isLoadingMore && (
+              {showLoadMoreSpinner && (
                 <Box display='flex' justifyContent='center' py={2}>
                   <CircularProgress size={22} thickness={5} />
                 </Box>
