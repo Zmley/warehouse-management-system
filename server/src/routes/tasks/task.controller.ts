@@ -62,14 +62,23 @@ export const cancelTask = asyncHandler(async (req, res) => {
 
 export const getTasks = asyncHandler(async (req, res) => {
   const { role, accountID, warehouseID: localWarehouseID } = res.locals
-  const { keyword } = req.query
+  const { keyword, listStatus } = req.query
+
+  const page = Math.max(1, Number(req.query.page) || 1)
+  const pageSize = Math.min(100, Math.max(1, Number(req.query.pageSize) || 30))
 
   let warehouseID: string
   let status: string | undefined
 
   if (role === UserRole.PICKER) {
     warehouseID = localWarehouseID
-    status = 'ALL'
+    const ls =
+      typeof listStatus === 'string' ? listStatus.toUpperCase().trim() : ''
+    if (ls === 'PENDING' || ls === 'COMPLETED') {
+      status = ls
+    } else {
+      status = 'ALL'
+    }
   } else if (role === UserRole.TRANSPORT_WORKER) {
     warehouseID = localWarehouseID
     status = TaskStatus.PENDING
@@ -81,17 +90,23 @@ export const getTasks = asyncHandler(async (req, res) => {
     )
   }
 
-  const tasks = await taskService.getTasksByWarehouseID(
+  const result = await taskService.getTasksByWarehouseID(
     warehouseID,
     role,
     accountID,
     typeof keyword === 'string' ? keyword : undefined,
-    status
+    status,
+    page,
+    pageSize
   )
 
   res.status(httpStatus.OK).json({
     success: true,
-    tasks
+    tasks: result.tasks,
+    page: result.page,
+    pageSize: result.pageSize,
+    total: result.total,
+    hasMore: result.hasMore
   })
 })
 

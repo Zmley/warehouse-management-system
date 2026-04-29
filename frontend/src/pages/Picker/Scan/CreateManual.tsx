@@ -16,6 +16,7 @@ import {
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { usePickerTasks } from 'hooks/usePickerTask'
+import { TaskCategoryEnum } from 'constants/index'
 import { useBin } from 'hooks/useBin'
 import { useProduct } from 'hooks/useProduct'
 import { PICKER_TASK_ERROR_CODE } from 'utils/errorCodes'
@@ -110,7 +111,10 @@ const CreateManual: React.FC<Props> = ({ onSuccess }) => {
       navigate('/success')
     } else {
       if (result.errorCode === 'TASK_DUPLICATE') {
-        const latestTasks = await fetchTasks()
+        const latestTasks = await fetchTasks(TaskCategoryEnum.PENDING, {
+          pageSize: 500,
+          resetKeyword: false
+        })
         const duplicateTask = latestTasks.find(
           t =>
             t.productCode === productCode &&

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState, useCallback } from 'react'
 import {
   Box,
   Typography,
@@ -10,10 +10,16 @@ import {
   Snackbar,
   Alert,
   Switch,
-  FormControlLabel
+  FormControlLabel,
+  IconButton
 } from '@mui/material'
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
 import PullToRefresh from 'react-simple-pull-to-refresh'
 import { usePickerTasks } from 'hooks/usePickerTask'
+import { useIntersectLoadMore } from 'hooks/useIntersectLoadMore'
+import { productCodesFromTasks } from 'utils/taskSearchSuggestions'
+import MobileTaskSearchBar from 'components/MobileTaskSearchBar'
 import { TaskCategoryEnum } from 'constants/index'
 import { useTranslation } from 'react-i18next'
 
@@ -45,40 +51,72 @@ const PullingIndicator = ({ text }: { text: string }) => (
 
 const TaskListCard: React.FC<Props> = ({ status }) => {
   const { t } = useTranslation()
-  const { tasks, fetchTasks, setRush } = usePickerTasks()
+  const {
+    tasks,
+    fetchTasks,
+    loadMoreTasks,
+    commitSearchKeyword,
+    clearSearchKeyword,
+    hasMore,
+    isLoading,
+    isLoadingMore,
+    setRush
+  } = usePickerTasks()
 
   const [hasFetched, setHasFetched] = useState(false)
   const [open, setOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [updatingUrgent, setUpdatingUrgent] = useState<Record<string, boolean>>({})
+  const [showOutOfStock, setShowOutOfStock] = useState(false)
+  const [searchDraft, setSearchDraft] = useState('')
 
   useEffect(() => {
+    setHasFetched(false)
+    setSearchDraft('')
     const fetchData = async () => {
       try {
-        await fetchTasks()
+        await fetchTasks(status, { resetKeyword: true })
         setHasFetched(true)
       } catch (err: any) {
         setError(err.message || 'Error fetching tasks')
         setOpen(true)
       }
     }
-    fetchData()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    void fetchData()
+  }, [status, fetchTasks])
 
   const handleManualRefresh = async () => {
     try {
-      await fetchTasks()
+      await fetchTasks(status, { resetKeyword: false })
     } catch (err: any) {
       setError(err.message || 'Error refreshing tasks')
       setOpen(true)
     }
   }
 
-  const filteredTasks = useMemo(
-    () => tasks.filter(task => task.status === status),
-    [tasks, status]
+  const filteredTasks = useMemo(() => {
+    const byStatus = tasks.filter(task => task.status === status)
+    return byStatus.filter(task =>
+      showOutOfStock
+        ? !task.sourceBins || task.sourceBins.length === 0
+        : task.sourceBins && task.sourceBins.length > 0
+    )
+  }, [tasks, status, showOutOfStock])
+
+  /** 联想仅当前列表筛选后可见任务（待处理/缺货）；搜索接口仍查全库 */
+  const suggestionProductCodes = useMemo(
+    () => productCodesFromTasks(filteredTasks),
+    [filteredTasks]
   )
+
+  const onLoadMore = useCallback(() => {
+    void loadMoreTasks()
+  }, [loadMoreTasks])
+
+  const loadMoreEnabled =
+    hasMore && !isLoading && !isLoadingMore && tasks.length > 0
+
+  const sentinelRef = useIntersectLoadMore(onLoadMore, loadMoreEnabled)
 
   return (
     <Box sx={{ touchAction: 'pan-y' }}>
@@ -95,50 +133,111 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
         <Box p={2} pt={0} pb={10}>
           <Box
             sx={{
-              display: 'flex',
+              display: 'grid',
+              gridTemplateColumns: '1fr auto',
               alignItems: 'center',
-              mb: 1,
-              position: 'relative'
+              gap: 1,
+              mb: 1
             }}
           >
             <Typography
               sx={{
-                flex: 1,
-                textAlign: 'center',
                 color: 'text.secondary',
-                fontSize: 13,
-                fontStyle: 'italic'
+                fontSize: 11,
+                fontStyle: 'italic',
+                whiteSpace: 'nowrap'
               }}
             >
               {t('taskList.pullToRefresh')}
             </Typography>
+
+            <Box
+              sx={{
+                justifySelf: 'end',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1
+              }}
+            >
+              <Typography
+                sx={{
+                  fontSize: 12,
+                  fontWeight: 'bold',
+                  color: showOutOfStock ? '#d32f2f' : '#2563eb'
+                }}
+              >
+                {showOutOfStock
+                  ? t('taskList.status.outOfStock')
+                  : t('taskList.status.pending')}
+              </Typography>
+              <IconButton
+                size='small'
+                onClick={() => setShowOutOfStock(v => !v)}
+                sx={{
+                  backgroundColor: '#f0f0f0',
+                  borderRadius: '50%',
+                  width: 24,
+                  height: 24
+                }}
+                aria-label={
+                  showOutOfStock
+                    ? t('taskList.status.pending')
+                    : t('taskList.status.outOfStock')
+                }
+              >
+                {showOutOfStock ? (
+                  <ArrowBackIosNewIcon fontSize='small' />
+                ) : (
+                  <ArrowForwardIosIcon fontSize='small' />
+                )}
+              </IconButton>
+            </Box>
           </Box>
 
-          {!hasFetched ? (
+          <MobileTaskSearchBar
+            value={searchDraft}
+            onChange={setSearchDraft}
+            onSubmit={q => {
+              setSearchDraft(q)
+              void commitSearchKeyword(q)
+            }}
+            onClear={() => {
+              setSearchDraft('')
+              void clearSearchKeyword()
+            }}
+            options={suggestionProductCodes}
+            placeholder={t('taskList.searchPlaceholder')}
+            noResultsText={t('taskList.searchNoMatch')}
+            disabled={isLoading && tasks.length === 0}
+          />
+
+          {!hasFetched || (isLoading && tasks.length === 0) ? (
             <Box display='flex' justifyContent='center' mt={6}>
               <CircularProgress size={30} thickness={5} />
             </Box>
-          ) : filteredTasks.length === 0 ? (
-            <>
-              <Typography
-                color='text.secondary'
-                textAlign='center'
-                sx={{ mt: 6, fontSize: 14 }}
-              >
-                {t('taskList.emptyTitle') ||
-                  t('taskListCard.empty', { status })}
-              </Typography>
-              <Typography
-                color='text.disabled'
-                textAlign='center'
-                sx={{ mt: 0.5, fontSize: 12 }}
-              >
-                {t('taskList.emptyHint') || ''}
-              </Typography>
-            </>
           ) : (
-            <Box>
-              {filteredTasks.map(task => {
+            <>
+              {filteredTasks.length === 0 ? (
+                <>
+                  <Typography
+                    color='text.secondary'
+                    textAlign='center'
+                    sx={{ mt: 6, fontSize: 14 }}
+                  >
+                    {t('taskList.emptyTitle') ||
+                      t('taskListCard.empty', { status })}
+                  </Typography>
+                  <Typography
+                    color='text.disabled'
+                    textAlign='center'
+                    sx={{ mt: 0.5, fontSize: 12 }}
+                  >
+                    {t('taskList.emptyHint') || ''}
+                  </Typography>
+                </>
+              ) : (
+                <Box>
+                  {filteredTasks.map(task => {
                 const bins = (task.sourceBins as unknown as SourceBinView[]) || []
                 const uniqueCodes = Array.from(
                   new Set(bins.map(b => b?.bin?.binCode).filter(Boolean))
@@ -359,8 +458,22 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
                     </CardContent>
                   </Card>
                 )
-              })}
-            </Box>
+                  })}
+                </Box>
+              )}
+              {hasFetched && !isLoading && tasks.length > 0 && hasMore && (
+                <Box
+                  ref={sentinelRef}
+                  sx={{ height: 24, flexShrink: 0 }}
+                  aria-hidden
+                />
+              )}
+              {isLoadingMore && (
+                <Box display='flex' justifyContent='center' py={2}>
+                  <CircularProgress size={22} thickness={5} />
+                </Box>
+              )}
+            </>
           )}
         </Box>
 

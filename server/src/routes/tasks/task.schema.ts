@@ -17,8 +17,14 @@ export const GetTasksQuerySchema = Joi.object({
   keyword: Joi.string().trim().allow('').optional(),
   status: Joi.string()
     .valid('ALL', ...Object.values(TaskStatus))
-    .optional()
-}).unknown(false)
+    .optional(),
+  /** Picker tab filter for paginated list (worker ignores) */
+  listStatus: Joi.string().valid('PENDING', 'COMPLETED', 'ALL').optional(),
+  page: Joi.number().integer().min(1).max(100000).optional(),
+  pageSize: Joi.number().integer().min(1).max(100).optional()
+})
+  .prefs({ convert: true })
+  .unknown(false)
 
 export const CreateTaskBodySchema = Joi.object({
   payload: Joi.object({

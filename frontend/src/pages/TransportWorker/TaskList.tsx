@@ -15,7 +15,10 @@ import {
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
 import { useTask } from 'hooks/useTask'
+import { useIntersectLoadMore } from 'hooks/useIntersectLoadMore'
+import MobileTaskSearchBar from 'components/MobileTaskSearchBar'
 import { Task } from 'types/task'
+import { productCodesFromTasks } from 'utils/taskSearchSuggestions'
 import PullToRefresh from 'react-simple-pull-to-refresh'
 import { useTaskContext } from 'contexts/task'
 import { useTranslation } from 'react-i18next'
@@ -44,13 +47,25 @@ const isRushTaskNote = (note: string | null | undefined) =>
 
 const TaskList: React.FC<TaskListProps> = ({ setView }) => {
   const { t } = useTranslation()
-  const { tasks, fetchTasks, acceptTask, isLoading, error } = useTask()
+  const {
+    tasks,
+    fetchTasks,
+    loadMoreTasks,
+    commitSearchKeyword,
+    clearSearchKeyword,
+    acceptTask,
+    isLoading,
+    isLoadingMore,
+    hasMore,
+    error
+  } = useTask()
   const { fetchMyTask } = useTaskContext()
 
   const [loadingTasks, setLoadingTasks] = useState<Record<string, boolean>>({})
   const [open, setOpen] = useState(false)
   const [showOutOfStock, setShowOutOfStock] = useState(false)
   const [category, setCategory] = useState<'assembly' | 'other'>('assembly')
+  const [searchDraft, setSearchDraft] = useState('')
 
   const sourceDragRef = useRef<HTMLDivElement | null>(null)
   const isDraggingRef = useRef(false)
@@ -145,6 +160,22 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
       other: filteredTasks.length - assembly
     }
   }, [filteredTasks])
+
+  /** 联想仅当前视图可见任务（总成/其他 + 缺货筛选）；搜索接口仍查全库 */
+  const suggestionProductCodes = useMemo(
+    () => productCodesFromTasks(visibleTasks),
+    [visibleTasks]
+  )
+
+  const loadMoreEnabled =
+    hasMore && !isLoading && !isLoadingMore && tasks.length > 0
+
+  const sentinelRef = useIntersectLoadMore(
+    () => {
+      void loadMoreTasks()
+    },
+    loadMoreEnabled
+  )
 
   return (
     <Box sx={{ backgroundColor: '#F7F9FC' }}>
@@ -279,17 +310,36 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
             </Box>
           </Box>
 
+          <MobileTaskSearchBar
+            value={searchDraft}
+            onChange={setSearchDraft}
+            onSubmit={q => {
+              setSearchDraft(q)
+              void commitSearchKeyword(q)
+            }}
+            onClear={() => {
+              setSearchDraft('')
+              void clearSearchKeyword()
+            }}
+            options={suggestionProductCodes}
+            placeholder={t('taskList.searchPlaceholder')}
+            noResultsText={t('taskList.searchNoMatch')}
+            disabled={isLoading && tasks.length === 0}
+          />
+
           {isLoading ? (
             <Box display='flex' justifyContent='center' mt={4}>
               <CircularProgress size={30} thickness={5} />
             </Box>
-          ) : visibleTasks.length === 0 ? (
-            <Typography color='text.secondary' textAlign='center'>
-              {t('taskList.empty')}
-            </Typography>
           ) : (
-            <Box>
-              {visibleTasks.map((task: Task) => {
+            <>
+              {visibleTasks.length === 0 ? (
+                <Typography color='text.secondary' textAlign='center'>
+                  {t('taskList.empty')}
+                </Typography>
+              ) : (
+                <Box>
+                  {visibleTasks.map((task: Task) => {
                 const isOutOfStock =
                   !task.sourceBins || task.sourceBins.length === 0
                 const parts = buildSourceBinsParts(
@@ -533,8 +583,22 @@ const TaskList: React.FC<TaskListProps> = ({ setView }) => {
                     </CardContent>
                   </Card>
                 )
-              })}
-            </Box>
+                  })}
+                </Box>
+              )}
+              {!isLoading && tasks.length > 0 && hasMore && (
+                <Box
+                  ref={sentinelRef}
+                  sx={{ height: 24, flexShrink: 0 }}
+                  aria-hidden
+                />
+              )}
+              {isLoadingMore && (
+                <Box display='flex' justifyContent='center' py={2}>
+                  <CircularProgress size={22} thickness={5} />
+                </Box>
+              )}
+            </>
           )}
 
           <Snackbar

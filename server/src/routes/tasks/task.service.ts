@@ -2,8 +2,8 @@ import Task from './task.model'
 import Inventory from 'routes/inventory/inventory.model'
 import Bin from 'routes/bins/bin.model'
 import AppError from 'utils/appError'
-import { Op, Sequelize, Transaction, WhereOptions } from 'sequelize'
-import { UserRole, TaskStatus } from 'constants/index'
+import { Op, QueryTypes, Sequelize, Transaction, WhereOptions } from 'sequelize'
+import { BinType, UserRole, TaskStatus } from 'constants/index'
 import {
   checkInventoryQuantity,
   getCartInventories
@@ -575,54 +575,160 @@ const mapTasks = (tasks: TaskWithJoin[]) => {
   })
 }
 
-const getWhereClauseForRole = (
+export type WorkerPickerTaskListResult = {
+  tasks: ReturnType<typeof mapTasks>
+  page: number
+  pageSize: number
+  total: number
+  hasMore: boolean
+}
+
+const RUSH_ORDER_SQL = `CASE WHEN t."note" IN ('RUSH_TASK','URGENT','加急') THEN 0 ELSE 1 END`
+
+const fetchPaginatedTaskIds = async (
+  warehouseID: string,
   role: UserRole,
-  status?: string,
-  accountID?: string,
-  keyword?: string
-): WhereOptions<Task> => {
-  if (role === 'PICKER') {
-    return {
-      status: status === 'ALL' ? ['PENDING', 'COMPLETED'] : status
-    }
+  keyword: string | undefined,
+  status: string | undefined,
+  page: number,
+  pageSize: number
+): Promise<{ ids: string[]; total: number }> => {
+  const offset = Math.max(0, (page - 1) * pageSize)
+  const limit = Math.max(1, Math.min(100, pageSize))
+
+  const baseWhere = `EXISTS (
+    SELECT 1 FROM bin d
+    WHERE d."binID" = t."destinationBinID"
+      AND d."warehouseID" = :warehouseID
+  )`
+
+  const replacements: Record<string, unknown> = {
+    warehouseID,
+    limit,
+    offset,
+    inventoryType: BinType.INVENTORY
   }
 
-  return getAdminWhereClause(status, keyword)
+  const keywordSqlAppend = (base: string) => {
+    const kw = keyword?.trim()
+    if (!kw) return base
+    replacements.kwPattern = `%${kw}%`
+    return `${base} AND (
+      t."productCode" ILIKE :kwPattern
+      OR EXISTS (
+        SELECT 1 FROM bin sb
+        WHERE sb."binID" = t."sourceBinID" AND sb."binCode" ILIKE :kwPattern
+      )
+      OR EXISTS (
+        SELECT 1 FROM bin db
+        WHERE db."binID" = t."destinationBinID" AND db."binCode" ILIKE :kwPattern
+      )
+      OR EXISTS (
+        SELECT 1 FROM inventory i
+        INNER JOIN bin ib ON ib."binID" = i."binID"
+        WHERE i."productCode" = t."productCode"
+          AND ib."warehouseID" = :warehouseID
+          AND ib."type" = :inventoryType
+          AND ib."binCode" ILIKE :kwPattern
+          AND i.quantity > 0
+      )
+    )`
+  }
+
+  let roleWhere: string
+  if (role === UserRole.PICKER) {
+    if (status === 'ALL' || !status) {
+      roleWhere = `t.status IN ('PENDING', 'COMPLETED')`
+    } else if (status === 'PENDING' || status === 'COMPLETED') {
+      roleWhere = `t.status = :pickerSingleStatus`
+      replacements.pickerSingleStatus = status
+    } else {
+      roleWhere = `t.status IN ('PENDING', 'COMPLETED')`
+    }
+    roleWhere = keywordSqlAppend(roleWhere)
+  } else {
+    roleWhere = keywordSqlAppend(`t.status = 'PENDING'`)
+  }
+
+  const whereSql = `${baseWhere} AND (${roleWhere})`
+
+  const countRows = (await sequelize.query(
+    `SELECT COUNT(*)::int AS total FROM task t WHERE ${whereSql}`,
+    { replacements, type: QueryTypes.SELECT }
+  )) as { total: number }[]
+
+  const total = Number(countRows[0]?.total ?? 0)
+
+  if (total === 0) {
+    return { ids: [], total: 0 }
+  }
+
+  const rows = (await sequelize.query(
+    `SELECT t."taskID" AS "taskID" FROM task t
+     WHERE ${whereSql}
+     ORDER BY ${RUSH_ORDER_SQL} ASC, t."updatedAt" DESC NULLS LAST
+     LIMIT :limit OFFSET :offset`,
+    { replacements, type: QueryTypes.SELECT }
+  )) as { taskID: string }[]
+
+  const ids = rows.map(r => r.taskID)
+  return { ids, total }
 }
 
 export const getTasksByWarehouseID = async (
   warehouseID: string,
   role: UserRole,
-  accountID?: string,
+  _accountID?: string,
   keyword?: string,
-  status?: string
-) => {
-  const whereClause = getWhereClauseForRole(role, status, accountID, keyword)
-  const includeClause = getIncludeClause(warehouseID)
-  const orderClause: Array<[unknown, string]> =
-    role === UserRole.TRANSPORT_WORKER || role === UserRole.PICKER
-      ? ([
-          [
-            Sequelize.literal(
-              `CASE WHEN "Task"."note" IN ('RUSH_TASK','URGENT','加急') THEN 0 ELSE 1 END`
-            ),
-            'ASC'
-          ],
-          ['updatedAt', 'DESC']
-        ] as const)
-      : ([['updatedAt', 'DESC']] as const)
+  status?: string,
+  page = 1,
+  pageSize = 30
+): Promise<WorkerPickerTaskListResult> => {
+  const safePage = Math.max(1, page)
+  const safePageSize = Math.max(1, Math.min(100, pageSize))
 
-  const tasks = (await Task.findAll({
-    where: whereClause,
-    include: includeClause,
-    order: orderClause as unknown as [string, string][]
-  })) as unknown as TaskWithJoin[]
+  const { ids, total } = await fetchPaginatedTaskIds(
+    warehouseID,
+    role,
+    keyword,
+    status,
+    safePage,
+    safePageSize
+  )
 
-  if (!tasks.length) {
-    return []
+  if (ids.length === 0) {
+    return {
+      tasks: [],
+      page: safePage,
+      pageSize: safePageSize,
+      total,
+      hasMore: false
+    }
   }
 
-  return mapTasks(tasks)
+  const includeClause = getIncludeClause(warehouseID)
+
+  const rows = (await Task.findAll({
+    where: { taskID: { [Op.in]: ids } },
+    include: includeClause,
+    subQuery: false
+  })) as unknown as TaskWithJoin[]
+
+  const mapById = new Map(rows.map(r => [r.taskID, r]))
+  const ordered = ids
+    .map(id => mapById.get(id))
+    .filter(Boolean) as TaskWithJoin[]
+
+  const tasks = mapTasks(ordered)
+  const hasMore = safePage * safePageSize < total
+
+  return {
+    tasks,
+    page: safePage,
+    pageSize: safePageSize,
+    total,
+    hasMore
+  }
 }
 
 export const checkIfTaskDuplicate = async (

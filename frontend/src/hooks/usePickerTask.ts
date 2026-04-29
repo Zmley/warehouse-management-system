@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import {
   createPickerTask,
   getPickerTasks,
@@ -7,6 +7,7 @@ import {
 } from 'api/task'
 import { CreateTaskPayload, Task } from 'types/task'
 import { useAuth } from 'hooks/useAuth'
+import { TaskCategoryEnum } from 'constants/index'
 
 const isRushNote = (note: string | null | undefined) =>
   note === 'RUSH_TASK' || note === 'URGENT' || note === '加急'
@@ -23,28 +24,125 @@ const sortPickerTasks = (items: Task[]) => {
   })
 }
 
+const DEFAULT_PAGE_SIZE = 30
+
 export const usePickerTasks = () => {
   const [tasks, setTasks] = useState<Task[]>([])
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const listTabRef = useRef<TaskCategoryEnum>(TaskCategoryEnum.PENDING)
+  const keywordRef = useRef('')
 
   const { userProfile } = useAuth()
 
-  const fetchTasks = async (): Promise<Task[]> => {
+  const fetchTasks = useCallback(
+    async (
+      tab: TaskCategoryEnum,
+      options?: { pageSize?: number; resetKeyword?: boolean }
+    ): Promise<Task[]> => {
+      listTabRef.current = tab
+      if (options?.resetKeyword) keywordRef.current = ''
+      setIsLoading(true)
+      setError(null)
+      const pageSize = options?.pageSize ?? DEFAULT_PAGE_SIZE
+      const kw = keywordRef.current.trim()
+      try {
+        const res = await getPickerTasks({
+          page: 1,
+          pageSize,
+          listStatus: tab,
+          keyword: kw || undefined
+        })
+        const sorted = sortPickerTasks(res.data.tasks || [])
+        setTasks(sorted)
+        setPage(1)
+        setHasMore(Boolean(res.data.hasMore))
+        return sorted
+      } catch (err) {
+        setError('Failed to fetch tasks')
+        return []
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    []
+  )
+
+  const commitSearchKeyword = useCallback(
+    async (raw: string) => {
+      keywordRef.current = raw.trim()
+      const tab = listTabRef.current
+      setIsLoading(true)
+      setError(null)
+      try {
+        const res = await getPickerTasks({
+          page: 1,
+          pageSize: DEFAULT_PAGE_SIZE,
+          listStatus: tab,
+          keyword: keywordRef.current.trim() || undefined
+        })
+        const sorted = sortPickerTasks(res.data.tasks || [])
+        setTasks(sorted)
+        setPage(1)
+        setHasMore(Boolean(res.data.hasMore))
+      } catch (err) {
+        setError('Failed to fetch tasks')
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    []
+  )
+
+  const clearSearchKeyword = useCallback(async () => {
+    keywordRef.current = ''
+    const tab = listTabRef.current
     setIsLoading(true)
     setError(null)
     try {
-      const res = await getPickerTasks()
+      const res = await getPickerTasks({
+        page: 1,
+        pageSize: DEFAULT_PAGE_SIZE,
+        listStatus: tab
+      })
       const sorted = sortPickerTasks(res.data.tasks || [])
       setTasks(sorted)
-      return sorted
+      setPage(1)
+      setHasMore(Boolean(res.data.hasMore))
     } catch (err) {
       setError('Failed to fetch tasks')
-      return []
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
+
+  const loadMoreTasks = useCallback(async () => {
+    if (!hasMore || isLoadingMore || isLoading) return
+    const tab = listTabRef.current
+    setIsLoadingMore(true)
+    setError(null)
+    try {
+      const next = page + 1
+      const kw = keywordRef.current.trim()
+      const res = await getPickerTasks({
+        page: next,
+        pageSize: DEFAULT_PAGE_SIZE,
+        listStatus: tab,
+        keyword: kw || undefined
+      })
+      const batch = res.data.tasks || []
+      setTasks(prev => sortPickerTasks([...prev, ...batch]))
+      setPage(next)
+      setHasMore(Boolean(res.data.hasMore))
+    } catch (err) {
+      setError('Failed to fetch tasks')
+    } finally {
+      setIsLoadingMore(false)
+    }
+  }, [hasMore, isLoadingMore, isLoading, page])
 
   const createTask = async (
     destinationBinCode: string,
@@ -162,9 +260,14 @@ export const usePickerTasks = () => {
   return {
     tasks,
     isLoading,
+    isLoadingMore,
     setError,
     error,
     fetchTasks,
+    loadMoreTasks,
+    commitSearchKeyword,
+    clearSearchKeyword,
+    hasMore,
     createTask,
     cancelTask,
     createPickTask,
