@@ -59,7 +59,7 @@ export const usePickerTasks = () => {
         const sorted = sortPickerTasks(res.data.tasks || [])
         setTasks(sorted)
         setPage(1)
-        setHasMore(Boolean(res.data.hasMore))
+        setHasMore(Boolean(res.data.hasMore) && sorted.length >= pageSize)
         return sorted
       } catch (err) {
         setError('Failed to fetch tasks')
@@ -87,7 +87,7 @@ export const usePickerTasks = () => {
         const sorted = sortPickerTasks(res.data.tasks || [])
         setTasks(sorted)
         setPage(1)
-        setHasMore(Boolean(res.data.hasMore))
+        setHasMore(Boolean(res.data.hasMore) && sorted.length >= DEFAULT_PAGE_SIZE)
       } catch (err) {
         setError('Failed to fetch tasks')
       } finally {
@@ -111,7 +111,7 @@ export const usePickerTasks = () => {
       const sorted = sortPickerTasks(res.data.tasks || [])
       setTasks(sorted)
       setPage(1)
-      setHasMore(Boolean(res.data.hasMore))
+      setHasMore(Boolean(res.data.hasMore) && sorted.length >= DEFAULT_PAGE_SIZE)
     } catch (err) {
       setError('Failed to fetch tasks')
     } finally {
@@ -136,7 +136,11 @@ export const usePickerTasks = () => {
       const batch = res.data.tasks || []
       setTasks(prev => sortPickerTasks([...prev, ...batch]))
       setPage(next)
-      setHasMore(Boolean(res.data.hasMore))
+      setHasMore(
+        Boolean(res.data.hasMore) &&
+          batch.length > 0 &&
+          batch.length >= DEFAULT_PAGE_SIZE
+      )
     } catch (err) {
       setError('Failed to fetch tasks')
     } finally {
