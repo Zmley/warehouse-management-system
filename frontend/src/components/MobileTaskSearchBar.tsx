@@ -99,7 +99,8 @@ const MobileTaskSearchBar: React.FC<Props> = ({
         mb: compact ? 0 : 1.25,
         px: compact ? 0 : 0.25,
         width: '100%',
-        minWidth: 0
+        minWidth: 0,
+        zIndex: open ? 1301 : 'auto'
       }}
     >
       <Box
@@ -199,7 +200,7 @@ const MobileTaskSearchBar: React.FC<Props> = ({
                 }
               : { right: 0 }),
             top: 'calc(100% + 6px)',
-            zIndex: 10,
+            zIndex: 1302,
             borderRadius: 2,
             maxHeight: Math.min(44 * maxSuggestions, 280),
             overflow: 'auto',
@@ -241,7 +242,7 @@ const MobileTaskSearchBar: React.FC<Props> = ({
                 }
               : { right: 0 }),
             top: 'calc(100% + 6px)',
-            zIndex: 10,
+            zIndex: 1302,
             borderRadius: 2,
             px: 1.5,
             py: 1.25
