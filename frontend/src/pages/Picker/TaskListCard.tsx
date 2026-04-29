@@ -125,7 +125,21 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
         pullDownThreshold={70}
         maxPullDownDistance={120}
         resistance={2.5}
-        pullingContent={<PullingIndicator text={t('taskList.pullToRefresh')} />}
+        pullingContent={
+          <Box
+            sx={{
+              py: 0.5,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'text.secondary'
+            }}
+          >
+            <Typography variant='caption' sx={{ fontSize: 12, fontStyle: 'italic' }}>
+              {t('taskList.pullToRefresh')}
+            </Typography>
+          </Box>
+        }
         refreshingContent={
           <PullingIndicator text={t('taskList.refreshing', 'Refreshing…')} />
         }
@@ -133,37 +147,46 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
         <Box p={2} pt={0} pb={10}>
           <Box
             sx={{
-              display: 'grid',
-              gridTemplateColumns: '1fr auto',
+              display: 'flex',
               alignItems: 'center',
-              gap: 1,
-              mb: 1
+              gap: 0.75,
+              mb: 1.25,
+              minWidth: 0
             }}
           >
-            <Typography
-              sx={{
-                color: 'text.secondary',
-                fontSize: 11,
-                fontStyle: 'italic',
-                whiteSpace: 'nowrap'
-              }}
-            >
-              {t('taskList.pullToRefresh')}
-            </Typography>
-
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <MobileTaskSearchBar
+                compact
+                value={searchDraft}
+                onChange={setSearchDraft}
+                onSubmit={q => {
+                  setSearchDraft(q)
+                  void commitSearchKeyword(q)
+                }}
+                onClear={() => {
+                  setSearchDraft('')
+                  void clearSearchKeyword()
+                }}
+                options={suggestionProductCodes}
+                placeholder={t('taskList.searchPlaceholder')}
+                noResultsText={t('taskList.searchNoMatch')}
+                disabled={isLoading && tasks.length === 0}
+              />
+            </Box>
             <Box
               sx={{
-                justifySelf: 'end',
                 display: 'flex',
                 alignItems: 'center',
-                gap: 1
+                gap: 0.5,
+                flexShrink: 0
               }}
             >
               <Typography
                 sx={{
                   fontSize: 12,
                   fontWeight: 'bold',
-                  color: showOutOfStock ? '#d32f2f' : '#2563eb'
+                  color: showOutOfStock ? '#d32f2f' : '#2563eb',
+                  whiteSpace: 'nowrap'
                 }}
               >
                 {showOutOfStock
@@ -193,23 +216,6 @@ const TaskListCard: React.FC<Props> = ({ status }) => {
               </IconButton>
             </Box>
           </Box>
-
-          <MobileTaskSearchBar
-            value={searchDraft}
-            onChange={setSearchDraft}
-            onSubmit={q => {
-              setSearchDraft(q)
-              void commitSearchKeyword(q)
-            }}
-            onClear={() => {
-              setSearchDraft('')
-              void clearSearchKeyword()
-            }}
-            options={suggestionProductCodes}
-            placeholder={t('taskList.searchPlaceholder')}
-            noResultsText={t('taskList.searchNoMatch')}
-            disabled={isLoading && tasks.length === 0}
-          />
 
           {!hasFetched || (isLoading && tasks.length === 0) ? (
             <Box display='flex' justifyContent='center' mt={6}>
