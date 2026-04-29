@@ -29,9 +29,10 @@ export const useTask = () => {
         pageSize: PAGE_SIZE,
         keyword: kw || undefined
       })
-      setTasks(result.data.tasks || [])
+      const firstBatch = result.data.tasks || []
+      setTasks(firstBatch)
       setPage(1)
-      setHasMore(Boolean(result.data.hasMore))
+      setHasMore(Boolean(result.data.hasMore) && firstBatch.length >= PAGE_SIZE)
     } catch (err) {
       console.error('❌ Error loading tasks', err)
     } finally {
@@ -70,7 +71,9 @@ export const useTask = () => {
       const batch = result.data.tasks || []
       setTasks(prev => [...prev, ...batch])
       setPage(next)
-      setHasMore(Boolean(result.data.hasMore))
+      setHasMore(
+        Boolean(result.data.hasMore) && batch.length > 0 && batch.length >= PAGE_SIZE
+      )
     } catch (err) {
       console.error('❌ Error loading more tasks', err)
     } finally {
